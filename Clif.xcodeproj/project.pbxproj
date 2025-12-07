@@ -6,14 +6,104 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		B45862152EE5B92C0088CB78 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = B45862142EE5B92C0088CB78 /* Constants.swift */; };
+		B45862162EE5B92C0088CB78 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = B45862142EE5B92C0088CB78 /* Constants.swift */; };
+		B45862172EE5B92C0088CB78 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = B45862142EE5B92C0088CB78 /* Constants.swift */; };
+		B4924ACC2EE57ED90033475C /* DeviceActivity.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B4924ACB2EE57ED90033475C /* DeviceActivity.framework */; };
+		B4924AD42EE57ED90033475C /* DeviceActivityMonitor.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = B4924AC92EE57ED90033475C /* DeviceActivityMonitor.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		B4924AE02EE57EEE0033475C /* ManagedSettings.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B4924ADF2EE57EEE0033475C /* ManagedSettings.framework */; };
+		B4924AE22EE57EEE0033475C /* ManagedSettingsUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B4924AE12EE57EEE0033475C /* ManagedSettingsUI.framework */; };
+		B4924AEA2EE57EEE0033475C /* ShieldConfiguration.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = B4924ADE2EE57EEE0033475C /* ShieldConfiguration.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		B4924AF72EE5807E0033475C /* SharedDefaults.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4924AF52EE5807E0033475C /* SharedDefaults.swift */; };
+		B4924AF82EE5807E0033475C /* ClifModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4924AF42EE5807E0033475C /* ClifModel.swift */; };
+		B4924AF92EE5807E0033475C /* SharedDefaults.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4924AF52EE5807E0033475C /* SharedDefaults.swift */; };
+		B4924AFA2EE5807E0033475C /* ClifModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4924AF42EE5807E0033475C /* ClifModel.swift */; };
+		B4924AFB2EE5807E0033475C /* SharedDefaults.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4924AF52EE5807E0033475C /* SharedDefaults.swift */; };
+		B4924AFC2EE5807E0033475C /* ClifModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4924AF42EE5807E0033475C /* ClifModel.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		B4924AD22EE57ED90033475C /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = B4159A2A2EE56ED700BAE49D /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = B4924AC82EE57ED90033475C;
+			remoteInfo = DeviceActivityMonitor;
+		};
+		B4924AE82EE57EEE0033475C /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = B4159A2A2EE56ED700BAE49D /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = B4924ADD2EE57EEE0033475C;
+			remoteInfo = ShieldConfiguration;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		B4924AD52EE57ED90033475C /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				B4924AEA2EE57EEE0033475C /* ShieldConfiguration.appex in Embed Foundation Extensions */,
+				B4924AD42EE57ED90033475C /* DeviceActivityMonitor.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
 		B4159A322EE56ED700BAE49D /* Clif.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Clif.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		B45862142EE5B92C0088CB78 /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
+		B4924AC92EE57ED90033475C /* DeviceActivityMonitor.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = DeviceActivityMonitor.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		B4924ACB2EE57ED90033475C /* DeviceActivity.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = DeviceActivity.framework; path = System/Library/Frameworks/DeviceActivity.framework; sourceTree = SDKROOT; };
+		B4924ADE2EE57EEE0033475C /* ShieldConfiguration.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = ShieldConfiguration.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		B4924ADF2EE57EEE0033475C /* ManagedSettings.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ManagedSettings.framework; path = System/Library/Frameworks/ManagedSettings.framework; sourceTree = SDKROOT; };
+		B4924AE12EE57EEE0033475C /* ManagedSettingsUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ManagedSettingsUI.framework; path = Library/Frameworks/ManagedSettingsUI.framework; sourceTree = DEVELOPER_DIR; };
+		B4924AF42EE5807E0033475C /* ClifModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClifModel.swift; sourceTree = "<group>"; };
+		B4924AF52EE5807E0033475C /* SharedDefaults.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedDefaults.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		B4924AD82EE57ED90033475C /* Exceptions for "DeviceActivityMonitor" folder in "DeviceActivityMonitor" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = B4924AC82EE57ED90033475C /* DeviceActivityMonitor */;
+		};
+		B4924AEB2EE57EEE0033475C /* Exceptions for "ShieldConfiguration" folder in "ShieldConfiguration" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = B4924ADD2EE57EEE0033475C /* ShieldConfiguration */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		B4159A342EE56ED700BAE49D /* Clif */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = Clif;
+			sourceTree = "<group>";
+		};
+		B4924ACD2EE57ED90033475C /* DeviceActivityMonitor */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				B4924AD82EE57ED90033475C /* Exceptions for "DeviceActivityMonitor" folder in "DeviceActivityMonitor" target */,
+			);
+			path = DeviceActivityMonitor;
+			sourceTree = "<group>";
+		};
+		B4924AE32EE57EEE0033475C /* ShieldConfiguration */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				B4924AEB2EE57EEE0033475C /* Exceptions for "ShieldConfiguration" folder in "ShieldConfiguration" target */,
+			);
+			path = ShieldConfiguration;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -26,13 +116,34 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		B4924AC62EE57ED90033475C /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B4924ACC2EE57ED90033475C /* DeviceActivity.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B4924ADB2EE57EEE0033475C /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B4924AE02EE57EEE0033475C /* ManagedSettings.framework in Frameworks */,
+				B4924AE22EE57EEE0033475C /* ManagedSettingsUI.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
 		B4159A292EE56ED700BAE49D = {
 			isa = PBXGroup;
 			children = (
+				B4924AF62EE5807E0033475C /* Shared */,
 				B4159A342EE56ED700BAE49D /* Clif */,
+				B4924ACD2EE57ED90033475C /* DeviceActivityMonitor */,
+				B4924AE32EE57EEE0033475C /* ShieldConfiguration */,
+				B4924ACA2EE57ED90033475C /* Frameworks */,
 				B4159A332EE56ED700BAE49D /* Products */,
 			);
 			sourceTree = "<group>";
@@ -41,8 +152,30 @@
 			isa = PBXGroup;
 			children = (
 				B4159A322EE56ED700BAE49D /* Clif.app */,
+				B4924AC92EE57ED90033475C /* DeviceActivityMonitor.appex */,
+				B4924ADE2EE57EEE0033475C /* ShieldConfiguration.appex */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		B4924ACA2EE57ED90033475C /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				B4924ACB2EE57ED90033475C /* DeviceActivity.framework */,
+				B4924ADF2EE57EEE0033475C /* ManagedSettings.framework */,
+				B4924AE12EE57EEE0033475C /* ManagedSettingsUI.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		B4924AF62EE5807E0033475C /* Shared */ = {
+			isa = PBXGroup;
+			children = (
+				B4924AF42EE5807E0033475C /* ClifModel.swift */,
+				B4924AF52EE5807E0033475C /* SharedDefaults.swift */,
+				B45862142EE5B92C0088CB78 /* Constants.swift */,
+			);
+			path = Shared;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -55,10 +188,13 @@
 				B4159A2E2EE56ED700BAE49D /* Sources */,
 				B4159A2F2EE56ED700BAE49D /* Frameworks */,
 				B4159A302EE56ED700BAE49D /* Resources */,
+				B4924AD52EE57ED90033475C /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				B4924AD32EE57ED90033475C /* PBXTargetDependency */,
+				B4924AE92EE57EEE0033475C /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				B4159A342EE56ED700BAE49D /* Clif */,
@@ -69,6 +205,50 @@
 			productName = Clif;
 			productReference = B4159A322EE56ED700BAE49D /* Clif.app */;
 			productType = "com.apple.product-type.application";
+		};
+		B4924AC82EE57ED90033475C /* DeviceActivityMonitor */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = B4924AD92EE57ED90033475C /* Build configuration list for PBXNativeTarget "DeviceActivityMonitor" */;
+			buildPhases = (
+				B4924AC52EE57ED90033475C /* Sources */,
+				B4924AC62EE57ED90033475C /* Frameworks */,
+				B4924AC72EE57ED90033475C /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				B4924ACD2EE57ED90033475C /* DeviceActivityMonitor */,
+			);
+			name = DeviceActivityMonitor;
+			packageProductDependencies = (
+			);
+			productName = DeviceActivityMonitor;
+			productReference = B4924AC92EE57ED90033475C /* DeviceActivityMonitor.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+		B4924ADD2EE57EEE0033475C /* ShieldConfiguration */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = B4924AEC2EE57EEE0033475C /* Build configuration list for PBXNativeTarget "ShieldConfiguration" */;
+			buildPhases = (
+				B4924ADA2EE57EEE0033475C /* Sources */,
+				B4924ADB2EE57EEE0033475C /* Frameworks */,
+				B4924ADC2EE57EEE0033475C /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				B4924AE32EE57EEE0033475C /* ShieldConfiguration */,
+			);
+			name = ShieldConfiguration;
+			packageProductDependencies = (
+			);
+			productName = ShieldConfiguration;
+			productReference = B4924ADE2EE57EEE0033475C /* ShieldConfiguration.appex */;
+			productType = "com.apple.product-type.app-extension";
 		};
 /* End PBXNativeTarget section */
 
@@ -81,6 +261,12 @@
 				LastUpgradeCheck = 2610;
 				TargetAttributes = {
 					B4159A312EE56ED700BAE49D = {
+						CreatedOnToolsVersion = 26.1;
+					};
+					B4924AC82EE57ED90033475C = {
+						CreatedOnToolsVersion = 26.1;
+					};
+					B4924ADD2EE57EEE0033475C = {
 						CreatedOnToolsVersion = 26.1;
 					};
 				};
@@ -100,12 +286,28 @@
 			projectRoot = "";
 			targets = (
 				B4159A312EE56ED700BAE49D /* Clif */,
+				B4924AC82EE57ED90033475C /* DeviceActivityMonitor */,
+				B4924ADD2EE57EEE0033475C /* ShieldConfiguration */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
 		B4159A302EE56ED700BAE49D /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B4924AC72EE57ED90033475C /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B4924ADC2EE57EEE0033475C /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -119,10 +321,46 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B4924AFB2EE5807E0033475C /* SharedDefaults.swift in Sources */,
+				B4924AFC2EE5807E0033475C /* ClifModel.swift in Sources */,
+				B45862162EE5B92C0088CB78 /* Constants.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B4924AC52EE57ED90033475C /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B4924AF92EE5807E0033475C /* SharedDefaults.swift in Sources */,
+				B4924AFA2EE5807E0033475C /* ClifModel.swift in Sources */,
+				B45862172EE5B92C0088CB78 /* Constants.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B4924ADA2EE57EEE0033475C /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B4924AF72EE5807E0033475C /* SharedDefaults.swift in Sources */,
+				B4924AF82EE5807E0033475C /* ClifModel.swift in Sources */,
+				B45862152EE5B92C0088CB78 /* Constants.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		B4924AD32EE57ED90033475C /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = B4924AC82EE57ED90033475C /* DeviceActivityMonitor */;
+			targetProxy = B4924AD22EE57ED90033475C /* PBXContainerItemProxy */;
+		};
+		B4924AE92EE57EEE0033475C /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = B4924ADD2EE57EEE0033475C /* ShieldConfiguration */;
+			targetProxy = B4924AE82EE57EEE0033475C /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		B4159A3B2EE56ED800BAE49D /* Debug */ = {
@@ -158,6 +396,7 @@
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_ALLOW_ENTITLEMENTS_MODIFICATION = YES;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_TEAM = NS75N22AKL;
@@ -220,6 +459,7 @@
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_ALLOW_ENTITLEMENTS_MODIFICATION = YES;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = NS75N22AKL;
@@ -246,6 +486,8 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Clif/Clif.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = NS75N22AKL;
@@ -273,6 +515,7 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.janpodmolik.Clif;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				REGISTER_APP_GROUPS = YES;
 				SDKROOT = auto;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
@@ -293,6 +536,8 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Clif/Clif.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = NS75N22AKL;
@@ -320,6 +565,7 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.janpodmolik.Clif;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				REGISTER_APP_GROUPS = YES;
 				SDKROOT = auto;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
@@ -332,6 +578,140 @@
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 1;
 				XROS_DEPLOYMENT_TARGET = 26.1;
+			};
+			name = Release;
+		};
+		B4924AD62EE57ED90033475C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = DeviceActivityMonitor/DeviceActivityMonitor.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = NS75N22AKL;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = DeviceActivityMonitor/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = DeviceActivityMonitor;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.6;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.janpodmolik.Clif.DeviceActivityMonitor;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		B4924AD72EE57ED90033475C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = DeviceActivityMonitor/DeviceActivityMonitor.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = NS75N22AKL;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = DeviceActivityMonitor/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = DeviceActivityMonitor;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.6;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.janpodmolik.Clif.DeviceActivityMonitor;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		B4924AED2EE57EEE0033475C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = ShieldConfiguration/ShieldConfiguration.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = NS75N22AKL;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = ShieldConfiguration/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = ShieldConfiguration;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.6;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.janpodmolik.Clif.ShieldConfiguration;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		B4924AEE2EE57EEE0033475C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = ShieldConfiguration/ShieldConfiguration.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = NS75N22AKL;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = ShieldConfiguration/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = ShieldConfiguration;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.6;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.janpodmolik.Clif.ShieldConfiguration;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
 			};
 			name = Release;
 		};
@@ -352,6 +732,24 @@
 			buildConfigurations = (
 				B4159A3E2EE56ED800BAE49D /* Debug */,
 				B4159A3F2EE56ED800BAE49D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		B4924AD92EE57ED90033475C /* Build configuration list for PBXNativeTarget "DeviceActivityMonitor" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B4924AD62EE57ED90033475C /* Debug */,
+				B4924AD72EE57ED90033475C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		B4924AEC2EE57EEE0033475C /* Build configuration list for PBXNativeTarget "ShieldConfiguration" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B4924AED2EE57EEE0033475C /* Debug */,
+				B4924AEE2EE57EEE0033475C /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
