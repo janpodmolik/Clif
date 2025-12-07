@@ -7,6 +7,7 @@
 
 import SwiftUI
 import FamilyControls
+import DeviceActivity
 
 struct ContentView: View {
     @StateObject private var manager = ScreenTimeManager.shared
@@ -31,9 +32,22 @@ struct ContentView: View {
                     if !manager.isAuthorized {
                         authorizationSection
                     } else {
+                        screenTimeReportSection
                         limitSliderSection
                         appSelectionSection
                         progressSection
+                        
+                        // Supabase test button
+                        NavigationLink(destination: SupabaseTestView()) {
+                            HStack {
+                                Image(systemName: "server.rack")
+                                Text("Supabase Test")
+                            }
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                            .background(Color.purple.opacity(0.2))
+                            .cornerRadius(12)
+                        }
                         
                         #if DEBUG
                         debugSection
@@ -81,14 +95,15 @@ struct ContentView: View {
     
     private var limitSliderSection: some View {
         VStack {
-            Text("Daily Limit: \(Int(dailyLimit)) min")
+            Text("Daily Limit: \(formattedLimit)")
                 .font(.headline)
             
-            Slider(value: $dailyLimit, in: 1...120, step: 1) {
+            Slider(value: $dailyLimit, in: 5...600, step: 5) {
                 Text("Limit")
             } onEditingChanged: { isEditing in
                 if !isEditing {
                     dailyLimitMinutes = Int(dailyLimit)
+                    refreshReport()
                 }
             }
         }
@@ -98,6 +113,16 @@ struct ContentView: View {
         .onAppear {
             dailyLimit = Double(dailyLimitMinutes)
         }
+    }
+    
+    private var formattedLimit: String {
+        let mins = Int(dailyLimit)
+        if mins >= 60 {
+            let hours = mins / 60
+            let remainder = mins % 60
+            return remainder > 0 ? "\(hours)h \(remainder)m" : "\(hours)h"
+        }
+        return "\(mins)m"
     }
     
     private var appSelectionSection: some View {
@@ -162,6 +187,88 @@ struct ContentView: View {
         let minutes = totalSeconds / 60
         let seconds = totalSeconds % 60
         return "⏱️ ~\(minutes)m \(seconds)s / \(dailyLimitMinutes)m"
+    }
+    
+    @State private var reportFilter: DeviceActivityFilter?
+    @State private var reportId = UUID()
+    
+    private var screenTimeReportSection: some View {
+        VStack(spacing: 0) {
+            // Header
+            HStack {
+                Label("Today's Screen Time", systemImage: "clock")
+                    .font(.headline)
+                    .foregroundColor(.primary)
+                
+                Spacer()
+                
+                Button {
+                    // Refresh report
+                    reportFilter = nil
+                    reportId = UUID()
+                    Task {
+                        try? await Task.sleep(nanoseconds: 100_000_000)
+                        await MainActor.run {
+                            reportFilter = createFilter()
+                        }
+                    }
+                } label: {
+                    Image(systemName: "arrow.clockwise")
+                        .font(.system(size: 16, weight: .medium))
+                        .foregroundColor(.blue)
+                }
+            }
+            .padding(.horizontal)
+            .padding(.top, 12)
+            .padding(.bottom, 8)
+            
+            if let filter = reportFilter {
+                DeviceActivityReport(.totalActivity, filter: filter)
+                    .id(reportId)
+                    .frame(minHeight: 180)
+            } else {
+                // Placeholder while loading
+                VStack(spacing: 12) {
+                    ProgressView()
+                        .scaleEffect(1.2)
+                    Text("Načítám data...")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+                .frame(minHeight: 180)
+                .frame(maxWidth: .infinity)
+            }
+        }
+        .background(Color(.secondarySystemBackground))
+        .cornerRadius(16)
+        .task {
+            await MainActor.run {
+                reportFilter = createFilter()
+            }
+        }
+    }
+    
+    private func createFilter() -> DeviceActivityFilter {
+        DeviceActivityFilter(
+            segment: .hourly(
+                during: Calendar.current.dateInterval(of: .day, for: .now)!
+            ),
+            users: .all,
+            devices: .init([.iPhone]),
+            applications: manager.activitySelection.applicationTokens,
+            categories: manager.activitySelection.categoryTokens
+        )
+    }
+    
+    private func refreshReport() {
+        reportFilter = nil
+        reportId = UUID()
+        Task {
+            try? await Task.sleep(nanoseconds: 100_000_000)
+            await MainActor.run {
+                reportFilter = createFilter()
+            }
+        }
     }
 }
 

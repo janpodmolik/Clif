@@ -10,6 +10,10 @@
 		B45862152EE5B92C0088CB78 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = B45862142EE5B92C0088CB78 /* Constants.swift */; };
 		B45862162EE5B92C0088CB78 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = B45862142EE5B92C0088CB78 /* Constants.swift */; };
 		B45862172EE5B92C0088CB78 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = B45862142EE5B92C0088CB78 /* Constants.swift */; };
+		B45862252EE5D0A60088CB78 /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = B45862242EE5D0A60088CB78 /* Supabase */; };
+		B458623C2EE5F6F80088CB78 /* DeviceActivityReport.appex in Embed ExtensionKit Extensions */ = {isa = PBXBuildFile; fileRef = B45862302EE5F6F80088CB78 /* DeviceActivityReport.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		B45862432EE5FAF60088CB78 /* ActivityReportContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = B45862422EE5FAF60088CB78 /* ActivityReportContext.swift */; };
+		B45862442EE5FAF60088CB78 /* ActivityReportContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = B45862422EE5FAF60088CB78 /* ActivityReportContext.swift */; };
 		B4924ACC2EE57ED90033475C /* DeviceActivity.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B4924ACB2EE57ED90033475C /* DeviceActivity.framework */; };
 		B4924AD42EE57ED90033475C /* DeviceActivityMonitor.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = B4924AC92EE57ED90033475C /* DeviceActivityMonitor.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		B4924AE02EE57EEE0033475C /* ManagedSettings.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B4924ADF2EE57EEE0033475C /* ManagedSettings.framework */; };
@@ -24,6 +28,13 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		B458623A2EE5F6F80088CB78 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = B4159A2A2EE56ED700BAE49D /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = B458622F2EE5F6F80088CB78;
+			remoteInfo = DeviceActivityReport;
+		};
 		B4924AD22EE57ED90033475C /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = B4159A2A2EE56ED700BAE49D /* Project object */;
@@ -41,6 +52,17 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
+		B45862412EE5F6F80088CB78 /* Embed ExtensionKit Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "$(EXTENSIONS_FOLDER_PATH)";
+			dstSubfolderSpec = 16;
+			files = (
+				B458623C2EE5F6F80088CB78 /* DeviceActivityReport.appex in Embed ExtensionKit Extensions */,
+			);
+			name = "Embed ExtensionKit Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		B4924AD52EE57ED90033475C /* Embed Foundation Extensions */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
@@ -58,6 +80,8 @@
 /* Begin PBXFileReference section */
 		B4159A322EE56ED700BAE49D /* Clif.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Clif.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B45862142EE5B92C0088CB78 /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
+		B45862302EE5F6F80088CB78 /* DeviceActivityReport.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.extensionkit-extension"; includeInIndex = 0; path = DeviceActivityReport.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		B45862422EE5FAF60088CB78 /* ActivityReportContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityReportContext.swift; sourceTree = "<group>"; };
 		B4924AC92EE57ED90033475C /* DeviceActivityMonitor.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = DeviceActivityMonitor.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		B4924ACB2EE57ED90033475C /* DeviceActivity.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = DeviceActivity.framework; path = System/Library/Frameworks/DeviceActivity.framework; sourceTree = SDKROOT; };
 		B4924ADE2EE57EEE0033475C /* ShieldConfiguration.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = ShieldConfiguration.appex; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -68,6 +92,13 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		B458623D2EE5F6F80088CB78 /* Exceptions for "DeviceActivityReport" folder in "DeviceActivityReport" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = B458622F2EE5F6F80088CB78 /* DeviceActivityReport */;
+		};
 		B4924AD82EE57ED90033475C /* Exceptions for "DeviceActivityMonitor" folder in "DeviceActivityMonitor" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
@@ -90,6 +121,14 @@
 			path = Clif;
 			sourceTree = "<group>";
 		};
+		B45862312EE5F6F80088CB78 /* DeviceActivityReport */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				B458623D2EE5F6F80088CB78 /* Exceptions for "DeviceActivityReport" folder in "DeviceActivityReport" target */,
+			);
+			path = DeviceActivityReport;
+			sourceTree = "<group>";
+		};
 		B4924ACD2EE57ED90033475C /* DeviceActivityMonitor */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
@@ -110,6 +149,14 @@
 
 /* Begin PBXFrameworksBuildPhase section */
 		B4159A2F2EE56ED700BAE49D /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B45862252EE5D0A60088CB78 /* Supabase in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B458622D2EE5F6F80088CB78 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -143,6 +190,7 @@
 				B4159A342EE56ED700BAE49D /* Clif */,
 				B4924ACD2EE57ED90033475C /* DeviceActivityMonitor */,
 				B4924AE32EE57EEE0033475C /* ShieldConfiguration */,
+				B45862312EE5F6F80088CB78 /* DeviceActivityReport */,
 				B4924ACA2EE57ED90033475C /* Frameworks */,
 				B4159A332EE56ED700BAE49D /* Products */,
 			);
@@ -154,6 +202,7 @@
 				B4159A322EE56ED700BAE49D /* Clif.app */,
 				B4924AC92EE57ED90033475C /* DeviceActivityMonitor.appex */,
 				B4924ADE2EE57EEE0033475C /* ShieldConfiguration.appex */,
+				B45862302EE5F6F80088CB78 /* DeviceActivityReport.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -171,6 +220,7 @@
 		B4924AF62EE5807E0033475C /* Shared */ = {
 			isa = PBXGroup;
 			children = (
+				B45862422EE5FAF60088CB78 /* ActivityReportContext.swift */,
 				B4924AF42EE5807E0033475C /* ClifModel.swift */,
 				B4924AF52EE5807E0033475C /* SharedDefaults.swift */,
 				B45862142EE5B92C0088CB78 /* Constants.swift */,
@@ -189,22 +239,47 @@
 				B4159A2F2EE56ED700BAE49D /* Frameworks */,
 				B4159A302EE56ED700BAE49D /* Resources */,
 				B4924AD52EE57ED90033475C /* Embed Foundation Extensions */,
+				B45862412EE5F6F80088CB78 /* Embed ExtensionKit Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 				B4924AD32EE57ED90033475C /* PBXTargetDependency */,
 				B4924AE92EE57EEE0033475C /* PBXTargetDependency */,
+				B458623B2EE5F6F80088CB78 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				B4159A342EE56ED700BAE49D /* Clif */,
 			);
 			name = Clif;
 			packageProductDependencies = (
+				B45862242EE5D0A60088CB78 /* Supabase */,
 			);
 			productName = Clif;
 			productReference = B4159A322EE56ED700BAE49D /* Clif.app */;
 			productType = "com.apple.product-type.application";
+		};
+		B458622F2EE5F6F80088CB78 /* DeviceActivityReport */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = B458623E2EE5F6F80088CB78 /* Build configuration list for PBXNativeTarget "DeviceActivityReport" */;
+			buildPhases = (
+				B458622C2EE5F6F80088CB78 /* Sources */,
+				B458622D2EE5F6F80088CB78 /* Frameworks */,
+				B458622E2EE5F6F80088CB78 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				B45862312EE5F6F80088CB78 /* DeviceActivityReport */,
+			);
+			name = DeviceActivityReport;
+			packageProductDependencies = (
+			);
+			productName = DeviceActivityReport;
+			productReference = B45862302EE5F6F80088CB78 /* DeviceActivityReport.appex */;
+			productType = "com.apple.product-type.extensionkit-extension";
 		};
 		B4924AC82EE57ED90033475C /* DeviceActivityMonitor */ = {
 			isa = PBXNativeTarget;
@@ -263,6 +338,9 @@
 					B4159A312EE56ED700BAE49D = {
 						CreatedOnToolsVersion = 26.1;
 					};
+					B458622F2EE5F6F80088CB78 = {
+						CreatedOnToolsVersion = 26.1;
+					};
 					B4924AC82EE57ED90033475C = {
 						CreatedOnToolsVersion = 26.1;
 					};
@@ -280,6 +358,9 @@
 			);
 			mainGroup = B4159A292EE56ED700BAE49D;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				B45862232EE5D0A60088CB78 /* XCRemoteSwiftPackageReference "supabase-swift" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = B4159A332EE56ED700BAE49D /* Products */;
 			projectDirPath = "";
@@ -288,12 +369,20 @@
 				B4159A312EE56ED700BAE49D /* Clif */,
 				B4924AC82EE57ED90033475C /* DeviceActivityMonitor */,
 				B4924ADD2EE57EEE0033475C /* ShieldConfiguration */,
+				B458622F2EE5F6F80088CB78 /* DeviceActivityReport */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
 		B4159A302EE56ED700BAE49D /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B458622E2EE5F6F80088CB78 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -322,8 +411,17 @@
 			buildActionMask = 2147483647;
 			files = (
 				B4924AFB2EE5807E0033475C /* SharedDefaults.swift in Sources */,
+				B45862442EE5FAF60088CB78 /* ActivityReportContext.swift in Sources */,
 				B4924AFC2EE5807E0033475C /* ClifModel.swift in Sources */,
 				B45862162EE5B92C0088CB78 /* Constants.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B458622C2EE5F6F80088CB78 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B45862432EE5FAF60088CB78 /* ActivityReportContext.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -350,6 +448,11 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		B458623B2EE5F6F80088CB78 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = B458622F2EE5F6F80088CB78 /* DeviceActivityReport */;
+			targetProxy = B458623A2EE5F6F80088CB78 /* PBXContainerItemProxy */;
+		};
 		B4924AD32EE57ED90033475C /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = B4924AC82EE57ED90033475C /* DeviceActivityMonitor */;
@@ -581,6 +684,73 @@
 			};
 			name = Release;
 		};
+		B458623F2EE5F6F80088CB78 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = DeviceActivityReport/DeviceActivityReport.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = NS75N22AKL;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = DeviceActivityReport/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = DeviceActivityReport;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 26.1;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.janpodmolik.Clif.DeviceActivityReport;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		B45862402EE5F6F80088CB78 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = DeviceActivityReport/DeviceActivityReport.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = NS75N22AKL;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = DeviceActivityReport/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = DeviceActivityReport;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 26.1;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.janpodmolik.Clif.DeviceActivityReport;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
 		B4924AD62EE57ED90033475C /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -736,6 +906,15 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
+		B458623E2EE5F6F80088CB78 /* Build configuration list for PBXNativeTarget "DeviceActivityReport" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B458623F2EE5F6F80088CB78 /* Debug */,
+				B45862402EE5F6F80088CB78 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		B4924AD92EE57ED90033475C /* Build configuration list for PBXNativeTarget "DeviceActivityMonitor" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -755,6 +934,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		B45862232EE5D0A60088CB78 /* XCRemoteSwiftPackageReference "supabase-swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/supabase/supabase-swift.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.5.1;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		B45862242EE5D0A60088CB78 /* Supabase */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B45862232EE5D0A60088CB78 /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = Supabase;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = B4159A2A2EE56ED700BAE49D /* Project object */;
 }
