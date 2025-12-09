@@ -225,15 +225,7 @@ struct ContentView: View {
                 Spacer()
                 
                 Button {
-                    // Refresh report
-                    reportFilter = nil
-                    reportId = UUID()
-                    Task {
-                        try? await Task.sleep(nanoseconds: 100_000_000)
-                        await MainActor.run {
-                            reportFilter = createFilter()
-                        }
-                    }
+                    refreshReport()
                 } label: {
                     Image(systemName: "arrow.clockwise")
                         .font(.system(size: 16, weight: .medium))
@@ -264,9 +256,7 @@ struct ContentView: View {
         .background(Color(.secondarySystemBackground))
         .cornerRadius(16)
         .task {
-            await MainActor.run {
-                reportFilter = createFilter()
-            }
+            reportFilter = createFilter()
         }
     }
     
@@ -285,12 +275,7 @@ struct ContentView: View {
     private func refreshReport() {
         reportFilter = nil
         reportId = UUID()
-        Task {
-            try? await Task.sleep(nanoseconds: 100_000_000)
-            await MainActor.run {
-                reportFilter = createFilter()
-            }
-        }
+        reportFilter = createFilter()
     }
 }
 

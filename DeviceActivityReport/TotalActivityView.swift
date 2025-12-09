@@ -10,11 +10,25 @@ import SwiftUI
 
 struct TotalActivityView: View {
     let data: ActivityReportData
-    
+
+    @State private var showAllApps = false
+
     init(totalActivity: ActivityReportData) {
         self.data = totalActivity
     }
-    
+
+    private var displayedApps: [AppActivityData] {
+        let maxApps = AppConstants.maxDisplayedApps
+        if showAllApps || data.apps.count <= maxApps {
+            return data.apps
+        }
+        return Array(data.apps.prefix(maxApps))
+    }
+
+    private var hasMoreApps: Bool {
+        data.apps.count > AppConstants.maxDisplayedApps && !showAllApps
+    }
+
     private var progressColor: Color {
         if data.progress >= 1.0 { return .red }
         if data.progress >= 0.8 { return .orange }
@@ -74,8 +88,21 @@ struct TotalActivityView: View {
                             .foregroundColor(.secondary)
                             .padding(.top, 40)
                     } else {
-                        ForEach(data.apps) { app in
+                        ForEach(displayedApps) { app in
                             AppRowView(app: app)
+                        }
+
+                        if hasMoreApps {
+                            Button {
+                                withAnimation(.easeInOut(duration: 0.2)) {
+                                    showAllApps = true
+                                }
+                            } label: {
+                                Text("+ \(data.apps.count - AppConstants.maxDisplayedApps) more")
+                                    .font(.system(size: 14, weight: .medium))
+                                    .foregroundColor(.blue)
+                                    .padding(.vertical, 8)
+                            }
                         }
                     }
                 }

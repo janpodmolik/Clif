@@ -11,13 +11,16 @@ extension DeviceActivityName {
 /// Manages Screen Time authorization, app selection, and device activity monitoring
 final class ScreenTimeManager: ObservableObject {
     static let shared = ScreenTimeManager()
-    
+
     @Published var activitySelection = FamilyActivitySelection()
     @Published var isAuthorized = false
-    
+
     private let center = DeviceActivityCenter()
     private let store = ManagedSettingsStore()
-    
+
+    /// Task for debouncing selection saves
+    private var saveSelectionTask: Task<Void, Never>?
+
     private init() {
         if let savedSelection = SharedDefaults.selection {
             self.activitySelection = savedSelection
@@ -46,8 +49,24 @@ final class ScreenTimeManager: ObservableObject {
     }
     
     // MARK: - Selection
-    
+
+    /// Saves selection with debouncing to prevent rapid successive calls
+    /// when user toggles multiple apps quickly
     func saveSelection() {
+        saveSelectionTask?.cancel()
+        saveSelectionTask = Task {
+            // Debounce before actually saving
+            try? await Task.sleep(nanoseconds: AppConstants.selectionDebounceNanoseconds)
+            guard !Task.isCancelled else { return }
+
+            await MainActor.run {
+                performSaveSelection()
+            }
+        }
+    }
+
+    /// Immediately saves selection without debouncing (for programmatic use)
+    private func performSaveSelection() {
         SharedDefaults.selection = activitySelection
         // Also save tokens separately for lightweight extension access
         SharedDefaults.saveTokens(from: activitySelection)
@@ -94,8 +113,8 @@ final class ScreenTimeManager: ObservableObject {
         )
         
         var events: [DeviceActivityEvent.Name: DeviceActivityEvent] = [:]
-        // Track only meaningful thresholds to reduce churn (50%, 90%, 100%)
-        let checkpoints = [50, 90, 100]
+        // Track only meaningful thresholds to reduce churn
+        let checkpoints = AppConstants.monitoringThresholds
         
         for percentage in checkpoints {
             let thresholdSeconds = max(AppConstants.minimumThresholdSeconds, (limitSeconds * percentage) / 100)
@@ -124,8 +143,13 @@ final class ScreenTimeManager: ObservableObject {
         do {
             center.stopMonitoring()
             try center.startMonitoring(.daily, during: schedule, events: events)
+            #if DEBUG
+            print("[ScreenTimeManager] Started monitoring with \(events.count) events")
+            #endif
         } catch {
-            // Failed to start monitoring
+            #if DEBUG
+            print("[ScreenTimeManager] Failed to start monitoring: \(error.localizedDescription)")
+            #endif
         }
     }
 }

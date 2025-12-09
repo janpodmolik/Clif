@@ -4,15 +4,30 @@ import Foundation
 enum AppConstants {
     /// App Group identifier for sharing data between app and extensions
     static let appGroupIdentifier = "group.com.janpodmolik.Clif"
-    
+
     /// Default daily screen time limit in minutes
     static let defaultDailyLimitMinutes = 25
-    
+
     /// Minimum threshold in seconds for DeviceActivity events
     static let minimumThresholdSeconds = 6
-    
+
     /// Logging subsystem identifier
     static let loggingSubsystem = "com.janpodmolik.Clif"
+
+    // MARK: - Timing
+
+    /// Debounce delay for selection saves (in nanoseconds) - 300ms
+    static let selectionDebounceNanoseconds: UInt64 = 300_000_000
+
+    // MARK: - Monitoring
+
+    /// Percentage thresholds for monitoring events
+    static let monitoringThresholds = [50, 90, 100]
+
+    // MARK: - UI
+
+    /// Maximum apps to display initially in activity report
+    static let maxDisplayedApps = 8
 }
 
 /// Logging category identifiers

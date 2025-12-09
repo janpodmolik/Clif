@@ -10,18 +10,30 @@ import UserNotifications
 
 @main
 struct ClifApp: App {
-    
+
     init() {
-        requestNotificationPermission()
+        Task {
+            await Self.requestNotificationPermission()
+        }
     }
-    
+
     var body: some Scene {
         WindowGroup {
             ContentView()
         }
     }
-    
-    private func requestNotificationPermission() {
-        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { _, _ in }
+
+    private static func requestNotificationPermission() async {
+        do {
+            let granted = try await UNUserNotificationCenter.current()
+                .requestAuthorization(options: [.alert, .sound, .badge])
+            #if DEBUG
+            print("[ClifApp] Notification permission \(granted ? "granted" : "denied")")
+            #endif
+        } catch {
+            #if DEBUG
+            print("[ClifApp] Notification permission error: \(error.localizedDescription)")
+            #endif
+        }
     }
 }
