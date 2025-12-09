@@ -19,7 +19,11 @@ struct ClifApp: App {
 
     var body: some Scene {
         WindowGroup {
+            #if DEBUG
+            DebugView()
+            #else
             ContentView()
+            #endif
         }
     }
 
