@@ -3,9 +3,6 @@ import Combine
 import FamilyControls
 import DeviceActivity
 import ManagedSettings
-import os.log
-
-private let log = Logger(subsystem: AppConstants.loggingSubsystem, category: "ScreenTimeManager")
 
 extension DeviceActivityName {
     static let daily = DeviceActivityName("daily")
@@ -38,9 +35,7 @@ final class ScreenTimeManager: ObservableObject {
         do {
             try await AuthorizationCenter.shared.requestAuthorization(for: .individual)
             self.isAuthorized = true
-            log.info("✅ Screen Time authorization granted")
         } catch {
-            log.error("❌ Authorization failed: \(error.localizedDescription)")
             self.isAuthorized = false
         }
     }
@@ -54,6 +49,10 @@ final class ScreenTimeManager: ObservableObject {
     
     func saveSelection() {
         SharedDefaults.selection = activitySelection
+        // Also save tokens separately for lightweight extension access
+        SharedDefaults.saveTokens(from: activitySelection)
+        // Clear any existing shields before starting fresh monitoring
+        clearShield()
         startMonitoring()
     }
     
@@ -66,14 +65,12 @@ final class ScreenTimeManager: ObservableObject {
             except: Set()
         )
         store.shield.webDomains = activitySelection.webDomainTokens
-        log.info("🛡️ Shield applied")
     }
     
     func clearShield() {
         store.shield.applications = nil
         store.shield.applicationCategories = nil
         store.shield.webDomains = nil
-        log.info("🛡️ Shield cleared")
     }
     
     // MARK: - Monitoring
@@ -87,7 +84,6 @@ final class ScreenTimeManager: ObservableObject {
         let webCount = activitySelection.webDomainTokens.count
         
         guard appCount > 0 || catCount > 0 || webCount > 0 else {
-            log.warning("⚠️ No apps/categories selected, skipping monitoring")
             return
         }
         
@@ -98,10 +94,10 @@ final class ScreenTimeManager: ObservableObject {
         )
         
         var events: [DeviceActivityEvent.Name: DeviceActivityEvent] = [:]
+        // Track only meaningful thresholds to reduce churn (50%, 90%, 100%)
+        let checkpoints = [50, 90, 100]
         
-        // Create 10 thresholds (10% to 100%)
-        for i in 1...10 {
-            let percentage = i * 10
+        for percentage in checkpoints {
             let thresholdSeconds = max(AppConstants.minimumThresholdSeconds, (limitSeconds * percentage) / 100)
             let eventName = DeviceActivityEvent.Name("threshold_\(percentage)")
             
@@ -113,12 +109,23 @@ final class ScreenTimeManager: ObservableObject {
             )
         }
         
+        // Add 11th event: "1 minute remaining" notification
+        let oneMinuteBeforeLimitSeconds = max(0, limitSeconds - 60)
+        if oneMinuteBeforeLimitSeconds > 0 {
+            let lastMinuteEventName = DeviceActivityEvent.Name("lastMinute")
+            events[lastMinuteEventName] = DeviceActivityEvent(
+                applications: activitySelection.applicationTokens,
+                categories: activitySelection.categoryTokens,
+                webDomains: activitySelection.webDomainTokens,
+                threshold: DateComponents(minute: oneMinuteBeforeLimitSeconds / 60, second: oneMinuteBeforeLimitSeconds % 60)
+            )
+        }
+        
         do {
             center.stopMonitoring()
             try center.startMonitoring(.daily, during: schedule, events: events)
-            log.info("✅ Monitoring started: \(limitMinutes)min limit, \(appCount) apps, \(catCount) categories")
         } catch {
-            log.error("❌ Failed to start monitoring: \(error.localizedDescription)")
+            // Failed to start monitoring
         }
     }
 }

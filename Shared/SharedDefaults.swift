@@ -1,5 +1,6 @@
 import Foundation
 import FamilyControls
+import ManagedSettings
 
 /// Shared UserDefaults wrapper for communication between main app and extensions.
 /// Uses App Group container for cross-process data sharing.
@@ -58,5 +59,55 @@ struct SharedDefaults {
                 defaults?.removeObject(forKey: DefaultsKeys.selection)
             }
         }
+    }
+    
+    // MARK: - Lightweight token access for extensions (avoids full FamilyActivitySelection decode)
+    
+    static var applicationTokensData: Data? {
+        get { defaults?.data(forKey: "applicationTokens") }
+        set { defaults?.set(newValue, forKey: "applicationTokens") }
+    }
+    
+    static var categoryTokensData: Data? {
+        get { defaults?.data(forKey: "categoryTokens") }
+        set { defaults?.set(newValue, forKey: "categoryTokens") }
+    }
+    
+    static var webDomainTokensData: Data? {
+        get { defaults?.data(forKey: "webDomainTokens") }
+        set { defaults?.set(newValue, forKey: "webDomainTokens") }
+    }
+    
+    static func saveTokens(from selection: FamilyActivitySelection) {
+        applicationTokensData = try? PropertyListEncoder().encode(selection.applicationTokens)
+        categoryTokensData = try? PropertyListEncoder().encode(selection.categoryTokens)
+        webDomainTokensData = try? PropertyListEncoder().encode(selection.webDomainTokens)
+    }
+    
+    static func loadApplicationTokens() -> Set<ApplicationToken>? {
+        guard let data = applicationTokensData else { return nil }
+        return try? PropertyListDecoder().decode(Set<ApplicationToken>.self, from: data)
+    }
+    
+    static func loadCategoryTokens() -> Set<ActivityCategoryToken>? {
+        guard let data = categoryTokensData else { return nil }
+        return try? PropertyListDecoder().decode(Set<ActivityCategoryToken>.self, from: data)
+    }
+    
+    static func loadWebDomainTokens() -> Set<WebDomainToken>? {
+        guard let data = webDomainTokensData else { return nil }
+        return try? PropertyListDecoder().decode(Set<WebDomainToken>.self, from: data)
+    }
+    
+    // MARK: - Notifications
+    
+    static var notification90Sent: Bool {
+        get { defaults?.bool(forKey: DefaultsKeys.notification90Sent) ?? false }
+        set { defaults?.set(newValue, forKey: DefaultsKeys.notification90Sent) }
+    }
+    
+    static var notificationLastMinuteSent: Bool {
+        get { defaults?.bool(forKey: DefaultsKeys.notificationLastMinuteSent) ?? false }
+        set { defaults?.set(newValue, forKey: DefaultsKeys.notificationLastMinuteSent) }
     }
 }

@@ -9,14 +9,26 @@ class ShieldConfigurationExtension: ShieldConfigurationDataSource {
     
     private func getShieldConfiguration() -> ShieldConfiguration {
         let progress = SharedDefaults.currentProgress
+        let dailyLimit = SharedDefaults.dailyLimitMinutes
         let phase = ClifPhase.from(progress: progress)
+        
+        // Calculate remaining time
+        let usedMinutes = (dailyLimit * progress) / 100
+        let remainingMinutes = max(0, dailyLimit - usedMinutes)
+        
+        let subtitleText: String
+        if remainingMinutes > 0 {
+            subtitleText = "\(remainingMinutes) min remaining (\(progress)%)"
+        } else {
+            subtitleText = "Limit reached (\(progress)%)"
+        }
         
         return ShieldConfiguration(
             backgroundBlurStyle: .systemMaterial,
             backgroundColor: UIColor.white,
             icon: UIImage(named: phase.imageName),
             title: ShieldConfiguration.Label(text: "Clif", color: .black),
-            subtitle: ShieldConfiguration.Label(text: "\(phase.message) (\(progress)%)", color: .gray),
+            subtitle: ShieldConfiguration.Label(text: subtitleText, color: .gray),
             primaryButtonLabel: ShieldConfiguration.Label(text: "Open Anyway", color: .white),
             primaryButtonBackgroundColor: .systemBlue,
             secondaryButtonLabel: nil

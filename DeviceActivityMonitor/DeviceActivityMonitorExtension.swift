@@ -7,130 +7,106 @@
 
 import DeviceActivity
 import FamilyControls
-import Foundation
-import os.log
+import ManagedSettings
+import UserNotifications
 
 /// Background extension that monitors device activity and updates progress.
-/// Runs in a separate process - use os.log for debugging visibility.
+/// Runs in a separate process with very limited memory (~6MB).
+/// Keep this as lightweight as possible!
 class DeviceActivityMonitorExtension: DeviceActivityMonitor {
     
-    private let logger = Logger(
-        subsystem: LogCategories.extensionSubsystem,
-        category: "Monitor"
-    )
-    
-    // MARK: - Debug Logging
-    
-    #if DEBUG
-    /// Writes debug messages to a file in the shared container for debugging.
-    /// Only available in DEBUG builds.
-    private func writeDebugLog(_ message: String) {
-        let fileManager = FileManager.default
-        guard let containerURL = fileManager.containerURL(
-            forSecurityApplicationGroupIdentifier: AppConstants.appGroupIdentifier
-        ) else {
-            logger.error("Cannot get container URL for debug logging")
-            return
-        }
-        
-        let logFileURL = containerURL.appendingPathComponent("extension_log.txt")
-        let timestamp = ISO8601DateFormatter().string(from: Date())
-        let logEntry = "[\(timestamp)] \(message)\n"
-        
-        do {
-            if fileManager.fileExists(atPath: logFileURL.path) {
-                let handle = try FileHandle(forWritingTo: logFileURL)
-                handle.seekToEndOfFile()
-                if let data = logEntry.data(using: .utf8) {
-                    handle.write(data)
-                }
-                handle.closeFile()
-            } else {
-                try logEntry.write(to: logFileURL, atomically: true, encoding: .utf8)
-            }
-        } catch {
-            logger.error("Failed to write debug log: \(error.localizedDescription)")
-        }
-        
-        // Also log via os.log for Console.app visibility
-        logger.info("\(message)")
-    }
-    #else
-    private func writeDebugLog(_ message: String) {
-        // In release builds, only log essential info via os.log
-        logger.info("\(message)")
-    }
-    #endif
+    private let store = ManagedSettingsStore()
     
     // MARK: - DeviceActivityMonitor Overrides
     
     override func intervalDidStart(for activity: DeviceActivityName) {
         super.intervalDidStart(for: activity)
         
-        writeDebugLog("Interval started for activity: \(activity.rawValue)")
+        // Clear shields at start of new day
+        store.shield.applications = nil
+        store.shield.applicationCategories = nil
+        store.shield.webDomains = nil
         
-        #if DEBUG
-        // Log selection details for debugging
-        if let selection = SharedDefaults.selection {
-            writeDebugLog("Selection: \(selection.applicationTokens.count) apps, \(selection.categoryTokens.count) categories")
-        } else {
-            writeDebugLog("Warning: Cannot read selection from SharedDefaults")
-        }
-        writeDebugLog("Daily limit: \(SharedDefaults.dailyLimitMinutes) minutes")
-        #endif
-        
-        // Reset progress at the start of the monitoring interval
+        // Reset progress
         SharedDefaults.currentProgress = 0
-        SharedDefaults.lastMonitorUpdate = Date()
+        SharedDefaults.notification90Sent = false
+        SharedDefaults.notificationLastMinuteSent = false
     }
     
     override func intervalDidEnd(for activity: DeviceActivityName) {
         super.intervalDidEnd(for: activity)
-        writeDebugLog("Interval ended for activity: \(activity.rawValue)")
     }
     
     override func eventDidReachThreshold(_ event: DeviceActivityEvent.Name, activity: DeviceActivityName) {
         super.eventDidReachThreshold(event, activity: activity)
         
-        writeDebugLog("Threshold reached: \(event.rawValue)")
+        let eventName = event.rawValue
         
         // Parse threshold percentage from event name "threshold_X"
-        guard let thresholdValue = parseThresholdValue(from: event.rawValue) else {
-            logger.warning("Could not parse threshold from event: \(event.rawValue)")
+        if eventName.hasPrefix("threshold_"),
+           let valueString = eventName.split(separator: "_").last,
+           let thresholdValue = Int(valueString) {
+            
+            SharedDefaults.currentProgress = thresholdValue
+            
+            // Activate shield at 90% or 100%
+            if thresholdValue >= 90 {
+                activateShield()
+            }
+            
+            // Send notification at 90% (only once)
+            if thresholdValue == 90 && !SharedDefaults.notification90Sent {
+                sendNotification(
+                    title: "90% Screen Time Used",
+                    body: "You're approaching your daily limit."
+                )
+                SharedDefaults.notification90Sent = true
+            }
             return
         }
         
-        SharedDefaults.currentProgress = thresholdValue
-        SharedDefaults.lastMonitorUpdate = Date()
-        
-        writeDebugLog("Progress updated to \(thresholdValue)%")
-    }
-    
-    override func intervalWillStartWarning(for activity: DeviceActivityName) {
-        super.intervalWillStartWarning(for: activity)
-        writeDebugLog("Interval will start warning for: \(activity.rawValue)")
-    }
-    
-    override func intervalWillEndWarning(for activity: DeviceActivityName) {
-        super.intervalWillEndWarning(for: activity)
-        writeDebugLog("Interval will end warning for: \(activity.rawValue)")
-    }
-    
-    override func eventWillReachThresholdWarning(_ event: DeviceActivityEvent.Name, activity: DeviceActivityName) {
-        super.eventWillReachThresholdWarning(event, activity: activity)
-        writeDebugLog("Threshold warning for: \(event.rawValue)")
+        // Handle "lastMinute" event
+        if eventName == "lastMinute" && !SharedDefaults.notificationLastMinuteSent {
+            sendNotification(
+                title: "1 Minute Remaining",
+                body: "Your screen time limit is almost up."
+            )
+            SharedDefaults.notificationLastMinuteSent = true
+            return
+        }
     }
     
     // MARK: - Helpers
     
-    /// Parses threshold percentage from event name format "threshold_X"
-    private func parseThresholdValue(from eventName: String) -> Int? {
-        guard eventName.hasPrefix("threshold_"),
-              let valueString = eventName.components(separatedBy: "_").last,
-              let value = Int(valueString) else {
-            return nil
+    /// Sends a local notification
+    private func sendNotification(title: String, body: String) {
+        let content = UNMutableNotificationContent()
+        content.title = title
+        content.body = body
+        content.sound = .default
+        
+        let request = UNNotificationRequest(
+            identifier: UUID().uuidString,
+            content: content,
+            trigger: nil
+        )
+        
+        UNUserNotificationCenter.current().add(request, withCompletionHandler: nil)
+    }
+    
+    /// Activates shield for selected apps/categories
+    private func activateShield() {
+        // Use lightweight token loading instead of full FamilyActivitySelection decode
+        if let appTokens = SharedDefaults.loadApplicationTokens(), !appTokens.isEmpty {
+            store.shield.applications = appTokens
         }
-        return value
+        
+        if let catTokens = SharedDefaults.loadCategoryTokens(), !catTokens.isEmpty {
+            store.shield.applicationCategories = .specific(catTokens, except: Set())
+        }
+        
+        if let webTokens = SharedDefaults.loadWebDomainTokens(), !webTokens.isEmpty {
+            store.shield.webDomains = webTokens
+        }
     }
 }
-

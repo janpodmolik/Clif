@@ -98,7 +98,7 @@ struct ContentView: View {
             Text("Daily Limit: \(formattedLimit)")
                 .font(.headline)
             
-            Slider(value: $dailyLimit, in: 5...600, step: 5) {
+            Slider(value: $dailyLimit, in: sliderRange, step: sliderStep) {
                 Text("Limit")
             } onEditingChanged: { isEditing in
                 if !isEditing {
@@ -111,7 +111,13 @@ struct ContentView: View {
         .background(Color(.secondarySystemBackground))
         .cornerRadius(12)
         .onAppear {
-            dailyLimit = Double(dailyLimitMinutes)
+            dailyLimit = clampedDailyLimit(from: dailyLimitMinutes)
+            #if DEBUG
+            if dailyLimitMinutes == AppConstants.defaultDailyLimitMinutes {
+                dailyLimitMinutes = Int(debugDefaultLimit)
+                dailyLimit = debugDefaultLimit
+            }
+            #endif
         }
     }
     
@@ -187,6 +193,22 @@ struct ContentView: View {
         let minutes = totalSeconds / 60
         let seconds = totalSeconds % 60
         return "⏱️ ~\(minutes)m \(seconds)s / \(dailyLimitMinutes)m"
+    }
+    
+    // MARK: - Limit configuration
+    
+    #if DEBUG
+    private var sliderRange: ClosedRange<Double> { 1...30 } // fast debug iteration
+    private var sliderStep: Double { 1 }
+    private var debugDefaultLimit: Double { 1 }
+    #else
+    private var sliderRange: ClosedRange<Double> { 5...240 } // 4 hours max
+    private var sliderStep: Double { 5 }
+    #endif
+    
+    private func clampedDailyLimit(from minutes: Int) -> Double {
+        let value = Double(minutes)
+        return min(max(value, sliderRange.lowerBound), sliderRange.upperBound)
     }
     
     @State private var reportFilter: DeviceActivityFilter?

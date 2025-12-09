@@ -1,11 +1,8 @@
 import SwiftUI
 import Supabase
 import Auth
-import os.log
 
 // TODO: Pokračovat s implementací autentizace (login/signup flow, session persistence)
-
-private let log = Logger(subsystem: AppConstants.loggingSubsystem, category: "SupabaseTestView")
 
 struct SupabaseTestView: View {
     
@@ -193,7 +190,6 @@ extension SupabaseTestView {
         
         do {
             try await client.auth.signIn(email: email, password: password)
-            log.info("✅ Signed in")
         } catch {
             handleError(error)
         }
@@ -205,7 +201,7 @@ extension SupabaseTestView {
         
         do {
             let response = try await client.auth.signUp(email: email, password: password)
-            log.info("✅ Signed up: \(response.user.id)")
+            _ = response.user.id
         } catch {
             handleError(error)
         }
@@ -214,7 +210,6 @@ extension SupabaseTestView {
     private func signOut() async {
         do {
             try await client.auth.signOut()
-            log.info("✅ Signed out")
         } catch {
             handleError(error)
         }
@@ -222,7 +217,6 @@ extension SupabaseTestView {
     
     private func fetchProfile() async {
         guard let userId = client.auth.currentUser?.id else {
-            log.warning("⚠️ No user ID")
             return
         }
         
@@ -239,9 +233,7 @@ extension SupabaseTestView {
                 .value
             
             profile = fetchedProfile
-            log.info("✅ Profile fetched: \(fetchedProfile.username)")
         } catch {
-            log.info("ℹ️ No profile found")
             profile = nil
         }
     }
@@ -261,7 +253,6 @@ extension SupabaseTestView {
                 .insert(["id": userId.uuidString, "username": username])
                 .execute()
             
-            log.info("✅ Profile created: \(username)")
             await fetchProfile()
         } catch {
             handleError(error)
@@ -269,7 +260,6 @@ extension SupabaseTestView {
     }
     
     private func handleError(_ error: Error) {
-        log.error("❌ Error: \(error.localizedDescription)")
         errorMessage = error.localizedDescription
         showError = true
     }
