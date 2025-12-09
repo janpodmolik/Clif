@@ -40,39 +40,41 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
     override func eventDidReachThreshold(_ event: DeviceActivityEvent.Name, activity: DeviceActivityName) {
         super.eventDidReachThreshold(event, activity: activity)
         
-        let eventName = event.rawValue
-        
-        // Parse threshold percentage from event name "threshold_X"
-        if eventName.hasPrefix("threshold_"),
-           let valueString = eventName.split(separator: "_").last,
-           let thresholdValue = Int(valueString) {
+        // Use autoreleasepool to immediately free memory in this memory-constrained extension
+        autoreleasepool {
+            let eventName = event.rawValue
             
-            SharedDefaults.currentProgress = thresholdValue
-            
-            // Activate shield at 90% or 100%
-            if thresholdValue >= 90 {
-                activateShield()
+            // Parse threshold percentage from event name "threshold_X"
+            if eventName.hasPrefix("threshold_"),
+               let valueString = eventName.split(separator: "_").last,
+               let thresholdValue = Int(valueString) {
+                
+                SharedDefaults.currentProgress = thresholdValue
+                
+                // Activate shield at 90% or 100%
+                if thresholdValue >= 90 {
+                    activateShield()
+                }
+                
+                // Send notification at 90% (only once)
+                if thresholdValue == 90 && !SharedDefaults.notification90Sent {
+                    sendNotification(
+                        title: "90% Screen Time Used",
+                        body: "You're approaching your daily limit."
+                    )
+                    SharedDefaults.notification90Sent = true
+                }
+                return
             }
             
-            // Send notification at 90% (only once)
-            if thresholdValue == 90 && !SharedDefaults.notification90Sent {
+            // Handle "lastMinute" event
+            if eventName == "lastMinute" && !SharedDefaults.notificationLastMinuteSent {
                 sendNotification(
-                    title: "90% Screen Time Used",
-                    body: "You're approaching your daily limit."
+                    title: "1 Minute Remaining",
+                    body: "Your screen time limit is almost up."
                 )
-                SharedDefaults.notification90Sent = true
+                SharedDefaults.notificationLastMinuteSent = true
             }
-            return
-        }
-        
-        // Handle "lastMinute" event
-        if eventName == "lastMinute" && !SharedDefaults.notificationLastMinuteSent {
-            sendNotification(
-                title: "1 Minute Remaining",
-                body: "Your screen time limit is almost up."
-            )
-            SharedDefaults.notificationLastMinuteSent = true
-            return
         }
     }
     
@@ -96,17 +98,20 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
     
     /// Activates shield for selected apps/categories
     private func activateShield() {
-        // Use lightweight token loading instead of full FamilyActivitySelection decode
-        if let appTokens = SharedDefaults.loadApplicationTokens(), !appTokens.isEmpty {
-            store.shield.applications = appTokens
-        }
-        
-        if let catTokens = SharedDefaults.loadCategoryTokens(), !catTokens.isEmpty {
-            store.shield.applicationCategories = .specific(catTokens, except: Set())
-        }
-        
-        if let webTokens = SharedDefaults.loadWebDomainTokens(), !webTokens.isEmpty {
-            store.shield.webDomains = webTokens
+        // Use autoreleasepool to minimize memory footprint
+        autoreleasepool {
+            // Use lightweight token loading instead of full FamilyActivitySelection decode
+            if let appTokens = SharedDefaults.loadApplicationTokens(), !appTokens.isEmpty {
+                store.shield.applications = appTokens
+            }
+            
+            if let catTokens = SharedDefaults.loadCategoryTokens(), !catTokens.isEmpty {
+                store.shield.applicationCategories = .specific(catTokens, except: Set())
+            }
+            
+            if let webTokens = SharedDefaults.loadWebDomainTokens(), !webTokens.isEmpty {
+                store.shield.webDomains = webTokens
+            }
         }
     }
 }
