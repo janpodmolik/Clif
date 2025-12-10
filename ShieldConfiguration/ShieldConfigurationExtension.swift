@@ -29,9 +29,9 @@ class ShieldConfigurationExtension: ShieldConfigurationDataSource {
             icon: UIImage(named: phase.imageName),
             title: ShieldConfiguration.Label(text: "Clif", color: .black),
             subtitle: ShieldConfiguration.Label(text: subtitleText, color: .gray),
-            primaryButtonLabel: ShieldConfiguration.Label(text: "Open Anyway", color: .white),
-            primaryButtonBackgroundColor: .systemBlue,
-            secondaryButtonLabel: nil
+            primaryButtonLabel: ShieldConfiguration.Label(text: "Close App", color: .white),
+            primaryButtonBackgroundColor: .systemGray,
+            secondaryButtonLabel: ShieldConfiguration.Label(text: "Unlock", color: .systemBlue)
         )
     }
     

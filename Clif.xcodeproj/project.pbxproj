@@ -107,6 +107,13 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		B44706472EE95EAE00174BFB /* Exceptions for "Clif" folder in "Clif" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = B4159A312EE56ED700BAE49D /* Clif */;
+		};
 		B458623D2EE5F6F80088CB78 /* Exceptions for "DeviceActivityReport" folder in "DeviceActivityReport" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
@@ -140,6 +147,9 @@
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		B4159A342EE56ED700BAE49D /* Clif */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				B44706472EE95EAE00174BFB /* Exceptions for "Clif" folder in "Clif" target */,
+			);
 			path = Clif;
 			sourceTree = "<group>";
 		};
@@ -689,6 +699,7 @@
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Clif/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Clif;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
@@ -739,6 +750,7 @@
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Clif/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Clif;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
