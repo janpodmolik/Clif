@@ -332,3 +332,16 @@ struct DebugView: View {
     DebugView()
 }
 #endif
+
+// MARK: - Debug Overlay
+
+extension View {
+    @ViewBuilder
+    func withDebugOverlay() -> some View {
+        #if DEBUG
+        modifier(DebugOverlayModifier())
+        #else
+        self
+        #endif
+    }
+}

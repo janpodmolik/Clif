@@ -1,0 +1,45 @@
+import SwiftUI
+
+struct DeepLinkModifier: ViewModifier {
+    func body(content: Content) -> some View {
+        content
+            .onOpenURL { url in
+                DeepLinkHandler.handle(url)
+            }
+            .onReceive(NotificationCenter.default.publisher(for: .deepLinkReceived)) { notification in
+                if let url = notification.object as? URL {
+                    DeepLinkHandler.handle(url)
+                }
+            }
+    }
+}
+
+extension View {
+    func withDeepLinkHandling() -> some View {
+        modifier(DeepLinkModifier())
+    }
+}
+
+private enum DeepLinkHandler {
+    static func handle(_ url: URL) {
+        #if DEBUG
+        print("[DeepLink] Received: \(url)")
+        #endif
+
+        guard url.scheme == "clif" else { return }
+
+        switch url.host {
+        case "shield":
+            #if DEBUG
+            print("[DeepLink] Opened from shield notification")
+            #endif
+            // TODO: Navigate to session tracking view when implemented
+        default:
+            break
+        }
+    }
+}
+
+extension Notification.Name {
+    static let deepLinkReceived = Notification.Name("deepLinkReceived")
+}

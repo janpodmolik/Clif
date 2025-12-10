@@ -257,6 +257,38 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
+		B43998422EE9FCBF0049445F /* Constants */ = {
+			isa = PBXGroup;
+			children = (
+				B45862142EE5B92C0088CB78 /* Constants.swift */,
+			);
+			path = Constants;
+			sourceTree = "<group>";
+		};
+		B43998432EE9FCC80049445F /* Storage */ = {
+			isa = PBXGroup;
+			children = (
+				B4924AF52EE5807E0033475C /* SharedDefaults.swift */,
+			);
+			path = Storage;
+			sourceTree = "<group>";
+		};
+		B43998442EE9FCD90049445F /* Reports */ = {
+			isa = PBXGroup;
+			children = (
+				B45862422EE5FAF60088CB78 /* ActivityReportContext.swift */,
+			);
+			path = Reports;
+			sourceTree = "<group>";
+		};
+		B43998452EE9FCE40049445F /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				B4924AF42EE5807E0033475C /* ClifModel.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
 		B4924ACA2EE57ED90033475C /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
@@ -270,10 +302,10 @@
 		B4924AF62EE5807E0033475C /* Shared */ = {
 			isa = PBXGroup;
 			children = (
-				B45862422EE5FAF60088CB78 /* ActivityReportContext.swift */,
-				B4924AF42EE5807E0033475C /* ClifModel.swift */,
-				B4924AF52EE5807E0033475C /* SharedDefaults.swift */,
-				B45862142EE5B92C0088CB78 /* Constants.swift */,
+				B43998442EE9FCD90049445F /* Reports */,
+				B43998452EE9FCE40049445F /* Models */,
+				B43998432EE9FCC80049445F /* Storage */,
+				B43998422EE9FCBF0049445F /* Constants */,
 			);
 			path = Shared;
 			sourceTree = "<group>";
