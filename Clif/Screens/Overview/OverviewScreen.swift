@@ -1,16 +1,11 @@
-//
-//  OverviewView.swift
-//  Clif
-//
-
 import SwiftUI
 
-struct OverviewView: View {
+struct OverviewScreen: View {
     var body: some View {
         Text("Přehled")
     }
 }
 
 #Preview {
-    OverviewView()
+    OverviewScreen()
 }

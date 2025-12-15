@@ -1,29 +1,27 @@
-//
-//  ContentView.swift
-//  Clif
-//
-//  Created by Jan Podmolík on 07.12.2025.
-//
-
 import SwiftUI
 
 struct ContentView: View {
+    @AppStorage("isDarkModeEnabled")
+    private var isDarkModeEnabled: Bool = false
+
     var body: some View {
         TabView {
-            Tab("Útes", systemImage: "arrowtriangle.down.fill") {
-                CliffView()
+            Tab("Home", systemImage: "house.fill") {
+                HomeScreen()
             }
             Tab("Přísný mód", systemImage: "lock.shield.fill") {
-                StrictModeView()
+                StrictModeScreen()
             }
             Tab("Přehled", systemImage: "chart.bar.fill") {
-                OverviewView()
+                OverviewScreen()
             }
             Tab("Profil", systemImage: "person") {
-                ProfileView()
+                ProfileScreen()
             }
         }
+        .tint(.primary)
         .modifier(TabBarMinimizeModifier())
+        .preferredColorScheme(isDarkModeEnabled ? .dark : .light)
     }
 }
 

@@ -2,16 +2,16 @@
 
 ## File Creation Policy
 
-**NEVER create new files automatically.**
-
-When a new file needs to be created:
-1. Stop work immediately
-2. Tell the user which file you want to create
-3. Explain the purpose of the file
-4. Ask which target it should belong to (e.g., main app, DeviceActivityReport extension, etc.)
-5. Wait for explicit approval before creating the file
-
-This applies to all file types: Swift, entitlements, plist, resources, etc.
+When creating new Swift files, always remove the default Xcode header comment block:
+```swift
+//
+//  FileName.swift
+//  Clif
+//
+//  Created by Jan Podmolík on XX.XX.XXXX.
+//
+```
+Files should start directly with `import` statements.
 
 ## External Libraries & Documentation
 
@@ -32,3 +32,99 @@ Guidelines:
 - Use @Observable (iOS 17+) or ObservableObject for reactive state
 - Keep views simple - they should primarily handle UI rendering
 - Avoid unnecessary abstraction layers (no ViewModels, Coordinators unless explicitly needed)
+
+## Liquid Glass (iOS 26+)
+
+**Filozofie:** Liquid Glass je navigační vrstva - obsah je dole, glass komponenty "plavou" nahoře. Nepoužívat pro hlavní obsah, ale pro kontrolní prvky (toolbary, tlačítka, karty).
+
+### API
+```swift
+// Základní použití
+.glassEffect(.regular, in: RoundedRectangle(cornerRadius: 16))
+
+// Interaktivní (pro tlačítka, tappable elementy)
+.glassEffect(.regular.interactive(), in: .capsule)
+
+// S tintem (POUZE se sémantikou - primární akce, stav)
+.glassEffect(.regular.tint(.blue), in: .circle)
+```
+
+### Glass Varianty
+- `.regular` - standardní blur s reflexí
+- `.clear` - minimální blur pro subtle efekty
+- `.regular.interactive()` - reaguje na touch/hover
+
+### Button Styles
+```swift
+.buttonStyle(.glass)           // sekundární akce
+.buttonStyle(.glassProminent)  // primární akce
+```
+
+### GlassEffectContainer
+Použít když máme více glass elementů blízko sebe (glass nemůže samplovat jiný glass):
+```swift
+GlassEffectContainer {
+    HStack {
+        Button("A") { }.glassEffect()
+        Button("B") { }.glassEffect()
+    }
+}
+```
+
+### Morphing animace
+```swift
+@Namespace var namespace
+
+// Element 1
+.glassEffectID("button", in: namespace)
+
+// Element 2 (při změně stavu se plynule transformuje)
+.glassEffectID("button", in: namespace)
+```
+
+### CO NEDĚLAT
+- ❌ Nepřidávat `.blur`, `.opacity`, `.background` na glass view
+- ❌ Nedávat solid barvy (`Color.white`, `Color.black`) pod glass
+- ❌ Nepoužívat `.tint` jen pro dekoraci - pouze se sémantikou
+- ❌ Nepřidávat vlastní background na toolbary (mají automaticky glass)
+- ❌ Nemíchat `.regular` a `.clear` ve stejné skupině kontrolů
+
+### Fallback pro iOS < 26
+```swift
+if #available(iOS 26.0, *) {
+    content.glassEffect(.regular, in: shape)
+} else {
+    content
+        .background(.ultraThinMaterial)
+        .clipShape(shape)
+}
+```
+
+### Accessibility
+- Ověřit s Increase Contrast, Reduce Transparency, Reduce Motion
+- Aplikovat glass podmíněně v low power mode nebo při accessibility settings
+
+### Container Concentricity (Vnořené zaoblení)
+
+**Princip:** Vnořené elementy sdílí stejný střed zaoblení s rodičem. Vnitřní radius = vnější radius - padding.
+
+```swift
+// Automatické koncentrické zaoblení
+.glassEffect(.regular, in: .rect(cornerRadius: .containerConcentric))
+
+// S minimálním fallback radius
+.rect(corners: .concentric(minimum: 12), isUniform: true)
+
+// Definice container shape pro potomky
+.containerShape(.rect(cornerRadius: 24))
+```
+
+**Kdy použít:**
+- Tlačítka/badges uvnitř karet
+- Vnořené glass elementy
+- Komponenty které fungují standalone i nested
+
+**Pravidla:**
+- Vyhýbat se "pinched" (příliš malé) nebo "flared" (příliš velké) vnitřním rohům
+- `isUniform: true` pro off-center elementy (všechny rohy stejné)
+- Dostatečný padding mezi containerem a vnitřními elementy
