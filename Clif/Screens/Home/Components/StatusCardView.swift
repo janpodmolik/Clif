@@ -71,7 +71,7 @@ struct StatusCardContentView: View {
 
 #Preview {
     ZStack {
-        Image("home")
+        Image("cliff")
             .resizable()
             .scaledToFill()
             .ignoresSafeArea()

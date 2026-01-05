@@ -1,3 +1,34 @@
+# Clif - Screen Time Management App
+
+## Repository Architecture
+
+- `Clif/` - Main iOS app (iOS 18+)
+  - `App/` - Entry point, deep linking
+  - `Managers/` - Business logic (ScreenTimeManager)
+  - `Screens/` - UI screens (Home, Profile, Overview, StrictMode)
+  - `Auth/Supabase/` - Backend integration
+- `Shared/` - Cross-target code (Constants, Models, Storage)
+- `DeviceActivityMonitor/` - Extension for threshold monitoring
+- `DeviceActivityReport/` - Extension for activity reports
+- `ShieldConfiguration/` - Extension for shield UI
+- `ShieldAction/` - Extension for shield actions
+
+## Common Commands
+
+- Build: `xcodebuild -scheme Clif -destination 'platform=iOS Simulator'`
+- Run: Open in Xcode, Cmd+R
+
+## Dependencies
+
+- Supabase v2.38.0 (only external dependency)
+
+## AI Rules
+
+For detailed domain-specific rules, see `ai-rules/` folder.
+Load rules on-demand based on the task at hand.
+
+---
+
 # Claude Code Project Rules
 
 ## File Creation Policy

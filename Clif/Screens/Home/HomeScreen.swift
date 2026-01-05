@@ -15,7 +15,7 @@ struct HomeScreen: View {
                     DayBackgroundView()
                 }
 
-                Image("home")
+                Image("cliff")
                     .resizable()
                     .scaledToFit()
                     .frame(height: geometry.size.height * 0.8)
