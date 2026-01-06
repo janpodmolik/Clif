@@ -2,10 +2,16 @@
 #include <SwiftUI/SwiftUI_Metal.h>
 using namespace metal;
 
-/// Wind distortion shader - spodek stabilní, vrchol se ohýbá
-/// direction: 1.0 = doprava, -1.0 = doleva
-/// bendCurve: ovládá křivku ohybu (1.5 = jemný, 2.0 = střední, 3.0 = prudký)
-/// swayAmount: míra horizontálního posunu celého peta (0 = žádný, 1 = plný)
+/// Wind distortion shader - bottom stays stable, top bends with wind
+///
+/// Parameters:
+/// - position: Current pixel position
+/// - time: Animation time for wave calculation
+/// - intensity: Wind strength (0 = none, 1 = normal, 2 = strong)
+/// - direction: Wind direction (1.0 = right, -1.0 = left)
+/// - bendCurve: Controls bend curve steepness (1.5 = gentle, 2.0 = medium, 3.0 = steep)
+/// - swayAmount: Horizontal sway amount for entire view (0 = none, 1 = full)
+/// - size: View size for normalization
 [[ stitchable ]] float2 windDistortion(
     float2 position,
     float time,
@@ -15,30 +21,26 @@ using namespace metal;
     float swayAmount,
     float2 size
 ) {
-    // Normalizovaná Y pozice (0 = vrchol, 1 = spodek v SwiftUI souřadnicích)
+    // Normalized Y position (0 = top, 1 = bottom in SwiftUI coordinates)
     float normalizedY = 1.0 - (position.y / size.y);
     normalizedY = clamp(normalizedY, 0.0, 1.0);
 
-    // Konfigurovatelný falloff - spodek se nehýbe, vrchol maximálně
+    // Configurable falloff - bottom stays still, top moves most
     float bendFactor = pow(normalizedY, bendCurve);
 
-    // Kombinace sinusových vln pro organický pohyb
+    // Combined sine waves for organic movement
     float wave = sin(time * 1.5) * 0.6 + sin(time * 2.3) * 0.3 + sin(time * 0.7) * 0.1;
 
-    // Maximální vychýlení (škálováno intenzitou a směrem)
-    float maxOffset = size.x * 0.5 * intensity * direction;
+    // Maximum offset (scaled by intensity and direction) - subtle effect
+    float maxOffset = size.x * 0.15 * intensity * direction;
 
-    // Bend efekt (vrchol se ohýbá)
+    // Bend effect (top bends)
     float bendOffset = wave * bendFactor * maxOffset;
 
-    // Sway efekt (celý pet se posouvá)
+    // Sway effect (entire view shifts horizontally)
     float swayOffset = wave * maxOffset * swayAmount * 0.3;
 
     float xOffset = bendOffset + swayOffset;
 
-    // Vertikální komprese - při ohybu se pet lehce zmáčkne
-    float compressionFactor = abs(bendOffset) / (abs(maxOffset) + 0.001);
-    float yOffset = compressionFactor * bendFactor * size.y * 0.03;
-
-    return float2(position.x + xOffset, position.y + yOffset);
+    return float2(position.x + xOffset, position.y);
 }
