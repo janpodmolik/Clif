@@ -15,9 +15,13 @@ struct HomeScreen: View {
                 }
 
                 // Cliff with pet
-                CliffView(screenHeight: geometry.size.height)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
-                    .ignoresSafeArea(.container, edges: .bottom)
+                CliffView(
+                    screenHeight: geometry.size.height,
+                    evolution: PlantEvolution.phase1,
+                    windLevel: .low
+                )
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
+                .ignoresSafeArea(.container, edges: .bottom)
 
                 // Status card
                 StatusCardContentView(

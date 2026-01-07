@@ -25,6 +25,21 @@
 		B4924AFA2EE5807E0033475C /* ClifModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4924AF42EE5807E0033475C /* ClifModel.swift */; };
 		B4924AFB2EE5807E0033475C /* SharedDefaults.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4924AF52EE5807E0033475C /* SharedDefaults.swift */; };
 		B4924AFC2EE5807E0033475C /* ClifModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4924AF42EE5807E0033475C /* ClifModel.swift */; };
+		B493878D2F0E39F40090C730 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B493878C2F0E39F40090C730 /* Assets.xcassets */; };
+		B493878E2F0E39F40090C730 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B493878C2F0E39F40090C730 /* Assets.xcassets */; };
+		B493878F2F0E39F40090C730 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B493878C2F0E39F40090C730 /* Assets.xcassets */; };
+		B49387902F0E39F40090C730 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B493878C2F0E39F40090C730 /* Assets.xcassets */; };
+		B49387912F0E39F40090C730 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B493878C2F0E39F40090C730 /* Assets.xcassets */; };
+		B49387982F0E428B0090C730 /* PlantEvolution.swift in Sources */ = {isa = PBXBuildFile; fileRef = B49387942F0E428B0090C730 /* PlantEvolution.swift */; };
+		B49387992F0E428B0090C730 /* WindConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = B49387972F0E428B0090C730 /* WindConfig.swift */; };
+		B493879A2F0E428B0090C730 /* EvolutionType.swift in Sources */ = {isa = PBXBuildFile; fileRef = B49387932F0E428B0090C730 /* EvolutionType.swift */; };
+		B493879B2F0E428B0090C730 /* WindLevel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B49387952F0E428B0090C730 /* WindLevel.swift */; };
+		B493879C2F0E428B0090C730 /* BlobEvolution.swift in Sources */ = {isa = PBXBuildFile; fileRef = B49387922F0E428B0090C730 /* BlobEvolution.swift */; };
+		B493879D2F0E428B0090C730 /* PlantEvolution.swift in Sources */ = {isa = PBXBuildFile; fileRef = B49387942F0E428B0090C730 /* PlantEvolution.swift */; };
+		B493879E2F0E428B0090C730 /* WindConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = B49387972F0E428B0090C730 /* WindConfig.swift */; };
+		B493879F2F0E428B0090C730 /* EvolutionType.swift in Sources */ = {isa = PBXBuildFile; fileRef = B49387932F0E428B0090C730 /* EvolutionType.swift */; };
+		B49387A02F0E428B0090C730 /* WindLevel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B49387952F0E428B0090C730 /* WindLevel.swift */; };
+		B49387A12F0E428B0090C730 /* BlobEvolution.swift in Sources */ = {isa = PBXBuildFile; fileRef = B49387922F0E428B0090C730 /* BlobEvolution.swift */; };
 		B4C4C0922EE7FECE00E469E8 /* ManagedSettings.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B4924ADF2EE57EEE0033475C /* ManagedSettings.framework */; };
 		B4C4C09A2EE7FECE00E469E8 /* ShieldAction.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = B4C4C0912EE7FECE00E469E8 /* ShieldAction.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		B4C4C09F2EE7FEFF00E469E8 /* SharedDefaults.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4924AF52EE5807E0033475C /* SharedDefaults.swift */; };
@@ -103,6 +118,12 @@
 		B4924AE12EE57EEE0033475C /* ManagedSettingsUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ManagedSettingsUI.framework; path = Library/Frameworks/ManagedSettingsUI.framework; sourceTree = DEVELOPER_DIR; };
 		B4924AF42EE5807E0033475C /* ClifModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClifModel.swift; sourceTree = "<group>"; };
 		B4924AF52EE5807E0033475C /* SharedDefaults.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedDefaults.swift; sourceTree = "<group>"; };
+		B493878C2F0E39F40090C730 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		B49387922F0E428B0090C730 /* BlobEvolution.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlobEvolution.swift; sourceTree = "<group>"; };
+		B49387932F0E428B0090C730 /* EvolutionType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EvolutionType.swift; sourceTree = "<group>"; };
+		B49387942F0E428B0090C730 /* PlantEvolution.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlantEvolution.swift; sourceTree = "<group>"; };
+		B49387952F0E428B0090C730 /* WindLevel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindLevel.swift; sourceTree = "<group>"; };
+		B49387972F0E428B0090C730 /* WindConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindConfig.swift; sourceTree = "<group>"; };
 		B4C4C0912EE7FECE00E469E8 /* ShieldAction.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = ShieldAction.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -284,6 +305,8 @@
 		B43998452EE9FCE40049445F /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				B49387962F0E428B0090C730 /* Evolution */,
+				B49387972F0E428B0090C730 /* WindConfig.swift */,
 				B4924AF42EE5807E0033475C /* ClifModel.swift */,
 			);
 			path = Models;
@@ -306,8 +329,20 @@
 				B43998452EE9FCE40049445F /* Models */,
 				B43998432EE9FCC80049445F /* Storage */,
 				B43998422EE9FCBF0049445F /* Constants */,
+				B493878C2F0E39F40090C730 /* Assets.xcassets */,
 			);
 			path = Shared;
+			sourceTree = "<group>";
+		};
+		B49387962F0E428B0090C730 /* Evolution */ = {
+			isa = PBXGroup;
+			children = (
+				B49387922F0E428B0090C730 /* BlobEvolution.swift */,
+				B49387932F0E428B0090C730 /* EvolutionType.swift */,
+				B49387942F0E428B0090C730 /* PlantEvolution.swift */,
+				B49387952F0E428B0090C730 /* WindLevel.swift */,
+			);
+			path = Evolution;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -488,6 +523,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B49387912F0E39F40090C730 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -495,6 +531,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B493878E2F0E39F40090C730 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -502,6 +539,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B493878D2F0E39F40090C730 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -509,6 +547,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B49387902F0E39F40090C730 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -516,6 +555,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B493878F2F0E39F40090C730 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -529,6 +569,11 @@
 				B4924AFB2EE5807E0033475C /* SharedDefaults.swift in Sources */,
 				B45862442EE5FAF60088CB78 /* ActivityReportContext.swift in Sources */,
 				B4924AFC2EE5807E0033475C /* ClifModel.swift in Sources */,
+				B493879D2F0E428B0090C730 /* PlantEvolution.swift in Sources */,
+				B493879E2F0E428B0090C730 /* WindConfig.swift in Sources */,
+				B493879F2F0E428B0090C730 /* EvolutionType.swift in Sources */,
+				B49387A02F0E428B0090C730 /* WindLevel.swift in Sources */,
+				B49387A12F0E428B0090C730 /* BlobEvolution.swift in Sources */,
 				B45862162EE5B92C0088CB78 /* Constants.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -558,6 +603,11 @@
 			buildActionMask = 2147483647;
 			files = (
 				B4924AF72EE5807E0033475C /* SharedDefaults.swift in Sources */,
+				B49387982F0E428B0090C730 /* PlantEvolution.swift in Sources */,
+				B49387992F0E428B0090C730 /* WindConfig.swift in Sources */,
+				B493879A2F0E428B0090C730 /* EvolutionType.swift in Sources */,
+				B493879B2F0E428B0090C730 /* WindLevel.swift in Sources */,
+				B493879C2F0E428B0090C730 /* BlobEvolution.swift in Sources */,
 				B4924AF82EE5807E0033475C /* ClifModel.swift in Sources */,
 				B45862152EE5B92C0088CB78 /* Constants.swift in Sources */,
 			);
