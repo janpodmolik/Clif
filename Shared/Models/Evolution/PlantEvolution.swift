@@ -14,6 +14,10 @@ enum PlantEvolution: Int, CaseIterable, EvolutionType {
 
     var phaseNumber: Int { rawValue }
 
+    func assetName(for mood: Mood) -> String {
+        "plant/\(mood.rawValue)/\(rawValue)"
+    }
+
     func windConfig(for level: WindLevel) -> WindConfig {
         let baseBend = baseBendCurve
         switch level {

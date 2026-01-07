@@ -8,9 +8,21 @@ protocol EvolutionType: CaseIterable, Hashable {
     /// Display name for UI (e.g., "Blob", "Plant")
     static var displayName: String { get }
 
-    /// Asset name for this evolution/phase (e.g., "plant-1", "blob")
+    /// Base asset name for this evolution/phase (e.g., "plant-1", "blob")
     var assetName: String { get }
 
     /// Wind configuration for the specified wind level
     func windConfig(for level: WindLevel) -> WindConfig
+
+    /// Asset name for specific mood variant
+    func assetName(for mood: Mood) -> String
+}
+
+// MARK: - Mood Support
+
+extension EvolutionType {
+    /// Convenience method to get asset name from wind level.
+    func assetName(for windLevel: WindLevel) -> String {
+        assetName(for: Mood(from: windLevel))
+    }
 }

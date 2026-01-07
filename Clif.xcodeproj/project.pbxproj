@@ -14,6 +14,8 @@
 		B458623C2EE5F6F80088CB78 /* DeviceActivityReport.appex in Embed ExtensionKit Extensions */ = {isa = PBXBuildFile; fileRef = B45862302EE5F6F80088CB78 /* DeviceActivityReport.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		B45862432EE5FAF60088CB78 /* ActivityReportContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = B45862422EE5FAF60088CB78 /* ActivityReportContext.swift */; };
 		B45862442EE5FAF60088CB78 /* ActivityReportContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = B45862422EE5FAF60088CB78 /* ActivityReportContext.swift */; };
+		B46F91272F0EF01C002738FD /* Mood.swift in Sources */ = {isa = PBXBuildFile; fileRef = B46F91262F0EF01C002738FD /* Mood.swift */; };
+		B46F91282F0EF01C002738FD /* Mood.swift in Sources */ = {isa = PBXBuildFile; fileRef = B46F91262F0EF01C002738FD /* Mood.swift */; };
 		B4924ACC2EE57ED90033475C /* DeviceActivity.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B4924ACB2EE57ED90033475C /* DeviceActivity.framework */; };
 		B4924AD42EE57ED90033475C /* DeviceActivityMonitor.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = B4924AC92EE57ED90033475C /* DeviceActivityMonitor.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		B4924AE02EE57EEE0033475C /* ManagedSettings.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B4924ADF2EE57EEE0033475C /* ManagedSettings.framework */; };
@@ -111,6 +113,7 @@
 		B45862142EE5B92C0088CB78 /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
 		B45862302EE5F6F80088CB78 /* DeviceActivityReport.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.extensionkit-extension"; includeInIndex = 0; path = DeviceActivityReport.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		B45862422EE5FAF60088CB78 /* ActivityReportContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityReportContext.swift; sourceTree = "<group>"; };
+		B46F91262F0EF01C002738FD /* Mood.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Mood.swift; sourceTree = "<group>"; };
 		B4924AC92EE57ED90033475C /* DeviceActivityMonitor.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = DeviceActivityMonitor.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		B4924ACB2EE57ED90033475C /* DeviceActivity.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = DeviceActivity.framework; path = System/Library/Frameworks/DeviceActivity.framework; sourceTree = SDKROOT; };
 		B4924ADE2EE57EEE0033475C /* ShieldConfiguration.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = ShieldConfiguration.appex; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -337,6 +340,7 @@
 		B49387962F0E428B0090C730 /* Evolution */ = {
 			isa = PBXGroup;
 			children = (
+				B46F91262F0EF01C002738FD /* Mood.swift */,
 				B49387922F0E428B0090C730 /* BlobEvolution.swift */,
 				B49387932F0E428B0090C730 /* EvolutionType.swift */,
 				B49387942F0E428B0090C730 /* PlantEvolution.swift */,
@@ -575,6 +579,7 @@
 				B49387A02F0E428B0090C730 /* WindLevel.swift in Sources */,
 				B49387A12F0E428B0090C730 /* BlobEvolution.swift in Sources */,
 				B45862162EE5B92C0088CB78 /* Constants.swift in Sources */,
+				B46F91272F0EF01C002738FD /* Mood.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -602,6 +607,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B46F91282F0EF01C002738FD /* Mood.swift in Sources */,
 				B4924AF72EE5807E0033475C /* SharedDefaults.swift in Sources */,
 				B49387982F0E428B0090C730 /* PlantEvolution.swift in Sources */,
 				B49387992F0E428B0090C730 /* WindConfig.swift in Sources */,

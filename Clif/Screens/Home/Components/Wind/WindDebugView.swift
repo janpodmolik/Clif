@@ -31,6 +31,14 @@ struct WindDebugView: View {
         )
     }
 
+    private var moodColor: Color {
+        switch Mood(from: windLevel) {
+        case .happy: return .green
+        case .neutral: return .yellow
+        case .sad: return .red
+        }
+    }
+
     var body: some View {
         GeometryReader { geometry in
             ZStack {
@@ -122,11 +130,21 @@ struct WindDebugView: View {
 
         Divider()
 
-        // Wind level selector
+        // Wind level selector with mood indicator
         VStack(alignment: .leading, spacing: 4) {
-            Text("Wind Level")
-                .font(.caption)
-                .foregroundStyle(.secondary)
+            HStack {
+                Text("Wind Level")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                Spacer()
+                Text("Mood: \(Mood(from: windLevel).rawValue)")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 2)
+                    .background(moodColor.opacity(0.2))
+                    .cornerRadius(4)
+            }
             Picker("Wind Level", selection: $windLevel) {
                 ForEach(WindLevel.allCases, id: \.self) { level in
                     Text(level.displayName).tag(level)

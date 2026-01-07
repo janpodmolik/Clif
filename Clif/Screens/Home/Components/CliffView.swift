@@ -35,8 +35,8 @@ struct CliffView<Evolution: EvolutionType>: View {
                         .scaledToFit()
                 }
 
-            // Pet with wind effect (top layer)
-            Image(evolution.assetName)
+            // Pet with wind effect and mood-aware image (top layer)
+            Image(evolution.assetName(for: windLevel))
                 .resizable()
                 .scaledToFit()
                 .frame(height: petHeight)
@@ -48,6 +48,8 @@ struct CliffView<Evolution: EvolutionType>: View {
                     rotationAmount: activeWindConfig.rotationAmount
                 )
                 .offset(y: petOffset)
+                .contentTransition(.opacity)
+                .animation(.easeInOut(duration: 0.5), value: windLevel)
         }
     }
 }
