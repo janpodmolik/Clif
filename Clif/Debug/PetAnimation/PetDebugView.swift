@@ -8,8 +8,10 @@ struct PetDebugView: View {
     @State private var plantPhase: Int = 1
     @State private var windLevel: WindLevel = .medium
     @State private var direction: CGFloat = 1.0
-    @State private var showControls: Bool = true
     @State private var showCopiedFeedback: Bool = false
+
+    // Panel expansion state (3 phases)
+    @State private var panelState: PanelState = .medium
 
     // Section collapse states
     @State private var isIdleExpanded: Bool = false
@@ -44,6 +46,28 @@ struct PetDebugView: View {
     enum EvolutionTypeOption: String, CaseIterable {
         case blob = "Blob"
         case plant = "Plant"
+    }
+
+    enum PanelState: CaseIterable {
+        case minimized
+        case medium
+        case fullscreen
+
+        var next: PanelState {
+            switch self {
+            case .minimized: return .medium
+            case .medium: return .fullscreen
+            case .fullscreen: return .minimized
+            }
+        }
+
+        var chevronIcon: String {
+            switch self {
+            case .minimized: return "chevron.up"
+            case .medium: return "chevron.up.chevron.down"
+            case .fullscreen: return "chevron.down"
+            }
+        }
     }
 
     private var customWindConfig: WindConfig? {
@@ -103,7 +127,7 @@ struct PetDebugView: View {
                 Group {
                     switch selectedEvolutionType {
                     case .blob:
-                        CliffView(
+                        DebugCliffView(
                             screenHeight: geometry.size.height,
                             evolution: BlobEvolution.blob,
                             windLevel: windLevel,
@@ -112,11 +136,13 @@ struct PetDebugView: View {
                             debugTapType: selectedTapType,
                             debugTapConfig: customTapConfig,
                             debugIdleConfig: currentIdleConfig,
-                            debugHapticStyle: selectedHapticType.impactStyle,
+                            debugHapticType: selectedHapticType,
+                            debugHapticDuration: hapticDuration,
+                            debugHapticIntensity: Float(hapticIntensity),
                             externalTapTime: $tapTime
                         )
                     case .plant:
-                        CliffView(
+                        DebugCliffView(
                             screenHeight: geometry.size.height,
                             evolution: PlantEvolution(rawValue: plantPhase) ?? .phase1,
                             windLevel: windLevel,
@@ -125,7 +151,9 @@ struct PetDebugView: View {
                             debugTapType: selectedTapType,
                             debugTapConfig: customTapConfig,
                             debugIdleConfig: currentIdleConfig,
-                            debugHapticStyle: selectedHapticType.impactStyle,
+                            debugHapticType: selectedHapticType,
+                            debugHapticDuration: hapticDuration,
+                            debugHapticIntensity: Float(hapticIntensity),
                             externalTapTime: $tapTime
                         )
                     }
@@ -133,7 +161,10 @@ struct PetDebugView: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
 
                 // Debug controls panel
-                debugControlsPanel
+                debugControlsPanel(
+                    screenHeight: geometry.size.height,
+                    safeAreaTop: geometry.safeAreaInsets.top
+                )
             }
         }
         .ignoresSafeArea()
@@ -141,68 +172,85 @@ struct PetDebugView: View {
 
     // MARK: - Debug Controls
 
-    private var debugControlsPanel: some View {
-        VStack {
-            Spacer()
+    private func debugControlsPanel(screenHeight: CGFloat, safeAreaTop: CGFloat) -> some View {
+        // Calculate top offset for fullscreen state (20pt below back chevron)
+        let fullscreenTopOffset = safeAreaTop + 44 + 20
+
+        return VStack(spacing: 0) {
+            // Top spacer - in fullscreen, fixed height; otherwise flexible
+            if panelState == .fullscreen {
+                Color.clear.frame(height: fullscreenTopOffset)
+            } else {
+                Spacer()
+            }
 
             VStack(spacing: 12) {
-                // Drag handle indicator
-                RoundedRectangle(cornerRadius: 2.5)
-                    .fill(Color.secondary.opacity(0.5))
-                    .frame(width: 36, height: 5)
-                    .padding(.top, 8)
+                // Drag handle - this area handles swipe gestures
+                VStack(spacing: 8) {
+                    RoundedRectangle(cornerRadius: 2.5)
+                        .fill(Color.secondary.opacity(0.5))
+                        .frame(width: 36, height: 5)
+                        .padding(.top, 8)
 
-                // Header with collapse toggle and copy button
-                HStack {
-                    Button {
-                        withAnimation(.easeInOut(duration: 0.2)) {
-                            showControls.toggle()
-                        }
-                    } label: {
-                        HStack {
-                            Text("Pet Debug")
-                                .font(.headline)
-                            Spacer()
-                            Image(systemName: showControls ? "chevron.down" : "chevron.up")
-                        }
-                    }
-                    .buttonStyle(.plain)
+                    // Header - entire area is tappable for expand/collapse
+                    HStack {
+                        Text("Pet Debug")
+                            .font(.headline)
 
-                    Button {
-                        copyConfig()
-                    } label: {
-                        Image(systemName: showCopiedFeedback ? "checkmark" : "doc.on.doc")
-                            .font(.subheadline)
+                        Spacer()
+
+                        Image(systemName: panelState.chevronIcon)
+                            .font(.body)
+                            .foregroundStyle(.secondary)
+
+                        Button {
+                            copyConfig()
+                        } label: {
+                            Image(systemName: showCopiedFeedback ? "checkmark" : "doc.on.doc")
+                                .font(.body)
+                        }
+                        .buttonStyle(.bordered)
+                        .tint(showCopiedFeedback ? .green : nil)
                     }
-                    .buttonStyle(.bordered)
-                    .tint(showCopiedFeedback ? .green : nil)
                 }
+                .contentShape(Rectangle())
+                .onTapGesture {
+                    withAnimation(.easeInOut(duration: 0.25)) {
+                        panelState = panelState.next
+                    }
+                }
+                .gesture(
+                    DragGesture(minimumDistance: 20)
+                        .onEnded { value in
+                            withAnimation(.easeInOut(duration: 0.25)) {
+                                if value.translation.height > 50 {
+                                    // Swipe down - go to previous state
+                                    switch panelState {
+                                    case .fullscreen: panelState = .medium
+                                    case .medium: panelState = .minimized
+                                    case .minimized: break
+                                    }
+                                } else if value.translation.height < -50 {
+                                    // Swipe up - go to next state
+                                    switch panelState {
+                                    case .minimized: panelState = .medium
+                                    case .medium: panelState = .fullscreen
+                                    case .fullscreen: break
+                                    }
+                                }
+                            }
+                        }
+                )
 
-                if showControls {
+                if panelState != .minimized {
                     controlsContent
                 }
             }
             .padding()
             .background(.ultraThinMaterial)
             .cornerRadius(12)
-            .padding()
-            .gesture(
-                DragGesture(minimumDistance: 20)
-                    .onEnded { value in
-                        // Swipe down to minimize
-                        if value.translation.height > 50 {
-                            withAnimation(.easeInOut(duration: 0.2)) {
-                                showControls = false
-                            }
-                        }
-                        // Swipe up to expand
-                        else if value.translation.height < -50 {
-                            withAnimation(.easeInOut(duration: 0.2)) {
-                                showControls = true
-                            }
-                        }
-                    }
-            )
+            .padding(.horizontal, 16)
+            .padding(.bottom, 16)
         }
     }
 
@@ -233,7 +281,8 @@ struct PetDebugView: View {
                 // ===== IDLE SECTION =====
                 collapsibleSection(
                     title: "Idle (Breathe)",
-                    isExpanded: $isIdleExpanded
+                    isExpanded: $isIdleExpanded,
+                    onReset: resetIdleToDefaults
                 ) {
                     idleControlsContent
                 }
@@ -243,7 +292,8 @@ struct PetDebugView: View {
                 // ===== WIND SECTION =====
                 collapsibleSection(
                     title: "Wind",
-                    isExpanded: $isWindExpanded
+                    isExpanded: $isWindExpanded,
+                    onReset: resetWindToDefaults
                 ) {
                     windControlsContent
                 }
@@ -253,14 +303,15 @@ struct PetDebugView: View {
                 // ===== TAP SECTION =====
                 collapsibleSection(
                     title: "Tap Animation",
-                    isExpanded: $isTapExpanded
+                    isExpanded: $isTapExpanded,
+                    onReset: resetTapToDefaults
                 ) {
                     tapControlsContent
                 }
             }
         }
         .scrollIndicators(.hidden)
-        .frame(maxHeight: 350)
+        .frame(maxHeight: panelState == .fullscreen ? .infinity : 350)
     }
 
     // MARK: - Collapsible Section
@@ -269,14 +320,12 @@ struct PetDebugView: View {
     private func collapsibleSection<Content: View>(
         title: String,
         isExpanded: Binding<Bool>,
+        onReset: @escaping () -> Void,
         @ViewBuilder content: () -> Content
     ) -> some View {
         VStack(spacing: 8) {
-            Button {
-                withAnimation(.easeInOut(duration: 0.2)) {
-                    isExpanded.wrappedValue.toggle()
-                }
-            } label: {
+            HStack(spacing: 12) {
+                // Title - tappable to expand/collapse
                 HStack {
                     Text(title)
                         .font(.subheadline.weight(.semibold))
@@ -285,13 +334,66 @@ struct PetDebugView: View {
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
+                .contentShape(Rectangle())
+                .onTapGesture {
+                    withAnimation(.easeInOut(duration: 0.2)) {
+                        isExpanded.wrappedValue.toggle()
+                    }
+                }
+
+                // Reset button - separate, larger tap target
+                Button {
+                    withAnimation(.easeInOut(duration: 0.2)) {
+                        onReset()
+                    }
+                } label: {
+                    Image(systemName: "arrow.counterclockwise")
+                        .font(.body)
+                        .foregroundStyle(.secondary)
+                        .frame(width: 32, height: 32)
+                        .background(Color.secondary.opacity(0.1))
+                        .cornerRadius(6)
+                }
+                .buttonStyle(.plain)
             }
-            .buttonStyle(.plain)
 
             if isExpanded.wrappedValue {
                 content()
             }
         }
+    }
+
+    // MARK: - Reset Functions
+
+    private func resetIdleToDefaults() {
+        let defaults = IdleConfig.default
+        idleEnabled = defaults.enabled
+        idleAmplitude = defaults.amplitude
+        idleFrequency = defaults.frequency
+        idleFocusStart = defaults.focusStart
+        idleFocusEnd = defaults.focusEnd
+    }
+
+    private func resetWindToDefaults() {
+        useCustomConfig = false
+        windLevel = .medium
+        direction = 1.0
+        customIntensity = 0.5
+        customBendCurve = 2.0
+        customSwayAmount = 0.3
+        customRotationAmount = 0.5
+    }
+
+    private func resetTapToDefaults() {
+        useCustomTapConfig = false
+        selectedTapType = .wiggle
+        selectedHapticType = .impactLight
+        hapticDuration = 0.3
+        hapticIntensity = 0.8
+        let defaults = TapConfig.default(for: .wiggle)
+        customTapIntensity = defaults.intensity
+        customTapDecayRate = defaults.decayRate
+        customTapFrequency = defaults.frequency
     }
 
     // MARK: - Idle Controls
@@ -372,8 +474,8 @@ struct PetDebugView: View {
         HStack {
             Text("Direction")
             Picker("", selection: $direction) {
-                Text("← Left").tag(-1.0 as CGFloat)
-                Text("→ Right").tag(1.0 as CGFloat)
+                Text("\u{2190} Left").tag(-1.0 as CGFloat)
+                Text("\u{2192} Right").tag(1.0 as CGFloat)
             }
             .pickerStyle(.segmented)
         }
