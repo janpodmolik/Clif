@@ -12,6 +12,9 @@ struct WindLinesView: View {
     var windAreaTop: CGFloat = 0.08
     var windAreaBottom: CGFloat = 0.42
 
+    /// Override config for special effects (e.g., burst mode for blow away)
+    var overrideConfig: WindLinesConfig? = nil
+
     @Environment(\.colorScheme) private var colorScheme
     @State private var activeLines: [WindLine] = []
     @State private var lastSpawnTime: Double = 0
@@ -34,11 +37,11 @@ struct WindLinesView: View {
     }
 
     private var config: WindLinesConfig {
-        WindLinesConfig(for: windLevel)
+        overrideConfig ?? WindLinesConfig(for: windLevel)
     }
 
     var body: some View {
-        if windLevel != .none {
+        if windLevel != .none || overrideConfig != nil {
             TimelineView(.animation) { timeline in
                 let currentTime = timeline.date.timeIntervalSince1970
 
@@ -403,7 +406,7 @@ private extension Bool {
 
 // MARK: - Config
 
-private struct WindLinesConfig {
+struct WindLinesConfig {
     let maxLines: Int
     let minSpawnInterval: Double
     let spawnChance: Double
@@ -435,6 +438,21 @@ private struct WindLinesConfig {
             spawnChance = 0.10
             durationRange = 1.5...2.5
         }
+    }
+
+    /// Intense burst for blow away effect - many fast wind lines
+    static let burst = WindLinesConfig(
+        maxLines: 20,
+        minSpawnInterval: 0.05,
+        spawnChance: 0.5,
+        durationRange: 0.4...0.8
+    )
+
+    private init(maxLines: Int, minSpawnInterval: Double, spawnChance: Double, durationRange: ClosedRange<Double>) {
+        self.maxLines = maxLines
+        self.minSpawnInterval = minSpawnInterval
+        self.spawnChance = spawnChance
+        self.durationRange = durationRange
     }
 }
 

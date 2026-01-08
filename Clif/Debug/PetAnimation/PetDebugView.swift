@@ -49,6 +49,15 @@ struct PetDebugView: View {
     @State private var debugSpeechBubbleState = SpeechBubbleState()
     @State private var debugCustomText: String = ""
 
+    // Blow away debug
+    @State private var isBlowAwayExpanded: Bool = false
+    @State private var blowAwayOffsetX: CGFloat = 0
+    @State private var blowAwayRotation: CGFloat = 0
+    @State private var blowAwayDuration: Double = 0.8
+    @State private var blowAwayRotationAmount: CGFloat = 25
+    @State private var isBlowingAway: Bool = false
+    @State private var windLinesBurstActive: Bool = false
+
     enum EvolutionTypeOption: String, CaseIterable {
         case blob = "Blob"
         case plant = "Plant"
@@ -131,11 +140,12 @@ struct PetDebugView: View {
 
                 // Wind lines effect (debug colors: blue=wave, green=sCurve, red=loop)
                 WindLinesView(
-                    windLevel: windLevel,
+                    windLevel: windLinesBurstActive ? .high : windLevel,
                     direction: direction,
                     debugColors: true,
                     windAreaTop: 0.25,
-                    windAreaBottom: 0.50
+                    windAreaBottom: 0.50,
+                    overrideConfig: windLinesBurstActive ? .burst : nil
                 )
 
                 // Floating island with pet - render appropriate evolution type
@@ -157,7 +167,9 @@ struct PetDebugView: View {
                             debugHapticIntensity: Float(hapticIntensity),
                             externalTapTime: $tapTime,
                             debugSpeechBubbleState: debugSpeechBubbleState,
-                            debugCustomText: debugCustomText
+                            debugCustomText: debugCustomText,
+                            blowAwayOffsetX: blowAwayOffsetX,
+                            blowAwayRotation: blowAwayRotation
                         )
                     case .plant:
                         DebugFloatingIslandView(
@@ -175,7 +187,9 @@ struct PetDebugView: View {
                             debugHapticIntensity: Float(hapticIntensity),
                             externalTapTime: $tapTime,
                             debugSpeechBubbleState: debugSpeechBubbleState,
-                            debugCustomText: debugCustomText
+                            debugCustomText: debugCustomText,
+                            blowAwayOffsetX: blowAwayOffsetX,
+                            blowAwayRotation: blowAwayRotation
                         )
                     }
                 }
@@ -340,6 +354,17 @@ struct PetDebugView: View {
                 ) {
                     speechBubbleControlsContent
                 }
+
+                Divider()
+
+                // ===== BLOW AWAY SECTION =====
+                collapsibleSection(
+                    title: "Blow Away",
+                    isExpanded: $isBlowAwayExpanded,
+                    onReset: resetBlowAwayToDefaults
+                ) {
+                    blowAwayControlsContent
+                }
             }
         }
         .scrollIndicators(.hidden)
@@ -432,6 +457,15 @@ struct PetDebugView: View {
         debugBubblePosition = .right
         debugCustomText = ""
         debugSpeechBubbleState.hide()
+    }
+
+    private func resetBlowAwayToDefaults() {
+        blowAwayDuration = 0.8
+        blowAwayRotationAmount = 25
+        blowAwayOffsetX = 0
+        blowAwayRotation = 0
+        isBlowingAway = false
+        windLinesBurstActive = false
     }
 
     // MARK: - Idle Controls
@@ -691,6 +725,95 @@ struct PetDebugView: View {
         }
         .buttonStyle(.borderedProminent)
         .tint(.green)
+    }
+
+    // MARK: - Blow Away Controls
+
+    @ViewBuilder
+    private var blowAwayControlsContent: some View {
+        // Duration slider
+        HStack {
+            Text("Duration: \(blowAwayDuration, specifier: "%.2f")s")
+                .font(.caption)
+                .frame(width: 130, alignment: .leading)
+            Slider(value: $blowAwayDuration, in: 0.3...2.0)
+        }
+
+        // Rotation slider
+        HStack {
+            Text("Rotation: \(blowAwayRotationAmount, specifier: "%.0f")\u{00B0}")
+                .font(.caption)
+                .frame(width: 130, alignment: .leading)
+            Slider(value: $blowAwayRotationAmount, in: 0...45)
+        }
+
+        // Blow Away button
+        Button {
+            triggerBlowAway()
+        } label: {
+            HStack {
+                Image(systemName: "wind")
+                Text("Blow Away")
+            }
+            .frame(maxWidth: .infinity)
+        }
+        .buttonStyle(.borderedProminent)
+        .tint(.orange)
+        .disabled(isBlowingAway)
+
+        // Reset button (visible when pet is off screen)
+        if isBlowingAway {
+            Button {
+                resetBlowAwayPosition()
+            } label: {
+                HStack {
+                    Image(systemName: "arrow.counterclockwise")
+                    Text("Reset Position")
+                }
+                .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.bordered)
+        }
+
+        // Status indicator
+        if windLinesBurstActive {
+            HStack {
+                ProgressView()
+                    .scaleEffect(0.8)
+                Text("Wind burst active...")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+        }
+    }
+
+    private func triggerBlowAway() {
+        // Start wind burst immediately
+        windLinesBurstActive = true
+
+        // Animate pet off screen with slight delay (wind catches it)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            isBlowingAway = true
+            withAnimation(.easeIn(duration: blowAwayDuration)) {
+                // Offset: screen width + margin in wind direction
+                blowAwayOffsetX = direction * (UIScreen.main.bounds.width + 150)
+                // Rotation downward in wind direction
+                blowAwayRotation = direction * blowAwayRotationAmount
+            }
+        }
+
+        // Stop wind burst after animation completes
+        DispatchQueue.main.asyncAfter(deadline: .now() + blowAwayDuration + 0.3) {
+            windLinesBurstActive = false
+        }
+    }
+
+    private func resetBlowAwayPosition() {
+        withAnimation(.spring(duration: 0.5, bounce: 0.3)) {
+            blowAwayOffsetX = 0
+            blowAwayRotation = 0
+        }
+        isBlowingAway = false
     }
 
     private func triggerDebugBubble() {

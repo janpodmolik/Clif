@@ -34,6 +34,10 @@ struct DebugFloatingIslandView<Evolution: EvolutionType>: View {
     // Custom text for speech bubble (for debug)
     var debugCustomText: String = ""
 
+    // Blow away animation state
+    var blowAwayOffsetX: CGFloat = 0
+    var blowAwayRotation: CGFloat = 0
+
     // Internal tap state (used when no external binding provided)
     @State private var internalTapTime: TimeInterval = -1
     @State private var currentTapType: TapAnimationType = .none
@@ -110,6 +114,8 @@ struct DebugFloatingIslandView<Evolution: EvolutionType>: View {
                         idleConfig: activeIdleConfig,
                         screenWidth: screenWidth
                     )
+                    .offset(x: blowAwayOffsetX)
+                    .rotationEffect(.degrees(blowAwayRotation), anchor: .bottom)
                     .onTapGesture {
                         triggerTap()
                     }
