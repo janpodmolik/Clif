@@ -4,7 +4,13 @@ import SwiftUI
 /// Uses "head + trail" approach - the head follows a trajectory and leaves a fading trail behind.
 struct WindLinesView: View {
     let windLevel: WindLevel
+    var direction: CGFloat = 1.0  // 1.0 = left→right, -1.0 = right→left
     var debugColors: Bool = false  // When true, show different colors per trajectory type
+
+    /// Wind area bounds (normalized 0-1, where 0 = top, 1 = bottom)
+    /// Lines spawn within this vertical range, centered around the pet
+    var windAreaTop: CGFloat = 0.08
+    var windAreaBottom: CGFloat = 0.42
 
     @Environment(\.colorScheme) private var colorScheme
     @State private var activeLines: [WindLine] = []
@@ -183,7 +189,13 @@ struct WindLinesView: View {
         let timeSinceLastSpawn = currentTime - lastSpawnTime
         if activeLines.count < config.maxLines && timeSinceLastSpawn > config.minSpawnInterval {
             if Double.random(in: 0...1) < config.spawnChance {
-                activeLines.append(WindLine.random(config: config, spawnTime: currentTime))
+                activeLines.append(WindLine.random(
+                    config: config,
+                    spawnTime: currentTime,
+                    windAreaTop: windAreaTop,
+                    windAreaBottom: windAreaBottom,
+                    direction: direction
+                ))
                 lastSpawnTime = currentTime
             }
         }
@@ -208,8 +220,14 @@ private struct WindLine: Identifiable {
     let duration: Double
     let spawnTime: Double
 
-    static func random(config: WindLinesConfig, spawnTime: Double) -> WindLine {
-        let trajectory = Trajectory.random()
+    static func random(
+        config: WindLinesConfig,
+        spawnTime: Double,
+        windAreaTop: CGFloat,
+        windAreaBottom: CGFloat,
+        direction: CGFloat
+    ) -> WindLine {
+        let trajectory = Trajectory.random(windAreaTop: windAreaTop, windAreaBottom: windAreaBottom, direction: direction)
         // Duration scales with length - shorter lines move faster
         let baseDuration = Double.random(in: config.durationRange)
         let scaledDuration = baseDuration * (0.5 + Double(trajectory.length) * 0.5)
@@ -231,17 +249,21 @@ private struct Trajectory {
     let length: CGFloat      // Normalized length (0.15-1.0)
     let trajectoryType: TrajectoryType
     let seed: UInt64
+    let direction: CGFloat   // 1.0 = left→right, -1.0 = right→left
 
-    static func random() -> Trajectory {
-        // End Y offset: can go up or down by up to 15% of screen
-        let endOffset = CGFloat.random(in: -0.15...0.15)
+    static func random(windAreaTop: CGFloat, windAreaBottom: CGFloat, direction: CGFloat) -> Trajectory {
+        // End Y offset: can go up or down within the wind area bounds
+        let areaHeight = windAreaBottom - windAreaTop
+        let maxOffset = areaHeight * 0.4  // Allow some vertical drift
+        let endOffset = CGFloat.random(in: -maxOffset...maxOffset)
 
         return Trajectory(
-            startY: CGFloat.random(in: 0.08...0.42), // Top half of screen only
+            startY: CGFloat.random(in: windAreaTop...windAreaBottom),
             endYOffset: endOffset,
             length: CGFloat.random(in: 0.15...1.0), // Variable length, some very short
             trajectoryType: TrajectoryType.random(),
-            seed: UInt64.random(in: 0...UInt64.max)
+            seed: UInt64.random(in: 0...UInt64.max),
+            direction: direction
         )
     }
 
@@ -249,9 +271,9 @@ private struct Trajectory {
     func position(at t: CGFloat, in size: CGSize) -> CGPoint {
         var rng = SeededRNG(seed: seed)
 
-        // Base horizontal movement: left to right across screen
-        let startX = -size.width * 0.1
-        let endX = size.width * 1.1
+        // Base horizontal movement: direction determines start/end
+        let startX = direction > 0 ? -size.width * 0.1 : size.width * 1.1
+        let endX = direction > 0 ? size.width * 1.1 : -size.width * 0.1
         let baseX = startX + t * (endX - startX)
 
         // Y position interpolates from startY to startY + endYOffset
@@ -282,9 +304,10 @@ private struct Trajectory {
 
         case .loop:
             // Smooth loop with continuous wave before and after
-            let loopRadius = CGFloat.random(in: 30...55, using: &rng)
+            let loopRadius = CGFloat.random(in: 50...90, using: &rng)
             let loopCenter = CGFloat.random(in: 0.35...0.65, using: &rng)
-            let direction: CGFloat = Bool.random(using: &rng) ? 1 : -1
+            // verticalDir: -1 = loop goes UP (negative Y), +1 = loop goes DOWN
+            let verticalDir: CGFloat = Bool.random(using: &rng) ? -1 : 1
 
             // Smooth blend factor: 0 outside loop, 1 at loop center
             let loopWidth: CGFloat = 0.20
@@ -298,16 +321,23 @@ private struct Trajectory {
                 // Inside or near loop region - blend between wave and circle
                 let normalizedT = (t - loopCenter + loopWidth) / (2 * loopWidth)
                 let clampedT = max(0, min(1, normalizedT))
-                let angle = clampedT * 2 * .pi * direction
+
+                // Angle always goes 0 → 2π (counterclockwise in standard coords)
+                // This ensures horizontal movement is always left-to-right
+                let angle = clampedT * 2 * .pi
 
                 // Circle center follows the base trajectory
                 let loopCenterX = startX + loopCenter * (endX - startX)
                 let loopBaseY = startYPos + loopCenter * (endYPos - startYPos)
                 let loopCenterY = loopBaseY + sin(loopCenter * .pi * baseWaveFreq) * baseWaveAmp
 
-                // Position on circle
-                let circleX = loopCenterX + sin(angle) * loopRadius
-                let circleY = loopCenterY - loopRadius * direction + cos(angle) * loopRadius * direction
+                // Position on circle:
+                // - sin(angle) for X: 0→1→0→-1→0 gives the forward bulge then backward
+                // - For Y: we want to go UP first (negative Y) when verticalDir = -1
+                // - cos(angle) goes 1→0→-1→0→1, so -cos gives -1→0→1→0→-1 (up then down)
+                // - direction flips the X bulge direction
+                let circleX = loopCenterX + sin(angle) * loopRadius * direction
+                let circleY = loopCenterY - cos(angle) * loopRadius * verticalDir
 
                 // Blend between wave path and loop path
                 let blendedX = baseX * (1 - loopBlend) + circleX * loopBlend
@@ -413,21 +443,28 @@ private struct WindLinesConfig {
 #Preview("Wind Lines - Low") {
     ZStack {
         Color.gray.opacity(0.2)
-        WindLinesView(windLevel: .low)
+        WindLinesView(windLevel: .low, windAreaTop: 0.25, windAreaBottom: 0.50)
     }
 }
 
 #Preview("Wind Lines - High") {
     ZStack {
         Color.gray.opacity(0.2)
-        WindLinesView(windLevel: .high)
+        WindLinesView(windLevel: .high, windAreaTop: 0.25, windAreaBottom: 0.50)
     }
 }
 
 #Preview("Wind Lines - Dark") {
     ZStack {
         Color.black
-        WindLinesView(windLevel: .medium)
+        WindLinesView(windLevel: .medium, windAreaTop: 0.25, windAreaBottom: 0.50)
     }
     .preferredColorScheme(.dark)
+}
+
+#Preview("Wind Lines - Debug Colors") {
+    ZStack {
+        Color.gray.opacity(0.2)
+        WindLinesView(windLevel: .high, debugColors: true, windAreaTop: 0.25, windAreaBottom: 0.50)
+    }
 }

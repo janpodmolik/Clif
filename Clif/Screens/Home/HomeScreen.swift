@@ -15,7 +15,12 @@ struct HomeScreen: View {
                 }
 
                 // Wind lines effect (scales with wind level)
-                WindLinesView(windLevel: .low)
+                // Wind area behind and above the pet (0.25-0.50 = upper-middle of screen)
+                WindLinesView(
+                    windLevel: .low,
+                    windAreaTop: 0.25,
+                    windAreaBottom: 0.50
+                )
 
                 // Floating island with pet
                 FloatingIslandView(
