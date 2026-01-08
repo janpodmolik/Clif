@@ -42,8 +42,12 @@ float2 calculateWindOffset(
     // Bend factor: bottom stays still, top moves most
     float bendFactor = pow(normalizedY, bendCurve);
 
-    // Wave oscillation
-    float wave = organicWave(time);
+    // Wave oscillation with directional bias
+    // Pet bends IN the wind direction (wind pushes it)
+    // Forward swing (with wind): 100% amplitude
+    // Back swing (against wind): 50% amplitude
+    float rawWave = organicWave(time);
+    float wave = rawWave < 0.0 ? rawWave : rawWave * 0.5;
 
     // Base offset scaled by intensity and direction
     float maxOffset = size.x * 0.15 * intensity * direction;

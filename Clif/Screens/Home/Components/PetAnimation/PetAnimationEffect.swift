@@ -48,7 +48,11 @@ struct PetAnimationEffect: ViewModifier {
             let time = context.date.timeIntervalSince(startTime)
 
             // Wave function for rotation (synchronized with shader)
-            let wave = sin(time * 1.5) * 0.6 + sin(time * 2.3) * 0.3 + sin(time * 0.7) * 0.1
+            // Pet bends IN the wind direction (wind pushes it)
+            // Forward swing (with wind): 100% amplitude
+            // Back swing (against wind): 50% amplitude
+            let rawWave = sin(time * 1.5) * 0.6 + sin(time * 2.3) * 0.3 + sin(time * 0.7) * 0.1
+            let wave = rawWave < 0 ? rawWave : rawWave * 0.5
 
             // Rotation follows wind direction (negative direction = negative rotation)
             let rotation = -wave * intensity * direction * rotationAmount * 6
