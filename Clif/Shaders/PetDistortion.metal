@@ -2,46 +2,180 @@
 #include <SwiftUI/SwiftUI_Metal.h>
 using namespace metal;
 
-/// Unified pet distortion shader - combines idle, wind, and tap animations.
-///
-/// Three animation layers (combined additively):
-/// - Idle: Continuous breathing animation (subtle vertical scale from bottom)
-/// - Wind: Bottom stays stable, top bends with wind direction
-/// - Tap: Various animations triggered on user interaction
+// MARK: - Helper Functions
+
+/// Organic wave combining multiple frequencies for natural movement
+float organicWave(float time) {
+    return sin(time * 1.5) * 0.6
+         + sin(time * 2.3) * 0.3
+         + sin(time * 0.7) * 0.1;
+}
+
+/// Normalized Y from top (0 = top, 1 = bottom in SwiftUI coords)
+float normalizedYFromTop(float2 position, float2 size) {
+    float normalized = 1.0 - (position.y / size.y);
+    return clamp(normalized, 0.0, 1.0);
+}
+
+/// Normalized Y from bottom (0 = bottom, 1 = top)
+float normalizedYFromBottom(float2 position, float2 size) {
+    return position.y / size.y;
+}
+
+// MARK: - Wind Effect
+
+float2 calculateWindOffset(
+    float2 position,
+    float2 size,
+    float time,
+    float intensity,
+    float direction,
+    float bendCurve,
+    float swayAmount
+) {
+    if (intensity == 0.0) {
+        return float2(0.0, 0.0);
+    }
+
+    float normalizedY = normalizedYFromTop(position, size);
+
+    // Bend factor: bottom stays still, top moves most
+    float bendFactor = pow(normalizedY, bendCurve);
+
+    // Wave oscillation
+    float wave = organicWave(time);
+
+    // Base offset scaled by intensity and direction
+    float maxOffset = size.x * 0.15 * intensity * direction;
+
+    // Bend: top bends with wind
+    float bendOffset = wave * bendFactor * maxOffset;
+
+    // Sway: entire view shifts horizontally
+    float swayOffset = wave * maxOffset * swayAmount * 0.3;
+
+    return float2(bendOffset + swayOffset, 0.0);
+}
+
+// MARK: - Tap Effects
+
+float2 calculateTapOffset(
+    float2 position,
+    float2 size,
+    float time,
+    float tapTime,
+    int tapType,
+    float intensity,
+    float decayRate,
+    float frequency
+) {
+    // No active tap
+    if (tapTime < 0.0) {
+        return float2(0.0, 0.0);
+    }
+
+    float timeSinceTap = time - tapTime;
+
+    // Animation expired
+    if (timeSinceTap < 0.0 || timeSinceTap >= 1.0) {
+        return float2(0.0, 0.0);
+    }
+
+    float decay = exp(-timeSinceTap * decayRate);
+    float wave = sin(timeSinceTap * frequency);
+    float normalizedY = normalizedYFromTop(position, size);
+
+    float xOffset = 0.0;
+    float yOffset = 0.0;
+
+    switch (tapType) {
+        case 1: {
+            // WIGGLE: Rapid horizontal oscillation
+            xOffset = wave * intensity * decay;
+            break;
+        }
+        case 2: {
+            // SQUEEZE: Vertical compression toward bottom
+            float squeezeFactor = 1.0 - intensity * wave * decay;
+            float distFromBottom = size.y - position.y;
+            yOffset = distFromBottom * (1.0 - squeezeFactor);
+            break;
+        }
+        case 3: {
+            // JIGGLE: Wave propagation from bottom to top
+            float phase = normalizedY * 3.14159 * 2.0;
+            float jiggleWave = sin(timeSinceTap * frequency - phase) * decay;
+            xOffset = jiggleWave * intensity * normalizedY;
+            break;
+        }
+    }
+
+    return float2(xOffset, yOffset);
+}
+
+// MARK: - Idle (Breathing) Effect
+
+float calculateIdleYOffset(
+    float2 position,
+    float2 size,
+    float time,
+    bool enabled,
+    float amplitude,
+    float frequency,
+    float focusStart,
+    float focusEnd
+) {
+    if (!enabled) {
+        return 0.0;
+    }
+
+    // Breathing wave (0 to 1 range)
+    float breatheWave = sin(time * frequency * 6.28318) * 0.5 + 0.5;
+
+    // Focus area (strongest at bottom, fades toward top)
+    float normalizedFromBottom = normalizedYFromBottom(position, size);
+    float breatheFocus = 1.0 - smoothstep(focusStart, focusEnd, normalizedFromBottom);
+
+    // Scale from bottom
+    float focusedAmplitude = amplitude * breatheFocus;
+    float breatheScale = 1.0 + breatheWave * focusedAmplitude;
+    float distFromBottom = size.y - position.y;
+
+    return distFromBottom * (1.0 - breatheScale);
+}
+
+// MARK: - Main Shader
+
+/// Unified pet distortion shader combining wind, tap, and idle animations.
 ///
 /// Parameters:
 /// - position: Current pixel position
-/// - time: Animation time for wave calculation
-/// - windIntensity: Wind strength (0 = none, 1 = normal, 2 = strong)
-/// - windDirection: Wind direction (1.0 = right, -1.0 = left)
-/// - bendCurve: Controls bend curve steepness (1.5 = gentle, 2.0 = medium, 3.0 = steep)
-/// - swayAmount: Horizontal sway amount for entire view (0 = none, 1 = full)
-/// - tapTime: Time when tap occurred (-1 = no active tap animation)
-/// - tapType: Animation type (0=none, 1=wiggle, 2=squeeze, 3=jiggle)
-/// - tapIntensity: Strength of tap animation
-/// - tapDecayRate: How fast the animation fades
-/// - tapFrequency: Oscillation frequency
-/// - idleEnabled: Whether idle breathing is active (0 or 1)
-/// - idleAmplitude: Breathing scale amount (0.03 = 3% size increase)
-/// - idleFrequency: Breathing speed in Hz
-/// - idleFocusStart: Where breathing starts to fade (0 = bottom, 1 = top)
-/// - idleFocusEnd: Where breathing fully fades out (0 = bottom, 1 = top)
-/// - size: View size for normalization
+/// - time: Animation time
+/// - windIntensity: Wind strength (0-2)
+/// - windDirection: 1.0 = right, -1.0 = left
+/// - bendCurve: Bend steepness (1.5 gentle, 3.0 steep)
+/// - swayAmount: Horizontal sway (0-1)
+/// - tapTime: When tap occurred (-1 = inactive)
+/// - tapType: 0=none, 1=wiggle, 2=squeeze, 3=jiggle
+/// - tapIntensity, tapDecayRate, tapFrequency: Tap animation params
+/// - idleEnabled, idleAmplitude, idleFrequency: Breathing params
+/// - idleFocusStart, idleFocusEnd: Breathing focus zone
+/// - size: View size
 [[ stitchable ]] float2 petDistortion(
     float2 position,
     float time,
-    // Wind parameters
+    // Wind
     float windIntensity,
     float windDirection,
     float bendCurve,
     float swayAmount,
-    // Tap parameters
+    // Tap
     float tapTime,
     float tapType,
     float tapIntensity,
     float tapDecayRate,
     float tapFrequency,
-    // Idle parameters
+    // Idle
     float idleEnabled,
     float idleAmplitude,
     float idleFrequency,
@@ -50,99 +184,26 @@ using namespace metal;
     // Size
     float2 size
 ) {
-    // ========== WIND EFFECT ==========
+    // Calculate each effect
+    float2 windOffset = calculateWindOffset(
+        position, size, time,
+        windIntensity, windDirection, bendCurve, swayAmount
+    );
 
-    // Normalized Y position (0 = top, 1 = bottom in SwiftUI coordinates)
-    float normalizedY = 1.0 - (position.y / size.y);
-    normalizedY = clamp(normalizedY, 0.0, 1.0);
+    float2 tapOffset = calculateTapOffset(
+        position, size, time,
+        tapTime, int(tapType), tapIntensity, tapDecayRate, tapFrequency
+    );
 
-    // Configurable falloff - bottom stays still, top moves most
-    float bendFactor = pow(normalizedY, bendCurve);
+    float idleYOffset = calculateIdleYOffset(
+        position, size, time,
+        idleEnabled > 0.5, idleAmplitude, idleFrequency,
+        idleFocusStart, idleFocusEnd
+    );
 
-    // Combined sine waves for organic movement
-    float windWave = sin(time * 1.5) * 0.6 + sin(time * 2.3) * 0.3 + sin(time * 0.7) * 0.1;
-
-    // Maximum offset (scaled by intensity and direction) - subtle effect
-    float maxOffset = size.x * 0.15 * windIntensity * windDirection;
-
-    // Bend effect (top bends)
-    float bendOffset = windWave * bendFactor * maxOffset;
-
-    // Sway effect (entire view shifts horizontally)
-    float swayOffset = windWave * maxOffset * swayAmount * 0.3;
-
-    float windXOffset = bendOffset + swayOffset;
-    float windYOffset = 0.0;
-
-    // ========== TAP EFFECT ==========
-
-    float tapXOffset = 0.0;
-    float tapYOffset = 0.0;
-
-    // Only calculate if tap animation is active
-    if (tapTime >= 0.0) {
-        float timeSinceTap = time - tapTime;
-
-        // Check if animation is still within duration (max ~1 second for safety)
-        if (timeSinceTap >= 0.0 && timeSinceTap < 1.0) {
-            // Exponential decay
-            float decay = exp(-timeSinceTap * tapDecayRate);
-
-            // Oscillation wave
-            float tapWave = sin(timeSinceTap * tapFrequency);
-
-            int animationType = int(tapType);
-
-            if (animationType == 1) {
-                // ===== WIGGLE =====
-                // Rapid horizontal oscillation, uniform across height
-                tapXOffset = tapWave * tapIntensity * decay;
-            }
-            else if (animationType == 2) {
-                // ===== SQUEEZE =====
-                // Vertical compression toward bottom (size.y)
-                // Top compresses more, bottom stays anchored
-                float squeezeFactor = 1.0 - tapIntensity * tapWave * decay;
-                float distFromBottom = size.y - position.y;
-                tapYOffset = distFromBottom * (1.0 - squeezeFactor);
-            }
-            else if (animationType == 3) {
-                // ===== JIGGLE =====
-                // Wave propagation from bottom to top with phase shift
-                float phase = normalizedY * 3.14159 * 2.0;
-                float jiggleWave = sin(timeSinceTap * tapFrequency - phase) * decay;
-                // Stronger effect at top
-                tapXOffset = jiggleWave * tapIntensity * normalizedY;
-            }
-        }
-    }
-
-    // ========== IDLE EFFECT (BREATHE) ==========
-
-    float idleYOffset = 0.0;
-
-    if (idleEnabled > 0.5) {
-        // Smooth breathing wave (0 to 1 range for gentle in-out)
-        float breatheWave = sin(time * idleFrequency * 6.28318) * 0.5 + 0.5;
-
-        // Normalized position (0 = bottom, 1 = top)
-        float normalizedFromBottom = position.y / size.y;
-
-        // Focus breathing on configurable portion of pet (body area)
-        // Uses smoothstep to fade out effect toward the top
-        float breatheFocus = 1.0 - smoothstep(idleFocusStart, idleFocusEnd, normalizedFromBottom);
-
-        // Scale from bottom with focused amplitude
-        float focusedAmplitude = idleAmplitude * breatheFocus;
-        float breatheScale = 1.0 + breatheWave * focusedAmplitude;
-        float distFromBottom = size.y - position.y;
-        idleYOffset = distFromBottom * (1.0 - breatheScale);
-    }
-
-    // ========== COMBINE EFFECTS ==========
-
-    float finalX = position.x + windXOffset + tapXOffset;
-    float finalY = position.y + windYOffset + tapYOffset + idleYOffset;
-
-    return float2(finalX, finalY);
+    // Combine all effects
+    return float2(
+        position.x + windOffset.x + tapOffset.x,
+        position.y + windOffset.y + tapOffset.y + idleYOffset
+    );
 }
