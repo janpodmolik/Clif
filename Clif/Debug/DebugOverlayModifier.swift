@@ -22,7 +22,7 @@ struct DebugOverlayModifier: ViewModifier {
                 .padding(.leading, 16)
                 .padding(.top, 8)
             }
-            .sheet(isPresented: $showDebugView) {
+            .fullScreenCover(isPresented: $showDebugView) {
                 DebugView()
             }
     }

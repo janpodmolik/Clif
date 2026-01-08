@@ -6,9 +6,27 @@ struct CliffView<Evolution: EvolutionType>: View {
     let evolution: Evolution
     let windLevel: WindLevel
 
-    // Debug overrides (nil = use evolution's config)
+    // Debug overrides (nil = use default config)
     var debugWindConfig: WindConfig? = nil
     var windDirection: CGFloat = 1.0
+
+    // Debug tap overrides
+    var debugTapType: TapAnimationType = .none
+    var debugTapConfig: TapConfig? = nil
+
+    // Debug idle override
+    var debugIdleConfig: IdleConfig? = nil
+
+    // Debug haptic override (for testing different haptic styles)
+    var debugHapticStyle: UIImpactFeedbackGenerator.FeedbackStyle? = nil
+
+    // External tap time binding (optional, for debug view)
+    var externalTapTime: Binding<TimeInterval>? = nil
+
+    // Internal tap state (used when no external binding provided)
+    @State private var internalTapTime: TimeInterval = -1
+    @State private var currentTapType: TapAnimationType = .none
+    @State private var currentTapConfig: TapConfig = .none
 
     // MARK: - Computed Properties
 
@@ -18,6 +36,30 @@ struct CliffView<Evolution: EvolutionType>: View {
 
     private var activeWindConfig: WindConfig {
         debugWindConfig ?? evolution.windConfig(for: windLevel)
+    }
+
+    private var activeTapType: TapAnimationType {
+        debugTapType != .none ? debugTapType : currentTapType
+    }
+
+    private var activeTapConfig: TapConfig {
+        debugTapConfig ?? currentTapConfig
+    }
+
+    private var activeIdleConfig: IdleConfig {
+        debugIdleConfig ?? AnimationConfigProvider.idleConfig(for: evolution)
+    }
+
+    private static var tapTypes: [TapAnimationType] {
+        [.wiggle, .squeeze, .jiggle]
+    }
+
+    private func randomTapType() -> TapAnimationType {
+        Self.tapTypes.randomElement() ?? .wiggle
+    }
+
+    private var currentTapTime: TimeInterval {
+        externalTapTime?.wrappedValue ?? internalTapTime
     }
 
     // MARK: - Body
@@ -35,22 +77,61 @@ struct CliffView<Evolution: EvolutionType>: View {
                         .scaledToFit()
                 }
 
-            // Pet with wind effect and mood-aware image (top layer)
+            // Pet with animation effects and mood-aware image (top layer)
             Image(evolution.assetName(for: windLevel))
                 .resizable()
                 .scaledToFit()
                 .frame(height: petHeight)
-                .windEffect(
+                .petAnimation(
                     intensity: activeWindConfig.intensity,
                     direction: windDirection,
                     bendCurve: activeWindConfig.bendCurve,
                     swayAmount: activeWindConfig.swayAmount,
-                    rotationAmount: activeWindConfig.rotationAmount
+                    rotationAmount: activeWindConfig.rotationAmount,
+                    tapTime: currentTapTime,
+                    tapType: activeTapType,
+                    tapConfig: activeTapConfig,
+                    idleConfig: activeIdleConfig
                 )
+                .onTapGesture {
+                    triggerTap()
+                }
                 .offset(y: petOffset)
                 .contentTransition(.opacity)
                 .animation(.easeInOut(duration: 0.5), value: windLevel)
         }
+    }
+
+    // MARK: - Actions
+
+    private func triggerTap() {
+        // Determine tap type - use debug override or random
+        let tapType: TapAnimationType
+        if debugTapType != .none {
+            tapType = debugTapType
+        } else {
+            tapType = randomTapType()
+        }
+
+        // Get config from provider (or debug override)
+        let tapConfig = debugTapConfig ?? AnimationConfigProvider.tapConfig(for: evolution, type: tapType)
+
+        // Update state
+        currentTapType = tapType
+        currentTapConfig = tapConfig
+
+        let now = Date().timeIntervalSinceReferenceDate
+
+        if let binding = externalTapTime {
+            binding.wrappedValue = now
+        } else {
+            internalTapTime = now
+        }
+
+        // Haptic feedback (use debug override if provided, otherwise use tap type's default)
+        let hapticStyle = debugHapticStyle ?? tapType.hapticStyle
+        let generator = UIImpactFeedbackGenerator(style: hapticStyle)
+        generator.impactOccurred()
     }
 }
 
@@ -58,6 +139,6 @@ struct CliffView<Evolution: EvolutionType>: View {
 
 #if DEBUG
 #Preview {
-    WindDebugView()
+    PetDebugView()
 }
 #endif

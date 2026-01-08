@@ -17,7 +17,7 @@ struct ClifApp: App {
         WindowGroup {
             ContentView()
                 .withDeepLinkHandling()
-//                .withDebugOverlay()
+                .withDebugOverlay()
         }
     }
 }

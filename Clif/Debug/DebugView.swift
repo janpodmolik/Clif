@@ -4,6 +4,7 @@ import FamilyControls
 import DeviceActivity
 
 struct DebugView: View {
+    @Environment(\.dismiss) private var dismiss
     @StateObject private var manager = ScreenTimeManager.shared
     @State private var isPickerPresented = false
     @State private var extensionLog = ""
@@ -19,7 +20,7 @@ struct DebugView: View {
     @State private var reportId = UUID()
 
     var body: some View {
-        NavigationView {
+        NavigationStack {
             ScrollView {
                 VStack(spacing: 16) {
                     if !manager.isAuthorized {
@@ -30,6 +31,7 @@ struct DebugView: View {
                         appSelectionSection
                         progressSection
                         debugToolsSection
+                        petAnimationSection
                         supabaseSection
                         extensionLogSection
                     }
@@ -37,6 +39,16 @@ struct DebugView: View {
                 .padding()
             }
             .navigationTitle("🛠 Debug")
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        dismiss()
+                    } label: {
+                        Image(systemName: "xmark.circle.fill")
+                            .foregroundStyle(.secondary)
+                    }
+                }
+            }
             .familyActivityPicker(
                 isPresented: $isPickerPresented,
                 selection: $manager.activitySelection
@@ -244,6 +256,21 @@ struct DebugView: View {
             .frame(maxWidth: .infinity)
             .padding()
             .background(Color.purple.opacity(0.2))
+            .cornerRadius(12)
+        }
+    }
+
+    // MARK: - Pet Animation Debug
+
+    private var petAnimationSection: some View {
+        NavigationLink(destination: PetDebugView()) {
+            HStack {
+                Image(systemName: "figure.wave")
+                Text("Pet Animation Debug")
+            }
+            .frame(maxWidth: .infinity)
+            .padding()
+            .background(Color.green.opacity(0.2))
             .cornerRadius(12)
         }
     }
