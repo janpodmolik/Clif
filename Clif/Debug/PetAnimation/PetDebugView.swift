@@ -123,11 +123,11 @@ struct PetDebugView: View {
                 // Background
                 Color.blue.opacity(0.3)
 
-                // Cliff with pet - render appropriate evolution type
+                // Floating island with pet - render appropriate evolution type
                 Group {
                     switch selectedEvolutionType {
                     case .blob:
-                        DebugCliffView(
+                        DebugFloatingIslandView(
                             screenHeight: geometry.size.height,
                             evolution: BlobEvolution.blob,
                             windLevel: windLevel,
@@ -142,7 +142,7 @@ struct PetDebugView: View {
                             externalTapTime: $tapTime
                         )
                     case .plant:
-                        DebugCliffView(
+                        DebugFloatingIslandView(
                             screenHeight: geometry.size.height,
                             evolution: PlantEvolution(rawValue: plantPhase) ?? .phase1,
                             windLevel: windLevel,

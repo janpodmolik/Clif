@@ -1,7 +1,7 @@
 import Foundation
 
-/// Represents the visual phases of the cliff mascot based on screen time usage.
-enum ClifPhase: Int, CaseIterable {
+/// Represents the visual phases of the pet based on screen time usage.
+enum EvolutionPhase: Int, CaseIterable {
     case phase1 = 0
     case phase2 = 10
     case phase3 = 20
@@ -15,7 +15,7 @@ enum ClifPhase: Int, CaseIterable {
     case fallen = 100
     
     /// Returns the appropriate phase based on current progress percentage.
-    static func from(progress: Int) -> ClifPhase {
+    static func from(progress: Int) -> EvolutionPhase {
         // Find the highest phase that is less than or equal to current progress
         return allCases.filter { $0.rawValue <= progress }.max(by: { $0.rawValue < $1.rawValue }) ?? .phase1
     }
@@ -29,7 +29,7 @@ enum ClifPhase: Int, CaseIterable {
         case .phase1: return "Journey begins"
         case .phase5: return "Halfway there"
         case .phase9: return "Warning: Approaching the edge!"
-        case .fallen: return "You fell off the cliff..."
+        case .fallen: return "You fell off the floating island..."
         default: return "Hold on..."
         }
     }

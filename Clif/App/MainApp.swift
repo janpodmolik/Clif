@@ -2,7 +2,7 @@ import SwiftUI
 import UserNotifications
 
 @main
-struct ClifApp: App {
+struct MainApp: App {
 
     @UIApplicationDelegateAdaptor(AppDelegate.self)
     var appDelegate

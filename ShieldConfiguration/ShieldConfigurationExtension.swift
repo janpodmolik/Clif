@@ -10,7 +10,7 @@ class ShieldConfigurationExtension: ShieldConfigurationDataSource {
     private func getShieldConfiguration() -> ShieldConfiguration {
         let progress = SharedDefaults.currentProgress
         let dailyLimit = SharedDefaults.dailyLimitMinutes
-        let phase = ClifPhase.from(progress: progress)
+        let phase = EvolutionPhase.from(progress: progress)
         
         // Calculate remaining time
         let usedMinutes = (dailyLimit * progress) / 100
@@ -27,7 +27,7 @@ class ShieldConfigurationExtension: ShieldConfigurationDataSource {
             backgroundBlurStyle: .systemMaterial,
             backgroundColor: UIColor.white,
             icon: UIImage(named: phase.imageName),
-            title: ShieldConfiguration.Label(text: "Clif", color: .black),
+            title: ShieldConfiguration.Label(text: "Ooomi", color: .black),
             subtitle: ShieldConfiguration.Label(text: subtitleText, color: .gray),
             primaryButtonLabel: ShieldConfiguration.Label(text: "Close App", color: .white),
             primaryButtonBackgroundColor: .systemGray,

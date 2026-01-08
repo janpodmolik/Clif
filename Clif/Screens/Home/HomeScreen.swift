@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Main home screen displaying the cliff scene with pet and status card.
+/// Main home screen displaying the floating island scene with pet and status card.
 struct HomeScreen: View {
     @Environment(\.colorScheme) private var colorScheme
 
@@ -14,8 +14,8 @@ struct HomeScreen: View {
                     DayBackgroundView()
                 }
 
-                // Cliff with pet
-                CliffView(
+                // Floating island with pet
+                FloatingIslandView(
                     screenHeight: geometry.size.height,
                     evolution: PlantEvolution.phase1,
                     windLevel: .low

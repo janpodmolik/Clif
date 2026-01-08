@@ -1,7 +1,7 @@
 import SwiftUI
 
-/// Displays the cliff scene with rock, grass, and animated pet.
-struct CliffView<Evolution: EvolutionType>: View {
+/// Displays the floating island scene with rock, grass, and animated pet.
+struct FloatingIslandView<Evolution: EvolutionType>: View {
     let screenHeight: CGFloat
     let evolution: Evolution
     let windLevel: WindLevel
@@ -13,7 +13,7 @@ struct CliffView<Evolution: EvolutionType>: View {
 
     // MARK: - Computed Properties
 
-    private var cliffHeight: CGFloat { screenHeight * 0.6 }
+    private var islandHeight: CGFloat { screenHeight * 0.6 }
     private var petHeight: CGFloat { screenHeight * 0.15 }
     private var petOffset: CGFloat { -petHeight * 0.65 }
 
@@ -41,7 +41,7 @@ struct CliffView<Evolution: EvolutionType>: View {
             Image("rock")
                 .resizable()
                 .scaledToFit()
-                .frame(maxHeight: cliffHeight)
+                .frame(maxHeight: islandHeight)
                 .overlay(alignment: .top) {
                     Image("grass")
                         .resizable()

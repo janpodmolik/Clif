@@ -22,11 +22,11 @@
 		B4924AE22EE57EEE0033475C /* ManagedSettingsUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B4924AE12EE57EEE0033475C /* ManagedSettingsUI.framework */; };
 		B4924AEA2EE57EEE0033475C /* ShieldConfiguration.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = B4924ADE2EE57EEE0033475C /* ShieldConfiguration.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		B4924AF72EE5807E0033475C /* SharedDefaults.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4924AF52EE5807E0033475C /* SharedDefaults.swift */; };
-		B4924AF82EE5807E0033475C /* ClifModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4924AF42EE5807E0033475C /* ClifModel.swift */; };
+		B4924AF82EE5807E0033475C /* EvolutionModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4924AF42EE5807E0033475C /* EvolutionModel.swift */; };
 		B4924AF92EE5807E0033475C /* SharedDefaults.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4924AF52EE5807E0033475C /* SharedDefaults.swift */; };
-		B4924AFA2EE5807E0033475C /* ClifModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4924AF42EE5807E0033475C /* ClifModel.swift */; };
+		B4924AFA2EE5807E0033475C /* EvolutionModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4924AF42EE5807E0033475C /* EvolutionModel.swift */; };
 		B4924AFB2EE5807E0033475C /* SharedDefaults.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4924AF52EE5807E0033475C /* SharedDefaults.swift */; };
-		B4924AFC2EE5807E0033475C /* ClifModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4924AF42EE5807E0033475C /* ClifModel.swift */; };
+		B4924AFC2EE5807E0033475C /* EvolutionModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4924AF42EE5807E0033475C /* EvolutionModel.swift */; };
 		B493878D2F0E39F40090C730 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B493878C2F0E39F40090C730 /* Assets.xcassets */; };
 		B493878E2F0E39F40090C730 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B493878C2F0E39F40090C730 /* Assets.xcassets */; };
 		B493878F2F0E39F40090C730 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B493878C2F0E39F40090C730 /* Assets.xcassets */; };
@@ -119,7 +119,7 @@
 		B4924ADE2EE57EEE0033475C /* ShieldConfiguration.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = ShieldConfiguration.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		B4924ADF2EE57EEE0033475C /* ManagedSettings.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ManagedSettings.framework; path = System/Library/Frameworks/ManagedSettings.framework; sourceTree = SDKROOT; };
 		B4924AE12EE57EEE0033475C /* ManagedSettingsUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ManagedSettingsUI.framework; path = Library/Frameworks/ManagedSettingsUI.framework; sourceTree = DEVELOPER_DIR; };
-		B4924AF42EE5807E0033475C /* ClifModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClifModel.swift; sourceTree = "<group>"; };
+		B4924AF42EE5807E0033475C /* EvolutionModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EvolutionModel.swift; sourceTree = "<group>"; };
 		B4924AF52EE5807E0033475C /* SharedDefaults.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedDefaults.swift; sourceTree = "<group>"; };
 		B493878C2F0E39F40090C730 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		B49387922F0E428B0090C730 /* BlobEvolution.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlobEvolution.swift; sourceTree = "<group>"; };
@@ -310,7 +310,7 @@
 			children = (
 				B49387962F0E428B0090C730 /* Evolution */,
 				B49387972F0E428B0090C730 /* WindConfig.swift */,
-				B4924AF42EE5807E0033475C /* ClifModel.swift */,
+				B4924AF42EE5807E0033475C /* EvolutionModel.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -572,7 +572,7 @@
 			files = (
 				B4924AFB2EE5807E0033475C /* SharedDefaults.swift in Sources */,
 				B45862442EE5FAF60088CB78 /* ActivityReportContext.swift in Sources */,
-				B4924AFC2EE5807E0033475C /* ClifModel.swift in Sources */,
+				B4924AFC2EE5807E0033475C /* EvolutionModel.swift in Sources */,
 				B493879D2F0E428B0090C730 /* PlantEvolution.swift in Sources */,
 				B493879E2F0E428B0090C730 /* WindConfig.swift in Sources */,
 				B493879F2F0E428B0090C730 /* EvolutionType.swift in Sources */,
@@ -598,7 +598,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				B4924AF92EE5807E0033475C /* SharedDefaults.swift in Sources */,
-				B4924AFA2EE5807E0033475C /* ClifModel.swift in Sources */,
+				B4924AFA2EE5807E0033475C /* EvolutionModel.swift in Sources */,
 				B45862172EE5B92C0088CB78 /* Constants.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -614,7 +614,7 @@
 				B493879A2F0E428B0090C730 /* EvolutionType.swift in Sources */,
 				B493879B2F0E428B0090C730 /* WindLevel.swift in Sources */,
 				B493879C2F0E428B0090C730 /* BlobEvolution.swift in Sources */,
-				B4924AF82EE5807E0033475C /* ClifModel.swift in Sources */,
+				B4924AF82EE5807E0033475C /* EvolutionModel.swift in Sources */,
 				B45862152EE5B92C0088CB78 /* Constants.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

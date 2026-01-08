@@ -1,6 +1,6 @@
 import Foundation
 
-/// Centralized constants for the Clif app
+/// Centralized constants for the app
 enum AppConstants {
     /// App Group identifier for sharing data between app and extensions
     static let appGroupIdentifier = "group.com.janpodmolik.Clif"
