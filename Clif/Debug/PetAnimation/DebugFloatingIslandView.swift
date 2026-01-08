@@ -5,6 +5,7 @@ import SwiftUI
 /// Use this for testing and configuring animation parameters.
 struct DebugFloatingIslandView<Evolution: EvolutionType>: View {
     let screenHeight: CGFloat
+    let screenWidth: CGFloat?
     let evolution: Evolution
     let windLevel: WindLevel
 
@@ -106,7 +107,8 @@ struct DebugFloatingIslandView<Evolution: EvolutionType>: View {
                         tapTime: currentTapTime,
                         tapType: activeTapType,
                         tapConfig: activeTapConfig,
-                        idleConfig: activeIdleConfig
+                        idleConfig: activeIdleConfig,
+                        screenWidth: screenWidth
                     )
                     .onTapGesture {
                         triggerTap()

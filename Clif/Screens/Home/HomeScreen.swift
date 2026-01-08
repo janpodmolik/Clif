@@ -28,6 +28,7 @@ struct HomeScreen: View {
                 // Floating island with pet
                 FloatingIslandView(
                     screenHeight: geometry.size.height,
+                    screenWidth: geometry.size.width,
                     evolution: PlantEvolution.phase4,
                     windLevel: .high,
                     windDirection: windDirection

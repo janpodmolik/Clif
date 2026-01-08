@@ -24,6 +24,9 @@ struct PetAnimationEffect: ViewModifier {
     // Idle parameters
     let idleConfig: IdleConfig
 
+    // Screen width for calculating max sample offset (pet can fly to screen edge)
+    let screenWidth: CGFloat?
+
     @State private var startTime = Date()
 
     /// Adjusted idle config with wind reduction applied
@@ -43,19 +46,50 @@ struct PetAnimationEffect: ViewModifier {
         )
     }
 
+    /// Creates the shader with all parameters
+    nonisolated private func createShader(
+        time: Float,
+        relativeTapTime: Float,
+        idle: IdleConfig,
+        size: CGSize
+    ) -> Shader {
+        ShaderLibrary.petDistortion(
+            .float(time),
+            // Wind params
+            .float(Float(intensity)),
+            .float(Float(direction)),
+            .float(Float(bendCurve)),
+            .float(Float(swayAmount)),
+            // Tap params
+            .float(relativeTapTime),
+            .float(Float(tapType.rawValue)),
+            .float(Float(tapConfig.intensity)),
+            .float(Float(tapConfig.decayRate)),
+            .float(Float(tapConfig.frequency)),
+            // Idle params (with wind reduction applied)
+            .float(idle.enabled ? 1.0 : 0.0),
+            .float(Float(idle.amplitude)),
+            .float(Float(idle.frequency)),
+            .float(Float(idle.focusStart)),
+            .float(Float(idle.focusEnd)),
+            // Size
+            .float2(size)
+        )
+    }
+
     func body(content: Content) -> some View {
         TimelineView(.animation) { context in
-            let time = context.date.timeIntervalSince(startTime)
+            let time: TimeInterval = context.date.timeIntervalSince(startTime)
 
             // Wave function for rotation (synchronized with shader)
             // Pet bends IN the wind direction (wind pushes it)
             // Forward swing (with wind): 100% amplitude
             // Back swing (against wind): 50% amplitude
-            let rawWave = sin(time * 1.5) * 0.6 + sin(time * 2.3) * 0.3 + sin(time * 0.7) * 0.1
-            let wave = rawWave < 0 ? rawWave : rawWave * 0.5
+            let rawWave: Double = sin(time * 1.5) * 0.6 + sin(time * 2.3) * 0.3 + sin(time * 0.7) * 0.1
+            let wave: Double = rawWave < 0 ? rawWave : rawWave * 0.5
 
             // Rotation follows wind direction (negative direction = negative rotation)
-            let rotation = -wave * intensity * direction * rotationAmount * 6
+            let rotation: Double = -wave * intensity * direction * rotationAmount * 6
 
             // Calculate tap time relative to shader start time
             let relativeTapTime: Float = tapTime > 0
@@ -63,34 +97,22 @@ struct PetAnimationEffect: ViewModifier {
                 : -1.0
 
             // Use adjusted idle config with wind reduction
-            let idle = adjustedIdleConfig
+            let idle: IdleConfig = adjustedIdleConfig
+
+            // Calculate max sample offset
+            let maxOffset: CGFloat = (screenWidth ?? 400) * 0.5
 
             content
                 .visualEffect { view, proxy in
-                    view.distortionEffect(
-                        ShaderLibrary.petDistortion(
-                            .float(Float(time)),
-                            // Wind params
-                            .float(Float(intensity)),
-                            .float(Float(direction)),
-                            .float(Float(bendCurve)),
-                            .float(Float(swayAmount)),
-                            // Tap params
-                            .float(relativeTapTime),
-                            .float(Float(tapType.rawValue)),
-                            .float(Float(tapConfig.intensity)),
-                            .float(Float(tapConfig.decayRate)),
-                            .float(Float(tapConfig.frequency)),
-                            // Idle params (with wind reduction applied)
-                            .float(idle.enabled ? 1.0 : 0.0),
-                            .float(Float(idle.amplitude)),
-                            .float(Float(idle.frequency)),
-                            .float(Float(idle.focusStart)),
-                            .float(Float(idle.focusEnd)),
-                            // Size
-                            .float2(proxy.size)
-                        ),
-                        maxSampleOffset: CGSize(width: 100, height: 50)
+                    let shader = createShader(
+                        time: Float(time),
+                        relativeTapTime: relativeTapTime,
+                        idle: idle,
+                        size: proxy.size
+                    )
+                    return view.distortionEffect(
+                        shader,
+                        maxSampleOffset: CGSize(width: maxOffset, height: 50)
                     )
                 }
                 .rotationEffect(.degrees(rotation), anchor: .bottom)
@@ -113,6 +135,7 @@ extension View {
     ///   - tapType: Type of tap animation to play
     ///   - tapConfig: Configuration for tap animation parameters
     ///   - idleConfig: Configuration for idle breathing animation
+    ///   - screenWidth: Screen width for max sample offset (allows pet to fly to screen edge)
     func petAnimation(
         intensity: CGFloat = 0.5,
         direction: CGFloat = 1.0,
@@ -122,7 +145,8 @@ extension View {
         tapTime: TimeInterval = -1,
         tapType: TapAnimationType = .none,
         tapConfig: TapConfig = .none,
-        idleConfig: IdleConfig = .default
+        idleConfig: IdleConfig = .default,
+        screenWidth: CGFloat? = nil
     ) -> some View {
         modifier(PetAnimationEffect(
             intensity: intensity,
@@ -133,7 +157,8 @@ extension View {
             tapTime: tapTime,
             tapType: tapType,
             tapConfig: tapConfig,
-            idleConfig: idleConfig
+            idleConfig: idleConfig,
+            screenWidth: screenWidth
         ))
     }
 }

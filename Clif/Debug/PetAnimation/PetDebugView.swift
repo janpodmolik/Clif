@@ -144,6 +144,7 @@ struct PetDebugView: View {
                     case .blob:
                         DebugFloatingIslandView(
                             screenHeight: geometry.size.height,
+                            screenWidth: geometry.size.width,
                             evolution: BlobEvolution.blob,
                             windLevel: windLevel,
                             debugWindConfig: customWindConfig,
@@ -161,6 +162,7 @@ struct PetDebugView: View {
                     case .plant:
                         DebugFloatingIslandView(
                             screenHeight: geometry.size.height,
+                            screenWidth: geometry.size.width,
                             evolution: PlantEvolution(rawValue: plantPhase) ?? .phase1,
                             windLevel: windLevel,
                             debugWindConfig: customWindConfig,
@@ -541,7 +543,7 @@ struct PetDebugView: View {
         HStack {
             Text("Sway: \(customSwayAmount, specifier: "%.1f")")
                 .frame(width: 120, alignment: .leading)
-            Slider(value: $customSwayAmount, in: 0...5)
+            Slider(value: $customSwayAmount, in: 0...10)
         }
 
         HStack {

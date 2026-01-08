@@ -3,9 +3,24 @@ import SwiftUI
 /// Displays the floating island scene with rock, grass, and animated pet.
 struct FloatingIslandView<Evolution: EvolutionType>: View {
     let screenHeight: CGFloat
+    let screenWidth: CGFloat?
     let evolution: Evolution
     let windLevel: WindLevel
     var windDirection: CGFloat = 1.0
+
+    init(
+        screenHeight: CGFloat,
+        screenWidth: CGFloat? = nil,
+        evolution: Evolution,
+        windLevel: WindLevel,
+        windDirection: CGFloat = 1.0
+    ) {
+        self.screenHeight = screenHeight
+        self.screenWidth = screenWidth
+        self.evolution = evolution
+        self.windLevel = windLevel
+        self.windDirection = windDirection
+    }
 
     // Internal tap state
     @State private var internalTapTime: TimeInterval = -1
@@ -71,7 +86,8 @@ struct FloatingIslandView<Evolution: EvolutionType>: View {
                         tapTime: internalTapTime,
                         tapType: currentTapType,
                         tapConfig: currentTapConfig,
-                        idleConfig: idleConfig
+                        idleConfig: idleConfig,
+                        screenWidth: screenWidth
                     )
                     .onTapGesture {
                         triggerTap()
