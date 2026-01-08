@@ -5,6 +5,7 @@ struct FloatingIslandView<Evolution: EvolutionType>: View {
     let screenHeight: CGFloat
     let evolution: Evolution
     let windLevel: WindLevel
+    var windDirection: CGFloat = 1.0
 
     // Internal tap state
     @State private var internalTapTime: TimeInterval = -1
@@ -63,7 +64,7 @@ struct FloatingIslandView<Evolution: EvolutionType>: View {
                     .frame(height: petHeight)
                     .petAnimation(
                         intensity: windConfig.intensity,
-                        direction: 1.0,
+                        direction: windDirection,
                         bendCurve: windConfig.bendCurve,
                         swayAmount: windConfig.swayAmount,
                         rotationAmount: windConfig.rotationAmount,

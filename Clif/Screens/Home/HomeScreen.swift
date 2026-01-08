@@ -4,6 +4,8 @@ import SwiftUI
 struct HomeScreen: View {
     @Environment(\.colorScheme) private var colorScheme
 
+    private let windDirection = WindDirection.forToday()
+
     var body: some View {
         GeometryReader { geometry in
             ZStack {
@@ -18,6 +20,7 @@ struct HomeScreen: View {
                 // Wind area behind and above the pet (0.25-0.50 = upper-middle of screen)
                 WindLinesView(
                     windLevel: .high,
+                    direction: windDirection,
                     windAreaTop: 0.25,
                     windAreaBottom: 0.50
                 )
@@ -26,7 +29,8 @@ struct HomeScreen: View {
                 FloatingIslandView(
                     screenHeight: geometry.size.height,
                     evolution: PlantEvolution.phase4,
-                    windLevel: .high
+                    windLevel: .high,
+                    windDirection: windDirection
                 )
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
                 .ignoresSafeArea(.container, edges: .bottom)

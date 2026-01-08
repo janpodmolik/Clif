@@ -541,7 +541,7 @@ struct PetDebugView: View {
         HStack {
             Text("Sway: \(customSwayAmount, specifier: "%.1f")")
                 .frame(width: 120, alignment: .leading)
-            Slider(value: $customSwayAmount, in: 0...2)
+            Slider(value: $customSwayAmount, in: 0...5)
         }
 
         HStack {
