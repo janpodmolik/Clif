@@ -129,6 +129,9 @@ struct PetDebugView: View {
                 // Background
                 Color.blue.opacity(0.3)
 
+                // Wind lines effect (debug colors: blue=wave, green=sCurve, red=loop)
+                WindLinesView(windLevel: windLevel, debugColors: true)
+
                 // Floating island with pet - render appropriate evolution type
                 Group {
                     switch selectedEvolutionType {

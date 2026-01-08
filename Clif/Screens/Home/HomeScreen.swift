@@ -14,6 +14,9 @@ struct HomeScreen: View {
                     DayBackgroundView()
                 }
 
+                // Wind lines effect (scales with wind level)
+                WindLinesView(windLevel: .low)
+
                 // Floating island with pet
                 FloatingIslandView(
                     screenHeight: geometry.size.height,
