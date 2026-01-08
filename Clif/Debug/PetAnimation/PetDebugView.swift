@@ -43,6 +43,12 @@ struct PetDebugView: View {
     @State private var customTapDecayRate: CGFloat = TapConfig.default(for: .wiggle).decayRate
     @State private var customTapFrequency: CGFloat = TapConfig.default(for: .wiggle).frequency
 
+    // Speech bubble debug
+    @State private var isSpeechBubbleExpanded: Bool = false
+    @State private var debugBubblePosition: SpeechBubblePosition? = .right
+    @State private var debugSpeechBubbleState = SpeechBubbleState()
+    @State private var debugCustomText: String = ""
+
     enum EvolutionTypeOption: String, CaseIterable {
         case blob = "Blob"
         case plant = "Plant"
@@ -139,7 +145,9 @@ struct PetDebugView: View {
                             debugHapticType: selectedHapticType,
                             debugHapticDuration: hapticDuration,
                             debugHapticIntensity: Float(hapticIntensity),
-                            externalTapTime: $tapTime
+                            externalTapTime: $tapTime,
+                            debugSpeechBubbleState: debugSpeechBubbleState,
+                            debugCustomText: debugCustomText
                         )
                     case .plant:
                         DebugFloatingIslandView(
@@ -154,7 +162,9 @@ struct PetDebugView: View {
                             debugHapticType: selectedHapticType,
                             debugHapticDuration: hapticDuration,
                             debugHapticIntensity: Float(hapticIntensity),
-                            externalTapTime: $tapTime
+                            externalTapTime: $tapTime,
+                            debugSpeechBubbleState: debugSpeechBubbleState,
+                            debugCustomText: debugCustomText
                         )
                     }
                 }
@@ -308,6 +318,17 @@ struct PetDebugView: View {
                 ) {
                     tapControlsContent
                 }
+
+                Divider()
+
+                // ===== SPEECH BUBBLE SECTION =====
+                collapsibleSection(
+                    title: "Speech Bubble",
+                    isExpanded: $isSpeechBubbleExpanded,
+                    onReset: resetSpeechBubbleToDefaults
+                ) {
+                    speechBubbleControlsContent
+                }
             }
         }
         .scrollIndicators(.hidden)
@@ -394,6 +415,12 @@ struct PetDebugView: View {
         customTapIntensity = defaults.intensity
         customTapDecayRate = defaults.decayRate
         customTapFrequency = defaults.frequency
+    }
+
+    private func resetSpeechBubbleToDefaults() {
+        debugBubblePosition = .right
+        debugCustomText = ""
+        debugSpeechBubbleState.hide()
     }
 
     // MARK: - Idle Controls
@@ -624,6 +651,44 @@ struct PetDebugView: View {
             customTapDecayRate = defaults.decayRate
             customTapFrequency = defaults.frequency
         }
+    }
+
+    // MARK: - Speech Bubble Controls
+
+    @ViewBuilder
+    private var speechBubbleControlsContent: some View {
+        // Position picker
+        Picker("Position", selection: $debugBubblePosition) {
+            Text("Left").tag(SpeechBubblePosition.left as SpeechBubblePosition?)
+            Text("Right").tag(SpeechBubblePosition.right as SpeechBubblePosition?)
+        }
+        .pickerStyle(.segmented)
+
+        // Custom text field
+        TextField("Text (empty = emoji)", text: $debugCustomText)
+            .textFieldStyle(.roundedBorder)
+
+        // Manual trigger button
+        Button {
+            triggerDebugBubble()
+        } label: {
+            HStack {
+                Image(systemName: "bubble.left.fill")
+                Text("Show Speech Bubble")
+            }
+            .frame(maxWidth: .infinity)
+        }
+        .buttonStyle(.borderedProminent)
+        .tint(.green)
+    }
+
+    private func triggerDebugBubble() {
+        debugSpeechBubbleState.forceShow(
+            mood: Mood(from: windLevel),
+            source: .random,
+            position: debugBubblePosition ?? .right,
+            customText: debugCustomText.isEmpty ? nil : debugCustomText
+        )
     }
 
     // MARK: - Actions

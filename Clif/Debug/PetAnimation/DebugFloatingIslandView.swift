@@ -27,6 +27,12 @@ struct DebugFloatingIslandView<Evolution: EvolutionType>: View {
     // External tap time binding (optional, for debug view)
     var externalTapTime: Binding<TimeInterval>? = nil
 
+    // Speech bubble state (optional external binding for debug)
+    var debugSpeechBubbleState: SpeechBubbleState? = nil
+
+    // Custom text for speech bubble (for debug)
+    var debugCustomText: String = ""
+
     // Internal tap state (used when no external binding provided)
     @State private var internalTapTime: TimeInterval = -1
     @State private var currentTapType: TapAnimationType = .none
@@ -52,6 +58,10 @@ struct DebugFloatingIslandView<Evolution: EvolutionType>: View {
 
     private var activeIdleConfig: IdleConfig {
         debugIdleConfig ?? AnimationConfigProvider.idleConfig(for: evolution)
+    }
+
+    private var currentMood: Mood {
+        Mood(from: windLevel)
     }
 
     private static var tapTypes: [TapAnimationType] {
@@ -81,28 +91,35 @@ struct DebugFloatingIslandView<Evolution: EvolutionType>: View {
                         .scaledToFit()
                 }
 
-            // Pet with animation effects and mood-aware image (top layer)
-            Image(evolution.assetName(for: windLevel))
-                .resizable()
-                .scaledToFit()
-                .frame(height: petHeight)
-                .petAnimation(
-                    intensity: activeWindConfig.intensity,
-                    direction: windDirection,
-                    bendCurve: activeWindConfig.bendCurve,
-                    swayAmount: activeWindConfig.swayAmount,
-                    rotationAmount: activeWindConfig.rotationAmount,
-                    tapTime: currentTapTime,
-                    tapType: activeTapType,
-                    tapConfig: activeTapConfig,
-                    idleConfig: activeIdleConfig
-                )
-                .onTapGesture {
-                    triggerTap()
+            // Pet with animation effects, speech bubble, and mood-aware image (top layer)
+            ZStack {
+                Image(evolution.assetName(for: windLevel))
+                    .resizable()
+                    .scaledToFit()
+                    .frame(height: petHeight)
+                    .petAnimation(
+                        intensity: activeWindConfig.intensity,
+                        direction: windDirection,
+                        bendCurve: activeWindConfig.bendCurve,
+                        swayAmount: activeWindConfig.swayAmount,
+                        rotationAmount: activeWindConfig.rotationAmount,
+                        tapTime: currentTapTime,
+                        tapType: activeTapType,
+                        tapConfig: activeTapConfig,
+                        idleConfig: activeIdleConfig
+                    )
+                    .onTapGesture {
+                        triggerTap()
+                    }
+
+                // Speech bubble overlay (only if debug state provided)
+                if let bubbleState = debugSpeechBubbleState, let config = bubbleState.currentConfig {
+                    SpeechBubbleView(config: config, isVisible: bubbleState.isVisible)
                 }
-                .offset(y: petOffset)
-                .contentTransition(.opacity)
-                .animation(.easeInOut(duration: 0.5), value: windLevel)
+            }
+            .offset(y: petOffset)
+            .contentTransition(.opacity)
+            .animation(.easeInOut(duration: 0.5), value: windLevel)
         }
     }
 
@@ -138,6 +155,15 @@ struct DebugFloatingIslandView<Evolution: EvolutionType>: View {
         } else {
             let generator = UIImpactFeedbackGenerator(style: tapType.hapticStyle)
             generator.impactOccurred()
+        }
+
+        // Trigger speech bubble with custom text if provided
+        if let bubbleState = debugSpeechBubbleState {
+            bubbleState.forceShow(
+                mood: currentMood,
+                source: .random,
+                customText: debugCustomText.isEmpty ? nil : debugCustomText
+            )
         }
     }
 }
