@@ -1,7 +1,7 @@
 import SwiftUI
 
-/// A standalone view that handles evolution transition between two assets.
-/// Uses TimelineView for smooth Metal shader-based animations.
+/// A standalone view that handles evolution transition between two pet assets.
+/// Uses TimelineView for smooth Metal shader-based glow burst animation.
 struct EvolutionTransitionView: View {
     let isActive: Bool
     let config: EvolutionTransitionConfig
@@ -21,10 +21,9 @@ struct EvolutionTransitionView: View {
 
                 ZStack {
                     // Old pet (fading out) - hide after flash completes
-                    if progress < config.type.oldImageHidePoint {
+                    if progress < EvolutionTransitionConfig.oldImageHidePoint {
                         petImage(assetName: oldAssetName, size: size)
-                            .applyEvolutionEffect(
-                                type: config.type,
+                            .applyGlowBurst(
                                 progress: progress,
                                 config: config,
                                 isNewImage: false,
@@ -32,11 +31,10 @@ struct EvolutionTransitionView: View {
                             )
                     }
 
-                    // New pet (fading in) - show after swap point
-                    if progress >= config.type.assetSwapPoint {
+                    // New pet (fading in) - show during flash
+                    if progress >= EvolutionTransitionConfig.assetSwapPoint {
                         petImage(assetName: newAssetName, size: size)
-                            .applyEvolutionEffect(
-                                type: config.type,
+                            .applyGlowBurst(
                                 progress: progress,
                                 config: config,
                                 isNewImage: true,
@@ -78,65 +76,43 @@ struct EvolutionTransitionView: View {
             .resizable()
             .scaledToFit()
             .frame(width: size.width, height: size.height)
-            .drawingGroup() // Flatten to bitmap for proper alpha compositing
+            .drawingGroup()
     }
 }
 
-// MARK: - Effect Application
+// MARK: - Glow Burst Shader
 
 private extension View {
-    @ViewBuilder
-    func applyEvolutionEffect(
-        type: EvolutionTransitionType,
+    func applyGlowBurst(
         progress: CGFloat,
         config: EvolutionTransitionConfig,
         isNewImage: Bool,
         size: CGSize
     ) -> some View {
-        switch type {
-        case .dissolve:
-            self.colorEffect(
-                ShaderLibrary.evolutionDissolve(
-                    .float(Float(progress)),
-                    .float(Float(config.dissolveNoiseScale)),
-                    .float(Float(config.dissolveEdgeSoftness)),
-                    .float2(size),
-                    .float(isNewImage ? 1.0 : 0.0)
-                )
+        self.colorEffect(
+            ShaderLibrary.evolutionGlowBurst(
+                .float(Float(progress)),
+                .float3(
+                    Float(config.glowColorR),
+                    Float(config.glowColorG),
+                    Float(config.glowColorB)
+                ),
+                .float(Float(config.glowPeakIntensity)),
+                .float(Float(config.flashDuration / config.duration)),
+                .float2(size),
+                .float(isNewImage ? 1.0 : 0.0)
             )
-
-        case .glowBurst:
-            self.colorEffect(
-                ShaderLibrary.evolutionGlowBurst(
-                    .float(Float(progress)),
-                    .float3(
-                        Float(config.glowColorR),
-                        Float(config.glowColorG),
-                        Float(config.glowColorB)
-                    ),
-                    .float(Float(config.glowPeakIntensity)),
-                    .float(Float(config.flashDuration / config.duration)),
-                    .float2(size),
-                    .float(isNewImage ? 1.0 : 0.0)
-                )
-            )
-        }
+        )
     }
 }
 
 // MARK: - Preview
 
-#Preview("Evolution Transition - Dissolve") {
-    EvolutionTransitionPreview(type: .dissolve)
-}
-
-#Preview("Evolution Transition - Glow Burst") {
-    EvolutionTransitionPreview(type: .glowBurst)
+#Preview("Evolution Transition") {
+    EvolutionTransitionPreview()
 }
 
 private struct EvolutionTransitionPreview: View {
-    let type: EvolutionTransitionType
-
     @State private var isActive = false
     @State private var key = UUID()
 
@@ -147,7 +123,7 @@ private struct EvolutionTransitionPreview: View {
             if isActive {
                 EvolutionTransitionView(
                     isActive: true,
-                    config: .default(for: type),
+                    config: .default,
                     oldAssetName: "plant/happy/1",
                     newAssetName: "plant/happy/2",
                     onComplete: {
@@ -166,7 +142,7 @@ private struct EvolutionTransitionPreview: View {
 
             Spacer()
 
-            Button("Trigger \(type.displayName)") {
+            Button("Trigger Evolution") {
                 key = UUID()
                 isActive = true
             }

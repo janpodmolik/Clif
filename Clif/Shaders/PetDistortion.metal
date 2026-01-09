@@ -148,98 +148,47 @@ float calculateIdleYOffset(
     return distFromBottom * (1.0 - breatheScale);
 }
 
-// MARK: - Evolution Transition Helper Functions
+// MARK: - Evolution Glow Burst Effect
 
-/// Simple hash function for noise generation
-float hash(float2 p) {
+/// Simple hash for pseudo-random noise
+float glowHash(float2 p) {
     return fract(sin(dot(p, float2(127.1, 311.7))) * 43758.5453);
 }
 
-/// Value noise for organic dissolve pattern
-float valueNoise(float2 p) {
+/// Multi-scale noise for organic glow pattern
+float glowNoise(float2 p) {
     float2 i = floor(p);
     float2 f = fract(p);
-
-    // Smooth interpolation
     float2 u = f * f * (3.0 - 2.0 * f);
 
     return mix(
-        mix(hash(i + float2(0, 0)), hash(i + float2(1, 0)), u.x),
-        mix(hash(i + float2(0, 1)), hash(i + float2(1, 1)), u.x),
+        mix(glowHash(i), glowHash(i + float2(1, 0)), u.x),
+        mix(glowHash(i + float2(0, 1)), glowHash(i + float2(1, 1)), u.x),
         u.y
     );
 }
 
-/// Multi-octave fractal noise for more organic patterns
-float fractalNoise(float2 p, int octaves) {
+/// Fractal noise combining multiple octaves
+float glowFractalNoise(float2 p, float time) {
     float value = 0.0;
     float amplitude = 0.5;
-    float frequency = 1.0;
 
-    for (int i = 0; i < octaves; i++) {
-        value += amplitude * valueNoise(p * frequency);
-        amplitude *= 0.5;
-        frequency *= 2.0;
-    }
+    // Layer 1: Base pattern
+    value += amplitude * glowNoise(p * 3.0 + time * 0.5);
+    amplitude *= 0.5;
+
+    // Layer 2: Medium detail
+    value += amplitude * glowNoise(p * 6.0 - time * 0.3);
+    amplitude *= 0.5;
+
+    // Layer 3: Fine detail
+    value += amplitude * glowNoise(p * 12.0 + time * 0.7);
+
     return value;
 }
 
-// MARK: - Evolution Dissolve Effect
-
-/// Noise-based dissolve that scatters pixels organically.
-/// Progress 0→0.55: old image dissolves out (longer buildup, accelerating)
-/// Progress 0.45→1: new image dissolves in (overlap during transition)
-[[ stitchable ]] half4 evolutionDissolve(
-    float2 position,
-    half4 color,
-    float progress,
-    float noiseScale,
-    float edgeSoftness,
-    float2 size,
-    float isNewImage
-) {
-    // Normalized UV
-    float2 uv = position / size;
-
-    // Generate noise pattern
-    float noise = fractalNoise(uv * noiseScale, 4);
-
-    // Add some variation from center (dissolve from outside in)
-    float2 centerDist = uv - float2(0.5, 0.5);
-    float radialDist = length(centerDist);
-    noise = noise * 0.7 + (1.0 - radialDist) * 0.3;
-
-    // Phase boundaries
-    float oldImageEnd = 0.55;
-    float newImageStart = 0.45;
-
-    // Calculate threshold based on progress
-    float threshold;
-    if (isNewImage < 0.5) {
-        // Old image: dissolve OUT
-        // Use ease-in curve for slower start, faster finish
-        float dissolveProgress = clamp(progress / oldImageEnd, 0.0, 1.0);
-        float easedProgress = dissolveProgress * dissolveProgress; // Quadratic ease-in
-
-        threshold = easedProgress * 1.2; // Slightly overshoot to ensure full dissolve
-        float alpha = smoothstep(threshold - edgeSoftness, threshold + edgeSoftness, noise);
-        return half4(color.rgb, color.a * half(alpha));
-    } else {
-        // New image: dissolve IN
-        float dissolveProgress = clamp((progress - newImageStart) / (1.0 - newImageStart), 0.0, 1.0);
-        // Ease-out for new image: fast start, slow finish
-        float easedProgress = 1.0 - pow(1.0 - dissolveProgress, 2.0);
-
-        threshold = 1.0 - easedProgress * 1.1;
-        float alpha = smoothstep(threshold - edgeSoftness, threshold + edgeSoftness, noise);
-        return half4(color.rgb, color.a * half(alpha));
-    }
-}
-
-// MARK: - Evolution Glow Burst Effect
-
 /// Energy accumulation that builds to a bright flash.
-/// Phase 1 (0→0.55): Glow builds around edges with eased-in intensity
+/// Phase 1 (0→0.55): Organic glow builds with noise-based pattern
 /// Phase 2 (0.55→0.65): Flash (white out)
 /// Phase 3 (0.65→1.0): Glow fades, reveal new pet
 [[ stitchable ]] half4 evolutionGlowBurst(
@@ -252,82 +201,98 @@ float fractalNoise(float2 p, int octaves) {
     float2 size,
     float isNewImage
 ) {
-    // Skip transparent pixels - don't apply any effect to them
+    // Skip transparent pixels
     if (color.a < 0.01) {
         return color;
     }
 
     float2 uv = position / size;
 
-    // Phase calculations - longer buildup phase (55% of animation)
+    // Phase calculations
     float buildupEnd = 0.55;
     float flashEnd = buildupEnd + flashDuration;
 
     half4 result = color;
 
     if (progress < buildupEnd) {
-        // Phase 1: Glow buildup (old image visible)
+        // Phase 1: Organic glow buildup
         if (isNewImage > 0.5) {
             return half4(0, 0, 0, 0);
         }
 
         float glowProgress = progress / buildupEnd;
 
-        // Ease-in curve: slow start, accelerating toward the end
-        // Using cubic ease-in for more dramatic buildup
+        // Cubic ease-in for dramatic buildup
         float easedProgress = glowProgress * glowProgress * glowProgress;
 
-        // Edge glow: stronger at edges
-        float2 centerDist = abs(uv - float2(0.5, 0.5)) * 2.0;
-        float edgeDist = max(centerDist.x, centerDist.y);
+        // Animated time for noise movement
+        float animTime = progress * 8.0;
 
-        // Base glow intensity grows with eased progress
-        float baseGlow = easedProgress * peakIntensity;
+        // Organic noise pattern - shifts and evolves over time
+        float noise = glowFractalNoise(uv, animTime);
 
-        // Edge emphasis increases as we approach the flash
-        float edgeEmphasis = mix(0.3, 1.0, easedProgress);
-        float edgeGlow = pow(edgeDist, 1.5) * baseGlow * edgeEmphasis;
+        // Edge distance for base shape (soft falloff from center)
+        float2 centerDist = uv - float2(0.5, 0.5);
+        float radialDist = length(centerDist);
 
-        // Overall brightness increases toward the end
-        float overallGlow = baseGlow * 0.3;
+        // Combine noise with radial pattern
+        // Early: mostly noise-based random sparkles
+        // Late: noise + radial for full glow before flash
+        float noiseWeight = mix(0.8, 0.4, easedProgress);
+        float radialWeight = 1.0 - noiseWeight;
 
-        // Pulsing glow - starts subtle, becomes more intense
-        float pulseIntensity = mix(0.1, 0.4, glowProgress);
-        float pulseSpeed = mix(15.0, 40.0, glowProgress); // Speeds up toward end
+        float pattern = noise * noiseWeight + (1.0 - radialDist) * radialWeight;
+
+        // Threshold rises with progress - reveals more glow over time
+        float threshold = mix(-0.2, 0.3, easedProgress);
+        float glowMask = smoothstep(threshold, threshold + 0.3, pattern);
+
+        // Base intensity grows with progress
+        float baseGlow = easedProgress * peakIntensity * glowMask;
+
+        // Sparkle effect - random bright spots that appear and fade
+        float sparkle = step(0.85, glowNoise(uv * 20.0 + animTime * 2.0));
+        sparkle *= sin(animTime * 10.0 + uv.x * 50.0) * 0.5 + 0.5;
+        float sparkleGlow = sparkle * easedProgress * peakIntensity * 0.5;
+
+        // Pulsing overall intensity
+        float pulseIntensity = mix(0.1, 0.3, glowProgress);
+        float pulseSpeed = mix(12.0, 30.0, glowProgress);
         float pulse = sin(progress * pulseSpeed) * pulseIntensity + (1.0 - pulseIntensity);
 
-        float totalGlow = (edgeGlow + overallGlow) * pulse;
+        float totalGlow = (baseGlow + sparkleGlow) * pulse;
 
-        // Add glow to color (only to visible pixels)
         result.rgb = color.rgb + half3(glowColor) * half(totalGlow);
 
     } else if (progress < flashEnd) {
-        // Phase 2: Flash (white out) - only affect visible pixels
+        // Phase 2: Flash (white out)
         float flashProgress = (progress - buildupEnd) / (flashEnd - buildupEnd);
         float flashIntensity = sin(flashProgress * 3.14159);
 
-        // Fade visible pixels to white
         half3 white = half3(1.0, 1.0, 1.0);
         result.rgb = mix(color.rgb, white, half(flashIntensity * 0.95));
         result.a = color.a;
 
     } else {
-        // Phase 3: Fade out glow (new image visible)
+        // Phase 3: Fade out glow
         if (isNewImage < 0.5) {
             return half4(0, 0, 0, 0);
         }
 
         float fadeProgress = (progress - flashEnd) / (1.0 - flashEnd);
-
-        // Ease-out: fast start, slow end
         float easedFade = 1.0 - pow(1.0 - fadeProgress, 2.0);
 
-        // Residual glow fading out
-        float2 centerDist = abs(uv - float2(0.5, 0.5)) * 2.0;
-        float edgeDist = max(centerDist.x, centerDist.y);
-        float edgeGlow = pow(edgeDist, 1.5) * (1.0 - easedFade) * peakIntensity * 0.5;
+        // Residual organic glow fading
+        float animTime = progress * 4.0;
+        float noise = glowFractalNoise(uv, animTime);
 
-        result.rgb = color.rgb + half3(glowColor) * half(edgeGlow);
+        float2 centerDist = uv - float2(0.5, 0.5);
+        float radialDist = length(centerDist);
+
+        float pattern = noise * 0.4 + (1.0 - radialDist) * 0.6;
+        float residualGlow = pattern * (1.0 - easedFade) * peakIntensity * 0.4;
+
+        result.rgb = color.rgb + half3(glowColor) * half(residualGlow);
     }
 
     return result;

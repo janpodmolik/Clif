@@ -1,47 +1,40 @@
 import Foundation
 
-/// Configuration for evolution transition animation parameters.
+/// Configuration for evolution transition animation.
 struct EvolutionTransitionConfig: Equatable {
-    var type: EvolutionTransitionType
+    /// Total animation duration in seconds.
     var duration: TimeInterval
 
-    // Dissolve-specific
-    var dissolveNoiseScale: CGFloat
-    var dissolveEdgeSoftness: CGFloat
-
-    // Glow burst-specific
+    /// Glow color RGB components (0-1).
     var glowColorR: CGFloat
     var glowColorG: CGFloat
     var glowColorB: CGFloat
+
+    /// Peak glow intensity multiplier.
     var glowPeakIntensity: CGFloat
+
+    /// Flash duration as fraction of total duration.
     var flashDuration: CGFloat
 
     var glowColor: (r: CGFloat, g: CGFloat, b: CGFloat) {
         (glowColorR, glowColorG, glowColorB)
     }
 
-    static func `default`(for type: EvolutionTransitionType) -> EvolutionTransitionConfig {
-        switch type {
-        case .dissolve:
-            return EvolutionTransitionConfig(
-                type: .dissolve,
-                duration: type.defaultDuration,
-                dissolveNoiseScale: 25,
-                dissolveEdgeSoftness: 0.2,
-                glowColorR: 1, glowColorG: 1, glowColorB: 1,
-                glowPeakIntensity: 1.0,
-                flashDuration: 0.15
-            )
-        case .glowBurst:
-            return EvolutionTransitionConfig(
-                type: .glowBurst,
-                duration: type.defaultDuration,
-                dissolveNoiseScale: 25,
-                dissolveEdgeSoftness: 0.2,
-                glowColorR: 1, glowColorG: 0.9, glowColorB: 0.6,
-                glowPeakIntensity: 2.5,
-                flashDuration: 0.2
-            )
-        }
-    }
+    /// Progress point (0-1) when new image starts appearing (during flash).
+    static let assetSwapPoint: CGFloat = 0.58
+
+    /// Progress point (0-1) when old image is hidden completely.
+    static let oldImageHidePoint: CGFloat = 0.60
+
+    /// Default duration for the transition.
+    static let defaultDuration: TimeInterval = 2.0
+
+    static let `default` = EvolutionTransitionConfig(
+        duration: defaultDuration,
+        glowColorR: 1,
+        glowColorG: 0.9,
+        glowColorB: 0.6,
+        glowPeakIntensity: 2.5,
+        flashDuration: 0.2
+    )
 }

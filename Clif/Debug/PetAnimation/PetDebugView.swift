@@ -60,12 +60,9 @@ struct PetDebugView: View {
 
     // Evolution transition debug
     @State private var isEvolutionExpanded: Bool = false
-    @State private var selectedTransitionType: EvolutionTransitionType = .dissolve
-    @State private var transitionDuration: Double = 1.5
+    @State private var transitionDuration: Double = EvolutionTransitionConfig.defaultDuration
     @State private var isTransitioning: Bool = false
     @State private var useCustomTransitionConfig: Bool = false
-    @State private var customNoiseScale: CGFloat = 25
-    @State private var customEdgeSoftness: CGFloat = 0.2
     @State private var customGlowIntensity: CGFloat = 2.5
     @State private var showEvolutionTransition: Bool = false
     @State private var transitionFromPhase: Int = 1
@@ -238,19 +235,7 @@ struct PetDebugView: View {
         }
         .ignoresSafeArea()
         .onAppear {
-            // Initialize From phase to match current plant phase
-            transitionFromPhase = plantPhase
-            if transitionToPhase == plantPhase {
-                transitionToPhase = min(plantPhase + 1, 4)
-            }
-        }
-        .onChange(of: plantPhase) { _, newPhase in
-            // Sync "From" phase picker with current visible evolution
-            transitionFromPhase = newPhase
-            // Auto-increment "To" phase if it would be same as "From"
-            if transitionToPhase == newPhase {
-                transitionToPhase = min(newPhase + 1, 4)
-            }
+            syncTransitionPhases(currentPhase: plantPhase)
         }
     }
 
@@ -340,6 +325,7 @@ struct PetDebugView: View {
 
     @ViewBuilder
     private var controlsContent: some View {
+        ScrollViewReader { scrollProxy in
         ScrollView {
             VStack(spacing: 12) {
                 // Evolution type selector
@@ -357,6 +343,9 @@ struct PetDebugView: View {
                         Spacer()
                         Stepper("", value: $plantPhase, in: 1...4)
                             .labelsHidden()
+                            .onChange(of: plantPhase) { _, newPhase in
+                                syncTransitionPhases(currentPhase: newPhase)
+                            }
                     }
                 }
 
@@ -366,7 +355,9 @@ struct PetDebugView: View {
                 collapsibleSection(
                     title: "Idle (Breathe)",
                     isExpanded: $isIdleExpanded,
-                    onReset: resetIdleToDefaults
+                    onReset: resetIdleToDefaults,
+                    sectionId: "idle",
+                    scrollProxy: scrollProxy
                 ) {
                     idleControlsContent
                 }
@@ -377,7 +368,9 @@ struct PetDebugView: View {
                 collapsibleSection(
                     title: "Wind",
                     isExpanded: $isWindExpanded,
-                    onReset: resetWindToDefaults
+                    onReset: resetWindToDefaults,
+                    sectionId: "wind",
+                    scrollProxy: scrollProxy
                 ) {
                     windControlsContent
                 }
@@ -388,7 +381,9 @@ struct PetDebugView: View {
                 collapsibleSection(
                     title: "Tap Animation",
                     isExpanded: $isTapExpanded,
-                    onReset: resetTapToDefaults
+                    onReset: resetTapToDefaults,
+                    sectionId: "tap",
+                    scrollProxy: scrollProxy
                 ) {
                     tapControlsContent
                 }
@@ -399,7 +394,9 @@ struct PetDebugView: View {
                 collapsibleSection(
                     title: "Speech Bubble",
                     isExpanded: $isSpeechBubbleExpanded,
-                    onReset: resetSpeechBubbleToDefaults
+                    onReset: resetSpeechBubbleToDefaults,
+                    sectionId: "speechBubble",
+                    scrollProxy: scrollProxy
                 ) {
                     speechBubbleControlsContent
                 }
@@ -410,7 +407,9 @@ struct PetDebugView: View {
                 collapsibleSection(
                     title: "Blow Away",
                     isExpanded: $isBlowAwayExpanded,
-                    onReset: resetBlowAwayToDefaults
+                    onReset: resetBlowAwayToDefaults,
+                    sectionId: "blowAway",
+                    scrollProxy: scrollProxy
                 ) {
                     blowAwayControlsContent
                 }
@@ -421,11 +420,14 @@ struct PetDebugView: View {
                 collapsibleSection(
                     title: "Evolution Transition",
                     isExpanded: $isEvolutionExpanded,
-                    onReset: resetEvolutionToDefaults
+                    onReset: resetEvolutionToDefaults,
+                    sectionId: "evolution",
+                    scrollProxy: scrollProxy
                 ) {
                     evolutionTransitionControlsContent
                 }
             }
+        }
         }
         .scrollIndicators(.hidden)
         .frame(maxHeight: panelState == .fullscreen ? .infinity : 350)
@@ -438,6 +440,8 @@ struct PetDebugView: View {
         title: String,
         isExpanded: Binding<Bool>,
         onReset: @escaping () -> Void,
+        sectionId: String,
+        scrollProxy: ScrollViewProxy,
         @ViewBuilder content: () -> Content
     ) -> some View {
         VStack(spacing: 8) {
@@ -453,8 +457,16 @@ struct PetDebugView: View {
                 }
                 .contentShape(Rectangle())
                 .onTapGesture {
+                    let willExpand = !isExpanded.wrappedValue
                     withAnimation(.easeInOut(duration: 0.2)) {
                         isExpanded.wrappedValue.toggle()
+                    }
+                    if willExpand {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
+                            withAnimation(.easeInOut(duration: 0.2)) {
+                                scrollProxy.scrollTo(sectionId, anchor: .top)
+                            }
+                        }
                     }
                 }
 
@@ -478,6 +490,7 @@ struct PetDebugView: View {
                 content()
             }
         }
+        .id(sectionId)
     }
 
     // MARK: - Reset Functions
@@ -529,11 +542,8 @@ struct PetDebugView: View {
     }
 
     private func resetEvolutionToDefaults() {
-        selectedTransitionType = .dissolve
-        transitionDuration = selectedTransitionType.defaultDuration
+        transitionDuration = EvolutionTransitionConfig.defaultDuration
         useCustomTransitionConfig = false
-        customNoiseScale = 25
-        customEdgeSoftness = 0.2
         customGlowIntensity = 2.5
         isTransitioning = false
         showEvolutionTransition = false
@@ -906,23 +916,6 @@ struct PetDebugView: View {
                 .font(.caption)
                 .foregroundStyle(.secondary)
         } else {
-            // Transition type picker
-            VStack(alignment: .leading, spacing: 4) {
-                Text("Transition Type")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-
-                Picker("Type", selection: $selectedTransitionType) {
-                    ForEach(EvolutionTransitionType.allCases, id: \.self) { type in
-                        Text(type.displayName).tag(type)
-                    }
-                }
-                .pickerStyle(.segmented)
-                .onChange(of: selectedTransitionType) { _, newValue in
-                    transitionDuration = newValue.defaultDuration
-                }
-            }
-
             // From/To phase pickers
             HStack {
                 VStack(alignment: .leading, spacing: 4) {
@@ -967,7 +960,7 @@ struct PetDebugView: View {
             } label: {
                 HStack {
                     Image(systemName: "sparkles")
-                    Text("Trigger \(selectedTransitionType.displayName)")
+                    Text("Trigger Evolution")
                 }
                 .frame(maxWidth: .infinity)
             }
@@ -985,7 +978,12 @@ struct PetDebugView: View {
             Toggle("Custom Config", isOn: $useCustomTransitionConfig)
 
             if useCustomTransitionConfig {
-                customTransitionControls
+                HStack {
+                    Text("Glow Intensity: \(customGlowIntensity, specifier: "%.1f")")
+                        .font(.caption)
+                        .frame(width: 130, alignment: .leading)
+                    Slider(value: $customGlowIntensity, in: 1.0...4.0)
+                }
             }
 
             // Status indicator
@@ -1001,56 +999,28 @@ struct PetDebugView: View {
         }
     }
 
-    @ViewBuilder
-    private var customTransitionControls: some View {
-        switch selectedTransitionType {
-        case .dissolve:
-            HStack {
-                Text("Noise Scale: \(customNoiseScale, specifier: "%.0f")")
-                    .font(.caption)
-                    .frame(width: 130, alignment: .leading)
-                Slider(value: $customNoiseScale, in: 10...50)
-            }
-            HStack {
-                Text("Edge Softness: \(customEdgeSoftness, specifier: "%.2f")")
-                    .font(.caption)
-                    .frame(width: 130, alignment: .leading)
-                Slider(value: $customEdgeSoftness, in: 0.05...0.5)
-            }
-
-        case .glowBurst:
-            HStack {
-                Text("Glow Intensity: \(customGlowIntensity, specifier: "%.1f")")
-                    .font(.caption)
-                    .frame(width: 130, alignment: .leading)
-                Slider(value: $customGlowIntensity, in: 1.0...4.0)
-            }
-        }
-    }
-
     private func triggerEvolutionTransition() {
         guard selectedEvolutionType == .plant else { return }
         guard transitionFromPhase != transitionToPhase else { return }
 
-        // Generate new key to reset the view state
         evolutionTransitionKey = UUID()
         isTransitioning = true
         showEvolutionTransition = true
-        // Note: plantPhase is updated in onComplete callback of EvolutionTransitionView
+    }
+
+    private func syncTransitionPhases(currentPhase: Int) {
+        transitionFromPhase = currentPhase
+        if transitionToPhase == currentPhase {
+            transitionToPhase = min(currentPhase + 1, 4)
+        }
     }
 
     private var currentTransitionConfig: EvolutionTransitionConfig {
-        var config = EvolutionTransitionConfig.default(for: selectedTransitionType)
+        var config = EvolutionTransitionConfig.default
         config.duration = transitionDuration
 
         if useCustomTransitionConfig {
-            switch selectedTransitionType {
-            case .dissolve:
-                config.dissolveNoiseScale = customNoiseScale
-                config.dissolveEdgeSoftness = customEdgeSoftness
-            case .glowBurst:
-                config.glowPeakIntensity = customGlowIntensity
-            }
+            config.glowPeakIntensity = customGlowIntensity
         }
 
         return config
