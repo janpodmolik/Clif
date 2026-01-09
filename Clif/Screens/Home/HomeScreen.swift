@@ -20,12 +20,12 @@ struct HomeScreen: View {
                 }
 
                 // Wind lines effect (scales with wind level)
-                // Wind area behind and above the pet (0.25-0.50 = upper-middle of screen)
+                // Wind area behind and above the pet (0.15-0.40 = upper area of screen)
                 WindLinesView(
                     windLevel: .high,
                     direction: windDirection,
-                    windAreaTop: 0.25,
-                    windAreaBottom: 0.50,
+                    windAreaTop: 0.15,
+                    windAreaBottom: 0.40,
                     windRhythm: windRhythm
                 )
 

@@ -4,25 +4,25 @@ import QuartzCore
 /// Single source of truth for wind gust timing.
 /// Both pet animation and wind lines subscribe to this rhythm for synchronized effects.
 ///
-/// Wind lines use `gustIntensity` (immediate) for spawning.
-/// Pet animation uses `rawWave` (delayed) so wind lines arrive before pet reacts.
+/// Wind lines use `gustIntensity` (look-ahead) for spawning - they "see" the future.
+/// Pet animation uses `rawWave` (current time) so wind lines arrive before pet reacts.
 @Observable
 final class WindRhythm {
 
     // MARK: - Configuration
 
-    /// Delay in seconds for pet animation relative to wind lines.
-    /// Wind lines spawn immediately, pet reacts after this delay.
-    static let petDelay: TimeInterval = 0.0
+    /// How far ahead wind lines look into the future (in seconds).
+    /// This makes wind lines arrive before pet reacts to the gust.
+    static let windLookAhead: TimeInterval = 0.6
 
     // MARK: - Published State
 
     /// Current gust intensity (0 = calm, 1 = peak gust).
-    /// Immediate value - used by wind lines for spawning.
+    /// Look-ahead value - wind lines use this to spawn before pet reacts.
     private(set) var gustIntensity: CGFloat = 0
 
     /// Raw wave value (-1 to +0.4 range) for pet animation.
-    /// Delayed by `petDelay` so wind lines arrive before pet reacts.
+    /// Uses current time - pet reacts after wind lines have already arrived.
     /// Negative = bending forward (with wind), positive = back swing.
     private(set) var rawWave: CGFloat = 0
 
@@ -57,13 +57,13 @@ final class WindRhythm {
     @objc private func tick(_ link: CADisplayLink) {
         let time = link.timestamp - startTime
 
-        // Gust intensity is immediate (for wind line spawning)
-        let currentWave = computeWave(at: time)
-        gustIntensity = max(0, -currentWave)
+        // Wind lines look ahead into the future (so they arrive before pet reacts)
+        let futureTime = time + Self.windLookAhead
+        let futureWave = computeWave(at: futureTime)
+        gustIntensity = max(0, -futureWave)
 
-        // Raw wave for pet is delayed (so wind lines arrive first)
-        let delayedTime = max(0, time - Self.petDelay)
-        rawWave = computeWave(at: delayedTime)
+        // Pet uses current time (reacts after wind lines have arrived)
+        rawWave = computeWave(at: time)
     }
 
     /// Compute wave value at a specific time.

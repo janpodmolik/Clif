@@ -535,22 +535,22 @@ struct WindGustConfig {
             burstThreshold = 2.0 // Never triggers
 
         case .low:
-            baseSpawnChance = 0.02
-            peakSpawnChance = 0.08
+            baseSpawnChance = 0.01
+            peakSpawnChance = 0.10
             peakSpeedMultiplier = 1.3
             burstThreshold = 0.9
 
         case .medium:
-            baseSpawnChance = 0.03
-            peakSpawnChance = 0.15
+            baseSpawnChance = 0.015
+            peakSpawnChance = 0.18
             peakSpeedMultiplier = 1.5
             burstThreshold = 0.85
 
         case .high:
-            baseSpawnChance = 0.05
-            peakSpawnChance = 0.25
+            baseSpawnChance = 0.02
+            peakSpawnChance = 0.30
             peakSpeedMultiplier = 1.8
-            burstThreshold = 0.8
+            burstThreshold = 0.75
         }
     }
 
