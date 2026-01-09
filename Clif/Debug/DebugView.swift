@@ -32,6 +32,7 @@ struct DebugView: View {
                         progressSection
                         debugToolsSection
                         petAnimationSection
+                        statusCardSection
                         supabaseSection
                         extensionLogSection
                     }
@@ -271,6 +272,21 @@ struct DebugView: View {
             .frame(maxWidth: .infinity)
             .padding()
             .background(Color.green.opacity(0.2))
+            .cornerRadius(12)
+        }
+    }
+
+    // MARK: - StatusCard Debug
+
+    private var statusCardSection: some View {
+        NavigationLink(destination: StatusCardDebugView()) {
+            HStack {
+                Image(systemName: "rectangle.on.rectangle")
+                Text("StatusCard Debug")
+            }
+            .frame(maxWidth: .infinity)
+            .padding()
+            .background(Color.blue.opacity(0.2))
             .cornerRadius(12)
         }
     }

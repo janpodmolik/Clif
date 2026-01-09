@@ -44,7 +44,16 @@ struct HomeScreen: View {
                     streakCount: 19,
                     usedTimeText: "32m",
                     dailyLimitText: "2h",
-                    progress: 0.27
+                    progress: 0.27,
+                    petName: "Fern",
+                    evolutionStage: 2,
+                    maxEvolutionStage: 4,
+                    mood: .happy,
+                    purposeLabel: "Social Media",
+                    isEvolutionAvailable: false,
+                    isSaveEnabled: true,
+                    showDetailButton: true,
+                    isBlownAway: false
                 )
                 .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 24))
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
