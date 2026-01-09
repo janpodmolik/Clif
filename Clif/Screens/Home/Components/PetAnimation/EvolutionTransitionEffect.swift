@@ -1,0 +1,176 @@
+import SwiftUI
+
+/// A standalone view that handles evolution transition between two assets.
+/// Uses TimelineView for smooth Metal shader-based animations.
+struct EvolutionTransitionView: View {
+    let isActive: Bool
+    let config: EvolutionTransitionConfig
+    let oldAssetName: String
+    let newAssetName: String
+    let onComplete: () -> Void
+
+    @State private var startTime: Date?
+    @State private var hasCompleted = false
+
+    var body: some View {
+        GeometryReader { geometry in
+            let size = geometry.size
+
+            TimelineView(.animation) { timeline in
+                let progress = calculateProgress(currentTime: timeline.date)
+
+                ZStack {
+                    // Old pet (fading out)
+                    petImage(assetName: oldAssetName, size: size)
+                        .applyEvolutionEffect(
+                            type: config.type,
+                            progress: progress,
+                            config: config,
+                            isNewImage: false,
+                            size: size
+                        )
+
+                    // New pet (fading in) - show after swap point
+                    if progress >= config.type.assetSwapPoint {
+                        petImage(assetName: newAssetName, size: size)
+                            .applyEvolutionEffect(
+                                type: config.type,
+                                progress: progress,
+                                config: config,
+                                isNewImage: true,
+                                size: size
+                            )
+                    }
+                }
+                .onChange(of: progress >= 1.0) { _, completed in
+                    if completed && !hasCompleted {
+                        hasCompleted = true
+                        onComplete()
+                    }
+                }
+            }
+        }
+        .onAppear {
+            if isActive && startTime == nil {
+                startTime = Date()
+                hasCompleted = false
+            }
+        }
+        .onChange(of: isActive) { _, newValue in
+            if newValue {
+                startTime = Date()
+                hasCompleted = false
+            }
+        }
+    }
+
+    private func calculateProgress(currentTime: Date) -> CGFloat {
+        guard let start = startTime else { return 0 }
+        let elapsed = currentTime.timeIntervalSince(start)
+        let progress = elapsed / config.duration
+        return min(max(CGFloat(progress), 0), 1)
+    }
+
+    private func petImage(assetName: String, size: CGSize) -> some View {
+        Image(assetName)
+            .resizable()
+            .scaledToFit()
+            .frame(width: size.width, height: size.height)
+            .drawingGroup() // Flatten to bitmap for proper alpha compositing
+    }
+}
+
+// MARK: - Effect Application
+
+private extension View {
+    @ViewBuilder
+    func applyEvolutionEffect(
+        type: EvolutionTransitionType,
+        progress: CGFloat,
+        config: EvolutionTransitionConfig,
+        isNewImage: Bool,
+        size: CGSize
+    ) -> some View {
+        switch type {
+        case .dissolve:
+            self.colorEffect(
+                ShaderLibrary.evolutionDissolve(
+                    .float(Float(progress)),
+                    .float(Float(config.dissolveNoiseScale)),
+                    .float(Float(config.dissolveEdgeSoftness)),
+                    .float2(size),
+                    .float(isNewImage ? 1.0 : 0.0)
+                )
+            )
+
+        case .glowBurst:
+            self.colorEffect(
+                ShaderLibrary.evolutionGlowBurst(
+                    .float(Float(progress)),
+                    .float3(
+                        Float(config.glowColorR),
+                        Float(config.glowColorG),
+                        Float(config.glowColorB)
+                    ),
+                    .float(Float(config.glowPeakIntensity)),
+                    .float(Float(config.flashDuration / config.duration)),
+                    .float2(size),
+                    .float(isNewImage ? 1.0 : 0.0)
+                )
+            )
+        }
+    }
+}
+
+// MARK: - Preview
+
+#Preview("Evolution Transition - Dissolve") {
+    EvolutionTransitionPreview(type: .dissolve)
+}
+
+#Preview("Evolution Transition - Glow Burst") {
+    EvolutionTransitionPreview(type: .glowBurst)
+}
+
+private struct EvolutionTransitionPreview: View {
+    let type: EvolutionTransitionType
+
+    @State private var isActive = false
+    @State private var key = UUID()
+
+    var body: some View {
+        VStack {
+            Spacer()
+
+            if isActive {
+                EvolutionTransitionView(
+                    isActive: true,
+                    config: .default(for: type),
+                    oldAssetName: "plant/happy/1",
+                    newAssetName: "plant/happy/2",
+                    onComplete: {
+                        isActive = false
+                        key = UUID()
+                    }
+                )
+                .id(key)
+                .frame(width: 150, height: 200)
+            } else {
+                Image("plant/happy/1")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 150, height: 200)
+            }
+
+            Spacer()
+
+            Button("Trigger \(type.displayName)") {
+                key = UUID()
+                isActive = true
+            }
+            .buttonStyle(.borderedProminent)
+            .padding()
+        }
+        .background(Color.gray.opacity(0.2))
+    }
+}

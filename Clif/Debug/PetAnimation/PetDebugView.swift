@@ -58,6 +58,20 @@ struct PetDebugView: View {
     @State private var isBlowingAway: Bool = false
     @State private var windLinesBurstActive: Bool = false
 
+    // Evolution transition debug
+    @State private var isEvolutionExpanded: Bool = false
+    @State private var selectedTransitionType: EvolutionTransitionType = .dissolve
+    @State private var transitionDuration: Double = 1.5
+    @State private var isTransitioning: Bool = false
+    @State private var useCustomTransitionConfig: Bool = false
+    @State private var customNoiseScale: CGFloat = 25
+    @State private var customEdgeSoftness: CGFloat = 0.2
+    @State private var customGlowIntensity: CGFloat = 2.5
+    @State private var showEvolutionTransition: Bool = false
+    @State private var transitionFromPhase: Int = 1
+    @State private var transitionToPhase: Int = 2
+    @State private var evolutionTransitionKey: UUID = UUID()
+
     enum EvolutionTypeOption: String, CaseIterable {
         case blob = "Blob"
         case plant = "Plant"
@@ -149,48 +163,68 @@ struct PetDebugView: View {
                 )
 
                 // Floating island with pet - render appropriate evolution type
-                Group {
-                    switch selectedEvolutionType {
-                    case .blob:
-                        DebugFloatingIslandView(
-                            screenHeight: geometry.size.height,
-                            screenWidth: geometry.size.width,
-                            evolution: BlobEvolution.blob,
-                            windLevel: windLevel,
-                            debugWindConfig: customWindConfig,
-                            windDirection: direction,
-                            debugTapType: selectedTapType,
-                            debugTapConfig: customTapConfig,
-                            debugIdleConfig: currentIdleConfig,
-                            debugHapticType: selectedHapticType,
-                            debugHapticDuration: hapticDuration,
-                            debugHapticIntensity: Float(hapticIntensity),
-                            externalTapTime: $tapTime,
-                            debugSpeechBubbleState: debugSpeechBubbleState,
-                            debugCustomText: debugCustomText,
-                            blowAwayOffsetX: blowAwayOffsetX,
-                            blowAwayRotation: blowAwayRotation
-                        )
-                    case .plant:
-                        DebugFloatingIslandView(
-                            screenHeight: geometry.size.height,
-                            screenWidth: geometry.size.width,
-                            evolution: PlantEvolution(rawValue: plantPhase) ?? .phase1,
-                            windLevel: windLevel,
-                            debugWindConfig: customWindConfig,
-                            windDirection: direction,
-                            debugTapType: selectedTapType,
-                            debugTapConfig: customTapConfig,
-                            debugIdleConfig: currentIdleConfig,
-                            debugHapticType: selectedHapticType,
-                            debugHapticDuration: hapticDuration,
-                            debugHapticIntensity: Float(hapticIntensity),
-                            externalTapTime: $tapTime,
-                            debugSpeechBubbleState: debugSpeechBubbleState,
-                            debugCustomText: debugCustomText,
-                            blowAwayOffsetX: blowAwayOffsetX,
-                            blowAwayRotation: blowAwayRotation
-                        )
+                ZStack {
+                    Group {
+                        switch selectedEvolutionType {
+                        case .blob:
+                            DebugFloatingIslandView(
+                                screenHeight: geometry.size.height,
+                                screenWidth: geometry.size.width,
+                                evolution: BlobEvolution.blob,
+                                windLevel: windLevel,
+                                debugWindConfig: customWindConfig,
+                                windDirection: direction,
+                                debugTapType: selectedTapType,
+                                debugTapConfig: customTapConfig,
+                                debugIdleConfig: currentIdleConfig,
+                                debugHapticType: selectedHapticType,
+                                debugHapticDuration: hapticDuration,
+                                debugHapticIntensity: Float(hapticIntensity),
+                                externalTapTime: $tapTime,
+                                debugSpeechBubbleState: debugSpeechBubbleState,
+                                debugCustomText: debugCustomText,
+                                blowAwayOffsetX: blowAwayOffsetX,
+                                blowAwayRotation: blowAwayRotation
+                            )
+                        case .plant:
+                            DebugFloatingIslandView(
+                                screenHeight: geometry.size.height,
+                                screenWidth: geometry.size.width,
+                                evolution: PlantEvolution(rawValue: plantPhase) ?? .phase1,
+                                windLevel: windLevel,
+                                debugWindConfig: customWindConfig,
+                                windDirection: direction,
+                                debugTapType: selectedTapType,
+                                debugTapConfig: customTapConfig,
+                                debugIdleConfig: currentIdleConfig,
+                                debugHapticType: selectedHapticType,
+                                debugHapticDuration: hapticDuration,
+                                debugHapticIntensity: Float(hapticIntensity),
+                                externalTapTime: $tapTime,
+                                debugSpeechBubbleState: debugSpeechBubbleState,
+                                debugCustomText: debugCustomText,
+                                blowAwayOffsetX: blowAwayOffsetX,
+                                blowAwayRotation: blowAwayRotation,
+                                evolutionTransitionView: showEvolutionTransition ? AnyView(
+                                    EvolutionTransitionView(
+                                        isActive: true,
+                                        config: currentTransitionConfig,
+                                        oldAssetName: PlantEvolution(rawValue: transitionFromPhase)?.assetName(for: windLevel) ?? "plant/happy/1",
+                                        newAssetName: PlantEvolution(rawValue: transitionToPhase)?.assetName(for: windLevel) ?? "plant/happy/2",
+                                        onComplete: {
+                                            // Update phase first, then hide transition after brief delay
+                                            // to ensure SwiftUI has rendered the new phase
+                                            plantPhase = transitionToPhase
+                                            isTransitioning = false
+                                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+                                                showEvolutionTransition = false
+                                            }
+                                        }
+                                    )
+                                    .id(evolutionTransitionKey)
+                                ) : nil
+                            )
+                        }
                     }
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
@@ -203,6 +237,21 @@ struct PetDebugView: View {
             }
         }
         .ignoresSafeArea()
+        .onAppear {
+            // Initialize From phase to match current plant phase
+            transitionFromPhase = plantPhase
+            if transitionToPhase == plantPhase {
+                transitionToPhase = min(plantPhase + 1, 4)
+            }
+        }
+        .onChange(of: plantPhase) { _, newPhase in
+            // Sync "From" phase picker with current visible evolution
+            transitionFromPhase = newPhase
+            // Auto-increment "To" phase if it would be same as "From"
+            if transitionToPhase == newPhase {
+                transitionToPhase = min(newPhase + 1, 4)
+            }
+        }
     }
 
     // MARK: - Debug Controls
@@ -365,6 +414,17 @@ struct PetDebugView: View {
                 ) {
                     blowAwayControlsContent
                 }
+
+                Divider()
+
+                // ===== EVOLUTION TRANSITION SECTION =====
+                collapsibleSection(
+                    title: "Evolution Transition",
+                    isExpanded: $isEvolutionExpanded,
+                    onReset: resetEvolutionToDefaults
+                ) {
+                    evolutionTransitionControlsContent
+                }
             }
         }
         .scrollIndicators(.hidden)
@@ -466,6 +526,17 @@ struct PetDebugView: View {
         blowAwayRotation = 0
         isBlowingAway = false
         windLinesBurstActive = false
+    }
+
+    private func resetEvolutionToDefaults() {
+        selectedTransitionType = .dissolve
+        transitionDuration = selectedTransitionType.defaultDuration
+        useCustomTransitionConfig = false
+        customNoiseScale = 25
+        customEdgeSoftness = 0.2
+        customGlowIntensity = 2.5
+        isTransitioning = false
+        showEvolutionTransition = false
     }
 
     // MARK: - Idle Controls
@@ -823,6 +894,166 @@ struct PetDebugView: View {
             position: debugBubblePosition ?? .right,
             customText: debugCustomText.isEmpty ? nil : debugCustomText
         )
+    }
+
+    // MARK: - Evolution Transition Controls
+
+    @ViewBuilder
+    private var evolutionTransitionControlsContent: some View {
+        // Only available for Plant evolution
+        if selectedEvolutionType != .plant {
+            Text("Evolution transition only available for Plant")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+        } else {
+            // Transition type picker
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Transition Type")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+
+                Picker("Type", selection: $selectedTransitionType) {
+                    ForEach(EvolutionTransitionType.allCases, id: \.self) { type in
+                        Text(type.displayName).tag(type)
+                    }
+                }
+                .pickerStyle(.segmented)
+                .onChange(of: selectedTransitionType) { _, newValue in
+                    transitionDuration = newValue.defaultDuration
+                }
+            }
+
+            // From/To phase pickers
+            HStack {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("From Phase")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    Picker("From", selection: $transitionFromPhase) {
+                        ForEach(1...4, id: \.self) { phase in
+                            Text("\(phase)").tag(phase)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+                }
+
+                Image(systemName: "arrow.right")
+                    .foregroundStyle(.secondary)
+
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("To Phase")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    Picker("To", selection: $transitionToPhase) {
+                        ForEach(1...4, id: \.self) { phase in
+                            Text("\(phase)").tag(phase)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+                }
+            }
+
+            // Duration slider
+            HStack {
+                Text("Duration: \(transitionDuration, specifier: "%.1f")s")
+                    .font(.caption)
+                    .frame(width: 130, alignment: .leading)
+                Slider(value: $transitionDuration, in: 0.5...4.0)
+            }
+
+            // Trigger button
+            Button {
+                triggerEvolutionTransition()
+            } label: {
+                HStack {
+                    Image(systemName: "sparkles")
+                    Text("Trigger \(selectedTransitionType.displayName)")
+                }
+                .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.borderedProminent)
+            .tint(.purple)
+            .disabled(isTransitioning || transitionFromPhase == transitionToPhase)
+
+            if transitionFromPhase == transitionToPhase {
+                Text("Select different From/To phases")
+                    .font(.caption2)
+                    .foregroundStyle(.orange)
+            }
+
+            // Custom config toggle
+            Toggle("Custom Config", isOn: $useCustomTransitionConfig)
+
+            if useCustomTransitionConfig {
+                customTransitionControls
+            }
+
+            // Status indicator
+            if isTransitioning {
+                HStack {
+                    ProgressView()
+                        .scaleEffect(0.8)
+                    Text("Transition in progress...")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var customTransitionControls: some View {
+        switch selectedTransitionType {
+        case .dissolve:
+            HStack {
+                Text("Noise Scale: \(customNoiseScale, specifier: "%.0f")")
+                    .font(.caption)
+                    .frame(width: 130, alignment: .leading)
+                Slider(value: $customNoiseScale, in: 10...50)
+            }
+            HStack {
+                Text("Edge Softness: \(customEdgeSoftness, specifier: "%.2f")")
+                    .font(.caption)
+                    .frame(width: 130, alignment: .leading)
+                Slider(value: $customEdgeSoftness, in: 0.05...0.5)
+            }
+
+        case .glowBurst:
+            HStack {
+                Text("Glow Intensity: \(customGlowIntensity, specifier: "%.1f")")
+                    .font(.caption)
+                    .frame(width: 130, alignment: .leading)
+                Slider(value: $customGlowIntensity, in: 1.0...4.0)
+            }
+        }
+    }
+
+    private func triggerEvolutionTransition() {
+        guard selectedEvolutionType == .plant else { return }
+        guard transitionFromPhase != transitionToPhase else { return }
+
+        // Generate new key to reset the view state
+        evolutionTransitionKey = UUID()
+        isTransitioning = true
+        showEvolutionTransition = true
+        // Note: plantPhase is updated in onComplete callback of EvolutionTransitionView
+    }
+
+    private var currentTransitionConfig: EvolutionTransitionConfig {
+        var config = EvolutionTransitionConfig.default(for: selectedTransitionType)
+        config.duration = transitionDuration
+
+        if useCustomTransitionConfig {
+            switch selectedTransitionType {
+            case .dissolve:
+                config.dissolveNoiseScale = customNoiseScale
+                config.dissolveEdgeSoftness = customEdgeSoftness
+            case .glowBurst:
+                config.glowPeakIntensity = customGlowIntensity
+            }
+        }
+
+        return config
     }
 
     // MARK: - Actions

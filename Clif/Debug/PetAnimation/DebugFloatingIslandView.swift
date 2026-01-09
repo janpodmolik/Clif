@@ -38,6 +38,9 @@ struct DebugFloatingIslandView<Evolution: EvolutionType>: View {
     var blowAwayOffsetX: CGFloat = 0
     var blowAwayRotation: CGFloat = 0
 
+    // Evolution transition overlay (replaces pet during transition)
+    var evolutionTransitionView: AnyView? = nil
+
     // Internal tap state (used when no external binding provided)
     @State private var internalTapTime: TimeInterval = -1
     @State private var currentTapType: TapAnimationType = .none
@@ -98,31 +101,37 @@ struct DebugFloatingIslandView<Evolution: EvolutionType>: View {
 
             // Pet with animation effects, speech bubble, and mood-aware image (top layer)
             ZStack {
-                Image(evolution.assetName(for: windLevel))
-                    .resizable()
-                    .scaledToFit()
-                    .frame(height: petHeight)
-                    .petAnimation(
-                        intensity: activeWindConfig.intensity,
-                        direction: windDirection,
-                        bendCurve: activeWindConfig.bendCurve,
-                        swayAmount: activeWindConfig.swayAmount,
-                        rotationAmount: activeWindConfig.rotationAmount,
-                        tapTime: currentTapTime,
-                        tapType: activeTapType,
-                        tapConfig: activeTapConfig,
-                        idleConfig: activeIdleConfig,
-                        screenWidth: screenWidth
-                    )
-                    .offset(x: blowAwayOffsetX)
-                    .rotationEffect(.degrees(blowAwayRotation), anchor: .bottom)
-                    .onTapGesture {
-                        triggerTap()
-                    }
+                if let transitionView = evolutionTransitionView {
+                    // Show evolution transition overlay instead of pet
+                    transitionView
+                        .frame(height: petHeight)
+                } else {
+                    Image(evolution.assetName(for: windLevel))
+                        .resizable()
+                        .scaledToFit()
+                        .frame(height: petHeight)
+                        .petAnimation(
+                            intensity: activeWindConfig.intensity,
+                            direction: windDirection,
+                            bendCurve: activeWindConfig.bendCurve,
+                            swayAmount: activeWindConfig.swayAmount,
+                            rotationAmount: activeWindConfig.rotationAmount,
+                            tapTime: currentTapTime,
+                            tapType: activeTapType,
+                            tapConfig: activeTapConfig,
+                            idleConfig: activeIdleConfig,
+                            screenWidth: screenWidth
+                        )
+                        .offset(x: blowAwayOffsetX)
+                        .rotationEffect(.degrees(blowAwayRotation), anchor: .bottom)
+                        .onTapGesture {
+                            triggerTap()
+                        }
 
-                // Speech bubble overlay (only if debug state provided)
-                if let bubbleState = debugSpeechBubbleState, let config = bubbleState.currentConfig {
-                    SpeechBubbleView(config: config, isVisible: bubbleState.isVisible)
+                    // Speech bubble overlay (only if debug state provided)
+                    if let bubbleState = debugSpeechBubbleState, let config = bubbleState.currentConfig {
+                        SpeechBubbleView(config: config, isVisible: bubbleState.isVisible)
+                    }
                 }
             }
             .offset(y: petOffset)

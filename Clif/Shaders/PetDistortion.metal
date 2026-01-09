@@ -148,6 +148,161 @@ float calculateIdleYOffset(
     return distFromBottom * (1.0 - breatheScale);
 }
 
+// MARK: - Evolution Transition Helper Functions
+
+/// Simple hash function for noise generation
+float hash(float2 p) {
+    return fract(sin(dot(p, float2(127.1, 311.7))) * 43758.5453);
+}
+
+/// Value noise for organic dissolve pattern
+float valueNoise(float2 p) {
+    float2 i = floor(p);
+    float2 f = fract(p);
+
+    // Smooth interpolation
+    float2 u = f * f * (3.0 - 2.0 * f);
+
+    return mix(
+        mix(hash(i + float2(0, 0)), hash(i + float2(1, 0)), u.x),
+        mix(hash(i + float2(0, 1)), hash(i + float2(1, 1)), u.x),
+        u.y
+    );
+}
+
+/// Multi-octave fractal noise for more organic patterns
+float fractalNoise(float2 p, int octaves) {
+    float value = 0.0;
+    float amplitude = 0.5;
+    float frequency = 1.0;
+
+    for (int i = 0; i < octaves; i++) {
+        value += amplitude * valueNoise(p * frequency);
+        amplitude *= 0.5;
+        frequency *= 2.0;
+    }
+    return value;
+}
+
+// MARK: - Evolution Dissolve Effect
+
+/// Noise-based dissolve that scatters pixels organically.
+/// Progress 0→0.5: old image dissolves out
+/// Progress 0.5→1: new image dissolves in
+[[ stitchable ]] half4 evolutionDissolve(
+    float2 position,
+    half4 color,
+    float progress,
+    float noiseScale,
+    float edgeSoftness,
+    float2 size,
+    float isNewImage
+) {
+    // Normalized UV
+    float2 uv = position / size;
+
+    // Generate noise pattern
+    float noise = fractalNoise(uv * noiseScale, 4);
+
+    // Add some variation from center (dissolve from outside in)
+    float2 centerDist = uv - float2(0.5, 0.5);
+    float radialDist = length(centerDist);
+    noise = noise * 0.7 + (1.0 - radialDist) * 0.3;
+
+    // Calculate threshold based on progress
+    float threshold;
+    if (isNewImage < 0.5) {
+        // Old image: dissolve OUT (visible when noise > threshold)
+        threshold = progress * 2.0;
+        float alpha = smoothstep(threshold - edgeSoftness, threshold + edgeSoftness, noise);
+        return half4(color.rgb, color.a * half(alpha));
+    } else {
+        // New image: dissolve IN (visible when noise < threshold)
+        float revProgress = (progress - 0.5) * 2.0;
+        threshold = 1.0 - revProgress;
+        float alpha = smoothstep(threshold - edgeSoftness, threshold + edgeSoftness, noise);
+        return half4(color.rgb, color.a * half(alpha));
+    }
+}
+
+// MARK: - Evolution Glow Burst Effect
+
+/// Energy accumulation that builds to a bright flash.
+/// Phase 1 (0→0.4): Glow builds around edges
+/// Phase 2 (0.4→0.5): Flash (white out)
+/// Phase 3 (0.5→1.0): Glow fades, reveal new pet
+[[ stitchable ]] half4 evolutionGlowBurst(
+    float2 position,
+    half4 color,
+    float progress,
+    float3 glowColor,
+    float peakIntensity,
+    float flashDuration,
+    float2 size,
+    float isNewImage
+) {
+    // Skip transparent pixels - don't apply any effect to them
+    if (color.a < 0.01) {
+        return color;
+    }
+
+    float2 uv = position / size;
+
+    // Phase calculations
+    float buildupEnd = 0.5 - flashDuration / 2.0;
+    float flashEnd = 0.5 + flashDuration / 2.0;
+
+    half4 result = color;
+
+    if (progress < buildupEnd) {
+        // Phase 1: Glow buildup (old image visible)
+        if (isNewImage > 0.5) {
+            return half4(0, 0, 0, 0);
+        }
+
+        float glowProgress = progress / buildupEnd;
+
+        // Edge glow: stronger at edges
+        float2 centerDist = abs(uv - float2(0.5, 0.5)) * 2.0;
+        float edgeDist = max(centerDist.x, centerDist.y);
+        float edgeGlow = pow(edgeDist, 1.5) * glowProgress * peakIntensity;
+
+        // Pulsing glow
+        float pulse = sin(progress * 30.0) * 0.3 + 0.7;
+        edgeGlow *= pulse;
+
+        // Add glow to color (only to visible pixels)
+        result.rgb = color.rgb + half3(glowColor) * half(edgeGlow);
+
+    } else if (progress < flashEnd) {
+        // Phase 2: Flash (white out) - only affect visible pixels
+        float flashProgress = (progress - buildupEnd) / (flashEnd - buildupEnd);
+        float flashIntensity = sin(flashProgress * 3.14159);
+
+        // Fade visible pixels to white
+        half3 white = half3(1.0, 1.0, 1.0);
+        result.rgb = mix(color.rgb, white, half(flashIntensity * 0.95));
+        result.a = color.a;
+
+    } else {
+        // Phase 3: Fade out glow (new image visible)
+        if (isNewImage < 0.5) {
+            return half4(0, 0, 0, 0);
+        }
+
+        float fadeProgress = (progress - flashEnd) / (1.0 - flashEnd);
+
+        // Residual glow fading out
+        float2 centerDist = abs(uv - float2(0.5, 0.5)) * 2.0;
+        float edgeDist = max(centerDist.x, centerDist.y);
+        float edgeGlow = pow(edgeDist, 1.5) * (1.0 - fadeProgress) * peakIntensity * 0.5;
+
+        result.rgb = color.rgb + half3(glowColor) * half(edgeGlow);
+    }
+
+    return result;
+}
+
 // MARK: - Main Shader
 
 /// Unified pet distortion shader combining wind, tap, and idle animations.
