@@ -107,43 +107,48 @@ struct DebugFloatingIslandView<Evolution: EvolutionType>: View {
 
             // Pet with animation effects, speech bubble, and mood-aware image (top layer)
             ZStack {
+                Image(evolution.assetName(for: windLevel))
+                    .resizable()
+                    .scaledToFit()
+                    .frame(height: petHeight)
+                    .petAnimation(
+                        intensity: activeWindConfig.intensity,
+                        direction: windDirection,
+                        bendCurve: activeWindConfig.bendCurve,
+                        swayAmount: activeWindConfig.swayAmount,
+                        rotationAmount: activeWindConfig.rotationAmount,
+                        tapTime: currentTapTime,
+                        tapType: activeTapType,
+                        tapConfig: activeTapConfig,
+                        idleConfig: activeIdleConfig,
+                        screenWidth: screenWidth,
+                        windRhythm: windRhythm,
+                        onTransformUpdate: { transform in
+                            petTransform = transform
+                        }
+                    )
+                    .offset(x: blowAwayOffsetX)
+                    .rotationEffect(.degrees(blowAwayRotation), anchor: .bottom)
+                    .opacity(evolutionTransitionView == nil ? 1.0 : 0.0)
+                    .allowsHitTesting(evolutionTransitionView == nil)
+                    .onTapGesture {
+                        triggerTap()
+                    }
+
                 if let transitionView = evolutionTransitionView {
-                    // Show evolution transition overlay instead of pet
+                    // Overlay evolution transition while keeping pet animation state alive.
                     transitionView
                         .frame(height: petHeight)
-                } else {
-                    Image(evolution.assetName(for: windLevel))
-                        .resizable()
-                        .scaledToFit()
-                        .frame(height: petHeight)
-                        .petAnimation(
-                            intensity: activeWindConfig.intensity,
-                            direction: windDirection,
-                            bendCurve: activeWindConfig.bendCurve,
-                            swayAmount: activeWindConfig.swayAmount,
-                            rotationAmount: activeWindConfig.rotationAmount,
-                            tapTime: currentTapTime,
-                            tapType: activeTapType,
-                            tapConfig: activeTapConfig,
-                            idleConfig: activeIdleConfig,
-                            screenWidth: screenWidth,
-                            windRhythm: windRhythm,
-                            onTransformUpdate: { transform in
-                                petTransform = transform
-                            }
-                        )
-                        .offset(x: blowAwayOffsetX)
-                        .rotationEffect(.degrees(blowAwayRotation), anchor: .bottom)
-                        .onTapGesture {
-                            triggerTap()
-                        }
+                        .allowsHitTesting(false)
+                }
 
-                    // Speech bubble overlay - follows pet rotation and sway
-                    if let bubbleState = debugSpeechBubbleState, let config = bubbleState.currentConfig {
-                        SpeechBubbleView(config: config, isVisible: bubbleState.isVisible)
-                            .offset(x: petTransform.swayOffset)
-                            .rotationEffect(.degrees(petTransform.rotation), anchor: .bottom)
-                    }
+                // Speech bubble overlay - follows pet rotation and sway
+                if evolutionTransitionView == nil,
+                   let bubbleState = debugSpeechBubbleState,
+                   let config = bubbleState.currentConfig {
+                    SpeechBubbleView(config: config, isVisible: bubbleState.isVisible)
+                        .offset(x: petTransform.swayOffset)
+                        .rotationEffect(.degrees(petTransform.rotation), anchor: .bottom)
                 }
             }
             .offset(y: petOffset)
