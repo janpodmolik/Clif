@@ -21,11 +21,19 @@ enum EvolutionTransitionType: Int, CaseIterable {
         }
     }
 
-    /// Progress point (0-1) when asset swap should occur.
+    /// Progress point (0-1) when asset swap should occur (new image starts appearing).
     var assetSwapPoint: CGFloat {
         switch self {
-        case .dissolve: return 0.5
-        case .glowBurst: return 0.45
+        case .dissolve: return 0.45  // Overlap with old image dissolving
+        case .glowBurst: return 0.58  // Middle of flash (0.55 + 0.1/2)
+        }
+    }
+
+    /// Progress point (0-1) when old image should be hidden completely.
+    var oldImageHidePoint: CGFloat {
+        switch self {
+        case .dissolve: return 0.60  // Old fully dissolved by shader at 0.55
+        case .glowBurst: return 0.60  // Shortly after flash starts
         }
     }
 }

@@ -20,15 +20,17 @@ struct EvolutionTransitionView: View {
                 let progress = calculateProgress(currentTime: timeline.date)
 
                 ZStack {
-                    // Old pet (fading out)
-                    petImage(assetName: oldAssetName, size: size)
-                        .applyEvolutionEffect(
-                            type: config.type,
-                            progress: progress,
-                            config: config,
-                            isNewImage: false,
-                            size: size
-                        )
+                    // Old pet (fading out) - hide after flash completes
+                    if progress < config.type.oldImageHidePoint {
+                        petImage(assetName: oldAssetName, size: size)
+                            .applyEvolutionEffect(
+                                type: config.type,
+                                progress: progress,
+                                config: config,
+                                isNewImage: false,
+                                size: size
+                            )
+                    }
 
                     // New pet (fading in) - show after swap point
                     if progress >= config.type.assetSwapPoint {
