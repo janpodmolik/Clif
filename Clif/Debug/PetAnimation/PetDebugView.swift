@@ -65,7 +65,6 @@ struct PetDebugView: View {
     @State private var useCustomTransitionConfig: Bool = false
     @State private var customGlowIntensity: CGFloat = 2.5
     @State private var showEvolutionTransition: Bool = false
-    @State private var transitionFromPhase: Int = 1
     @State private var transitionToPhase: Int = 2
     @State private var evolutionTransitionKey: UUID = UUID()
 
@@ -211,16 +210,14 @@ struct PetDebugView: View {
                                         isActive: true,
                                         config: currentTransitionConfig,
                                         particleConfig: currentParticleConfig,
-                                        oldAssetName: PlantEvolution(rawValue: transitionFromPhase)?.assetName(for: windLevel) ?? "plant/happy/1",
+                                        oldAssetName: PlantEvolution(rawValue: plantPhase)?.assetName(for: windLevel) ?? "plant/happy/1",
                                         newAssetName: PlantEvolution(rawValue: transitionToPhase)?.assetName(for: windLevel) ?? "plant/happy/2",
                                         onComplete: {
-                                            // Update phase first, then hide transition after brief delay
-                                            // to ensure SwiftUI has rendered the new phase
-                                            plantPhase = transitionToPhase
+                                            // Hide transition FIRST to prevent glitch from syncTransitionPhases
+                                            showEvolutionTransition = false
                                             isTransitioning = false
-                                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
-                                                showEvolutionTransition = false
-                                            }
+                                            // Then update phase (this triggers syncTransitionPhases via onChange)
+                                            plantPhase = transitionToPhase
                                         }
                                     )
                                     .id(evolutionTransitionKey)
@@ -929,7 +926,7 @@ struct PetDebugView: View {
                     Text("From Phase")
                         .font(.caption)
                         .foregroundStyle(.secondary)
-                    Picker("From", selection: $transitionFromPhase) {
+                    Picker("From", selection: $plantPhase) {
                         ForEach(1...4, id: \.self) { phase in
                             Text("\(phase)").tag(phase)
                         }
@@ -973,9 +970,9 @@ struct PetDebugView: View {
             }
             .buttonStyle(.borderedProminent)
             .tint(.purple)
-            .disabled(isTransitioning || transitionFromPhase == transitionToPhase)
+            .disabled(isTransitioning || plantPhase == transitionToPhase)
 
-            if transitionFromPhase == transitionToPhase {
+            if plantPhase == transitionToPhase {
                 Text("Select different From/To phases")
                     .font(.caption2)
                     .foregroundStyle(.orange)
@@ -1030,7 +1027,7 @@ struct PetDebugView: View {
 
     private func triggerEvolutionTransition() {
         guard selectedEvolutionType == .plant else { return }
-        guard transitionFromPhase != transitionToPhase else { return }
+        guard plantPhase != transitionToPhase else { return }
 
         evolutionTransitionKey = UUID()
         isTransitioning = true
@@ -1038,7 +1035,6 @@ struct PetDebugView: View {
     }
 
     private func syncTransitionPhases(currentPhase: Int) {
-        transitionFromPhase = currentPhase
         if transitionToPhase == currentPhase {
             transitionToPhase = min(currentPhase + 1, 4)
         }
