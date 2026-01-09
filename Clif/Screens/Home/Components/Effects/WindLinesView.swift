@@ -351,17 +351,26 @@ private struct Trajectory {
         // Base horizontal movement: direction determines start/end
         let startX = direction > 0 ? -size.width * 0.1 : size.width * 1.1
         let endX = direction > 0 ? size.width * 1.1 : -size.width * 0.1
-        let baseX = startX + t * (endX - startX)
+        let baseDX = endX - startX
 
         // Y position interpolates from startY to startY + endYOffset
         let startYPos = startY * size.height
         let endYPos = (startY + endYOffset) * size.height
-        let baseY = startYPos + t * (endYPos - startYPos)
+        let baseDYLinear = endYPos - startYPos
 
         // Base wave that ALL trajectories have (never fully straight)
         let baseWaveAmp = CGFloat.random(in: 12...22, using: &rng)
         let baseWaveFreq = CGFloat.random(in: 1.5...2.5, using: &rng)
-        let baseWave = sin(t * .pi * baseWaveFreq) * baseWaveAmp
+
+        func baseComponents(at t: CGFloat) -> (x: CGFloat, y: CGFloat, wave: CGFloat, dy: CGFloat) {
+            let baseX = startX + t * baseDX
+            let baseY = startYPos + t * baseDYLinear
+            let baseWave = sin(t * .pi * baseWaveFreq) * baseWaveAmp
+            let baseDY = baseDYLinear + cos(t * .pi * baseWaveFreq) * (.pi * baseWaveFreq) * baseWaveAmp
+            return (baseX, baseY, baseWave, baseDY)
+        }
+
+        let base = baseComponents(at: t)
 
         switch trajectoryType {
         case .wave:
@@ -369,7 +378,7 @@ private struct Trajectory {
             let amplitude = CGFloat.random(in: 25...45, using: &rng)
             let direction: CGFloat = Bool.random(using: &rng) ? 1 : -1
             let flowWave = sin(t * .pi) * amplitude * direction
-            return CGPoint(x: baseX, y: baseY + baseWave + flowWave)
+            return CGPoint(x: base.x, y: base.y + base.wave + flowWave)
 
         case .sCurve:
             // Double wave - goes up then down (or vice versa)
@@ -377,7 +386,7 @@ private struct Trajectory {
             let direction: CGFloat = Bool.random(using: &rng) ? 1 : -1
             // Two full humps
             let doubleWave = sin(t * 2 * .pi) * amplitude * direction
-            return CGPoint(x: baseX, y: baseY + doubleWave)
+            return CGPoint(x: base.x, y: base.y + doubleWave)
 
         case .loop:
             // Smooth loop with continuous wave before and after
@@ -391,35 +400,36 @@ private struct Trajectory {
             let distFromLoop = abs(t - loopCenter)
             let loopBlend = smoothstep(loopWidth, 0, distFromLoop)
 
-            // Wave position (continuous throughout)
-            let waveY = baseY + baseWave
-
-            // Inside or near loop region - blend between wave and circle
+            // Inside or near loop region - progress through the loop
             let normalizedT = (t - loopCenter + loopWidth) / (2 * loopWidth)
             let clampedT = max(0, min(1, normalizedT))
+            let easedT = smoothstep(0, 1, clampedT)
+            let angle = easedT * 2 * .pi
 
-            // Angle always goes 0 → 2π (counterclockwise in standard coords)
-            // This ensures horizontal movement is always left-to-right
-            let angle = clampedT * 2 * .pi
+            let loopProgressScale = 1 - loopBlend * 0.75
+            let loopBaseT = loopCenter + (t - loopCenter) * loopProgressScale
+            let loopBase = baseComponents(at: loopBaseT)
+            let waveY = loopBase.y + loopBase.wave
 
-            // Circle center follows the base trajectory at loopCenter (keeps the full round loop shape)
-            let loopCenterX = startX + loopCenter * (endX - startX)
-            let loopBaseY = startYPos + loopCenter * (endYPos - startYPos)
-            let loopCenterY = loopBaseY + sin(loopCenter * .pi * baseWaveFreq) * baseWaveAmp
+            // Build a loop in the local tangent/normal frame so entry/exit tangents align.
+            let baseDY = loopBase.dy
+            let tangentLength = sqrt(baseDX * baseDX + baseDY * baseDY)
+            guard tangentLength > 0 else {
+                return CGPoint(x: loopBase.x, y: waveY)
+            }
 
-            // Position on circle:
-            // - sin(angle) for X: 0→1→0→-1→0 gives the forward bulge then backward
-            // - For Y: we want to go UP first (negative Y) when verticalDir = -1
-            // - cos(angle) goes 1→0→-1→0→1, so -cos gives -1→0→1→0→-1 (up then down)
-            // - direction flips the X bulge direction
-            let circleX = loopCenterX + sin(angle) * loopRadius * direction
-            let circleY = loopCenterY - cos(angle) * loopRadius * verticalDir
+            let tangent = CGPoint(x: baseDX / tangentLength, y: baseDY / tangentLength)
+            let normal = CGPoint(x: -tangent.y, y: tangent.x)
 
-            // Blend between wave path and loop path (loopBlend already eases to 0 at edges)
-            let blendedX = baseX * (1 - loopBlend) + circleX * loopBlend
-            let blendedY = waveY * (1 - loopBlend) + circleY * loopBlend
+            // Circle offset around the base path, blended in/out to avoid kinks at edges.
+            let tangentialOffset = sin(angle) * loopRadius
+            let normalOffset = (1 - cos(angle)) * loopRadius * verticalDir
+            let loopOffset = CGPoint(
+                x: tangent.x * tangentialOffset + normal.x * normalOffset,
+                y: tangent.y * tangentialOffset + normal.y * normalOffset
+            )
 
-            return CGPoint(x: blendedX, y: blendedY)
+            return CGPoint(x: loopBase.x + loopOffset.x, y: waveY + loopOffset.y)
         }
     }
 
