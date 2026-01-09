@@ -394,37 +394,32 @@ private struct Trajectory {
             // Wave position (continuous throughout)
             let waveY = baseY + baseWave
 
-            if loopBlend > 0.01 {
-                // Inside or near loop region - blend between wave and circle
-                let normalizedT = (t - loopCenter + loopWidth) / (2 * loopWidth)
-                let clampedT = max(0, min(1, normalizedT))
+            // Inside or near loop region - blend between wave and circle
+            let normalizedT = (t - loopCenter + loopWidth) / (2 * loopWidth)
+            let clampedT = max(0, min(1, normalizedT))
 
-                // Angle always goes 0 → 2π (counterclockwise in standard coords)
-                // This ensures horizontal movement is always left-to-right
-                let angle = clampedT * 2 * .pi
+            // Angle always goes 0 → 2π (counterclockwise in standard coords)
+            // This ensures horizontal movement is always left-to-right
+            let angle = clampedT * 2 * .pi
 
-                // Circle center follows the base trajectory
-                let loopCenterX = startX + loopCenter * (endX - startX)
-                let loopBaseY = startYPos + loopCenter * (endYPos - startYPos)
-                let loopCenterY = loopBaseY + sin(loopCenter * .pi * baseWaveFreq) * baseWaveAmp
+            // Circle center follows the base trajectory at loopCenter (keeps the full round loop shape)
+            let loopCenterX = startX + loopCenter * (endX - startX)
+            let loopBaseY = startYPos + loopCenter * (endYPos - startYPos)
+            let loopCenterY = loopBaseY + sin(loopCenter * .pi * baseWaveFreq) * baseWaveAmp
 
-                // Position on circle:
-                // - sin(angle) for X: 0→1→0→-1→0 gives the forward bulge then backward
-                // - For Y: we want to go UP first (negative Y) when verticalDir = -1
-                // - cos(angle) goes 1→0→-1→0→1, so -cos gives -1→0→1→0→-1 (up then down)
-                // - direction flips the X bulge direction
-                let circleX = loopCenterX + sin(angle) * loopRadius * direction
-                let circleY = loopCenterY - cos(angle) * loopRadius * verticalDir
+            // Position on circle:
+            // - sin(angle) for X: 0→1→0→-1→0 gives the forward bulge then backward
+            // - For Y: we want to go UP first (negative Y) when verticalDir = -1
+            // - cos(angle) goes 1→0→-1→0→1, so -cos gives -1→0→1→0→-1 (up then down)
+            // - direction flips the X bulge direction
+            let circleX = loopCenterX + sin(angle) * loopRadius * direction
+            let circleY = loopCenterY - cos(angle) * loopRadius * verticalDir
 
-                // Blend between wave path and loop path
-                let blendedX = baseX * (1 - loopBlend) + circleX * loopBlend
-                let blendedY = waveY * (1 - loopBlend) + circleY * loopBlend
+            // Blend between wave path and loop path (loopBlend already eases to 0 at edges)
+            let blendedX = baseX * (1 - loopBlend) + circleX * loopBlend
+            let blendedY = waveY * (1 - loopBlend) + circleY * loopBlend
 
-                return CGPoint(x: blendedX, y: blendedY)
-            } else {
-                // Outside loop - just the wave
-                return CGPoint(x: baseX, y: waveY)
-            }
+            return CGPoint(x: blendedX, y: blendedY)
         }
     }
 
