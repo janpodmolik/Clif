@@ -213,20 +213,21 @@ struct WindLinesView: View {
             effectiveSpawnChance = gustConfig.spawnChance(at: gustIntensity)
             speedMultiplier = gustConfig.speedMultiplier(at: gustIntensity)
 
-            // Burst spawn at peak gusts (spawn multiple lines at once)
+            // Burst spawn at peak gusts - always spawn 2 loop lines for dramatic effect
             let timeSinceLastBurst = currentTime - lastBurstTime
             if gustIntensity > gustConfig.burstThreshold &&
                activeLines.count < config.maxLines - 2 &&
                timeSinceLastBurst > 0.3 {
-                let burstCount = Int.random(in: 1...2)
-                for _ in 0..<burstCount where activeLines.count < config.maxLines {
+                // Spawn 2 guaranteed loop lines
+                for _ in 0..<2 where activeLines.count < config.maxLines {
                     activeLines.append(WindLine.random(
                         config: config,
                         spawnTime: currentTime,
                         windAreaTop: windAreaTop,
                         windAreaBottom: windAreaBottom,
                         direction: direction,
-                        speedMultiplier: speedMultiplier
+                        speedMultiplier: speedMultiplier,
+                        forcedType: .loop
                     ))
                 }
                 lastBurstTime = currentTime
@@ -281,9 +282,15 @@ private struct WindLine: Identifiable {
         windAreaTop: CGFloat,
         windAreaBottom: CGFloat,
         direction: CGFloat,
-        speedMultiplier: Double = 1.0
+        speedMultiplier: Double = 1.0,
+        forcedType: TrajectoryType? = nil
     ) -> WindLine {
-        let trajectory = Trajectory.random(windAreaTop: windAreaTop, windAreaBottom: windAreaBottom, direction: direction)
+        let trajectory = Trajectory.random(
+            windAreaTop: windAreaTop,
+            windAreaBottom: windAreaBottom,
+            direction: direction,
+            forcedType: forcedType
+        )
         // Duration scales with length - shorter lines move faster
         let baseDuration = Double.random(in: config.durationRange)
         let scaledDuration = baseDuration * (0.5 + Double(trajectory.length) * 0.5)
@@ -310,17 +317,28 @@ private struct Trajectory {
     let seed: UInt64
     let direction: CGFloat   // 1.0 = left→right, -1.0 = right→left
 
-    static func random(windAreaTop: CGFloat, windAreaBottom: CGFloat, direction: CGFloat) -> Trajectory {
+    static func random(
+        windAreaTop: CGFloat,
+        windAreaBottom: CGFloat,
+        direction: CGFloat,
+        forcedType: TrajectoryType? = nil
+    ) -> Trajectory {
         // End Y offset: can go up or down within the wind area bounds
         let areaHeight = windAreaBottom - windAreaTop
         let maxOffset = areaHeight * 0.4  // Allow some vertical drift
         let endOffset = CGFloat.random(in: -maxOffset...maxOffset)
 
+        // Loops need longer length to look good
+        let trajectoryType = forcedType ?? TrajectoryType.random()
+        let length: CGFloat = trajectoryType == .loop
+            ? CGFloat.random(in: 0.6...1.0)
+            : CGFloat.random(in: 0.15...1.0)
+
         return Trajectory(
             startY: CGFloat.random(in: windAreaTop...windAreaBottom),
             endYOffset: endOffset,
-            length: CGFloat.random(in: 0.15...1.0), // Variable length, some very short
-            trajectoryType: TrajectoryType.random(),
+            length: length,
+            trajectoryType: trajectoryType,
             seed: UInt64.random(in: 0...UInt64.max),
             direction: direction
         )
