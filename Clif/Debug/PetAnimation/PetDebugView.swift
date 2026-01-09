@@ -1009,8 +1009,8 @@ struct PetDebugView: View {
                             get: { Double(particleCount) },
                             set: { particleCount = Int($0) }
                         ),
-                        in: 20...150,
-                        step: 10
+                        in: 20...300,
+                        step: 20
                     )
                 }
             }

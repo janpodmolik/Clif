@@ -20,11 +20,26 @@ struct EvolutionTransitionConfig: Equatable {
         (glowColorR, glowColorG, glowColorB)
     }
 
-    /// Progress point (0-1) when new image starts appearing (during flash).
-    static let assetSwapPoint: CGFloat = 0.58
+    /// Progress point (0-1) when flash begins in the shader.
+    static let flashStart: CGFloat = 0.55
 
-    /// Progress point (0-1) when old image is hidden completely.
-    static let oldImageHidePoint: CGFloat = 0.60
+    /// Calculates when new image should start appearing (middle of flash).
+    func assetSwapPoint() -> CGFloat {
+        // flashDuration is in seconds, normalize to 0-1 range
+        let normalizedFlashDuration = flashDuration / duration
+        return Self.flashStart + normalizedFlashDuration * 0.5
+    }
+
+    /// Calculates when old image should be hidden (end of flash).
+    /// This ensures old image is never visible after the shader's Phase 3 begins.
+    func oldImageHidePoint() -> CGFloat {
+        // flashDuration is in seconds, normalize to 0-1 range
+        // Hide slightly BEFORE shader's Phase 3 to ensure no glitch
+        // Shader's flashEnd = 0.55 + normalizedFlashDuration
+        let normalizedFlashDuration = flashDuration / duration
+        // Subtract small buffer to hide old image just before flash ends
+        return Self.flashStart + normalizedFlashDuration - 0.02
+    }
 
     /// Default duration for the transition.
     static let defaultDuration: TimeInterval = 2.0

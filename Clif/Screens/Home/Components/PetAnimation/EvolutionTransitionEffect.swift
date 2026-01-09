@@ -22,7 +22,7 @@ struct EvolutionTransitionView: View {
 
                 ZStack {
                     // Old pet (fading out) - hide after flash completes
-                    if progress < EvolutionTransitionConfig.oldImageHidePoint {
+                    if progress < config.oldImageHidePoint() {
                         petImage(assetName: oldAssetName, size: size)
                             .applyGlowBurst(
                                 progress: progress,
@@ -33,7 +33,7 @@ struct EvolutionTransitionView: View {
                     }
 
                     // New pet (fading in) - show during flash
-                    if progress >= EvolutionTransitionConfig.assetSwapPoint {
+                    if progress >= config.assetSwapPoint() {
                         petImage(assetName: newAssetName, size: size)
                             .applyGlowBurst(
                                 progress: progress,

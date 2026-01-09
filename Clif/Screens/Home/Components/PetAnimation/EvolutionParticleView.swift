@@ -134,9 +134,12 @@ struct EvolutionParticleView: View {
         // Slower ease out - particles decelerate gradually as they float away
         let easedProgress = 1 - pow(1 - adjustedProgress, 2.5)
 
-        // Distance from center grows with progress - slower expansion
-        let maxRadius = min(canvasSize.width, canvasSize.height) * 0.7
-        let radius = particle.initialRadius * 3 + easedProgress * maxRadius * particle.speed
+        // Use uniform radius based on smaller dimension for circular spread
+        let maxRadius = min(canvasSize.width, canvasSize.height) * 0.8
+
+        // Base radius from center
+        let baseRadius = particle.initialRadius * 3
+        let expandedRadius = baseRadius + easedProgress * maxRadius * particle.speed
 
         // Slight spiral effect for organic movement
         let spiralOffset = easedProgress * 0.3
@@ -149,8 +152,8 @@ struct EvolutionParticleView: View {
         let upwardDrift = easedProgress * 15 * particle.speed
 
         return CGPoint(
-            x: center.x + cos(angle) * radius + wobble,
-            y: center.y + sin(angle) * radius - upwardDrift
+            x: center.x + cos(angle) * expandedRadius + wobble,
+            y: center.y + sin(angle) * expandedRadius - upwardDrift
         )
     }
 }
