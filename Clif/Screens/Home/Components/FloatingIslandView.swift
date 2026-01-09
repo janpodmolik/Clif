@@ -105,11 +105,13 @@ struct FloatingIslandView<Evolution: EvolutionType>: View {
                         triggerTap()
                     }
 
-                // Speech bubble overlay - follows pet rotation and sway
+                // Speech bubble overlay - follows pet with inertia
                 if let config = speechBubbleState.currentConfig {
-                    SpeechBubbleView(config: config, isVisible: speechBubbleState.isVisible)
-                        .offset(x: petTransform.swayOffset)
-                        .rotationEffect(.degrees(petTransform.rotation), anchor: .bottom)
+                    SpeechBubbleView(
+                        config: config,
+                        isVisible: speechBubbleState.isVisible,
+                        petTransform: petTransform
+                    )
                 }
             }
             .offset(y: petOffset)

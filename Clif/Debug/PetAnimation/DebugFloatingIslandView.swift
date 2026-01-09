@@ -142,13 +142,15 @@ struct DebugFloatingIslandView<Evolution: EvolutionType>: View {
                         .allowsHitTesting(false)
                 }
 
-                // Speech bubble overlay - follows pet rotation and sway
+                // Speech bubble overlay - follows pet with inertia
                 if evolutionTransitionView == nil,
                    let bubbleState = debugSpeechBubbleState,
                    let config = bubbleState.currentConfig {
-                    SpeechBubbleView(config: config, isVisible: bubbleState.isVisible)
-                        .offset(x: petTransform.swayOffset)
-                        .rotationEffect(.degrees(petTransform.rotation), anchor: .bottom)
+                    SpeechBubbleView(
+                        config: config,
+                        isVisible: bubbleState.isVisible,
+                        petTransform: petTransform
+                    )
                 }
             }
             .offset(y: petOffset)

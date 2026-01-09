@@ -2,14 +2,22 @@ import SwiftUI
 
 /// Speech bubble displaying emoji(s) next to the pet.
 /// Uses iMessage-style bubble shape with curved tail.
+/// Follows pet movement with slight inertia for organic feel.
 struct SpeechBubbleView: View {
     let config: SpeechBubbleConfig
     let isVisible: Bool
 
+    /// Pet animation transform for following movement
+    var petTransform: PetAnimationTransform = .zero
+
     /// Horizontal offset from pet center
-    var horizontalOffset: CGFloat = 85
+    var horizontalOffset: CGFloat = 70
     /// Vertical offset from pet center (negative = above)
-    var verticalOffset: CGFloat = -60
+    var verticalOffset: CGFloat = -55
+
+    /// Smoothed transform values for inertia effect
+    @State private var smoothedOffset: CGFloat = 0
+    @State private var smoothedRotation: CGFloat = 0
 
     /// iMessage blue color (happy/neutral mood)
     private let iMessageBlue = Color(red: 0, green: 122/255, blue: 255/255)
@@ -52,6 +60,12 @@ struct SpeechBubbleView: View {
         config.position == .left ? -4 : 4
     }
 
+    /// Combined horizontal offset following pet's head position
+    private var followOffset: CGFloat {
+        // Combine sway and top offset (from rotation) to follow the head
+        petTransform.swayOffset + petTransform.topOffset
+    }
+
     var body: some View {
         ZStack {
             // Background: iMessage-style bubble (blue for happy/neutral, green for sad)
@@ -78,7 +92,10 @@ struct SpeechBubbleView: View {
             .offset(x: contentCenteringOffset)
         }
         .frame(width: bubbleWidth, height: bubbleHeight)
-        .offset(x: bubbleOffset, y: verticalOffset)
+        // Position: base offset + smoothed pet following
+        .offset(x: bubbleOffset + smoothedOffset, y: verticalOffset)
+        // Slight rotation following pet (reduced for subtlety)
+        .rotationEffect(.degrees(smoothedRotation * 0.3), anchor: .bottom)
         .opacity(isVisible ? 1 : 0)
         .scaleEffect(isVisible ? 1 : 0.5)
         .animation(
@@ -87,6 +104,22 @@ struct SpeechBubbleView: View {
                 : .easeOut(duration: 0.2),
             value: isVisible
         )
+        // Smooth follow with inertia (spring animation creates lag effect)
+        .onChange(of: followOffset) { _, newValue in
+            withAnimation(.spring(response: 0.4, dampingFraction: 0.7)) {
+                smoothedOffset = newValue
+            }
+        }
+        .onChange(of: petTransform.rotation) { _, newValue in
+            withAnimation(.spring(response: 0.5, dampingFraction: 0.6)) {
+                smoothedRotation = newValue
+            }
+        }
+        .onAppear {
+            // Initialize to current values
+            smoothedOffset = followOffset
+            smoothedRotation = petTransform.rotation
+        }
     }
 }
 

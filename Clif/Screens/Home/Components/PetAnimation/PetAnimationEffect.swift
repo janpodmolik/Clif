@@ -6,8 +6,10 @@ struct PetAnimationTransform: Equatable {
     let rotation: CGFloat
     /// Horizontal sway offset in points (from wind effect)
     let swayOffset: CGFloat
+    /// Horizontal offset of pet's top (head) due to rotation, in points
+    let topOffset: CGFloat
 
-    static let zero = PetAnimationTransform(rotation: 0, swayOffset: 0)
+    static let zero = PetAnimationTransform(rotation: 0, swayOffset: 0, topOffset: 0)
 }
 
 /// A view modifier that applies pet animation effects using Metal shader and rotation.
@@ -142,12 +144,18 @@ struct PetAnimationEffect: ViewModifier {
                     let swayMaxOffset = proxy.size.width * 0.15 * intensity * direction
                     let swayOffset = -wave * swayMaxOffset * swayAmount * 0.3
 
+                    // Calculate top offset from rotation (how much the head moves horizontally)
+                    // When rotating around bottom anchor, the top moves: sin(angle) * height
+                    let rotationRadians = rotation * .pi / 180
+                    let topOffset = sin(rotationRadians) * proxy.size.height
+
                     // Export transform values for overlays (e.g., speech bubble)
                     if let callback = onTransformUpdate {
                         DispatchQueue.main.async {
                             callback(PetAnimationTransform(
                                 rotation: rotation,
-                                swayOffset: swayOffset
+                                swayOffset: swayOffset,
+                                topOffset: topOffset
                             ))
                         }
                     }
