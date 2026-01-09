@@ -4,8 +4,6 @@ import SwiftUI
 struct HomeScreen: View {
     @Environment(\.colorScheme) private var colorScheme
 
-    private let windDirection = WindDirection.forToday()
-
     /// Shared wind rhythm for synchronized effects between pet animation and wind lines
     @State private var windRhythm = WindRhythm()
 
@@ -20,12 +18,12 @@ struct HomeScreen: View {
                 }
 
                 // Wind lines effect (scales with wind level)
-                // Wind area behind and above the pet (0.15-0.40 = upper area of screen)
+                // Wind area centered around pet (0.25-0.50 = matches PetDebugView)
                 WindLinesView(
                     windLevel: .high,
-                    direction: windDirection,
-                    windAreaTop: 0.15,
-                    windAreaBottom: 0.40,
+                    direction: 1.0,
+                    windAreaTop: 0.25,
+                    windAreaBottom: 0.50,
                     windRhythm: windRhythm
                 )
 
@@ -35,7 +33,7 @@ struct HomeScreen: View {
                     screenWidth: geometry.size.width,
                     evolution: PlantEvolution.phase4,
                     windLevel: .high,
-                    windDirection: windDirection,
+                    windDirection: 1.0,
                     windRhythm: windRhythm
                 )
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
