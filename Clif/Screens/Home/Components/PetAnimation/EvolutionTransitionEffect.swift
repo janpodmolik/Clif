@@ -5,6 +5,7 @@ import SwiftUI
 struct EvolutionTransitionView: View {
     let isActive: Bool
     let config: EvolutionTransitionConfig
+    let particleConfig: EvolutionParticleConfig
     let oldAssetName: String
     let newAssetName: String
     let onComplete: () -> Void
@@ -40,6 +41,15 @@ struct EvolutionTransitionView: View {
                                 isNewImage: true,
                                 size: size
                             )
+                    }
+
+                    // Particle overlay
+                    if particleConfig.enabled {
+                        EvolutionParticleView(
+                            progress: progress,
+                            config: particleConfig,
+                            size: size
+                        )
                     }
                 }
                 .onChange(of: progress >= 1.0) { _, completed in
@@ -124,6 +134,7 @@ private struct EvolutionTransitionPreview: View {
                 EvolutionTransitionView(
                     isActive: true,
                     config: .default,
+                    particleConfig: .default,
                     oldAssetName: "plant/happy/1",
                     newAssetName: "plant/happy/2",
                     onComplete: {

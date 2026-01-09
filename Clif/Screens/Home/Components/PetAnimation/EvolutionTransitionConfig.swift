@@ -38,3 +38,63 @@ struct EvolutionTransitionConfig: Equatable {
         flashDuration: 0.2
     )
 }
+
+// MARK: - Particle Configuration
+
+/// Configuration for evolution particle effects.
+struct EvolutionParticleConfig: Equatable {
+    /// Type of particle effect.
+    var particleType: EvolutionParticleType
+
+    /// Whether particles are enabled.
+    var enabled: Bool
+
+    /// Number of particles (rich/dense effect).
+    var particleCount: Int
+
+    /// Base particle size range.
+    var minSize: CGFloat
+    var maxSize: CGFloat
+
+    /// Particle color RGB (warm silver/white to match glow).
+    var colorR: CGFloat
+    var colorG: CGFloat
+    var colorB: CGFloat
+
+    /// Progress point when particles start appearing.
+    var startProgress: CGFloat
+
+    /// Progress point when particles reach peak intensity.
+    var peakProgress: CGFloat
+
+    /// Progress point when particles finish fading out.
+    var endProgress: CGFloat
+
+    static let `default` = EvolutionParticleConfig(
+        particleType: .radialExplosion,
+        enabled: true,
+        particleCount: 80,
+        minSize: 2,
+        maxSize: 6,
+        colorR: 1.0,
+        colorG: 0.95,
+        colorB: 0.8,
+        startProgress: 0.50,
+        peakProgress: 0.60,
+        endProgress: 1.0
+    )
+
+    static let disabled = EvolutionParticleConfig(
+        particleType: .radialExplosion,
+        enabled: false,
+        particleCount: 0,
+        minSize: 0,
+        maxSize: 0,
+        colorR: 0,
+        colorG: 0,
+        colorB: 0,
+        startProgress: 0,
+        peakProgress: 0,
+        endProgress: 0
+    )
+}

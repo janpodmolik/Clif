@@ -69,6 +69,10 @@ struct PetDebugView: View {
     @State private var transitionToPhase: Int = 2
     @State private var evolutionTransitionKey: UUID = UUID()
 
+    // Particle effect debug
+    @State private var particlesEnabled: Bool = true
+    @State private var particleCount: Int = 80
+
     enum EvolutionTypeOption: String, CaseIterable {
         case blob = "Blob"
         case plant = "Plant"
@@ -206,6 +210,7 @@ struct PetDebugView: View {
                                     EvolutionTransitionView(
                                         isActive: true,
                                         config: currentTransitionConfig,
+                                        particleConfig: currentParticleConfig,
                                         oldAssetName: PlantEvolution(rawValue: transitionFromPhase)?.assetName(for: windLevel) ?? "plant/happy/1",
                                         newAssetName: PlantEvolution(rawValue: transitionToPhase)?.assetName(for: windLevel) ?? "plant/happy/2",
                                         onComplete: {
@@ -547,6 +552,8 @@ struct PetDebugView: View {
         customGlowIntensity = 2.5
         isTransitioning = false
         showEvolutionTransition = false
+        particlesEnabled = true
+        particleCount = 80
     }
 
     // MARK: - Idle Controls
@@ -986,6 +993,28 @@ struct PetDebugView: View {
                 }
             }
 
+            Divider()
+
+            // Particle Effect Controls
+            Toggle("Particles", isOn: $particlesEnabled)
+
+            if particlesEnabled {
+                // Particle count slider
+                HStack {
+                    Text("Count: \(particleCount)")
+                        .font(.caption)
+                        .frame(width: 100, alignment: .leading)
+                    Slider(
+                        value: Binding(
+                            get: { Double(particleCount) },
+                            set: { particleCount = Int($0) }
+                        ),
+                        in: 20...150,
+                        step: 10
+                    )
+                }
+            }
+
             // Status indicator
             if isTransitioning {
                 HStack {
@@ -1023,6 +1052,13 @@ struct PetDebugView: View {
             config.glowPeakIntensity = customGlowIntensity
         }
 
+        return config
+    }
+
+    private var currentParticleConfig: EvolutionParticleConfig {
+        var config = EvolutionParticleConfig.default
+        config.enabled = particlesEnabled
+        config.particleCount = particleCount
         return config
     }
 
