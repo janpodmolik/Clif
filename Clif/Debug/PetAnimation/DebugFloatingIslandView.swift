@@ -13,6 +13,9 @@ struct DebugFloatingIslandView<Evolution: EvolutionType>: View {
     var debugWindConfig: WindConfig? = nil
     var windDirection: CGFloat = 1.0
 
+    /// Optional shared wind rhythm for synchronized effects with wind lines.
+    var windRhythm: WindRhythm?
+
     // Debug tap overrides
     var debugTapType: TapAnimationType = .none
     var debugTapConfig: TapConfig? = nil
@@ -124,6 +127,7 @@ struct DebugFloatingIslandView<Evolution: EvolutionType>: View {
                             tapConfig: activeTapConfig,
                             idleConfig: activeIdleConfig,
                             screenWidth: screenWidth,
+                            windRhythm: windRhythm,
                             onTransformUpdate: { transform in
                                 petTransform = transform
                             }

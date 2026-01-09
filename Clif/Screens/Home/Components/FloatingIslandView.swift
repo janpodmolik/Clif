@@ -8,18 +8,23 @@ struct FloatingIslandView<Evolution: EvolutionType>: View {
     let windLevel: WindLevel
     var windDirection: CGFloat = 1.0
 
+    /// Optional shared wind rhythm for synchronized effects with wind lines.
+    var windRhythm: WindRhythm?
+
     init(
         screenHeight: CGFloat,
         screenWidth: CGFloat? = nil,
         evolution: Evolution,
         windLevel: WindLevel,
-        windDirection: CGFloat = 1.0
+        windDirection: CGFloat = 1.0,
+        windRhythm: WindRhythm? = nil
     ) {
         self.screenHeight = screenHeight
         self.screenWidth = screenWidth
         self.evolution = evolution
         self.windLevel = windLevel
         self.windDirection = windDirection
+        self.windRhythm = windRhythm
     }
 
     // Internal tap state
@@ -91,6 +96,7 @@ struct FloatingIslandView<Evolution: EvolutionType>: View {
                         tapConfig: currentTapConfig,
                         idleConfig: idleConfig,
                         screenWidth: screenWidth,
+                        windRhythm: windRhythm,
                         onTransformUpdate: { transform in
                             petTransform = transform
                         }

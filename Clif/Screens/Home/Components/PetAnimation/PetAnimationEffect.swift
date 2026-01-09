@@ -37,6 +37,10 @@ struct PetAnimationEffect: ViewModifier {
     // Screen width for calculating max sample offset (pet can fly to screen edge)
     let screenWidth: CGFloat?
 
+    /// Optional shared wind rhythm for synchronized effects with wind lines.
+    /// When provided, uses rhythm's wave value instead of computing locally.
+    let windRhythm: WindRhythm?
+
     // Callback for exporting transform values to overlays
     let onTransformUpdate: ((PetAnimationTransform) -> Void)?
 
@@ -98,8 +102,16 @@ struct PetAnimationEffect: ViewModifier {
             // Pet bends IN the wind direction (wind pushes it)
             // Forward swing (with wind): 100% amplitude
             // Back swing (against wind): 50% amplitude
-            let rawWave: Double = sin(time * 1.5) * 0.6 + sin(time * 2.3) * 0.3 + sin(time * 0.7) * 0.1
-            let wave: Double = rawWave < 0 ? rawWave : rawWave * 0.4
+            let wave: Double = {
+                if let rhythm = windRhythm {
+                    // Use shared rhythm for synchronized effects with wind lines
+                    return Double(rhythm.rawWave)
+                } else {
+                    // Fallback: local computation (for backward compatibility)
+                    let rawWave = sin(time * 1.5) * 0.6 + sin(time * 2.3) * 0.3 + sin(time * 0.7) * 0.1
+                    return rawWave < 0 ? rawWave : rawWave * 0.4
+                }
+            }()
 
             // Rotation follows wind direction (negative direction = negative rotation)
             let rotation: Double = -wave * intensity * direction * rotationAmount * 6
@@ -166,6 +178,7 @@ extension View {
     ///   - tapConfig: Configuration for tap animation parameters
     ///   - idleConfig: Configuration for idle breathing animation
     ///   - screenWidth: Screen width for max sample offset (allows pet to fly to screen edge)
+    ///   - windRhythm: Optional shared rhythm for synchronized wind effects with wind lines
     ///   - onTransformUpdate: Callback providing current rotation and sway values for overlays
     func petAnimation(
         intensity: CGFloat = 0.5,
@@ -178,6 +191,7 @@ extension View {
         tapConfig: TapConfig = .none,
         idleConfig: IdleConfig = .default,
         screenWidth: CGFloat? = nil,
+        windRhythm: WindRhythm? = nil,
         onTransformUpdate: ((PetAnimationTransform) -> Void)? = nil
     ) -> some View {
         modifier(PetAnimationEffect(
@@ -191,6 +205,7 @@ extension View {
             tapConfig: tapConfig,
             idleConfig: idleConfig,
             screenWidth: screenWidth,
+            windRhythm: windRhythm,
             onTransformUpdate: onTransformUpdate
         ))
     }

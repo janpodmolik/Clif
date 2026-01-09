@@ -25,24 +25,24 @@ enum PlantEvolution: Int, CaseIterable, EvolutionType {
             return .none
         case .low:
             return WindConfig(
-                intensity: 0.3,
+                intensity: 0.5,
                 bendCurve: baseBend,
-                swayAmount: 0.1,
-                rotationAmount: 0.2
+                swayAmount: 4.9,
+                rotationAmount: 1.0
             )
         case .medium:
             return WindConfig(
-                intensity: 0.6,
-                bendCurve: baseBend - 0.2,
-                swayAmount: 0.3,
-                rotationAmount: 0.4
+                intensity: 1.5,
+                bendCurve: baseBend,
+                swayAmount: 7.5,
+                rotationAmount: 0.8
             )
         case .high:
             return WindConfig(
-                intensity: 1.0,
-                bendCurve: baseBend - 0.4,
-                swayAmount: 0.5,
-                rotationAmount: 0.6
+                intensity: 2.0,
+                bendCurve: baseBend + 0.5,
+                swayAmount: 11.0,
+                rotationAmount: 0.8
             )
         }
     }

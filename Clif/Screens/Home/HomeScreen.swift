@@ -6,6 +6,9 @@ struct HomeScreen: View {
 
     private let windDirection = WindDirection.forToday()
 
+    /// Shared wind rhythm for synchronized effects between pet animation and wind lines
+    @State private var windRhythm = WindRhythm()
+
     var body: some View {
         GeometryReader { geometry in
             ZStack {
@@ -22,7 +25,8 @@ struct HomeScreen: View {
                     windLevel: .high,
                     direction: windDirection,
                     windAreaTop: 0.25,
-                    windAreaBottom: 0.50
+                    windAreaBottom: 0.50,
+                    windRhythm: windRhythm
                 )
 
                 // Floating island with pet
@@ -31,7 +35,8 @@ struct HomeScreen: View {
                     screenWidth: geometry.size.width,
                     evolution: PlantEvolution.phase4,
                     windLevel: .high,
-                    windDirection: windDirection
+                    windDirection: windDirection,
+                    windRhythm: windRhythm
                 )
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
                 .ignoresSafeArea(.container, edges: .bottom)
@@ -47,6 +52,12 @@ struct HomeScreen: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
                 .padding(16)
             }
+        }
+        .onAppear {
+            windRhythm.start()
+        }
+        .onDisappear {
+            windRhythm.stop()
         }
     }
 }

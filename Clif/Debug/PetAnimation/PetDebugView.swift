@@ -58,6 +58,9 @@ struct PetDebugView: View {
     @State private var isBlowingAway: Bool = false
     @State private var windLinesBurstActive: Bool = false
 
+    /// Shared wind rhythm for synchronized wind effects between pet and wind lines
+    @State private var debugWindRhythm = WindRhythm()
+
     // Evolution transition debug
     @State private var isEvolutionExpanded: Bool = false
     @State private var transitionDuration: Double = EvolutionTransitionConfig.defaultDuration
@@ -159,7 +162,8 @@ struct PetDebugView: View {
                     debugColors: true,
                     windAreaTop: 0.25,
                     windAreaBottom: 0.50,
-                    overrideConfig: windLinesBurstActive ? .burst : nil
+                    overrideConfig: windLinesBurstActive ? .burst : nil,
+                    windRhythm: windLinesBurstActive ? nil : debugWindRhythm
                 )
 
                 // Floating island with pet - render appropriate evolution type
@@ -174,6 +178,7 @@ struct PetDebugView: View {
                                 windLevel: windLevel,
                                 debugWindConfig: customWindConfig,
                                 windDirection: direction,
+                                windRhythm: debugWindRhythm,
                                 debugTapType: selectedTapType,
                                 debugTapConfig: customTapConfig,
                                 debugIdleConfig: currentIdleConfig,
@@ -194,6 +199,7 @@ struct PetDebugView: View {
                                 windLevel: windLevel,
                                 debugWindConfig: customWindConfig,
                                 windDirection: direction,
+                                windRhythm: debugWindRhythm,
                                 debugTapType: selectedTapType,
                                 debugTapConfig: customTapConfig,
                                 debugIdleConfig: currentIdleConfig,
@@ -238,6 +244,10 @@ struct PetDebugView: View {
         .ignoresSafeArea()
         .onAppear {
             syncTransitionPhases(currentPhase: plantPhase)
+            debugWindRhythm.start()
+        }
+        .onDisappear {
+            debugWindRhythm.stop()
         }
     }
 
@@ -637,6 +647,29 @@ struct PetDebugView: View {
             .pickerStyle(.segmented)
         }
 
+        // Gust intensity indicator (from shared rhythm)
+        HStack {
+            Text("Gust Intensity")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+            Spacer()
+            // Progress bar showing current gust intensity
+            GeometryReader { geo in
+                ZStack(alignment: .leading) {
+                    RoundedRectangle(cornerRadius: 4)
+                        .fill(Color.secondary.opacity(0.2))
+                    RoundedRectangle(cornerRadius: 4)
+                        .fill(Color.orange)
+                        .frame(width: geo.size.width * debugWindRhythm.gustIntensity)
+                }
+            }
+            .frame(width: 100, height: 8)
+            Text("\(debugWindRhythm.gustIntensity, specifier: "%.2f")")
+                .font(.caption.monospacedDigit())
+                .foregroundStyle(.secondary)
+                .frame(width: 40, alignment: .trailing)
+        }
+
         // Custom wind config toggle
         Toggle("Custom Wind Config", isOn: $useCustomConfig)
 
@@ -662,7 +695,7 @@ struct PetDebugView: View {
         HStack {
             Text("Sway: \(customSwayAmount, specifier: "%.1f")")
                 .frame(width: 120, alignment: .leading)
-            Slider(value: $customSwayAmount, in: 0...10)
+            Slider(value: $customSwayAmount, in: 0...15)
         }
 
         HStack {

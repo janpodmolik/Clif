@@ -15,9 +15,14 @@ struct WindLinesView: View {
     /// Override config for special effects (e.g., burst mode for blow away)
     var overrideConfig: WindLinesConfig? = nil
 
+    /// Optional shared wind rhythm for synchronized gusts with pet animation.
+    /// When provided, spawn rate and speed vary with gust intensity.
+    var windRhythm: WindRhythm?
+
     @Environment(\.colorScheme) private var colorScheme
     @State private var activeLines: [WindLine] = []
     @State private var lastSpawnTime: Double = 0
+    @State private var lastBurstTime: Double = 0
 
     private var lineColor: Color {
         colorScheme == .dark ? .white : .black
@@ -38,6 +43,10 @@ struct WindLinesView: View {
 
     private var config: WindLinesConfig {
         overrideConfig ?? WindLinesConfig(for: windLevel)
+    }
+
+    private var gustConfig: WindGustConfig {
+        WindGustConfig(for: windLevel)
     }
 
     var body: some View {
@@ -188,16 +197,59 @@ struct WindLinesView: View {
             return elapsed > line.duration + 0.1
         }
 
-        // Maybe spawn new line
+        // Get current gust intensity from rhythm (0-1), default to 0.5 if no rhythm
+        let gustIntensity = windRhythm?.gustIntensity ?? 0.5
+
+        // Calculate dynamic spawn parameters based on gust
+        let effectiveSpawnChance: Double
+        let speedMultiplier: Double
+
+        if overrideConfig != nil {
+            // Burst mode (blow away) - ignore gust rhythm, use override config directly
+            effectiveSpawnChance = config.spawnChance
+            speedMultiplier = 1.0
+        } else if windRhythm != nil {
+            // Synchronized mode - spawn rate and speed vary with gust intensity
+            effectiveSpawnChance = gustConfig.spawnChance(at: gustIntensity)
+            speedMultiplier = gustConfig.speedMultiplier(at: gustIntensity)
+
+            // Burst spawn at peak gusts (spawn multiple lines at once)
+            let timeSinceLastBurst = currentTime - lastBurstTime
+            if gustIntensity > gustConfig.burstThreshold &&
+               activeLines.count < config.maxLines - 2 &&
+               timeSinceLastBurst > 0.3 {
+                let burstCount = Int.random(in: 1...2)
+                for _ in 0..<burstCount where activeLines.count < config.maxLines {
+                    activeLines.append(WindLine.random(
+                        config: config,
+                        spawnTime: currentTime,
+                        windAreaTop: windAreaTop,
+                        windAreaBottom: windAreaBottom,
+                        direction: direction,
+                        speedMultiplier: speedMultiplier
+                    ))
+                }
+                lastBurstTime = currentTime
+                lastSpawnTime = currentTime
+                return
+            }
+        } else {
+            // Legacy mode - constant spawn rate from config
+            effectiveSpawnChance = config.spawnChance
+            speedMultiplier = 1.0
+        }
+
+        // Regular spawn logic
         let timeSinceLastSpawn = currentTime - lastSpawnTime
         if activeLines.count < config.maxLines && timeSinceLastSpawn > config.minSpawnInterval {
-            if Double.random(in: 0...1) < config.spawnChance {
+            if Double.random(in: 0...1) < effectiveSpawnChance {
                 activeLines.append(WindLine.random(
                     config: config,
                     spawnTime: currentTime,
                     windAreaTop: windAreaTop,
                     windAreaBottom: windAreaBottom,
-                    direction: direction
+                    direction: direction,
+                    speedMultiplier: speedMultiplier
                 ))
                 lastSpawnTime = currentTime
             }
@@ -228,17 +280,21 @@ private struct WindLine: Identifiable {
         spawnTime: Double,
         windAreaTop: CGFloat,
         windAreaBottom: CGFloat,
-        direction: CGFloat
+        direction: CGFloat,
+        speedMultiplier: Double = 1.0
     ) -> WindLine {
         let trajectory = Trajectory.random(windAreaTop: windAreaTop, windAreaBottom: windAreaBottom, direction: direction)
         // Duration scales with length - shorter lines move faster
         let baseDuration = Double.random(in: config.durationRange)
         let scaledDuration = baseDuration * (0.5 + Double(trajectory.length) * 0.5)
 
+        // Apply speed multiplier (faster = shorter duration)
+        let adjustedDuration = scaledDuration / speedMultiplier
+
         return WindLine(
             trajectory: trajectory,
             thickness: CGFloat.random(in: 2.5...4.5),
-            duration: scaledDuration,
+            duration: adjustedDuration,
             spawnTime: spawnTime
         )
     }
@@ -453,6 +509,61 @@ struct WindLinesConfig {
         self.minSpawnInterval = minSpawnInterval
         self.spawnChance = spawnChance
         self.durationRange = durationRange
+    }
+}
+
+// MARK: - Wind Gust Config
+
+/// Configuration for how gust intensity affects wind line spawning.
+/// Used when WindRhythm is provided for synchronized effects.
+struct WindGustConfig {
+    /// Base spawn chance per frame (at gustIntensity = 0, calm)
+    let baseSpawnChance: Double
+    /// Maximum spawn chance per frame (at gustIntensity = 1, peak gust)
+    let peakSpawnChance: Double
+    /// Speed multiplier at peak gust (1.0 = no change, higher = faster lines)
+    let peakSpeedMultiplier: Double
+    /// Gust intensity threshold above which burst spawning triggers
+    let burstThreshold: Double
+
+    init(for windLevel: WindLevel) {
+        switch windLevel {
+        case .none:
+            baseSpawnChance = 0
+            peakSpawnChance = 0
+            peakSpeedMultiplier = 1.0
+            burstThreshold = 2.0 // Never triggers
+
+        case .low:
+            baseSpawnChance = 0.02
+            peakSpawnChance = 0.08
+            peakSpeedMultiplier = 1.3
+            burstThreshold = 0.9
+
+        case .medium:
+            baseSpawnChance = 0.03
+            peakSpawnChance = 0.15
+            peakSpeedMultiplier = 1.5
+            burstThreshold = 0.85
+
+        case .high:
+            baseSpawnChance = 0.05
+            peakSpawnChance = 0.25
+            peakSpeedMultiplier = 1.8
+            burstThreshold = 0.8
+        }
+    }
+
+    /// Calculate effective spawn chance based on current gust intensity.
+    func spawnChance(at gustIntensity: CGFloat) -> Double {
+        let t = Double(gustIntensity)
+        return baseSpawnChance + (peakSpawnChance - baseSpawnChance) * t
+    }
+
+    /// Calculate speed multiplier based on current gust intensity.
+    func speedMultiplier(at gustIntensity: CGFloat) -> Double {
+        let t = Double(gustIntensity)
+        return 1.0 + (peakSpeedMultiplier - 1.0) * t
     }
 }
 
