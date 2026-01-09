@@ -7,9 +7,9 @@ struct SpeechBubbleView: View {
     let isVisible: Bool
 
     /// Horizontal offset from pet center
-    var horizontalOffset: CGFloat = 70
+    var horizontalOffset: CGFloat = 85
     /// Vertical offset from pet center (negative = above)
-    var verticalOffset: CGFloat = -45
+    var verticalOffset: CGFloat = -60
 
     /// iMessage blue color (happy/neutral mood)
     private let iMessageBlue = Color(red: 0, green: 122/255, blue: 255/255)

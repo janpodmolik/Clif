@@ -46,6 +46,9 @@ struct DebugFloatingIslandView<Evolution: EvolutionType>: View {
     @State private var currentTapType: TapAnimationType = .none
     @State private var currentTapConfig: TapConfig = .none
 
+    // Pet animation transform for bubble positioning
+    @State private var petTransform: PetAnimationTransform = .zero
+
     // MARK: - Computed Properties
 
     private var islandHeight: CGFloat { screenHeight * 0.6 }
@@ -120,7 +123,10 @@ struct DebugFloatingIslandView<Evolution: EvolutionType>: View {
                             tapType: activeTapType,
                             tapConfig: activeTapConfig,
                             idleConfig: activeIdleConfig,
-                            screenWidth: screenWidth
+                            screenWidth: screenWidth,
+                            onTransformUpdate: { transform in
+                                petTransform = transform
+                            }
                         )
                         .offset(x: blowAwayOffsetX)
                         .rotationEffect(.degrees(blowAwayRotation), anchor: .bottom)
@@ -128,9 +134,11 @@ struct DebugFloatingIslandView<Evolution: EvolutionType>: View {
                             triggerTap()
                         }
 
-                    // Speech bubble overlay (only if debug state provided)
+                    // Speech bubble overlay - follows pet rotation and sway
                     if let bubbleState = debugSpeechBubbleState, let config = bubbleState.currentConfig {
                         SpeechBubbleView(config: config, isVisible: bubbleState.isVisible)
+                            .offset(x: petTransform.swayOffset)
+                            .rotationEffect(.degrees(petTransform.rotation), anchor: .bottom)
                     }
                 }
             }

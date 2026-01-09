@@ -1,5 +1,15 @@
 import SwiftUI
 
+/// Transform values exported from pet animation for overlays (e.g., speech bubble).
+struct PetAnimationTransform: Equatable {
+    /// Rotation in degrees (from wind effect)
+    let rotation: CGFloat
+    /// Horizontal sway offset in points (from wind effect)
+    let swayOffset: CGFloat
+
+    static let zero = PetAnimationTransform(rotation: 0, swayOffset: 0)
+}
+
 /// A view modifier that applies pet animation effects using Metal shader and rotation.
 ///
 /// The effect combines three layers:
@@ -26,6 +36,9 @@ struct PetAnimationEffect: ViewModifier {
 
     // Screen width for calculating max sample offset (pet can fly to screen edge)
     let screenWidth: CGFloat?
+
+    // Callback for exporting transform values to overlays
+    let onTransformUpdate: ((PetAnimationTransform) -> Void)?
 
     @State private var startTime = Date()
 
@@ -86,7 +99,7 @@ struct PetAnimationEffect: ViewModifier {
             // Forward swing (with wind): 100% amplitude
             // Back swing (against wind): 50% amplitude
             let rawWave: Double = sin(time * 1.5) * 0.6 + sin(time * 2.3) * 0.3 + sin(time * 0.7) * 0.1
-            let wave: Double = rawWave < 0 ? rawWave : rawWave * 0.5
+            let wave: Double = rawWave < 0 ? rawWave : rawWave * 0.4
 
             // Rotation follows wind direction (negative direction = negative rotation)
             let rotation: Double = -wave * intensity * direction * rotationAmount * 6
@@ -110,6 +123,23 @@ struct PetAnimationEffect: ViewModifier {
                         idle: idle,
                         size: proxy.size
                     )
+
+                    // Calculate sway offset (same formula as shader, but inverted)
+                    // Shader moves sampling position, which produces opposite visual movement
+                    // So we negate to match the visual direction
+                    let swayMaxOffset = proxy.size.width * 0.15 * intensity * direction
+                    let swayOffset = -wave * swayMaxOffset * swayAmount * 0.3
+
+                    // Export transform values for overlays (e.g., speech bubble)
+                    if let callback = onTransformUpdate {
+                        DispatchQueue.main.async {
+                            callback(PetAnimationTransform(
+                                rotation: rotation,
+                                swayOffset: swayOffset
+                            ))
+                        }
+                    }
+
                     return view.distortionEffect(
                         shader,
                         maxSampleOffset: CGSize(width: maxOffset, height: 50)
@@ -136,6 +166,7 @@ extension View {
     ///   - tapConfig: Configuration for tap animation parameters
     ///   - idleConfig: Configuration for idle breathing animation
     ///   - screenWidth: Screen width for max sample offset (allows pet to fly to screen edge)
+    ///   - onTransformUpdate: Callback providing current rotation and sway values for overlays
     func petAnimation(
         intensity: CGFloat = 0.5,
         direction: CGFloat = 1.0,
@@ -146,7 +177,8 @@ extension View {
         tapType: TapAnimationType = .none,
         tapConfig: TapConfig = .none,
         idleConfig: IdleConfig = .default,
-        screenWidth: CGFloat? = nil
+        screenWidth: CGFloat? = nil,
+        onTransformUpdate: ((PetAnimationTransform) -> Void)? = nil
     ) -> some View {
         modifier(PetAnimationEffect(
             intensity: intensity,
@@ -158,7 +190,8 @@ extension View {
             tapType: tapType,
             tapConfig: tapConfig,
             idleConfig: idleConfig,
-            screenWidth: screenWidth
+            screenWidth: screenWidth,
+            onTransformUpdate: onTransformUpdate
         ))
     }
 }

@@ -30,6 +30,9 @@ struct FloatingIslandView<Evolution: EvolutionType>: View {
     // Speech bubble state
     @State private var speechBubbleState = SpeechBubbleState()
 
+    // Pet animation transform for bubble positioning
+    @State private var petTransform: PetAnimationTransform = .zero
+
     // MARK: - Computed Properties
 
     private var islandHeight: CGFloat { screenHeight * 0.6 }
@@ -87,15 +90,20 @@ struct FloatingIslandView<Evolution: EvolutionType>: View {
                         tapType: currentTapType,
                         tapConfig: currentTapConfig,
                         idleConfig: idleConfig,
-                        screenWidth: screenWidth
+                        screenWidth: screenWidth,
+                        onTransformUpdate: { transform in
+                            petTransform = transform
+                        }
                     )
                     .onTapGesture {
                         triggerTap()
                     }
 
-                // Speech bubble overlay
+                // Speech bubble overlay - follows pet rotation and sway
                 if let config = speechBubbleState.currentConfig {
                     SpeechBubbleView(config: config, isVisible: speechBubbleState.isVisible)
+                        .offset(x: petTransform.swayOffset)
+                        .rotationEffect(.degrees(petTransform.rotation), anchor: .bottom)
                 }
             }
             .offset(y: petOffset)

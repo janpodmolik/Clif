@@ -47,7 +47,7 @@ float2 calculateWindOffset(
     // Forward swing (with wind): 100% amplitude
     // Back swing (against wind): 50% amplitude
     float rawWave = organicWave(time);
-    float wave = rawWave < 0.0 ? rawWave : rawWave * 0.5;
+    float wave = rawWave < 0.0 ? rawWave : rawWave * 0.4;
 
     // Base offset scaled by intensity and direction
     float maxOffset = size.x * 0.15 * intensity * direction;
