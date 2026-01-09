@@ -25,7 +25,7 @@ struct WindLinesView: View {
     @State private var lastBurstTime: Double = 0
 
     private var lineColor: Color {
-        colorScheme == .dark ? .white : .black
+        colorScheme == .dark ? Color.white.opacity(0.2) : Color.white.opacity(0.4)
     }
 
     private func colorForLine(_ line: WindLine) -> Color {

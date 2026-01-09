@@ -116,7 +116,7 @@ struct SpeechBubbleView: View {
             }
         }
         .onAppear {
-            // Initialize to current values
+            // Initialize to current values (no animation on appear)
             smoothedOffset = followOffset
             smoothedRotation = petTransform.rotation
         }

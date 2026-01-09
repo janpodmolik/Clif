@@ -46,6 +46,7 @@ struct PetAnimationEffect: ViewModifier {
     // Callback for exporting transform values to overlays
     let onTransformUpdate: ((PetAnimationTransform) -> Void)?
 
+    /// Local start time - only used when windRhythm is not provided (fallback mode).
     @State private var startTime = Date()
 
     /// Adjusted idle config with wind reduction applied
@@ -98,7 +99,8 @@ struct PetAnimationEffect: ViewModifier {
 
     func body(content: Content) -> some View {
         TimelineView(.animation) { context in
-            let time: TimeInterval = context.date.timeIntervalSince(startTime)
+            // Use shared rhythm time when available, otherwise fall back to local time
+            let time: TimeInterval = windRhythm?.elapsedTime ?? context.date.timeIntervalSince(startTime)
 
             // Wave function for rotation (synchronized with shader)
             // Pet bends IN the wind direction (wind pushes it)

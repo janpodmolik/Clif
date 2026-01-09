@@ -26,6 +26,10 @@ final class WindRhythm {
     /// Negative = bending forward (with wind), positive = back swing.
     private(set) var rawWave: CGFloat = 0
 
+    /// Elapsed time since rhythm started (in seconds).
+    /// Use this for shader time to keep all animations synchronized.
+    private(set) var elapsedTime: CFTimeInterval = 0
+
     // MARK: - Internal
 
     private var displayLink: CADisplayLink?
@@ -33,12 +37,9 @@ final class WindRhythm {
 
     // MARK: - Lifecycle
 
-    init() {
-        startTime = CACurrentMediaTime()
-    }
-
     func start() {
         guard displayLink == nil else { return }
+        startTime = CACurrentMediaTime()
         displayLink = CADisplayLink(target: self, selector: #selector(tick))
         displayLink?.add(to: .main, forMode: .common)
     }
@@ -56,6 +57,7 @@ final class WindRhythm {
 
     @objc private func tick(_ link: CADisplayLink) {
         let time = link.timestamp - startTime
+        elapsedTime = time
 
         // Wind lines look ahead into the future (so they arrive before pet reacts)
         let futureTime = time + Self.windLookAhead
