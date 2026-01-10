@@ -85,6 +85,7 @@ struct FloatingIslandView<Evolution: EvolutionType>: View {
                     .resizable()
                     .scaledToFit()
                     .frame(height: petHeight)
+                    .scaleEffect(evolution.displayScale, anchor: .bottom)
                     .petAnimation(
                         intensity: windConfig.intensity,
                         direction: windDirection,

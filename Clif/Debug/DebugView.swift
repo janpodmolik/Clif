@@ -32,6 +32,7 @@ struct DebugView: View {
                         progressSection
                         debugToolsSection
                         petAnimationSection
+                        evolutionScaleSection
                         statusCardSection
                         petDetailSection
                         supabaseSection
@@ -273,6 +274,21 @@ struct DebugView: View {
             .frame(maxWidth: .infinity)
             .padding()
             .background(Color.green.opacity(0.2))
+            .cornerRadius(12)
+        }
+    }
+
+    // MARK: - Evolution Scale Debug
+
+    private var evolutionScaleSection: some View {
+        NavigationLink(destination: EvolutionScaleDebugView()) {
+            HStack {
+                Image(systemName: "arrow.up.left.and.arrow.down.right")
+                Text("Evolution Scale Debug")
+            }
+            .frame(maxWidth: .infinity)
+            .padding()
+            .background(Color.mint.opacity(0.2))
             .cornerRadius(12)
         }
     }

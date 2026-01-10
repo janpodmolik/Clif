@@ -11,6 +11,9 @@ protocol EvolutionType: CaseIterable, Hashable {
     /// Base asset name for this evolution/phase (e.g., "plant-1", "blob")
     var assetName: String { get }
 
+    /// Display scale multiplier for this evolution (default 1.0)
+    var displayScale: CGFloat { get }
+
     /// Wind configuration for the specified wind level
     func windConfig(for level: WindLevel) -> WindConfig
 

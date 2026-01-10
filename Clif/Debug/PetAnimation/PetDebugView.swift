@@ -218,6 +218,8 @@ struct PetDebugView: View {
                                         particleConfig: currentParticleConfig,
                                         oldAssetName: PlantEvolution(rawValue: plantPhase)?.assetName(for: windLevel) ?? "evolutions/plant/happy/1",
                                         newAssetName: PlantEvolution(rawValue: transitionToPhase)?.assetName(for: windLevel) ?? "evolutions/plant/happy/2",
+                                        oldScale: (PlantEvolution(rawValue: plantPhase) ?? .phase1).displayScale,
+                                        newScale: (PlantEvolution(rawValue: transitionToPhase) ?? .phase2).displayScale,
                                         onComplete: {
                                             // Hide transition FIRST to prevent glitch from syncTransitionPhases
                                             showEvolutionTransition = false

@@ -14,6 +14,15 @@ enum PlantEvolution: Int, CaseIterable, EvolutionType {
 
     var phaseNumber: Int { rawValue }
 
+    var displayScale: CGFloat {
+        switch self {
+        case .phase1: return 1.0
+        case .phase2: return 1.0
+        case .phase3: return 1.0
+        case .phase4: return 1.0
+        }
+    }
+
     func assetName(for mood: Mood) -> String {
         "evolutions/plant/\(mood.rawValue)/\(rawValue)"
     }

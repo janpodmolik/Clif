@@ -8,6 +8,8 @@ struct EvolutionTransitionView: View {
     let particleConfig: EvolutionParticleConfig
     let oldAssetName: String
     let newAssetName: String
+    var oldScale: CGFloat = 1.0
+    var newScale: CGFloat = 1.0
     let onComplete: () -> Void
 
     @State private var startTime: Date?
@@ -23,7 +25,7 @@ struct EvolutionTransitionView: View {
                 ZStack {
                     // Old pet (fading out) - hide after flash completes
                     if progress < config.oldImageHidePoint() {
-                        petImage(assetName: oldAssetName, size: size)
+                        petImage(assetName: oldAssetName, size: size, scale: oldScale)
                             .applyGlowBurst(
                                 progress: progress,
                                 config: config,
@@ -34,7 +36,7 @@ struct EvolutionTransitionView: View {
 
                     // New pet (fading in) - show during flash
                     if progress >= config.assetSwapPoint() {
-                        petImage(assetName: newAssetName, size: size)
+                        petImage(assetName: newAssetName, size: size, scale: newScale)
                             .applyGlowBurst(
                                 progress: progress,
                                 config: config,
@@ -81,11 +83,12 @@ struct EvolutionTransitionView: View {
         return min(max(CGFloat(progress), 0), 1)
     }
 
-    private func petImage(assetName: String, size: CGSize) -> some View {
+    private func petImage(assetName: String, size: CGSize, scale: CGFloat) -> some View {
         Image(assetName)
             .resizable()
             .scaledToFit()
             .frame(width: size.width, height: size.height)
+            .scaleEffect(scale, anchor: .bottom)
             .drawingGroup()
     }
 }

@@ -9,6 +9,8 @@ enum BlobEvolution: CaseIterable, EvolutionType {
 
     var assetName: String { "blob" }
 
+    var displayScale: CGFloat { 1.0 }
+
     func assetName(for mood: Mood) -> String {
         "blob/\(mood.rawValue)/1"
     }

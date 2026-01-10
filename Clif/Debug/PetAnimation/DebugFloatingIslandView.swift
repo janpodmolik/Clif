@@ -111,6 +111,7 @@ struct DebugFloatingIslandView<Evolution: EvolutionType>: View {
                     .resizable()
                     .scaledToFit()
                     .frame(height: petHeight)
+                    .scaleEffect(evolution.displayScale, anchor: .bottom)
                     .petAnimation(
                         intensity: activeWindConfig.intensity,
                         direction: windDirection,

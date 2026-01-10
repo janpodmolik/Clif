@@ -253,6 +253,7 @@ struct EvolutionPhaseCard: View {
             Image(evolution.assetName(for: mood))
                 .resizable()
                 .scaledToFit()
+                .scaleEffect(evolution.displayScale, anchor: .bottom)
         } else {
             RoundedRectangle(cornerRadius: 16)
                 .fill(Color.secondary.opacity(0.1))
