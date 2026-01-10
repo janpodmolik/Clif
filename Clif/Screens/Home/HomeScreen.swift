@@ -6,6 +6,7 @@ struct HomeScreen: View {
 
     /// Shared wind rhythm for synchronized effects between pet animation and wind lines
     @State private var windRhythm = WindRhythm()
+    @State private var showPetDetail = false
 
     var body: some View {
         GeometryReader { geometry in
@@ -53,12 +54,37 @@ struct HomeScreen: View {
                     isEvolutionAvailable: false,
                     isSaveEnabled: true,
                     showDetailButton: true,
-                    isBlownAway: false
+                    isBlownAway: false,
+                    onDetailTapped: { showPetDetail = true }
                 )
                 .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 24))
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
                 .padding(16)
             }
+        }
+        .fullScreenCover(isPresented: $showPetDetail) {
+            PetDetailSheet(
+                petName: "Fern",
+                evolutionHistory: EvolutionHistory(
+                    createdAt: Calendar.current.date(byAdding: .day, value: -14, to: Date())!,
+                    essence: .plant,
+                    events: [
+                        EvolutionEvent(
+                            fromPhase: 1,
+                            toPhase: 2,
+                            date: Calendar.current.date(byAdding: .day, value: -7, to: Date())!
+                        )
+                    ]
+                ),
+                streak: 19,
+                purposeLabel: "Social Media",
+                windLevel: .high,
+                isBlownAway: false,
+                usedMinutes: 32,
+                limitMinutes: 120,
+                weeklyStats: .mock(),
+                blockedAppCount: 12
+            )
         }
         .onAppear {
             windRhythm.start()
