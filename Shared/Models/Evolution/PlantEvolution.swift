@@ -17,9 +17,9 @@ enum PlantEvolution: Int, CaseIterable, EvolutionType {
     var displayScale: CGFloat {
         switch self {
         case .phase1: return 0.95
-        case .phase2: return 1.01
-        case .phase3: return 1.06
-        case .phase4: return 1.20
+        case .phase2: return 1.05
+        case .phase3: return 1.12
+        case .phase4: return 1.40
         }
     }
 
@@ -28,41 +28,6 @@ enum PlantEvolution: Int, CaseIterable, EvolutionType {
     }
 
     func windConfig(for level: WindLevel) -> WindConfig {
-        let baseBend = baseBendCurve
-        switch level {
-        case .none:
-            return .none
-        case .low:
-            return WindConfig(
-                intensity: 0.5,
-                bendCurve: baseBend,
-                swayAmount: 4.9,
-                rotationAmount: 1.0
-            )
-        case .medium:
-            return WindConfig(
-                intensity: 1.5,
-                bendCurve: baseBend,
-                swayAmount: 7.5,
-                rotationAmount: 0.8
-            )
-        case .high:
-            return WindConfig(
-                intensity: 2.0,
-                bendCurve: baseBend + 0.5,
-                swayAmount: 11.0,
-                rotationAmount: 0.8
-            )
-        }
-    }
-
-    /// Base bend curve per phase - lower values = gentler bend for taller plants
-    private var baseBendCurve: CGFloat {
-        switch self {
-        case .phase1: return 2.5
-        case .phase2: return 2.2
-        case .phase3: return 2.0
-        case .phase4: return 1.8
-        }
+        .default(for: level)
     }
 }

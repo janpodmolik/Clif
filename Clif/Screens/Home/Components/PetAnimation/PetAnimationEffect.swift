@@ -120,9 +120,12 @@ struct PetAnimationEffect: ViewModifier {
             // Rotation follows wind direction (negative direction = negative rotation)
             let rotation: Double = -wave * intensity * direction * rotationAmount * 6
 
-            // Calculate tap time relative to shader start time
+            // Calculate relativeTapTime independent of startTime to survive view recreation.
+            // Shader does: timeSinceTap = time - tapTime
+            // We want: timeSinceTap = seconds since tap = now - tapTime
+            // Therefore: tapTime = time - (now - tapTime)
             let relativeTapTime: Float = tapTime > 0
-                ? Float(tapTime - startTime.timeIntervalSinceReferenceDate)
+                ? Float(time) - Float(Date().timeIntervalSinceReferenceDate - tapTime)
                 : -1.0
 
             // Use adjusted idle config with wind reduction
