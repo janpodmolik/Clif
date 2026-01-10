@@ -16,10 +16,10 @@ enum PlantEvolution: Int, CaseIterable, EvolutionType {
 
     var displayScale: CGFloat {
         switch self {
-        case .phase1: return 1.0
-        case .phase2: return 1.0
-        case .phase3: return 1.0
-        case .phase4: return 1.0
+        case .phase1: return 0.95
+        case .phase2: return 1.01
+        case .phase3: return 1.06
+        case .phase4: return 1.20
         }
     }
 
