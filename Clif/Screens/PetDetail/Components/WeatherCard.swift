@@ -2,8 +2,12 @@ import SwiftUI
 
 struct WeatherCard: View {
     let windLevel: WindLevel
+    var isBlownAway: Bool = false
 
     private var windDescription: String {
+        if isBlownAway {
+            return "Storm Passed"
+        }
         switch windLevel {
         case .none: return "Calm"
         case .low: return "Light Breeze"
@@ -13,6 +17,9 @@ struct WeatherCard: View {
     }
 
     private var windIcon: String {
+        if isBlownAway {
+            return "cloud.bolt.fill"
+        }
         switch windLevel {
         case .none: return "sun.max.fill"
         case .low: return "wind"
@@ -22,6 +29,9 @@ struct WeatherCard: View {
     }
 
     private var windColor: Color {
+        if isBlownAway {
+            return .purple
+        }
         switch windLevel {
         case .none: return .yellow
         case .low: return .green
@@ -31,6 +41,9 @@ struct WeatherCard: View {
     }
 
     private var petStatusText: String {
+        if isBlownAway {
+            return "The winds were too strong..."
+        }
         switch windLevel {
         case .none: return "Uuumi is thriving"
         case .low: return "Feeling the breeze"
@@ -62,7 +75,7 @@ struct WeatherCard: View {
 
             Spacer()
 
-            WindIntensityBars(level: windLevel)
+            WindIntensityBars(level: windLevel, isBlownAway: isBlownAway)
         }
         .padding()
         .glassCard()
@@ -71,8 +84,12 @@ struct WeatherCard: View {
 
 struct WindIntensityBars: View {
     let level: WindLevel
+    var isBlownAway: Bool = false
 
     private var activeBarCount: Int {
+        if isBlownAway {
+            return 4
+        }
         switch level {
         case .none: return 0
         case .low: return 1
@@ -82,6 +99,9 @@ struct WindIntensityBars: View {
     }
 
     private var barColor: Color {
+        if isBlownAway {
+            return .purple
+        }
         switch level {
         case .none: return .green
         case .low: return .green
@@ -110,5 +130,10 @@ struct WindIntensityBars: View {
         WeatherCard(windLevel: .high)
     }
     .padding()
+}
+
+#Preview("Blown Away") {
+    WeatherCard(windLevel: .high, isBlownAway: true)
+        .padding()
 }
 #endif

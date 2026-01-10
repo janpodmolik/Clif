@@ -1,7 +1,7 @@
 #if DEBUG
 import SwiftUI
 
-struct PetDetailDebugView: View {
+struct PetDetailScreenDebug: View {
     @Environment(\.dismiss) private var dismiss
 
     // MARK: - Pet Identity State
@@ -514,7 +514,7 @@ struct PetDetailDebugView: View {
 
 #Preview {
     NavigationStack {
-        PetDetailDebugView()
+        PetDetailScreenDebug()
     }
 }
 #endif

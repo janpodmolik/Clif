@@ -41,9 +41,7 @@ struct PetDetailScreen: View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 20) {
-                    if !isBlownAway {
-                        WeatherCard(windLevel: windLevel)
-                    }
+                    WeatherCard(windLevel: windLevel, isBlownAway: isBlownAway)
 
                     StatCardView(
                         stat: ScreenTimeStat(
@@ -115,7 +113,7 @@ struct PetDetailScreen: View {
 #if DEBUG
 #Preview {
     NavigationStack {
-        PetDetailDebugView()
+        PetDetailScreenDebug()
     }
 }
 #endif

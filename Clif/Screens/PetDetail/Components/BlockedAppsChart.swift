@@ -208,7 +208,7 @@ struct DayDetailSheet: View {
 #if DEBUG
 #Preview {
     NavigationStack {
-        PetDetailDebugView()
+        PetDetailScreenDebug()
     }
 }
 

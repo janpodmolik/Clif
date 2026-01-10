@@ -7,23 +7,13 @@ struct EvolutionCarousel: View {
     var isBlownAway: Bool = false
 
     @State private var selectedIndex: Int = 0
-    @State private var scrollTarget: Int? = nil
+    @State private var scrollTarget: Int?
     private let cardWidth: CGFloat = 230
     private let cardHeight: CGFloat = 240
     private let cardSpacing: CGFloat = 18
 
     /// Total cards = 1 (origin) + maxPhase (evolution phases)
     private var totalCards: Int { 1 + essence.maxPhases }
-
-    init(currentPhase: Int, essence: Essence, mood: Mood, isBlownAway: Bool = false) {
-        self.currentPhase = currentPhase
-        self.essence = essence
-        self.mood = mood
-        self.isBlownAway = isBlownAway
-        // Default to current phase card (index 0 = origin, index 1 = phase 1, etc.)
-        self._selectedIndex = State(initialValue: currentPhase)
-        self._scrollTarget = State(initialValue: currentPhase)
-    }
 
     var body: some View {
         VStack(spacing: 16) {
@@ -54,17 +44,11 @@ struct EvolutionCarousel: View {
             .padding(.bottom)
         }
         .glassCard()
-        .onAppear {
+        .task(id: currentPhase) {
             selectedIndex = currentPhase
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
-                scrollTarget = currentPhase
-            }
-        }
-        .onChange(of: currentPhase) { _, newValue in
-            withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
-                selectedIndex = newValue
-                scrollTarget = newValue
-            }
+            // Small delay to ensure ScrollView is ready
+            try? await Task.sleep(for: .milliseconds(50))
+            scrollTarget = currentPhase
         }
         .onChange(of: scrollTarget) { _, newValue in
             if let newValue {
@@ -257,7 +241,6 @@ struct EvolutionPhaseCard: View {
             Image(evolution.assetName(for: mood))
                 .resizable()
                 .scaledToFit()
-                .scaleEffect(evolution.displayScale, anchor: .bottom)
         } else {
             RoundedRectangle(cornerRadius: 16)
                 .fill(Color.secondary.opacity(0.1))
