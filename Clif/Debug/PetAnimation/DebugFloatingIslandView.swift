@@ -13,6 +13,7 @@ struct DebugFloatingIslandView<Evolution: EvolutionType>: View {
     var debugWindConfig: WindConfig? = nil
     var windDirection: CGFloat = 1.0
     var windIntensityScale: CGFloat = 1.0
+    var idleIntensityScale: CGFloat = 1.0
 
     /// Optional shared wind rhythm for synchronized effects with wind lines.
     var windRhythm: WindRhythm?
@@ -94,7 +95,16 @@ struct DebugFloatingIslandView<Evolution: EvolutionType>: View {
     }
 
     private var activeIdleConfig: IdleConfig {
-        debugIdleConfig ?? AnimationConfigProvider.idleConfig(for: evolution)
+        let baseConfig = debugIdleConfig ?? AnimationConfigProvider.idleConfig(for: evolution)
+        guard baseConfig.enabled else { return baseConfig }
+
+        return IdleConfig(
+            enabled: true,
+            amplitude: baseConfig.amplitude * idleIntensityScale,
+            frequency: baseConfig.frequency,
+            focusStart: baseConfig.focusStart,
+            focusEnd: baseConfig.focusEnd
+        )
     }
 
     private var currentMood: Mood {

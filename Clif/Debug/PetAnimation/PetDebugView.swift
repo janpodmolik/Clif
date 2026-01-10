@@ -4,12 +4,13 @@ import SwiftUI
 /// Debug view for testing and configuring pet animation parameters (idle + wind + tap effects).
 struct PetDebugView: View {
     // Evolution selection
-    @State private var selectedEvolutionType: EvolutionTypeOption = .blob
+    @State private var selectedEvolutionType: EvolutionTypeOption = .plant
     @State private var plantPhase: Int = 1
     @State private var windLevel: WindLevel = .medium
     @State private var direction: CGFloat = 1.0
     @State private var showCopiedFeedback: Bool = false
     @State private var windIntensityScale: CGFloat = 1.0
+    @State private var idleIntensityScale: CGFloat = 1.0
 
     // Panel expansion state (3 phases)
     @State private var panelState: PanelState = .medium
@@ -78,6 +79,7 @@ struct PetDebugView: View {
 
     private let windCalmDuration: TimeInterval = 1.1
     private let windRestoreDuration: TimeInterval = 0.8
+    private let idleCalmDuration: TimeInterval = 0.25
 
     enum EvolutionTypeOption: String, CaseIterable {
         case blob = "Blob"
@@ -164,8 +166,8 @@ struct PetDebugView: View {
                     windLevel: windLinesBurstActive ? .high : windLevel,
                     direction: direction,
                     debugColors: true,
-                    windAreaTop: 0.25,
-                    windAreaBottom: 0.50,
+                    windAreaTop: 0.15,
+                    windAreaBottom: 0.40,
                     intensityScale: windIntensityScale,
                     overrideConfig: windLinesBurstActive ? .burst : nil,
                     windRhythm: windLinesBurstActive ? nil : debugWindRhythm
@@ -184,6 +186,7 @@ struct PetDebugView: View {
                                 debugWindConfig: customWindConfig,
                                 windDirection: direction,
                                 windIntensityScale: windIntensityScale,
+                                idleIntensityScale: idleIntensityScale,
                                 windRhythm: debugWindRhythm,
                                 debugTapType: selectedTapType,
                                 debugTapConfig: customTapConfig,
@@ -206,6 +209,7 @@ struct PetDebugView: View {
                                 debugWindConfig: customWindConfig,
                                 windDirection: direction,
                                 windIntensityScale: windIntensityScale,
+                                idleIntensityScale: idleIntensityScale,
                                 windRhythm: debugWindRhythm,
                                 debugTapType: selectedTapType,
                                 debugTapConfig: customTapConfig,
@@ -233,7 +237,7 @@ struct PetDebugView: View {
                                             isTransitioning = false
                                             // Then update phase (this triggers syncTransitionPhases via onChange)
                                             plantPhase = transitionToPhase
-                                            restoreWindAfterTransition()
+                                            restorePostTransition()
                                         }
                                     )
                                     .id(evolutionTransitionKey)
@@ -523,6 +527,7 @@ struct PetDebugView: View {
         idleFrequency = defaults.frequency
         idleFocusStart = defaults.focusStart
         idleFocusEnd = defaults.focusEnd
+        idleIntensityScale = 1.0
     }
 
     private func resetWindToDefaults() {
@@ -570,6 +575,7 @@ struct PetDebugView: View {
         isTransitioning = false
         showEvolutionTransition = false
         windIntensityScale = 1.0
+        idleIntensityScale = 1.0
         particlesEnabled = true
         particleCount = 80
     }
@@ -1076,15 +1082,28 @@ struct PetDebugView: View {
     }
 
     private func calmWindThenEvolve() {
-        let shouldCalm = windIntensityScale > 0.01
+        let shouldCalmWind = windIntensityScale > 0.01
+        let shouldCalmIdle = idleIntensityScale > 0.01
 
-        if shouldCalm {
+        if shouldCalmWind {
             withAnimation(.easeOut(duration: windCalmDuration)) {
                 windIntensityScale = 0
             }
         }
 
-        let delay = shouldCalm ? windCalmDuration : 0
+        if shouldCalmIdle {
+            let idleDelay = shouldCalmWind ? max(windCalmDuration - idleCalmDuration, 0) : 0
+            DispatchQueue.main.asyncAfter(deadline: .now() + idleDelay) {
+                withAnimation(.easeOut(duration: idleCalmDuration)) {
+                    idleIntensityScale = 0
+                }
+            }
+        }
+
+        let delay = max(
+            shouldCalmWind ? windCalmDuration : 0,
+            shouldCalmIdle ? idleCalmDuration : 0
+        )
         DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
             if isTransitioning {
                 showEvolutionTransition = true
@@ -1092,9 +1111,10 @@ struct PetDebugView: View {
         }
     }
 
-    private func restoreWindAfterTransition() {
+    private func restorePostTransition() {
         withAnimation(.easeIn(duration: windRestoreDuration)) {
             windIntensityScale = 1.0
+            idleIntensityScale = 1.0
         }
     }
 

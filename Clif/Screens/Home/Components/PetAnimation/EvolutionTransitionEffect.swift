@@ -25,7 +25,12 @@ struct EvolutionTransitionView: View {
                 ZStack {
                     // Old pet (fading out) - hide after flash completes
                     if progress < config.oldImageHidePoint() {
-                        petImage(assetName: oldAssetName, size: size, scale: oldScale)
+                        petImage(
+                            assetName: oldAssetName,
+                            size: size,
+                            baseScale: oldScale,
+                            morphScale: morphScale(progress: progress, isNewImage: false)
+                        )
                             .applyGlowBurst(
                                 progress: progress,
                                 config: config,
@@ -36,7 +41,12 @@ struct EvolutionTransitionView: View {
 
                     // New pet (fading in) - show during flash
                     if progress >= config.assetSwapPoint() {
-                        petImage(assetName: newAssetName, size: size, scale: newScale)
+                        petImage(
+                            assetName: newAssetName,
+                            size: size,
+                            baseScale: newScale,
+                            morphScale: morphScale(progress: progress, isNewImage: true)
+                        )
                             .applyGlowBurst(
                                 progress: progress,
                                 config: config,
@@ -83,12 +93,90 @@ struct EvolutionTransitionView: View {
         return min(max(CGFloat(progress), 0), 1)
     }
 
-    private func petImage(assetName: String, size: CGSize, scale: CGFloat) -> some View {
+    private func petImage(
+        assetName: String,
+        size: CGSize,
+        baseScale: CGFloat,
+        morphScale: CGSize
+    ) -> some View {
         Image(assetName)
             .resizable()
             .scaledToFit()
             .frame(width: size.width, height: size.height)
-            .scaleEffect(scale, anchor: .bottom)
+            .scaleEffect(
+                x: baseScale * morphScale.width,
+                y: baseScale * morphScale.height,
+                anchor: .bottom
+            )
+    }
+
+    private func morphScale(progress: CGFloat, isNewImage: Bool) -> CGSize {
+        let flashStart = EvolutionTransitionConfig.flashStart
+        let assetSwapPoint = config.assetSwapPoint()
+
+        let preSqueezeStart = flashStart * 0.35
+        let preSqueezeEnd = flashStart * 0.55
+        let squeezeEnd = flashStart * 0.82
+        let microHoldDuration = min(CGFloat(0.02), flashStart * 0.08)
+        let microHoldEnd = min(flashStart - 0.01, squeezeEnd + microHoldDuration)
+
+        let preSqueezeScale = CGSize(width: 1.05, height: 0.95)
+        let squeezeScale = CGSize(width: 1.22, height: 0.82)
+
+        let releaseStartScale = CGSize(width: 0.95, height: 1.05)
+        let overshootScale = CGSize(width: 0.90, height: 1.12)
+        let expansionEnd = min(assetSwapPoint + 0.12, 0.85)
+        let snapEnd = min(expansionEnd + 0.08, 0.92)
+
+        if !isNewImage {
+            if progress < preSqueezeStart {
+                return CGSize(width: 1, height: 1)
+            }
+            if progress < preSqueezeEnd {
+                let t = smoothStep(normalized(progress, start: preSqueezeStart, end: preSqueezeEnd))
+                return lerpSize(from: CGSize(width: 1, height: 1), to: preSqueezeScale, t: t)
+            }
+            if progress < squeezeEnd {
+                let t = smoothStep(normalized(progress, start: preSqueezeEnd, end: squeezeEnd))
+                return lerpSize(from: preSqueezeScale, to: squeezeScale, t: t)
+            }
+            if progress < microHoldEnd {
+                return squeezeScale
+            }
+            return squeezeScale
+        }
+
+        if progress < assetSwapPoint {
+            return CGSize(width: 1, height: 1)
+        }
+        if progress < expansionEnd {
+            let t = smoothStep(normalized(progress, start: assetSwapPoint, end: expansionEnd))
+            return lerpSize(from: releaseStartScale, to: overshootScale, t: t)
+        }
+        if progress < snapEnd {
+            let t = smoothStep(normalized(progress, start: expansionEnd, end: snapEnd))
+            return lerpSize(from: overshootScale, to: CGSize(width: 1, height: 1), t: t)
+        }
+
+        let t = normalized(progress, start: snapEnd, end: 1.0)
+        let wobble = CGFloat(sin(Double(t) * Double.pi * 4)) * (1 - t) * 0.03
+        return CGSize(width: 1 - wobble * 0.6, height: 1 + wobble)
+    }
+
+    private func normalized(_ value: CGFloat, start: CGFloat, end: CGFloat) -> CGFloat {
+        guard end > start else { return 1 }
+        return min(max((value - start) / (end - start), 0), 1)
+    }
+
+    private func smoothStep(_ t: CGFloat) -> CGFloat {
+        t * t * (3 - 2 * t)
+    }
+
+    private func lerpSize(from: CGSize, to: CGSize, t: CGFloat) -> CGSize {
+        CGSize(
+            width: from.width + (to.width - from.width) * t,
+            height: from.height + (to.height - from.height) * t
+        )
     }
 }
 
