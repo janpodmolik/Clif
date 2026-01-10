@@ -14,6 +14,7 @@ struct EvolutionTransitionView: View {
     var sustainedHaptic: HapticType? = .continuousBuzz
     var flashHaptic: HapticType? = .impactHeavy
     var hapticIntensity: Float = 1.0
+    var cameraTransform: Binding<EvolutionCameraTransform>? = nil
     let onComplete: () -> Void
 
     @State private var startTime: Date?
@@ -37,6 +38,7 @@ struct EvolutionTransitionView: View {
                 let cameraScale = cameraScale(progress: progress)
                 let shockwave = shockwaveState(progress: progress)
                 let shakeOffset = cameraShakeOffset(progress: progress)
+                let currentTransform = EvolutionCameraTransform(scale: cameraScale, offset: shakeOffset)
 
                 ZStack {
                     if glowOpacity > 0 {
@@ -96,6 +98,9 @@ struct EvolutionTransitionView: View {
                 }
                 .scaleEffect(cameraScale)
                 .offset(shakeOffset)
+                .onChange(of: currentTransform) { _, newValue in
+                    updateCameraTransform(newValue)
+                }
                 .onChange(of: progress >= squashStartPoint()) { _, reached in
                     if reached && !hasTriggeredSustainedHaptic {
                         let duration = max(0, (flashTriggerPoint() - squashStartPoint()) * config.duration)
@@ -111,6 +116,7 @@ struct EvolutionTransitionView: View {
                 .onChange(of: progress >= 1.0) { _, completed in
                     if completed && !hasCompleted {
                         hasCompleted = true
+                        resetCameraTransform()
                         onComplete()
                     }
                 }
@@ -128,8 +134,10 @@ struct EvolutionTransitionView: View {
                 hasCompleted = false
                 hasTriggeredFlash = false
                 hasTriggeredSustainedHaptic = false
+                resetCameraTransform()
             } else {
                 hasTriggeredSustainedHaptic = false
+                resetCameraTransform()
             }
         }
     }
@@ -209,20 +217,21 @@ struct EvolutionTransitionView: View {
     }
 
     private func cameraScale(progress: CGFloat) -> CGFloat {
-        let start = max(EvolutionTransitionConfig.flashStart - 0.03, 0)
-        let peak = flashTriggerPoint()
-        let end = min(peak + 0.18, 1.0)
-        let maxScale: CGFloat = 1.12
+        let preStart = cameraPreZoomStartPoint()
+        let flash = flashTriggerPoint()
+        let end = min(flash + 0.18, 1.0)
+        let preScale: CGFloat = 1.08
+        let maxScale: CGFloat = 1.20
 
-        if progress < start {
+        if progress < preStart {
             return 1
         }
-        if progress < peak {
-            let t = smoothStep(normalized(progress, start: start, end: peak))
-            return 1 + (maxScale - 1) * t
+        if progress < flash {
+            let t = smoothStep(normalized(progress, start: preStart, end: flash))
+            return 1 + (preScale - 1) * t
         }
         if progress < end {
-            let t = smoothStep(normalized(progress, start: peak, end: end))
+            let t = smoothStep(normalized(progress, start: flash, end: end))
             return maxScale - (maxScale - 1) * t
         }
         return 1
@@ -265,6 +274,10 @@ struct EvolutionTransitionView: View {
 
     private func squashStartPoint() -> CGFloat {
         EvolutionTransitionConfig.flashStart * MorphTiming.preSqueezeEnd
+    }
+
+    private func cameraPreZoomStartPoint() -> CGFloat {
+        0.02
     }
 
     private func morphScale(progress: CGFloat, isNewImage: Bool) -> CGSize {
@@ -346,6 +359,27 @@ struct EvolutionTransitionView: View {
         flashHaptic?.trigger()
         systemSound?.play()
     }
+
+    private func updateCameraTransform(_ transform: EvolutionCameraTransform) {
+        guard let binding = cameraTransform else { return }
+        DispatchQueue.main.async {
+            binding.wrappedValue = transform
+        }
+    }
+
+    private func resetCameraTransform() {
+        guard let binding = cameraTransform else { return }
+        DispatchQueue.main.async {
+            binding.wrappedValue = .identity
+        }
+    }
+}
+
+struct EvolutionCameraTransform: Equatable {
+    var scale: CGFloat
+    var offset: CGSize
+
+    static let identity = EvolutionCameraTransform(scale: 1.0, offset: .zero)
 }
 
 // MARK: - Glow Burst Shader
