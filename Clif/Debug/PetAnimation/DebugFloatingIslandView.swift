@@ -56,7 +56,7 @@ struct DebugFloatingIslandView<Evolution: EvolutionType>: View {
 
     private var islandHeight: CGFloat { screenHeight * 0.6 }
     private var petHeight: CGFloat { screenHeight * 0.10 }
-    private var petOffset: CGFloat { -petHeight * 0.4 }
+    private var petOffset: CGFloat { -petHeight }
 
     private var activeWindConfig: WindConfig {
         debugWindConfig ?? evolution.windConfig(for: windLevel)
@@ -67,7 +67,15 @@ struct DebugFloatingIslandView<Evolution: EvolutionType>: View {
     }
 
     private var activeTapConfig: TapConfig {
-        debugTapConfig ?? currentTapConfig
+        // Priority: debug override > internal state > default for current tap type
+        if let config = debugTapConfig {
+            return config
+        }
+        if currentTapConfig != .none {
+            return currentTapConfig
+        }
+        // Fallback to default config for the active tap type (fixes external trigger)
+        return TapConfig.default(for: activeTapType)
     }
 
     private var activeIdleConfig: IdleConfig {
@@ -154,6 +162,7 @@ struct DebugFloatingIslandView<Evolution: EvolutionType>: View {
                     )
                 }
             }
+            .padding(.top, petHeight * 0.6)
             .offset(y: petOffset)
             .contentTransition(.opacity)
             .animation(.easeInOut(duration: 0.5), value: windLevel)

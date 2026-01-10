@@ -42,7 +42,7 @@ struct FloatingIslandView<Evolution: EvolutionType>: View {
 
     private var islandHeight: CGFloat { screenHeight * 0.6 }
     private var petHeight: CGFloat { screenHeight * 0.10 }
-    private var petOffset: CGFloat { -petHeight * 0.65 }
+    private var petOffset: CGFloat { -petHeight }
 
     private var windConfig: WindConfig {
         evolution.windConfig(for: windLevel)
@@ -115,6 +115,7 @@ struct FloatingIslandView<Evolution: EvolutionType>: View {
                     )
                 }
             }
+            .padding(.top, petHeight * 0.6)
             .offset(y: petOffset)
             .contentTransition(.opacity)
             .animation(.easeInOut(duration: 0.5), value: windLevel)
@@ -152,7 +153,51 @@ struct FloatingIslandView<Evolution: EvolutionType>: View {
 // MARK: - Preview
 
 #if DEBUG
-#Preview {
-    PetDebugView()
+#Preview("Blob - No Wind") {
+    GeometryReader { geometry in
+        ZStack {
+            Color.blue.opacity(0.3)
+            FloatingIslandView(
+                screenHeight: geometry.size.height,
+                screenWidth: geometry.size.width,
+                evolution: BlobEvolution.blob,
+                windLevel: .none
+            )
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
+        }
+        .ignoresSafeArea()
+    }
+}
+
+#Preview("Plant Phase 2 - Medium Wind") {
+    GeometryReader { geometry in
+        ZStack {
+            Color.blue.opacity(0.3)
+            FloatingIslandView(
+                screenHeight: geometry.size.height,
+                screenWidth: geometry.size.width,
+                evolution: PlantEvolution.phase2,
+                windLevel: .medium
+            )
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
+        }
+        .ignoresSafeArea()
+    }
+}
+
+#Preview("Plant Phase 4 - High Wind") {
+    GeometryReader { geometry in
+        ZStack {
+            Color.blue.opacity(0.3)
+            FloatingIslandView(
+                screenHeight: geometry.size.height,
+                screenWidth: geometry.size.width,
+                evolution: PlantEvolution.phase4,
+                windLevel: .high
+            )
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
+        }
+        .ignoresSafeArea()
+    }
 }
 #endif
