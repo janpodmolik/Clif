@@ -1,0 +1,516 @@
+#if DEBUG
+import SwiftUI
+
+struct PetDetailDebugView: View {
+    @Environment(\.dismiss) private var dismiss
+
+    // MARK: - Pet Identity State
+
+    @State private var petName: String = "Fern"
+    @State private var purposeLabel: String = "Social Media"
+    @State private var essence: Essence = .plant
+    @State private var currentPhase: Int = 2
+    @State private var streakCount: Int = 12
+
+    // MARK: - Weather State
+
+    @State private var windLevel: WindLevel = .medium
+
+    // MARK: - Screen Time State
+
+    @State private var usedMinutes: Double = 83
+    @State private var limitMinutes: Double = 180
+
+    // MARK: - Pet State
+
+    @State private var isBlownAway: Bool = false
+
+    // MARK: - Section Expansion
+
+    @State private var isPetSectionExpanded: Bool = true
+    @State private var isWeatherSectionExpanded: Bool = true
+    @State private var isTimeSectionExpanded: Bool = true
+    @State private var isPresetsSectionExpanded: Bool = true
+
+    // MARK: - Sheet State
+
+    @State private var showSheet: Bool = false
+
+    // MARK: - Computed Properties
+
+    private var mood: Mood {
+        Mood(from: windLevel)
+    }
+
+    private var evolutionHistory: EvolutionHistory {
+        // Build events array for phases reached
+        let events: [EvolutionEvent] = (2...currentPhase).map { phase in
+            let daysAgo = (currentPhase - phase + 1) * 3
+            return EvolutionEvent(
+                fromPhase: phase - 1,
+                toPhase: phase,
+                date: Calendar.current.date(byAdding: .day, value: -daysAgo, to: Date())!
+            )
+        }
+
+        return EvolutionHistory(
+            createdAt: Calendar.current.date(byAdding: .day, value: -14, to: Date())!,
+            essence: essence,
+            events: currentPhase > 1 ? events : []
+        )
+    }
+
+    private var canEvolve: Bool {
+        currentPhase < essence.maxPhases && !isBlownAway
+    }
+
+    // MARK: - Body
+
+    var body: some View {
+        ZStack {
+            Color(.systemGroupedBackground)
+                .ignoresSafeArea()
+
+            VStack(spacing: 0) {
+                // Preview Button
+                previewSection
+                    .frame(maxHeight: .infinity)
+
+                Divider()
+
+                // Controls Panel
+                controlsPanel
+            }
+        }
+        .navigationTitle("PetDetail Debug")
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    dismiss()
+                } label: {
+                    Image(systemName: "xmark.circle.fill")
+                        .foregroundStyle(.secondary)
+                }
+            }
+        }
+        .sheet(isPresented: $showSheet) {
+            PetDetailSheet(
+                petName: petName,
+                evolutionHistory: evolutionHistory,
+                streak: streakCount,
+                purposeLabel: purposeLabel.isEmpty ? nil : purposeLabel,
+                windLevel: windLevel,
+                isBlownAway: isBlownAway,
+                usedMinutes: Int(usedMinutes),
+                limitMinutes: Int(limitMinutes),
+                weeklyStats: .mock(),
+                onEvolve: { print("Evolve tapped") },
+                onBlowAway: { print("Blow Away tapped") },
+                onReplay: { print("Replay tapped") },
+                onDelete: { print("Delete tapped") },
+                onSeeAllStats: { print("See all stats tapped") }
+            )
+        }
+    }
+
+    // MARK: - Preview Section
+
+    private var previewSection: some View {
+        ZStack {
+            LinearGradient(
+                colors: [.blue.opacity(0.3), .purple.opacity(0.2)],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+            .ignoresSafeArea()
+
+            VStack(spacing: 20) {
+                // Pet preview card
+                VStack(spacing: 12) {
+                    Image(systemName: "leaf.fill")
+                        .font(.system(size: 60))
+                        .foregroundStyle(.green)
+
+                    Text(petName)
+                        .font(.title2.weight(.bold))
+
+                    HStack(spacing: 16) {
+                        Label("Phase \(currentPhase)/\(essence.maxPhases)", systemImage: "sparkles")
+                        Label("\(streakCount) days", systemImage: "flame.fill")
+                            .foregroundStyle(.orange)
+                    }
+                    .font(.subheadline)
+                }
+                .padding(24)
+                .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 20))
+
+                // Open Sheet Button
+                Button {
+                    showSheet = true
+                } label: {
+                    HStack {
+                        Image(systemName: "arrow.up.right.square")
+                        Text("Open Pet Detail Sheet")
+                    }
+                    .font(.headline)
+                    .foregroundStyle(.white)
+                    .padding()
+                    .background(.blue, in: Capsule())
+                }
+            }
+        }
+    }
+
+    // MARK: - Controls Panel
+
+    private var controlsPanel: some View {
+        ScrollView {
+            VStack(spacing: 16) {
+                petIdentitySection
+                weatherSection
+                screenTimeSection
+                presetsSection
+            }
+            .padding()
+        }
+        .frame(height: 380)
+        .background(Color(.systemGroupedBackground))
+    }
+
+    // MARK: - Pet Identity Section
+
+    private var petIdentitySection: some View {
+        collapsibleSection(
+            title: "Pet Identity",
+            systemImage: "leaf.fill",
+            isExpanded: $isPetSectionExpanded
+        ) {
+            VStack(spacing: 12) {
+                HStack {
+                    Text("Name")
+                        .foregroundStyle(.secondary)
+                    Spacer()
+                    TextField("Pet name", text: $petName)
+                        .textFieldStyle(.roundedBorder)
+                        .frame(width: 150)
+                        .multilineTextAlignment(.trailing)
+                }
+
+                HStack {
+                    Text("Purpose")
+                        .foregroundStyle(.secondary)
+                    Spacer()
+                    TextField("e.g. Social Media", text: $purposeLabel)
+                        .textFieldStyle(.roundedBorder)
+                        .frame(width: 150)
+                        .multilineTextAlignment(.trailing)
+                }
+
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Evolution Phase")
+                        .foregroundStyle(.secondary)
+
+                    Picker("Phase", selection: $currentPhase) {
+                        ForEach(1...essence.maxPhases, id: \.self) { phase in
+                            Text("\(phase)").tag(phase)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+                }
+
+                HStack {
+                    Text("Streak")
+                        .foregroundStyle(.secondary)
+                    Spacer()
+                    HStack(spacing: 12) {
+                        Button {
+                            if streakCount > 0 { streakCount -= 1 }
+                        } label: {
+                            Image(systemName: "minus.circle.fill")
+                                .font(.title2)
+                                .foregroundStyle(.secondary)
+                        }
+
+                        Text("\(streakCount)")
+                            .font(.system(.body, design: .monospaced, weight: .semibold))
+                            .frame(width: 40)
+
+                        Button {
+                            streakCount += 1
+                        } label: {
+                            Image(systemName: "plus.circle.fill")
+                                .font(.title2)
+                                .foregroundStyle(.blue)
+                        }
+                    }
+                }
+
+                Toggle("Blown Away", isOn: $isBlownAway)
+            }
+        }
+    }
+
+    // MARK: - Weather Section
+
+    private var weatherSection: some View {
+        collapsibleSection(
+            title: "Weather",
+            systemImage: "wind",
+            isExpanded: $isWeatherSectionExpanded
+        ) {
+            VStack(spacing: 12) {
+                Picker("Wind Level", selection: $windLevel) {
+                    Text("None").tag(WindLevel.none)
+                    Text("Low").tag(WindLevel.low)
+                    Text("Medium").tag(WindLevel.medium)
+                    Text("High").tag(WindLevel.high)
+                }
+                .pickerStyle(.segmented)
+
+                HStack {
+                    Text("Pet Mood")
+                        .foregroundStyle(.secondary)
+                    Spacer()
+                    Text(moodEmoji(for: mood))
+                        .font(.title2)
+                    Text(mood.rawValue.capitalized)
+                        .foregroundStyle(.secondary)
+                }
+            }
+        }
+    }
+
+    // MARK: - Screen Time Section
+
+    private var screenTimeSection: some View {
+        collapsibleSection(
+            title: "Screen Time",
+            systemImage: "clock",
+            isExpanded: $isTimeSectionExpanded
+        ) {
+            VStack(spacing: 16) {
+                VStack(alignment: .leading, spacing: 4) {
+                    HStack {
+                        Text("Used")
+                            .foregroundStyle(.secondary)
+                        Spacer()
+                        Text(formatTime(minutes: Int(usedMinutes)))
+                            .font(.system(.body, design: .monospaced))
+                    }
+                    Slider(value: $usedMinutes, in: 0...300, step: 1)
+                }
+
+                VStack(alignment: .leading, spacing: 4) {
+                    HStack {
+                        Text("Limit")
+                            .foregroundStyle(.secondary)
+                        Spacer()
+                        Text(formatTime(minutes: Int(limitMinutes)))
+                            .font(.system(.body, design: .monospaced))
+                    }
+                    Slider(value: $limitMinutes, in: 1...480, step: 1)
+                }
+
+                HStack {
+                    Text("Progress")
+                        .foregroundStyle(.secondary)
+                    Spacer()
+                    let progress = usedMinutes / limitMinutes
+                    Text("\(Int(progress * 100))%")
+                        .font(.system(.body, design: .monospaced, weight: .semibold))
+                        .foregroundStyle(progressColor(for: progress))
+                }
+            }
+        }
+    }
+
+    // MARK: - Presets Section
+
+    private var presetsSection: some View {
+        collapsibleSection(
+            title: "Quick Presets",
+            systemImage: "sparkles.rectangle.stack",
+            isExpanded: $isPresetsSectionExpanded
+        ) {
+            LazyVGrid(columns: [
+                GridItem(.flexible()),
+                GridItem(.flexible())
+            ], spacing: 8) {
+                presetButton("Normal", color: .blue) { applyNormalPreset() }
+                presetButton("Evolve Ready", color: .green) { applyEvolveReadyPreset() }
+                presetButton("Max Evolution", color: .purple) { applyMaxEvolutionPreset() }
+                presetButton("New Pet", color: .mint) { applyNewPetPreset() }
+                presetButton("Critical", color: .orange) { applyCriticalPreset() }
+                presetButton("Blown Away", color: .red) { applyBlownAwayPreset() }
+            }
+        }
+    }
+
+    private func presetButton(_ title: String, color: Color, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Text(title)
+                .font(.caption)
+                .fontWeight(.medium)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 10)
+                .background(color.opacity(0.15), in: RoundedRectangle(cornerRadius: 8))
+                .foregroundStyle(color)
+        }
+        .buttonStyle(.plain)
+    }
+
+    // MARK: - Preset Actions
+
+    private func applyNormalPreset() {
+        withAnimation(.easeInOut(duration: 0.2)) {
+            petName = "Fern"
+            purposeLabel = "Social Media"
+            currentPhase = 2
+            streakCount = 12
+            windLevel = .medium
+            usedMinutes = 83
+            limitMinutes = 180
+            isBlownAway = false
+        }
+    }
+
+    private func applyEvolveReadyPreset() {
+        withAnimation(.easeInOut(duration: 0.2)) {
+            petName = "Sprout"
+            purposeLabel = "Gaming"
+            currentPhase = 2
+            streakCount = 7
+            windLevel = .low
+            usedMinutes = 60
+            limitMinutes = 180
+            isBlownAway = false
+        }
+    }
+
+    private func applyMaxEvolutionPreset() {
+        withAnimation(.easeInOut(duration: 0.2)) {
+            petName = "Elder Oak"
+            purposeLabel = "Work Apps"
+            currentPhase = 4
+            streakCount = 30
+            windLevel = .none
+            usedMinutes = 45
+            limitMinutes = 180
+            isBlownAway = false
+        }
+    }
+
+    private func applyNewPetPreset() {
+        withAnimation(.easeInOut(duration: 0.2)) {
+            petName = "Seedling"
+            purposeLabel = ""
+            currentPhase = 1
+            streakCount = 0
+            windLevel = .none
+            usedMinutes = 0
+            limitMinutes = 180
+            isBlownAway = false
+        }
+    }
+
+    private func applyCriticalPreset() {
+        withAnimation(.easeInOut(duration: 0.2)) {
+            petName = "Willow"
+            purposeLabel = "Streaming"
+            currentPhase = 3
+            streakCount = 5
+            windLevel = .high
+            usedMinutes = 170
+            limitMinutes = 180
+            isBlownAway = false
+        }
+    }
+
+    private func applyBlownAwayPreset() {
+        withAnimation(.easeInOut(duration: 0.2)) {
+            petName = "Willow"
+            purposeLabel = "Social Media"
+            currentPhase = 3
+            streakCount = 0
+            windLevel = .high
+            usedMinutes = 230
+            limitMinutes = 180
+            isBlownAway = true
+        }
+    }
+
+    // MARK: - Helpers
+
+    private func formatTime(minutes: Int) -> String {
+        let hours = minutes / 60
+        let mins = minutes % 60
+        if hours > 0 {
+            return mins > 0 ? "\(hours)h \(mins)m" : "\(hours)h"
+        }
+        return "\(mins)m"
+    }
+
+    private func moodEmoji(for mood: Mood) -> String {
+        switch mood {
+        case .happy: return "😊"
+        case .neutral: return "😐"
+        case .sad: return "😢"
+        }
+    }
+
+    private func progressColor(for progress: Double) -> Color {
+        switch progress {
+        case 0..<0.5: return .green
+        case 0.5..<0.8: return .orange
+        default: return .red
+        }
+    }
+
+    // MARK: - Collapsible Section
+
+    @ViewBuilder
+    private func collapsibleSection<Content: View>(
+        title: String,
+        systemImage: String,
+        isExpanded: Binding<Bool>,
+        @ViewBuilder content: () -> Content
+    ) -> some View {
+        VStack(spacing: 0) {
+            Button {
+                withAnimation(.easeInOut(duration: 0.2)) {
+                    isExpanded.wrappedValue.toggle()
+                }
+            } label: {
+                HStack {
+                    Label(title, systemImage: systemImage)
+                        .font(.headline)
+                        .foregroundStyle(.primary)
+
+                    Spacer()
+
+                    Image(systemName: "chevron.right")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .rotationEffect(.degrees(isExpanded.wrappedValue ? 90 : 0))
+                }
+                .padding(.vertical, 12)
+            }
+            .buttonStyle(.plain)
+
+            if isExpanded.wrappedValue {
+                content()
+                    .padding(.bottom, 12)
+            }
+        }
+        .padding(.horizontal, 16)
+        .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 12))
+    }
+}
+
+#Preview {
+    NavigationStack {
+        PetDetailDebugView()
+    }
+}
+#endif

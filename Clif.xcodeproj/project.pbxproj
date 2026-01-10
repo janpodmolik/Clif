@@ -46,6 +46,10 @@
 		B4C4C09A2EE7FECE00E469E8 /* ShieldAction.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = B4C4C0912EE7FECE00E469E8 /* ShieldAction.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		B4C4C09F2EE7FEFF00E469E8 /* SharedDefaults.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4924AF52EE5807E0033475C /* SharedDefaults.swift */; };
 		B4C4C0A02EE7FF0900E469E8 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = B45862142EE5B92C0088CB78 /* Constants.swift */; };
+		B4D351222F123D620076C09B /* EvolutionHistory.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4D351212F123D620076C09B /* EvolutionHistory.swift */; };
+		B4D351232F123D620076C09B /* Essence.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4D351202F123D620076C09B /* Essence.swift */; };
+		B4D351262F123DD00076C09B /* StatType.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4D351252F123DD00076C09B /* StatType.swift */; };
+		B4D351272F123DD00076C09B /* BlockedAppsDailyStat.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4D351242F123DD00076C09B /* BlockedAppsDailyStat.swift */; };
 		B4F8F9EB2FEC35C900E9E6D8 /* SharedDefaults.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4924AF52EE5807E0033475C /* SharedDefaults.swift */; };
 		B4F8F9EC2FEC35C900E9E6D8 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = B45862142EE5B92C0088CB78 /* Constants.swift */; };
 /* End PBXBuildFile section */
@@ -128,6 +132,10 @@
 		B49387952F0E428B0090C730 /* WindLevel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindLevel.swift; sourceTree = "<group>"; };
 		B49387972F0E428B0090C730 /* WindConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindConfig.swift; sourceTree = "<group>"; };
 		B4C4C0912EE7FECE00E469E8 /* ShieldAction.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = ShieldAction.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		B4D351202F123D620076C09B /* Essence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Essence.swift; sourceTree = "<group>"; };
+		B4D351212F123D620076C09B /* EvolutionHistory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EvolutionHistory.swift; sourceTree = "<group>"; };
+		B4D351242F123DD00076C09B /* BlockedAppsDailyStat.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlockedAppsDailyStat.swift; sourceTree = "<group>"; };
+		B4D351252F123DD00076C09B /* StatType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatType.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -308,6 +316,8 @@
 		B43998452EE9FCE40049445F /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				B4D351242F123DD00076C09B /* BlockedAppsDailyStat.swift */,
+				B4D351252F123DD00076C09B /* StatType.swift */,
 				B49387962F0E428B0090C730 /* Evolution */,
 				B49387972F0E428B0090C730 /* WindConfig.swift */,
 				B4924AF42EE5807E0033475C /* EvolutionModel.swift */,
@@ -340,6 +350,8 @@
 		B49387962F0E428B0090C730 /* Evolution */ = {
 			isa = PBXGroup;
 			children = (
+				B4D351202F123D620076C09B /* Essence.swift */,
+				B4D351212F123D620076C09B /* EvolutionHistory.swift */,
 				B46F91262F0EF01C002738FD /* Mood.swift */,
 				B49387922F0E428B0090C730 /* BlobEvolution.swift */,
 				B49387932F0E428B0090C730 /* EvolutionType.swift */,
@@ -571,6 +583,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				B4924AFB2EE5807E0033475C /* SharedDefaults.swift in Sources */,
+				B4D351262F123DD00076C09B /* StatType.swift in Sources */,
+				B4D351272F123DD00076C09B /* BlockedAppsDailyStat.swift in Sources */,
+				B4D351222F123D620076C09B /* EvolutionHistory.swift in Sources */,
+				B4D351232F123D620076C09B /* Essence.swift in Sources */,
 				B45862442EE5FAF60088CB78 /* ActivityReportContext.swift in Sources */,
 				B4924AFC2EE5807E0033475C /* EvolutionModel.swift in Sources */,
 				B493879D2F0E428B0090C730 /* PlantEvolution.swift in Sources */,

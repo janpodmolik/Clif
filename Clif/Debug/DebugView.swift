@@ -33,6 +33,7 @@ struct DebugView: View {
                         debugToolsSection
                         petAnimationSection
                         statusCardSection
+                        petDetailSection
                         supabaseSection
                         extensionLogSection
                     }
@@ -287,6 +288,21 @@ struct DebugView: View {
             .frame(maxWidth: .infinity)
             .padding()
             .background(Color.blue.opacity(0.2))
+            .cornerRadius(12)
+        }
+    }
+
+    // MARK: - Pet Detail Debug
+
+    private var petDetailSection: some View {
+        NavigationLink(destination: PetDetailDebugView()) {
+            HStack {
+                Image(systemName: "info.circle")
+                Text("Pet Detail Debug")
+            }
+            .frame(maxWidth: .infinity)
+            .padding()
+            .background(Color.cyan.opacity(0.2))
             .cornerRadius(12)
         }
     }

@@ -1,5 +1,20 @@
 # Clif - Screen Time Management App
 
+## Core Concept
+
+Clif je screen time management app s virtuálním mazlíčkem (pet). Pet žije na plovoucím ostrově a reaguje na uživatelovo používání telefonu:
+
+- **Wind System**: Čím více času strávíš v blokovaných aplikacích, tím silnější vítr fouká na peta
+- **Mood**: Pet má náladu (happy/neutral/sad) podle síly větru
+- **Evolution**: Pet evolvuje skrz fáze (phase 1-4) pomocí Essence - základní blob + essence určuje evoluční cestu
+- **Streak**: Denní série splněných limitů
+- **Blow Away**: Při překročení limitu může být pet odfouknut
+
+### Key Models
+- **Essence**: Určuje evoluční cestu peta (PlantEssence → PlantEvolution phases 1-4)
+- **WindLevel**: none/low/medium/high - mapuje se na Mood
+- **EvolutionType**: Protokol pro různé evoluční cesty (PlantEvolution, BlobEvolution)
+
 ## Repository Architecture
 
 - `Clif/` - Main iOS app (iOS 18+)
