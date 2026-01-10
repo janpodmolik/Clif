@@ -6,6 +6,10 @@ struct EvolutionCarousel: View {
     let mood: Mood
 
     @State private var selectedIndex: Int = 0
+    @State private var scrollTarget: Int? = nil
+    private let cardWidth: CGFloat = 230
+    private let cardHeight: CGFloat = 240
+    private let cardSpacing: CGFloat = 18
 
     /// Total cards = 1 (origin) + maxPhase (evolution phases)
     private var totalCards: Int { 1 + essence.maxPhases }
@@ -16,6 +20,7 @@ struct EvolutionCarousel: View {
         self.mood = mood
         // Default to current phase card (index 0 = origin, index 1 = phase 1, etc.)
         self._selectedIndex = State(initialValue: currentPhase)
+        self._scrollTarget = State(initialValue: currentPhase)
     }
 
     var body: some View {
@@ -24,26 +29,10 @@ struct EvolutionCarousel: View {
                 .font(.headline)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.horizontal)
+                .padding(.top, 12)
+                .padding(.bottom, 10)
 
-            TabView(selection: $selectedIndex) {
-                // Origin card (index 0)
-                EvolutionOriginCard(essence: essence, mood: mood)
-                    .tag(0)
-
-                // Phase cards (index 1 to maxPhase)
-                ForEach(1...essence.maxPhases, id: \.self) { phase in
-                    EvolutionPhaseCard(
-                        phase: phase,
-                        isCurrentPhase: phase == currentPhase,
-                        isLocked: phase > currentPhase,
-                        essence: essence,
-                        mood: mood
-                    )
-                    .tag(phase)
-                }
-            }
-            .tabViewStyle(.page(indexDisplayMode: .never))
-            .frame(height: 260)
+            carouselBody
 
             // Indicator dots
             HStack(spacing: 8) {
@@ -63,6 +52,107 @@ struct EvolutionCarousel: View {
             .padding(.bottom)
         }
         .glassCard()
+        .onAppear {
+            selectedIndex = currentPhase
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+                scrollTarget = currentPhase
+            }
+        }
+        .onChange(of: currentPhase) { newValue in
+            withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
+                selectedIndex = newValue
+                scrollTarget = newValue
+            }
+        }
+        .onChange(of: scrollTarget) { newValue in
+            if let newValue {
+                selectedIndex = newValue
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var carouselBody: some View {
+        if #available(iOS 17.0, *) {
+            modernCarousel
+        } else {
+            legacyCarousel
+        }
+    }
+
+    @available(iOS 17.0, *)
+    private var modernCarousel: some View {
+        GeometryReader { proxy in
+            let horizontalInset = max(0, (proxy.size.width - cardWidth) / 2)
+            ScrollView(.horizontal) {
+                HStack(spacing: cardSpacing) {
+                    ForEach(0..<totalCards, id: \.self) { index in
+                        cardView(for: index)
+                            .frame(width: cardWidth, height: cardHeight)
+                            .scrollTransition(.interactive, axis: .horizontal) { content, phase in
+                                content
+                                    .rotation3DEffect(
+                                        .degrees(phase.value * -32),
+                                        axis: (x: 0, y: 1, z: 0),
+                                        perspective: 0.7
+                                    )
+                                    .scaleEffect(1 - abs(phase.value) * 0.18)
+                                    .opacity(1 - abs(phase.value) * 0.35)
+                                    .offset(y: abs(phase.value) * 18)
+                            }
+                            .shadow(
+                                color: .black.opacity(0.12),
+                                radius: 12,
+                                x: 0,
+                                y: 10
+                            )
+                            .id(index)
+                    }
+                }
+                .scrollTargetLayout()
+            }
+            .scrollIndicators(.hidden)
+            .scrollTargetBehavior(.viewAligned)
+            .scrollPosition(id: $scrollTarget, anchor: .center)
+            .scrollClipDisabled()
+            .padding(.top, 4)
+            .contentMargins(.horizontal, horizontalInset, for: .scrollContent)
+            .frame(height: cardHeight + 24)
+        }
+        .frame(height: cardHeight + 24)
+    }
+
+    private var legacyCarousel: some View {
+        TabView(selection: $selectedIndex) {
+            // Origin card (index 0)
+            cardView(for: 0)
+                .padding(.horizontal)
+                .tag(0)
+
+            // Phase cards (index 1 to maxPhase)
+            ForEach(1...essence.maxPhases, id: \.self) { phase in
+                cardView(for: phase)
+                    .padding(.horizontal)
+                    .tag(phase)
+            }
+        }
+        .tabViewStyle(.page(indexDisplayMode: .never))
+        .frame(height: 260)
+    }
+
+    @ViewBuilder
+    private func cardView(for index: Int) -> some View {
+        if index == 0 {
+            EvolutionOriginCard(essence: essence, mood: mood)
+        } else {
+            EvolutionPhaseCard(
+                phase: index,
+                isCurrentPhase: index == currentPhase,
+                isLocked: index > currentPhase,
+                essence: essence,
+                mood: mood
+            )
+        }
     }
 
     private func dotColor(for index: Int) -> Color {
@@ -99,12 +189,11 @@ struct EvolutionOriginCard: View {
         .padding()
         .frame(maxWidth: .infinity)
         .background(cardBackground)
-        .padding(.horizontal)
     }
 
-    /// Asset name for blob based on mood: "evolutions/blob/happy"
+    /// Asset name for blob based on mood: "evolutions/blob/happy/1"
     private var blobAssetName: String {
-        "evolutions/blob/\(mood.rawValue)"
+        "evolutions/blob/\(mood.rawValue)/1"
     }
 
     private var originImageView: some View {
@@ -189,7 +278,6 @@ struct EvolutionPhaseCard: View {
         .padding()
         .frame(maxWidth: .infinity)
         .background(cardBackground)
-        .padding(.horizontal)
     }
 
     @ViewBuilder
