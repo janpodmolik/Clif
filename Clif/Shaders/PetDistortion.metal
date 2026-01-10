@@ -113,36 +113,65 @@ float2 calculateTapOffset(
             break;
         }
         case 4: {
-            // BOUNCE: Squash down, then spring up with Y displacement
-            float squashDuration = 0.15;
-            float jumpDuration = 0.55;
+            // BOUNCE: anticipation squash, jump with stretch, apex, fall, impact, rebound, settle
+            float t = timeSinceTap;
+            float distFromBottom = size.y - position.y;
 
-            if (timeSinceTap < squashDuration) {
-                // Phase 1: Squash - compress toward bottom
-                float squashProgress = timeSinceTap / squashDuration;
-                float squashEase = sin(squashProgress * 3.14159 * 0.5); // ease-in
-                float compression = intensity * squashEase;
-                float distFromBottom = size.y - position.y;
-                yOffset = distFromBottom * compression;
+            float pressEnd = 0.12;
+            float holdEnd = 0.18;
+            float ascentEnd = 0.52;
+            float apexEnd = 0.58;
+            float descentEnd = 0.78;
+            float impactEnd = 0.86;
+
+            float pressDepth = intensity * 0.25 * size.y;
+            float apexHeight = intensity * 2.0 * size.y;
+            float impactDepth = intensity * 0.25 * size.y;
+
+            float jumpOffset = 0.0;
+            float shapeAmount = 0.0;
+
+            if (t < pressEnd) {
+                float pressT = t / pressEnd;
+                float pressEase = smoothstep(0.0, 1.0, pressT);
+                jumpOffset = -pressDepth * pressEase;
+                shapeAmount = -intensity * 0.6 * pressEase;
+            } else if (t < holdEnd) {
+                jumpOffset = -pressDepth;
+                shapeAmount = -intensity * 0.6;
+            } else if (t < ascentEnd) {
+                float jumpT = (t - holdEnd) / (ascentEnd - holdEnd);
+                float jumpEase = sin(jumpT * 1.5708);
+                jumpOffset = mix(-pressDepth, apexHeight, jumpEase);
+
+                float stretchEase = 1.0 - smoothstep(0.0, 0.85, jumpT);
+                shapeAmount = intensity * 0.85 * stretchEase;
+            } else if (t < apexEnd) {
+                float apexT = (t - ascentEnd) / (apexEnd - ascentEnd);
+                float apexEase = smoothstep(0.0, 1.0, apexT);
+                jumpOffset = apexHeight;
+                shapeAmount = mix(intensity * 0.1, -intensity * 0.08, apexEase);
+            } else if (t < descentEnd) {
+                float fallT = (t - apexEnd) / (descentEnd - apexEnd);
+                float fallEase = pow(fallT, 1.6);
+                jumpOffset = mix(apexHeight, 0.0, fallEase);
+                shapeAmount = intensity * 0.25 * fallEase;
+            } else if (t < impactEnd) {
+                float impactT = (t - descentEnd) / (impactEnd - descentEnd);
+                float impactEase = smoothstep(0.0, 1.0, impactT);
+                jumpOffset = mix(0.0, -impactDepth, impactEase);
+                shapeAmount = mix(intensity * 0.08, -intensity * 0.12, impactEase);
             } else {
-                // Phase 2: Spring up with damped oscillation
-                float jumpTime = timeSinceTap - squashDuration;
-                float jumpProgress = jumpTime / jumpDuration;
-
-                // Initial stretch (opposite of squash)
-                float stretchDecay = exp(-jumpTime * decayRate);
-                float bounce = sin(jumpTime * frequency) * stretchDecay;
-
-                // Y displacement - move whole pet up then back
-                float jumpHeight = intensity * 2.0;
-                float jumpCurve = sin(jumpProgress * 3.14159); // parabolic arc
-                float dampedJump = jumpCurve * stretchDecay * jumpHeight * size.y;
-
-                // Stretch effect on shape
-                float distFromBottom = size.y - position.y;
-                float stretchFactor = 1.0 + bounce * intensity * 0.5;
-                yOffset = distFromBottom * (1.0 - stretchFactor) - dampedJump;
+                float settleT = clamp((t - impactEnd) / (1.0 - impactEnd), 0.0, 1.0);
+                float settleEase = smoothstep(0.0, 1.0, settleT);
+                float settleDecay = exp(-settleT * decayRate * 3.0);
+                float settleWave = sin(settleT * frequency * 6.28318);
+                jumpOffset = mix(-impactDepth, 0.0, settleEase)
+                    + settleWave * impactDepth * 0.02 * settleDecay;
+                shapeAmount = settleWave * intensity * 0.03 * settleDecay;
             }
+
+            yOffset = jumpOffset + distFromBottom * shapeAmount;
             break;
         }
     }
