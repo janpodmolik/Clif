@@ -89,7 +89,6 @@ struct EvolutionTransitionView: View {
             .scaledToFit()
             .frame(width: size.width, height: size.height)
             .scaleEffect(scale, anchor: .bottom)
-            .drawingGroup()
     }
 }
 

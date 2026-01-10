@@ -11,6 +11,7 @@ struct WindLinesView: View {
     /// Lines spawn within this vertical range, centered around the pet
     var windAreaTop: CGFloat = 0.08
     var windAreaBottom: CGFloat = 0.42
+    var intensityScale: CGFloat = 1.0
 
     /// Override config for special effects (e.g., burst mode for blow away)
     var overrideConfig: WindLinesConfig? = nil
@@ -26,6 +27,10 @@ struct WindLinesView: View {
 
     private var lineColor: Color {
         colorScheme == .dark ? Color.white.opacity(0.2) : Color.white.opacity(0.4)
+    }
+
+    private var clampedIntensityScale: CGFloat {
+        min(max(intensityScale, 0), 1)
     }
 
     private func colorForLine(_ line: WindLine) -> Color {
@@ -199,6 +204,7 @@ struct WindLinesView: View {
 
         // Get current gust intensity from rhythm (0-1), default to 0.5 if no rhythm
         let gustIntensity = windRhythm?.gustIntensity ?? 0.5
+        let scaledIntensity = Double(clampedIntensityScale)
 
         // Calculate dynamic spawn parameters based on gust
         let effectiveSpawnChance: Double
@@ -213,9 +219,12 @@ struct WindLinesView: View {
             effectiveSpawnChance = gustConfig.spawnChance(at: gustIntensity)
             speedMultiplier = gustConfig.speedMultiplier(at: gustIntensity)
 
+            let scaledSpeedMultiplier = 1.0 + (speedMultiplier - 1.0) * scaledIntensity
+
             // Burst spawn at peak gusts - always spawn 2 loop lines for dramatic effect
             let timeSinceLastBurst = currentTime - lastBurstTime
             if gustIntensity > gustConfig.burstThreshold &&
+               clampedIntensityScale > 0.05 &&
                activeLines.count < config.maxLines - 2 &&
                timeSinceLastBurst > 0.3 {
                 // Spawn 2 guaranteed loop lines
@@ -226,7 +235,7 @@ struct WindLinesView: View {
                         windAreaTop: windAreaTop,
                         windAreaBottom: windAreaBottom,
                         direction: direction,
-                        speedMultiplier: speedMultiplier,
+                        speedMultiplier: scaledSpeedMultiplier,
                         forcedType: .loop
                     ))
                 }
@@ -240,17 +249,20 @@ struct WindLinesView: View {
             speedMultiplier = 1.0
         }
 
+        let scaledSpawnChance = effectiveSpawnChance * scaledIntensity
+        let scaledSpeedMultiplier = 1.0 + (speedMultiplier - 1.0) * scaledIntensity
+
         // Regular spawn logic
         let timeSinceLastSpawn = currentTime - lastSpawnTime
         if activeLines.count < config.maxLines && timeSinceLastSpawn > config.minSpawnInterval {
-            if Double.random(in: 0...1) < effectiveSpawnChance {
+            if Double.random(in: 0...1) < scaledSpawnChance {
                 activeLines.append(WindLine.random(
                     config: config,
                     spawnTime: currentTime,
                     windAreaTop: windAreaTop,
                     windAreaBottom: windAreaBottom,
                     direction: direction,
-                    speedMultiplier: speedMultiplier
+                    speedMultiplier: scaledSpeedMultiplier
                 ))
                 lastSpawnTime = currentTime
             }

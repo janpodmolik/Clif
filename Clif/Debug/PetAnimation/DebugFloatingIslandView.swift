@@ -12,6 +12,7 @@ struct DebugFloatingIslandView<Evolution: EvolutionType>: View {
     // Debug overrides (nil = use default config)
     var debugWindConfig: WindConfig? = nil
     var windDirection: CGFloat = 1.0
+    var windIntensityScale: CGFloat = 1.0
 
     /// Optional shared wind rhythm for synchronized effects with wind lines.
     var windRhythm: WindRhythm?
@@ -51,6 +52,7 @@ struct DebugFloatingIslandView<Evolution: EvolutionType>: View {
 
     // Pet animation transform for bubble positioning
     @State private var petTransform: PetAnimationTransform = .zero
+    @State private var petImageSize: CGSize = .zero
 
     // MARK: - Computed Properties
 
@@ -59,7 +61,20 @@ struct DebugFloatingIslandView<Evolution: EvolutionType>: View {
     private var petOffset: CGFloat { -petHeight }
 
     private var activeWindConfig: WindConfig {
-        debugWindConfig ?? evolution.windConfig(for: windLevel)
+        let baseConfig = debugWindConfig ?? evolution.windConfig(for: windLevel)
+        return WindConfig(
+            intensity: baseConfig.intensity * windIntensityScale,
+            bendCurve: baseConfig.bendCurve,
+            swayAmount: baseConfig.swayAmount * windIntensityScale,
+            rotationAmount: baseConfig.rotationAmount * windIntensityScale
+        )
+    }
+
+    private var transitionFrameSize: CGSize {
+        if petImageSize == .zero {
+            return CGSize(width: petHeight, height: petHeight)
+        }
+        return petImageSize
     }
 
     private var activeTapType: TapAnimationType {
@@ -119,6 +134,16 @@ struct DebugFloatingIslandView<Evolution: EvolutionType>: View {
                     .resizable()
                     .scaledToFit()
                     .frame(height: petHeight)
+                    .background(
+                        GeometryReader { proxy in
+                            Color.clear.preference(key: PetImageSizeKey.self, value: proxy.size)
+                        }
+                    )
+                    .onPreferenceChange(PetImageSizeKey.self) { newSize in
+                        if newSize != .zero {
+                            petImageSize = newSize
+                        }
+                    }
                     .scaleEffect(evolution.displayScale, anchor: .bottom)
                     .petAnimation(
                         intensity: activeWindConfig.intensity,
@@ -147,7 +172,7 @@ struct DebugFloatingIslandView<Evolution: EvolutionType>: View {
                 if let transitionView = evolutionTransitionView {
                     // Overlay evolution transition while keeping pet animation state alive.
                     transitionView
-                        .frame(height: petHeight)
+                        .frame(width: transitionFrameSize.width, height: transitionFrameSize.height)
                         .allowsHitTesting(false)
                 }
 
@@ -210,6 +235,17 @@ struct DebugFloatingIslandView<Evolution: EvolutionType>: View {
                 source: .random,
                 customText: debugCustomText.isEmpty ? nil : debugCustomText
             )
+        }
+    }
+}
+
+private struct PetImageSizeKey: PreferenceKey {
+    static var defaultValue: CGSize = .zero
+
+    static func reduce(value: inout CGSize, nextValue: () -> CGSize) {
+        let next = nextValue()
+        if next != .zero {
+            value = next
         }
     }
 }
