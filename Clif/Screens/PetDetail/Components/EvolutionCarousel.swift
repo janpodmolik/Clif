@@ -11,7 +11,6 @@ struct EvolutionCarousel: View {
     @State private var scrollTarget: Int?
     private let cardWidth: CGFloat = 230
     private let cardHeight: CGFloat = 240
-    private let cardSpacing: CGFloat = 18
 
     /// Total cards = 1 (origin) + maxPhase (evolution phases)
     private var totalCards: Int { 1 + essence.maxPhases }
@@ -33,7 +32,7 @@ struct EvolutionCarousel: View {
                     Circle()
                         .fill(dotColor(for: index))
                         .frame(width: 8, height: 8)
-                        .scaleEffect(index == selectedIndex ? 1.3 : 1.0)
+                        .scaleEffect(index == selectedIndex ? 1.5 : 1.0)
                         .animation(.spring(response: 0.3), value: selectedIndex)
                         .onTapGesture {
                             withAnimation {
@@ -62,7 +61,7 @@ struct EvolutionCarousel: View {
         GeometryReader { proxy in
             let horizontalInset = max(0, (proxy.size.width - cardWidth) / 2)
             ScrollView(.horizontal) {
-                HStack(spacing: cardSpacing) {
+                HStack(spacing: 0) {
                     ForEach(0..<totalCards, id: \.self) { index in
                         cardView(for: index)
                             .frame(width: cardWidth, height: cardHeight)
