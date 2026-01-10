@@ -30,9 +30,9 @@ enum Essence: String, Codable, CaseIterable {
         }
     }
 
-    /// Asset path for essence icon: "essence/plant"
+    /// Asset path for essence icon: "evolutions/plant/essence"
     var assetName: String {
-        "essence/\(rawValue)"
+        "evolutions/\(rawValue)/essence"
     }
 
     /// Theme color for UI elements

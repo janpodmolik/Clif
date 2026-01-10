@@ -94,7 +94,7 @@ struct PetDetailDebugView: View {
                 }
             }
         }
-        .sheet(isPresented: $showSheet) {
+        .fullScreenCover(isPresented: $showSheet) {
             PetDetailSheet(
                 petName: petName,
                 evolutionHistory: evolutionHistory,
@@ -105,11 +105,13 @@ struct PetDetailDebugView: View {
                 usedMinutes: Int(usedMinutes),
                 limitMinutes: Int(limitMinutes),
                 weeklyStats: .mock(),
+                blockedAppCount: 12,
                 onEvolve: { print("Evolve tapped") },
                 onBlowAway: { print("Blow Away tapped") },
                 onReplay: { print("Replay tapped") },
                 onDelete: { print("Delete tapped") },
-                onSeeAllStats: { print("See all stats tapped") }
+                onSeeAllStats: { print("See all stats tapped") },
+                onBlockedApps: { print("Blocked apps tapped") }
             )
         }
     }

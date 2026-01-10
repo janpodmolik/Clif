@@ -6,17 +6,16 @@ struct EvolutionCarousel: View {
     let mood: Mood
 
     @State private var selectedIndex: Int = 0
-    @State private var dragOffset: CGFloat = 0
 
-    private let cardWidth: CGFloat = 180
-    private let cardSpacing: CGFloat = 16
-    private var maxPhase: Int { essence.maxPhases }
+    /// Total cards = 1 (origin) + maxPhase (evolution phases)
+    private var totalCards: Int { 1 + essence.maxPhases }
 
     init(currentPhase: Int, essence: Essence, mood: Mood) {
         self.currentPhase = currentPhase
         self.essence = essence
         self.mood = mood
-        self._selectedIndex = State(initialValue: currentPhase - 1)
+        // Default to current phase card (index 0 = origin, index 1 = phase 1, etc.)
+        self._selectedIndex = State(initialValue: currentPhase)
     }
 
     var body: some View {
@@ -24,104 +23,152 @@ struct EvolutionCarousel: View {
             Text("Evolution Path")
                 .font(.headline)
                 .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal)
 
-            GeometryReader { geometry in
-                let totalWidth = geometry.size.width
-                let centerOffset = (totalWidth - cardWidth) / 2
+            TabView(selection: $selectedIndex) {
+                // Origin card (index 0)
+                EvolutionOriginCard(essence: essence, mood: mood)
+                    .tag(0)
 
-                HStack(spacing: cardSpacing) {
-                    ForEach(1...maxPhase, id: \.self) { phase in
-                        EvolutionPhaseCard(
-                            phase: phase,
-                            isCurrentPhase: phase == currentPhase,
-                            isLocked: phase > currentPhase,
-                            essence: essence,
-                            mood: mood
-                        )
-                        .frame(width: cardWidth)
-                        .rotation3DEffect(
-                            rotationAngle(for: phase - 1, in: geometry),
-                            axis: (x: 0, y: 1, z: 0),
-                            perspective: 0.5
-                        )
-                        .scaleEffect(scaleEffect(for: phase - 1))
-                        .opacity(opacityEffect(for: phase - 1))
-                        .zIndex(phase - 1 == selectedIndex ? 1 : 0)
-                    }
+                // Phase cards (index 1 to maxPhase)
+                ForEach(1...essence.maxPhases, id: \.self) { phase in
+                    EvolutionPhaseCard(
+                        phase: phase,
+                        isCurrentPhase: phase == currentPhase,
+                        isLocked: phase > currentPhase,
+                        essence: essence,
+                        mood: mood
+                    )
+                    .tag(phase)
                 }
-                .offset(x: centerOffset + offsetForSelectedIndex)
-                .offset(x: dragOffset)
-                .gesture(dragGesture)
-                .animation(.spring(response: 0.4, dampingFraction: 0.8), value: selectedIndex)
-                .animation(.spring(response: 0.3, dampingFraction: 0.7), value: dragOffset)
             }
-            .frame(height: 240)
+            .tabViewStyle(.page(indexDisplayMode: .never))
+            .frame(height: 260)
 
             // Indicator dots
             HStack(spacing: 8) {
-                ForEach(0..<maxPhase, id: \.self) { index in
+                ForEach(0..<totalCards, id: \.self) { index in
                     Circle()
                         .fill(dotColor(for: index))
                         .frame(width: 8, height: 8)
                         .scaleEffect(index == selectedIndex ? 1.3 : 1.0)
                         .animation(.spring(response: 0.3), value: selectedIndex)
                         .onTapGesture {
-                            selectedIndex = index
+                            withAnimation {
+                                selectedIndex = index
+                            }
                         }
                 }
             }
+            .padding(.bottom)
         }
-        .padding()
         .glassCard()
     }
 
-    private var offsetForSelectedIndex: CGFloat {
-        -CGFloat(selectedIndex) * (cardWidth + cardSpacing)
-    }
-
-    private var dragGesture: some Gesture {
-        DragGesture()
-            .onChanged { value in
-                dragOffset = value.translation.width
-            }
-            .onEnded { value in
-                let threshold: CGFloat = 50
-                let predictedOffset = value.predictedEndTranslation.width
-
-                if predictedOffset < -threshold && selectedIndex < maxPhase - 1 {
-                    selectedIndex += 1
-                } else if predictedOffset > threshold && selectedIndex > 0 {
-                    selectedIndex -= 1
-                }
-
-                dragOffset = 0
-            }
-    }
-
-    private func rotationAngle(for index: Int, in geometry: GeometryProxy) -> Angle {
-        let offset = CGFloat(index - selectedIndex) + (dragOffset / (cardWidth + cardSpacing))
-        let maxRotation: Double = 35
-        return .degrees(-offset * maxRotation)
-    }
-
-    private func scaleEffect(for index: Int) -> CGFloat {
-        let offset = abs(CGFloat(index - selectedIndex) + (dragOffset / (cardWidth + cardSpacing)))
-        return max(0.85, 1 - offset * 0.1)
-    }
-
-    private func opacityEffect(for index: Int) -> Double {
-        let offset = abs(CGFloat(index - selectedIndex) + (dragOffset / (cardWidth + cardSpacing)))
-        return max(0.6, 1 - offset * 0.2)
-    }
-
     private func dotColor(for index: Int) -> Color {
-        let phase = index + 1
+        if index == 0 {
+            // Origin dot - always filled with essence color
+            return essence.themeColor
+        }
+        let phase = index // phase number = index (since origin is 0)
         if phase <= currentPhase {
             return .green
         }
         return Color.secondary.opacity(0.3)
     }
 }
+
+// MARK: - Origin Card
+
+struct EvolutionOriginCard: View {
+    let essence: Essence
+    let mood: Mood
+
+    var body: some View {
+        VStack(spacing: 12) {
+            originImageView
+                .frame(height: 140)
+
+            Text("Origin")
+                .font(.subheadline.weight(.semibold))
+
+            Text(essence.displayName)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+        }
+        .padding()
+        .frame(maxWidth: .infinity)
+        .background(cardBackground)
+        .padding(.horizontal)
+    }
+
+    /// Asset name for blob based on mood: "evolutions/blob/happy"
+    private var blobAssetName: String {
+        "evolutions/blob/\(mood.rawValue)"
+    }
+
+    private var originImageView: some View {
+        HStack(spacing: 8) {
+            // Blob image - try UIImage for namespace support
+            if let blobImage = UIImage(named: blobAssetName) {
+                Image(uiImage: blobImage)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 50, height: 50)
+            } else {
+                // Fallback placeholder
+                Circle()
+                    .fill(Color.secondary.opacity(0.2))
+                    .frame(width: 50, height: 50)
+                    .overlay {
+                        Image(systemName: "circle.fill")
+                            .foregroundStyle(.secondary)
+                    }
+            }
+
+            Text("+")
+                .font(.title2.weight(.medium))
+                .foregroundStyle(.secondary)
+
+            // Essence image
+            if let essenceImage = UIImage(named: essence.assetName) {
+                Image(uiImage: essenceImage)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 50, height: 50)
+            } else {
+                // Fallback placeholder
+                Circle()
+                    .fill(essence.themeColor.opacity(0.2))
+                    .frame(width: 50, height: 50)
+                    .overlay {
+                        Image(systemName: "leaf.fill")
+                            .foregroundStyle(essence.themeColor)
+                    }
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var cardBackground: some View {
+        if #available(iOS 26.0, *) {
+            Color.clear
+                .glassEffect(
+                    .regular.tint(essence.themeColor.opacity(0.15)),
+                    in: RoundedRectangle(cornerRadius: 20)
+                )
+        } else {
+            RoundedRectangle(cornerRadius: 20)
+                .fill(.ultraThinMaterial)
+                .overlay {
+                    RoundedRectangle(cornerRadius: 20)
+                        .stroke(essence.themeColor.opacity(0.3), lineWidth: 1)
+                }
+        }
+    }
+}
+
+// MARK: - Phase Card
 
 struct EvolutionPhaseCard: View {
     let phase: Int
@@ -140,7 +187,9 @@ struct EvolutionPhaseCard: View {
             statusBadge
         }
         .padding()
+        .frame(maxWidth: .infinity)
         .background(cardBackground)
+        .padding(.horizontal)
     }
 
     @ViewBuilder
@@ -159,7 +208,6 @@ struct EvolutionPhaseCard: View {
                 .resizable()
                 .scaledToFit()
         } else {
-            // Fallback
             RoundedRectangle(cornerRadius: 16)
                 .fill(Color.secondary.opacity(0.1))
         }

@@ -3,9 +3,9 @@ import SwiftUI
 struct EvolutionTimelineView: View {
     let history: EvolutionHistory
 
-    private let dateFormatter: DateFormatter = {
+    private let shortDateFormatter: DateFormatter = {
         let f = DateFormatter()
-        f.dateStyle = .medium
+        f.dateFormat = "d MMM"
         return f
     }()
 
@@ -14,102 +14,85 @@ struct EvolutionTimelineView: View {
             Text("Evolution Timeline")
                 .font(.headline)
 
-            VStack(spacing: 0) {
-                ForEach(Array(timelineItems.enumerated()), id: \.element.phase) { index, item in
-                    timelineRow(item: item, isLast: index == timelineItems.count - 1)
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 0) {
+                    ForEach(1...history.maxPhase, id: \.self) { phase in
+                        HStack(spacing: 0) {
+                            milestoneItem(phase: phase)
+
+                            if phase < history.maxPhase {
+                                connectorLine(isUnlocked: phase < history.currentPhase)
+                            }
+                        }
+                    }
                 }
+                .padding(.vertical, 8)
             }
+            .scrollClipDisabled()
         }
         .padding()
         .glassCard()
     }
 
-    private var timelineItems: [TimelineItem] {
-        var items: [TimelineItem] = []
+    private func milestoneItem(phase: Int) -> some View {
+        let isUnlocked = phase <= history.currentPhase
+        let isCurrent = phase == history.currentPhase
+        let date = history.dateForPhase(phase)
 
-        // Add all phases from 1 to maxPhase
-        for phase in 1...history.maxPhase {
-            let date = history.dateForPhase(phase)
-            let isUnlocked = phase <= history.currentPhase
-            let isCurrent = phase == history.currentPhase
-
-            items.append(TimelineItem(
-                phase: phase,
-                date: date,
-                isUnlocked: isUnlocked,
-                isCurrent: isCurrent
-            ))
-        }
-
-        return items
-    }
-
-    private func timelineRow(item: TimelineItem, isLast: Bool) -> some View {
-        HStack(spacing: 16) {
-            // Timeline dot and line
-            VStack(spacing: 0) {
+        return VStack(spacing: 4) {
+            // Circle with phase number
+            ZStack {
                 Circle()
-                    .fill(item.isCurrent ? Color.green : (item.isUnlocked ? Color.primary : Color.secondary.opacity(0.3)))
-                    .frame(width: 12, height: 12)
-                    .overlay {
-                        if item.isCurrent {
-                            Circle()
-                                .stroke(Color.green.opacity(0.3), lineWidth: 4)
-                                .frame(width: 20, height: 20)
-                        }
-                    }
+                    .fill(circleColor(isUnlocked: isUnlocked, isCurrent: isCurrent))
+                    .frame(width: 32, height: 32)
 
-                if !isLast {
-                    Rectangle()
-                        .fill(item.isUnlocked ? Color.primary.opacity(0.3) : Color.secondary.opacity(0.15))
-                        .frame(width: 2, height: 32)
+                if isCurrent {
+                    Circle()
+                        .stroke(Color.green.opacity(0.3), lineWidth: 3)
+                        .frame(width: 40, height: 40)
                 }
+
+                Text("\(phase)")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(isUnlocked ? .white : .secondary)
             }
 
-            // Phase info
-            VStack(alignment: .leading, spacing: 2) {
-                HStack {
-                    Text("Phase \(item.phase)")
-                        .font(.subheadline.weight(.semibold))
-                        .foregroundStyle(item.isUnlocked ? .primary : .secondary)
-
-                    if item.isCurrent {
-                        Text("Current")
-                            .font(.caption2.weight(.medium))
-                            .foregroundStyle(.white)
-                            .padding(.horizontal, 6)
-                            .padding(.vertical, 2)
-                            .background(Color.green, in: Capsule())
-                    }
-                }
-
-                if let date = item.date {
-                    Text(dateFormatter.string(from: date))
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                } else {
-                    Text("Locked")
-                        .font(.caption)
-                        .foregroundStyle(.tertiary)
-                }
+            // Date label
+            if let date = date {
+                Text(shortDateFormatter.string(from: date))
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+            } else {
+                Text("—")
+                    .font(.caption2)
+                    .foregroundStyle(.tertiary)
             }
-
-            Spacer()
         }
-        .padding(.bottom, isLast ? 0 : 8)
+        .frame(minWidth: 50)
     }
-}
 
-private struct TimelineItem {
-    let phase: Int
-    let date: Date?
-    let isUnlocked: Bool
-    let isCurrent: Bool
+    private func connectorLine(isUnlocked: Bool) -> some View {
+        Rectangle()
+            .fill(isUnlocked ? Color.primary.opacity(0.3) : Color.secondary.opacity(0.15))
+            .frame(width: 20, height: 2)
+            .padding(.bottom, 20) // Offset to align with circles, not dates
+    }
+
+    private func circleColor(isUnlocked: Bool, isCurrent: Bool) -> Color {
+        if isCurrent {
+            return .green
+        } else if isUnlocked {
+            return .primary.opacity(0.6)
+        } else {
+            return Color.secondary.opacity(0.2)
+        }
+    }
 }
 
 #if DEBUG
 #Preview {
-    VStack {
+    VStack(spacing: 20) {
+        // 2 phases reached
         EvolutionTimelineView(
             history: EvolutionHistory(
                 createdAt: Calendar.current.date(byAdding: .day, value: -14, to: Date())!,
@@ -124,11 +107,25 @@ private struct TimelineItem {
             )
         )
 
+        // New pet - phase 1 only
         EvolutionTimelineView(
             history: EvolutionHistory(
                 createdAt: Date(),
                 essence: .plant,
                 events: []
+            )
+        )
+
+        // Max evolution
+        EvolutionTimelineView(
+            history: EvolutionHistory(
+                createdAt: Calendar.current.date(byAdding: .day, value: -30, to: Date())!,
+                essence: .plant,
+                events: [
+                    EvolutionEvent(fromPhase: 1, toPhase: 2, date: Calendar.current.date(byAdding: .day, value: -25, to: Date())!),
+                    EvolutionEvent(fromPhase: 2, toPhase: 3, date: Calendar.current.date(byAdding: .day, value: -15, to: Date())!),
+                    EvolutionEvent(fromPhase: 3, toPhase: 4, date: Calendar.current.date(byAdding: .day, value: -5, to: Date())!)
+                ]
             )
         )
     }

@@ -4,31 +4,31 @@ struct BlockedAppsChart: View {
     let stats: BlockedAppsWeeklyStats
     var onTap: (() -> Void)?
 
-    private let dayLabels = ["M", "T", "W", "T", "F", "S", "S"]
+    @State private var selectedDay: BlockedAppsDailyStat?
+
+    private let barHeight: CGFloat = 60
 
     var body: some View {
-        Button {
-            onTap?()
-        } label: {
-            VStack(alignment: .leading, spacing: 12) {
-                headerRow
+        VStack(alignment: .leading, spacing: 12) {
+            headerRow
 
-                chartView
+            chartView
 
-                summaryRow
-            }
-            .padding()
+            summaryRow
         }
-        .buttonStyle(.plain)
+        .padding()
         .glassCard()
+        .sheet(item: $selectedDay) { day in
+            DayDetailSheet(day: day)
+        }
     }
 
     private var headerRow: some View {
         HStack {
-            Image(systemName: "chart.bar.fill")
-                .foregroundStyle(.blue)
+            Image(systemName: "clock.arrow.circlepath")
+                .foregroundStyle(.secondary)
 
-            Text("Blocked Apps")
+            Text("History")
                 .font(.headline)
 
             Spacer()
@@ -38,33 +38,59 @@ struct BlockedAppsChart: View {
                 .foregroundStyle(.secondary)
 
             if onTap != nil {
-                Image(systemName: "chevron.right")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                Button {
+                    onTap?()
+                } label: {
+                    Image(systemName: "chevron.right")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                .buttonStyle(.plain)
             }
         }
     }
 
     private var chartView: some View {
-        HStack(alignment: .bottom, spacing: 0) {
+        HStack(spacing: 8) {
             ForEach(Array(stats.days.enumerated()), id: \.element.id) { index, day in
-                VStack(spacing: 4) {
-                    let normalized = stats.maxMinutes > 0
-                        ? CGFloat(day.totalMinutes) / CGFloat(stats.maxMinutes)
-                        : 0
-
-                    RoundedRectangle(cornerRadius: 4)
-                        .fill(barColor(for: normalized))
-                        .frame(height: max(4, normalized * 60))
-
-                    Text(dayLabel(for: index))
-                        .font(.caption2)
-                        .foregroundStyle(.secondary)
+                Button {
+                    selectedDay = day
+                } label: {
+                    dayColumn(day: day, index: index)
                 }
-                .frame(maxWidth: .infinity)
+                .buttonStyle(.plain)
             }
         }
-        .frame(height: 80)
+        .frame(height: barHeight + 24) // bar + label
+    }
+
+    private func dayColumn(day: BlockedAppsDailyStat, index: Int) -> some View {
+        let normalized = stats.maxMinutes > 0
+            ? CGFloat(day.totalMinutes) / CGFloat(stats.maxMinutes)
+            : 0
+
+        return VStack(spacing: 4) {
+            // Container with border that fills based on usage
+            ZStack(alignment: .bottom) {
+                // Empty container border
+                RoundedRectangle(cornerRadius: 6)
+                    .stroke(Color.secondary.opacity(0.2), lineWidth: 1)
+                    .frame(height: barHeight)
+
+                // Fill bar
+                RoundedRectangle(cornerRadius: 6)
+                    .fill(Color.secondary.opacity(0.4))
+                    .frame(height: max(0, normalized * barHeight))
+            }
+            .frame(height: barHeight)
+
+            // Day label
+            Text(dayLabel(for: index))
+                .font(.caption2)
+                .foregroundStyle(.secondary)
+        }
+        .frame(maxWidth: .infinity)
+        .contentShape(Rectangle())
     }
 
     private var summaryRow: some View {
@@ -94,12 +120,65 @@ struct BlockedAppsChart: View {
         return String(dayName.prefix(1))
     }
 
-    private func barColor(for value: CGFloat) -> Color {
-        switch value {
-        case 0..<0.5: return .green
-        case 0.5..<0.8: return .orange
-        default: return .red
+    private func formatMinutes(_ minutes: Int) -> String {
+        let h = minutes / 60
+        let m = minutes % 60
+        if h > 0 {
+            return m > 0 ? "\(h)h \(m)m" : "\(h)h"
         }
+        return "\(m)m"
+    }
+}
+
+// MARK: - Day Detail Sheet
+
+struct DayDetailSheet: View {
+    let day: BlockedAppsDailyStat
+
+    @Environment(\.dismiss) private var dismiss
+
+    private let dateFormatter: DateFormatter = {
+        let f = DateFormatter()
+        f.dateStyle = .full
+        return f
+    }()
+
+    var body: some View {
+        NavigationStack {
+            List {
+                Section {
+                    HStack {
+                        Label("Total Time", systemImage: "clock.fill")
+                        Spacer()
+                        Text(formatMinutes(day.totalMinutes))
+                            .foregroundStyle(.secondary)
+                    }
+                }
+
+                Section {
+                    ContentUnavailableView {
+                        Label("App Details", systemImage: "app.badge")
+                    } description: {
+                        Text("Detailed app usage will be available once connected to Family Controls.")
+                    }
+                }
+            }
+            .navigationTitle(dateFormatter.string(from: day.date))
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        dismiss()
+                    } label: {
+                        Image(systemName: "xmark")
+                            .font(.system(size: 14))
+                            .foregroundStyle(.secondary)
+                    }
+                }
+            }
+        }
+        .presentationDetents([.medium])
+        .presentationDragIndicator(.visible)
     }
 
     private func formatMinutes(_ minutes: Int) -> String {
@@ -114,11 +193,21 @@ struct BlockedAppsChart: View {
 
 #if DEBUG
 #Preview {
+    NavigationStack {
+        PetDetailDebugView()
+    }
+}
+
+#Preview {
     VStack {
         BlockedAppsChart(stats: .mock())
 
         BlockedAppsChart(stats: .mock(), onTap: {})
     }
     .padding()
+}
+
+#Preview("Day Detail") {
+    DayDetailSheet(day: BlockedAppsDailyStat(date: Date(), totalMinutes: 127))
 }
 #endif

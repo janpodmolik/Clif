@@ -16,12 +16,16 @@ struct PetDetailSheet: View {
     // MARK: - Stats
     let weeklyStats: BlockedAppsWeeklyStats
 
+    // MARK: - Blocked Apps
+    let blockedAppCount: Int
+
     // MARK: - Actions
     var onEvolve: () -> Void = {}
     var onBlowAway: () -> Void = {}
     var onReplay: () -> Void = {}
     var onDelete: () -> Void = {}
     var onSeeAllStats: () -> Void = {}
+    var onBlockedApps: () -> Void = {}
 
     @Environment(\.dismiss) private var dismiss
 
@@ -52,8 +56,6 @@ struct PetDetailSheet: View {
                         mood: mood
                     )
 
-                    EssenceOriginBadge(essence: evolutionHistory.essence)
-
                     EvolutionTimelineView(history: evolutionHistory)
 
                     StatCardView(
@@ -66,6 +68,11 @@ struct PetDetailSheet: View {
                     BlockedAppsChart(
                         stats: weeklyStats,
                         onTap: onSeeAllStats
+                    )
+
+                    BlockedAppsBadge(
+                        appCount: blockedAppCount,
+                        onTap: onBlockedApps
                     )
 
                     PetDetailActions(
@@ -86,22 +93,29 @@ struct PetDetailSheet: View {
                     Button {
                         dismiss()
                     } label: {
-                        Image(systemName: "xmark.circle.fill")
-                            .font(.system(size: 24))
+                        Image(systemName: "xmark")
+                            .font(.system(size: 16))
                             .foregroundStyle(.secondary)
                     }
                 }
             }
         }
-        .presentationDetents([.large])
-        .presentationDragIndicator(.visible)
     }
 }
 
 #if DEBUG
 #Preview {
+    NavigationStack {
+        PetDetailDebugView()
+    }
+}
+#endif
+
+
+#if DEBUG
+#Preview("Full Screen Modal") {
     Text("Tap to open")
-        .sheet(isPresented: .constant(true)) {
+        .fullScreenCover(isPresented: .constant(true)) {
             PetDetailSheet(
                 petName: "Fern",
                 evolutionHistory: EvolutionHistory(
@@ -121,7 +135,8 @@ struct PetDetailSheet: View {
                 isBlownAway: false,
                 usedMinutes: 83,
                 limitMinutes: 180,
-                weeklyStats: .mock()
+                weeklyStats: .mock(),
+                blockedAppCount: 12
             )
         }
 }
