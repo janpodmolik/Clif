@@ -56,7 +56,7 @@ struct DebugFloatingIslandView<Evolution: EvolutionType>: View {
 
     private var islandHeight: CGFloat { screenHeight * 0.6 }
     private var petHeight: CGFloat { screenHeight * 0.10 }
-    private var petOffset: CGFloat { -petHeight * 0.65 }
+    private var petOffset: CGFloat { -petHeight * 0.4 }
 
     private var activeWindConfig: WindConfig {
         debugWindConfig ?? evolution.windConfig(for: windLevel)

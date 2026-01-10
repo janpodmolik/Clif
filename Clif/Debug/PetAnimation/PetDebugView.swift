@@ -4,7 +4,7 @@ import SwiftUI
 /// Debug view for testing and configuring pet animation parameters (idle + wind + tap effects).
 struct PetDebugView: View {
     // Evolution selection
-    @State private var selectedEvolutionType: EvolutionTypeOption = .plant
+    @State private var selectedEvolutionType: EvolutionTypeOption = .blob
     @State private var plantPhase: Int = 1
     @State private var windLevel: WindLevel = .medium
     @State private var direction: CGFloat = 1.0
