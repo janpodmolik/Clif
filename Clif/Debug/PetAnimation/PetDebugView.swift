@@ -343,12 +343,11 @@ struct PetDebugView: View {
         ScrollView {
             VStack(spacing: 12) {
                 // Evolution type selector
-                Picker("Evolution", selection: $selectedEvolutionType) {
-                    ForEach(EvolutionTypeOption.allCases, id: \.self) { type in
-                        Text(type.rawValue).tag(type)
-                    }
-                }
-                .pickerStyle(.segmented)
+                DebugSegmentedPicker(
+                    EvolutionTypeOption.allCases.map { $0 },
+                    selection: $selectedEvolutionType,
+                    label: { $0.rawValue }
+                )
 
                 // Phase selector (only for plant)
                 if selectedEvolutionType == .plant {
@@ -631,23 +630,19 @@ struct PetDebugView: View {
                     .background(moodColor.opacity(0.2))
                     .cornerRadius(4)
             }
-            Picker("Wind Level", selection: $windLevel) {
-                ForEach(WindLevel.allCases, id: \.self) { level in
-                    Text(level.displayName).tag(level)
-                }
-            }
-            .pickerStyle(.segmented)
+            DebugSegmentedPicker(
+                WindLevel.allCases.map { $0 },
+                selection: $windLevel,
+                label: { $0.displayName }
+            )
         }
 
         // Wind direction
-        HStack {
-            Text("Direction")
-            Picker("", selection: $direction) {
-                Text("\u{2190} Left").tag(-1.0 as CGFloat)
-                Text("\u{2192} Right").tag(1.0 as CGFloat)
-            }
-            .pickerStyle(.segmented)
-        }
+        DebugSegmentedPicker(
+            [-1.0, 1.0],
+            selection: $direction,
+            label: { $0 < 0 ? "\u{2190} Left" : "\u{2192} Right" }
+        )
 
         // Gust intensity indicator (from shared rhythm)
         HStack {
@@ -717,12 +712,11 @@ struct PetDebugView: View {
                 .font(.caption)
                 .foregroundStyle(.secondary)
 
-            Picker("Type", selection: $selectedTapType) {
-                ForEach(TapAnimationType.allCases.filter { $0 != .none }, id: \.self) { type in
-                    Text(type.displayName).tag(type)
-                }
-            }
-            .pickerStyle(.segmented)
+            DebugSegmentedPicker(
+                TapAnimationType.allCases.filter { $0 != .none },
+                selection: $selectedTapType,
+                label: { $0.displayName }
+            )
         }
 
         // Haptic type picker
@@ -782,7 +776,7 @@ struct PetDebugView: View {
 
     private var intensityRange: ClosedRange<CGFloat> {
         switch selectedTapType {
-        case .squeeze:
+        case .squeeze, .bounce:
             return 0...0.5  // Percentage-based (0-50%)
         default:
             return 0...50   // Pixel-based
@@ -823,11 +817,14 @@ struct PetDebugView: View {
     @ViewBuilder
     private var speechBubbleControlsContent: some View {
         // Position picker
-        Picker("Position", selection: $debugBubblePosition) {
-            Text("Left").tag(SpeechBubblePosition.left as SpeechBubblePosition?)
-            Text("Right").tag(SpeechBubblePosition.right as SpeechBubblePosition?)
-        }
-        .pickerStyle(.segmented)
+        DebugSegmentedPicker(
+            [SpeechBubblePosition.left, SpeechBubblePosition.right],
+            selection: Binding(
+                get: { debugBubblePosition ?? .right },
+                set: { debugBubblePosition = $0 }
+            ),
+            label: { $0 == .left ? "Left" : "Right" }
+        )
 
         // Custom text field
         TextField("Text (empty = emoji)", text: $debugCustomText)
@@ -961,12 +958,11 @@ struct PetDebugView: View {
                     Text("From Phase")
                         .font(.caption)
                         .foregroundStyle(.secondary)
-                    Picker("From", selection: $plantPhase) {
-                        ForEach(1...4, id: \.self) { phase in
-                            Text("\(phase)").tag(phase)
-                        }
-                    }
-                    .pickerStyle(.segmented)
+                    DebugSegmentedPicker(
+                        [1, 2, 3, 4],
+                        selection: $plantPhase,
+                        label: { "\($0)" }
+                    )
                 }
 
                 Image(systemName: "arrow.right")
@@ -976,12 +972,11 @@ struct PetDebugView: View {
                     Text("To Phase")
                         .font(.caption)
                         .foregroundStyle(.secondary)
-                    Picker("To", selection: $transitionToPhase) {
-                        ForEach(1...4, id: \.self) { phase in
-                            Text("\(phase)").tag(phase)
-                        }
-                    }
-                    .pickerStyle(.segmented)
+                    DebugSegmentedPicker(
+                        [1, 2, 3, 4],
+                        selection: $transitionToPhase,
+                        label: { "\($0)" }
+                    )
                 }
             }
 
@@ -1119,6 +1114,9 @@ struct PetDebugView: View {
         let jiggleConfig = useCustomTapConfig && selectedTapType == .jiggle
             ? customTapConfig!
             : AnimationConfigProvider.tapConfig(for: currentEvolution, type: .jiggle)
+        let bounceConfig = useCustomTapConfig && selectedTapType == .bounce
+            ? customTapConfig!
+            : AnimationConfigProvider.tapConfig(for: currentEvolution, type: .bounce)
 
         let windConfig = customWindConfig ?? WindConfig(
             intensity: 0.5,
@@ -1152,6 +1150,11 @@ struct PetDebugView: View {
           intensity: \(String(format: "%.1f", jiggleConfig.intensity))
           decayRate: \(String(format: "%.1f", jiggleConfig.decayRate))
           frequency: \(String(format: "%.1f", jiggleConfig.frequency))
+
+        Tap Config (bounce):
+          intensity: \(String(format: "%.3f", bounceConfig.intensity))
+          decayRate: \(String(format: "%.1f", bounceConfig.decayRate))
+          frequency: \(String(format: "%.1f", bounceConfig.frequency))
 
         Wind Config (current - \(windLevel.displayName)):
           intensity: \(String(format: "%.2f", windConfig.intensity))

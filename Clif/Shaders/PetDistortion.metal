@@ -112,6 +112,39 @@ float2 calculateTapOffset(
             xOffset = jiggleWave * intensity * normalizedY;
             break;
         }
+        case 4: {
+            // BOUNCE: Squash down, then spring up with Y displacement
+            float squashDuration = 0.15;
+            float jumpDuration = 0.55;
+
+            if (timeSinceTap < squashDuration) {
+                // Phase 1: Squash - compress toward bottom
+                float squashProgress = timeSinceTap / squashDuration;
+                float squashEase = sin(squashProgress * 3.14159 * 0.5); // ease-in
+                float compression = intensity * squashEase;
+                float distFromBottom = size.y - position.y;
+                yOffset = distFromBottom * compression;
+            } else {
+                // Phase 2: Spring up with damped oscillation
+                float jumpTime = timeSinceTap - squashDuration;
+                float jumpProgress = jumpTime / jumpDuration;
+
+                // Initial stretch (opposite of squash)
+                float stretchDecay = exp(-jumpTime * decayRate);
+                float bounce = sin(jumpTime * frequency) * stretchDecay;
+
+                // Y displacement - move whole pet up then back
+                float jumpHeight = intensity * 2.0;
+                float jumpCurve = sin(jumpProgress * 3.14159); // parabolic arc
+                float dampedJump = jumpCurve * stretchDecay * jumpHeight * size.y;
+
+                // Stretch effect on shape
+                float distFromBottom = size.y - position.y;
+                float stretchFactor = 1.0 + bounce * intensity * 0.5;
+                yOffset = distFromBottom * (1.0 - stretchFactor) - dampedJump;
+            }
+            break;
+        }
     }
 
     return float2(xOffset, yOffset);

@@ -6,6 +6,7 @@ enum TapAnimationType: Int, CaseIterable {
     case wiggle = 1
     case squeeze = 2
     case jiggle = 3
+    case bounce = 4
 
     var displayName: String {
         switch self {
@@ -13,6 +14,7 @@ enum TapAnimationType: Int, CaseIterable {
         case .wiggle: return "Wiggle"
         case .squeeze: return "Squeeze"
         case .jiggle: return "Jiggle"
+        case .bounce: return "Bounce"
         }
     }
 
@@ -22,6 +24,7 @@ enum TapAnimationType: Int, CaseIterable {
         case .wiggle: return 0.4
         case .squeeze: return 0.5
         case .jiggle: return 0.7
+        case .bounce: return 0.8
         }
     }
 
@@ -31,6 +34,7 @@ enum TapAnimationType: Int, CaseIterable {
         case .wiggle: return .light
         case .squeeze: return .medium
         case .jiggle: return .soft
+        case .bounce: return .rigid
         }
     }
 }

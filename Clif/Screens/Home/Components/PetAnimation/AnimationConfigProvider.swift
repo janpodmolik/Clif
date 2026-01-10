@@ -29,6 +29,8 @@ enum AnimationConfigProvider {
             return squeezeConfig(for: evolution)
         case .jiggle:
             return jiggleConfig(for: evolution)
+        case .bounce:
+            return bounceConfig(for: evolution)
         }
     }
 
@@ -146,6 +148,28 @@ enum AnimationConfigProvider {
         case .phase2: return TapConfig(intensity: 15, decayRate: 5.0, frequency: 15)
         case .phase3: return TapConfig(intensity: 15, decayRate: 5.0, frequency: 15)
         case .phase4: return TapConfig(intensity: 15, decayRate: 5.0, frequency: 15)
+        }
+    }
+
+    // MARK: - Bounce Tap Configs
+
+    private static func bounceConfig(for evolution: any EvolutionType) -> TapConfig {
+        switch evolution {
+        case let plant as PlantEvolution:
+            return plantBounceConfig(for: plant)
+        case is BlobEvolution:
+            return TapConfig(intensity: 0.15, decayRate: 4.0, frequency: 8)
+        default:
+            return .default(for: .bounce)
+        }
+    }
+
+    private static func plantBounceConfig(for plant: PlantEvolution) -> TapConfig {
+        switch plant {
+        case .phase1: return TapConfig(intensity: 0.15, decayRate: 4.0, frequency: 8)
+        case .phase2: return TapConfig(intensity: 0.15, decayRate: 4.0, frequency: 8)
+        case .phase3: return TapConfig(intensity: 0.15, decayRate: 4.0, frequency: 8)
+        case .phase4: return TapConfig(intensity: 0.15, decayRate: 4.0, frequency: 8)
         }
     }
 }

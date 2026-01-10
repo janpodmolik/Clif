@@ -35,6 +35,12 @@ struct TapConfig: Equatable {
                 decayRate: 5.0,     // medium-slow decay
                 frequency: 15       // Hz - jelly wobble
             )
+        case .bounce:
+            return TapConfig(
+                intensity: 0.15,    // 15% vertical displacement
+                decayRate: 4.0,     // medium decay for bounce settle
+                frequency: 8        // Hz for oscillation on landing
+            )
         }
     }
 }
