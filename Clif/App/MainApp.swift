@@ -17,7 +17,7 @@ struct MainApp: App {
         WindowGroup {
             ContentView()
                 .withDeepLinkHandling()
-                .withDebugOverlay()
+//                .withDebugOverlay()
         }
     }
 }

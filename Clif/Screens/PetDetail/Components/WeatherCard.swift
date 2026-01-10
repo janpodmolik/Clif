@@ -30,7 +30,7 @@ struct WeatherCard: View {
 
     private var windColor: Color {
         if isBlownAway {
-            return .purple
+            return .red
         }
         switch windLevel {
         case .none: return .yellow

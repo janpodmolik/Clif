@@ -80,6 +80,8 @@ struct PetDebugView: View {
     private let windCalmDuration: TimeInterval = 1.1
     private let windRestoreDuration: TimeInterval = 0.8
     private let idleCalmDuration: TimeInterval = 0.25
+    private let idleLeadTime: TimeInterval = 0.02
+    private let evolveStartLeadTime: TimeInterval = 0.10
 
     enum EvolutionTypeOption: String, CaseIterable {
         case blob = "Blob"
@@ -1091,8 +1093,11 @@ struct PetDebugView: View {
             }
         }
 
+        var idleDelay: TimeInterval = 0
         if shouldCalmIdle {
-            let idleDelay = shouldCalmWind ? max(windCalmDuration - idleCalmDuration, 0) : 0
+            idleDelay = shouldCalmWind
+                ? max(windCalmDuration - idleCalmDuration - idleLeadTime, 0)
+                : 0
             DispatchQueue.main.asyncAfter(deadline: .now() + idleDelay) {
                 withAnimation(.easeOut(duration: idleCalmDuration)) {
                     idleIntensityScale = 0
@@ -1100,10 +1105,10 @@ struct PetDebugView: View {
             }
         }
 
-        let delay = max(
-            shouldCalmWind ? windCalmDuration : 0,
-            shouldCalmIdle ? idleCalmDuration : 0
-        )
+        let idleEndDelay = shouldCalmIdle ? (idleDelay + idleCalmDuration) : 0
+        let windEndDelay = shouldCalmWind ? windCalmDuration : 0
+        let baseDelay = max(idleEndDelay, windEndDelay)
+        let delay = max(baseDelay - evolveStartLeadTime, 0)
         DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
             if isTransitioning {
                 showEvolutionTransition = true

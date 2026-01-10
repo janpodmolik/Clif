@@ -10,10 +10,22 @@ struct EvolutionTransitionView: View {
     let newAssetName: String
     var oldScale: CGFloat = 1.0
     var newScale: CGFloat = 1.0
+    var systemSound: SystemSoundEffect? = .tink
+    var sustainedHaptic: HapticType? = .continuousBuzz
+    var flashHaptic: HapticType? = .impactHeavy
+    var hapticIntensity: Float = 1.0
     let onComplete: () -> Void
 
     @State private var startTime: Date?
     @State private var hasCompleted = false
+    @State private var hasTriggeredSustainedHaptic = false
+    @State private var hasTriggeredFlash = false
+
+    private enum MorphTiming {
+        static let preSqueezeStart: CGFloat = 0.35
+        static let preSqueezeEnd: CGFloat = 0.55
+        static let squeezeEnd: CGFloat = 0.82
+    }
 
     var body: some View {
         GeometryReader { geometry in
@@ -21,8 +33,25 @@ struct EvolutionTransitionView: View {
 
             TimelineView(.animation) { timeline in
                 let progress = calculateProgress(currentTime: timeline.date)
+                let glowOpacity = glowIntensity(progress: progress)
+                let cameraScale = cameraScale(progress: progress)
+                let shockwave = shockwaveState(progress: progress)
+                let shakeOffset = cameraShakeOffset(progress: progress)
 
                 ZStack {
+                    if glowOpacity > 0 {
+                        backgroundGlow(size: size)
+                            .opacity(glowOpacity)
+                            .blendMode(.screen)
+                    }
+
+                    if shockwave.opacity > 0 {
+                        shockwaveRing(size: size)
+                            .scaleEffect(shockwave.scale)
+                            .opacity(shockwave.opacity)
+                            .blendMode(.screen)
+                    }
+
                     // Old pet (fading out) - hide after flash completes
                     if progress < config.oldImageHidePoint() {
                         petImage(
@@ -62,6 +91,21 @@ struct EvolutionTransitionView: View {
                             config: particleConfig,
                             size: size
                         )
+                        .blendMode(.screen)
+                    }
+                }
+                .scaleEffect(cameraScale)
+                .offset(shakeOffset)
+                .onChange(of: progress >= squashStartPoint()) { _, reached in
+                    if reached && !hasTriggeredSustainedHaptic {
+                        let duration = max(0, (flashTriggerPoint() - squashStartPoint()) * config.duration)
+                        triggerSustainedHapticIfNeeded(duration: duration)
+                    }
+                }
+                .onChange(of: progress >= flashTriggerPoint()) { _, reached in
+                    if reached && !hasTriggeredFlash {
+                        hasTriggeredFlash = true
+                        triggerFlashImpact()
                     }
                 }
                 .onChange(of: progress >= 1.0) { _, completed in
@@ -82,6 +126,10 @@ struct EvolutionTransitionView: View {
             if newValue {
                 startTime = Date()
                 hasCompleted = false
+                hasTriggeredFlash = false
+                hasTriggeredSustainedHaptic = false
+            } else {
+                hasTriggeredSustainedHaptic = false
             }
         }
     }
@@ -110,13 +158,122 @@ struct EvolutionTransitionView: View {
             )
     }
 
+    private var glowColor: Color {
+        Color(red: particleConfig.colorR, green: particleConfig.colorG, blue: particleConfig.colorB)
+    }
+
+    private func backgroundGlow(size: CGSize) -> some View {
+        let screenSize = UIScreen.main.bounds.size
+        let glowSize = CGSize(
+            width: max(size.width, screenSize.width),
+            height: max(size.height, screenSize.height)
+        )
+        return RadialGradient(
+            gradient: Gradient(colors: [
+                glowColor.opacity(0.9),
+                glowColor.opacity(0.3),
+                .clear
+            ]),
+            center: .center,
+            startRadius: 0,
+            endRadius: max(glowSize.width, glowSize.height) * 0.9
+        )
+        .frame(width: glowSize.width, height: glowSize.height)
+        .position(x: size.width / 2, y: size.height / 2)
+        .scaleEffect(1.4)
+    }
+
+    private func shockwaveRing(size: CGSize) -> some View {
+        Circle()
+            .stroke(glowColor.opacity(0.85), lineWidth: max(2, min(size.width, size.height) * 0.02))
+            .frame(width: size.width * 0.8, height: size.width * 0.8)
+    }
+
+    private func glowIntensity(progress: CGFloat) -> CGFloat {
+        let peak = flashTriggerPoint()
+        let start = max(peak - 0.02, 0)
+        let end = min(peak + 0.18, 1.0)
+
+        if progress < start {
+            return 0
+        }
+        if progress < peak {
+            let t = smoothStep(normalized(progress, start: start, end: peak))
+            return 0.25 + t * 0.75
+        }
+        if progress < end {
+            let t = smoothStep(normalized(progress, start: peak, end: end))
+            return 1 - t
+        }
+        return 0
+    }
+
+    private func cameraScale(progress: CGFloat) -> CGFloat {
+        let start = max(EvolutionTransitionConfig.flashStart - 0.03, 0)
+        let peak = flashTriggerPoint()
+        let end = min(peak + 0.18, 1.0)
+        let maxScale: CGFloat = 1.12
+
+        if progress < start {
+            return 1
+        }
+        if progress < peak {
+            let t = smoothStep(normalized(progress, start: start, end: peak))
+            return 1 + (maxScale - 1) * t
+        }
+        if progress < end {
+            let t = smoothStep(normalized(progress, start: peak, end: end))
+            return maxScale - (maxScale - 1) * t
+        }
+        return 1
+    }
+
+    private func shockwaveState(progress: CGFloat) -> (scale: CGFloat, opacity: CGFloat) {
+        let start = max(EvolutionTransitionConfig.flashStart - 0.005, 0)
+        let end = min(EvolutionTransitionConfig.flashStart + 0.18, 1.0)
+
+        if progress < start || progress > end {
+            return (scale: 1, opacity: 0)
+        }
+
+        let t = smoothStep(normalized(progress, start: start, end: end))
+        let scale = 0.3 + t * 1.4
+        let opacity = (1 - t) * 0.8
+        return (scale: scale, opacity: opacity)
+    }
+
+    private func cameraShakeOffset(progress: CGFloat) -> CGSize {
+        let start = max(EvolutionTransitionConfig.flashStart - 0.01, 0)
+        let end = min(EvolutionTransitionConfig.flashStart + 0.12, 1.0)
+
+        guard progress >= start && progress <= end else { return .zero }
+
+        let t = normalized(progress, start: start, end: end)
+        let decay = 1 - t
+        let amplitude: CGFloat = 6 * decay
+        let phase = Double(progress) * 120
+
+        return CGSize(
+            width: CGFloat(sin(phase)) * amplitude,
+            height: CGFloat(cos(phase * 1.3)) * amplitude * 0.6
+        )
+    }
+
+    private func flashTriggerPoint() -> CGFloat {
+        config.assetSwapPoint()
+    }
+
+    private func squashStartPoint() -> CGFloat {
+        EvolutionTransitionConfig.flashStart * MorphTiming.preSqueezeEnd
+    }
+
     private func morphScale(progress: CGFloat, isNewImage: Bool) -> CGSize {
         let flashStart = EvolutionTransitionConfig.flashStart
         let assetSwapPoint = config.assetSwapPoint()
 
-        let preSqueezeStart = flashStart * 0.35
-        let preSqueezeEnd = flashStart * 0.55
-        let squeezeEnd = flashStart * 0.82
+        let preSqueezeStart = flashStart * MorphTiming.preSqueezeStart
+        let preSqueezeEnd = flashStart * MorphTiming.preSqueezeEnd
+        let squeezeEnd = flashStart * MorphTiming.squeezeEnd
         let microHoldDuration = min(CGFloat(0.02), flashStart * 0.08)
         let microHoldEnd = min(flashStart - 0.01, squeezeEnd + microHoldDuration)
 
@@ -177,6 +334,17 @@ struct EvolutionTransitionView: View {
             width: from.width + (to.width - from.width) * t,
             height: from.height + (to.height - from.height) * t
         )
+    }
+
+    private func triggerSustainedHapticIfNeeded(duration: TimeInterval) {
+        guard !hasTriggeredSustainedHaptic else { return }
+        hasTriggeredSustainedHaptic = true
+        sustainedHaptic?.trigger(duration: duration, intensity: hapticIntensity)
+    }
+
+    private func triggerFlashImpact() {
+        flashHaptic?.trigger()
+        systemSound?.play()
     }
 }
 
