@@ -95,7 +95,7 @@ struct PetDetailDebugView: View {
             }
         }
         .fullScreenCover(isPresented: $showSheet) {
-            PetDetailSheet(
+            PetDetailScreen(
                 petName: petName,
                 evolutionHistory: evolutionHistory,
                 streak: streakCount,

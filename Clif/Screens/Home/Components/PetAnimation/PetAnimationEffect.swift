@@ -131,6 +131,9 @@ struct PetAnimationEffect: ViewModifier {
             // Calculate max sample offset
             let maxOffset: CGFloat = (screenWidth ?? 400) * 0.5
 
+            // Capture callback before entering Sendable closure
+            let transformCallback = onTransformUpdate
+
             content
                 .visualEffect { view, proxy in
                     let shader = createShader(
@@ -152,7 +155,7 @@ struct PetAnimationEffect: ViewModifier {
                     let topOffset = sin(rotationRadians) * proxy.size.height
 
                     // Export transform values for overlays (e.g., speech bubble)
-                    if let callback = onTransformUpdate {
+                    if let callback = transformCallback {
                         DispatchQueue.main.async {
                             callback(PetAnimationTransform(
                                 rotation: rotation,

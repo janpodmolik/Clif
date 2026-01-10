@@ -3,6 +3,8 @@ import SwiftUI
 struct EvolutionTimelineView: View {
     let history: EvolutionHistory
 
+    @State private var isPulsing = false
+
     private let shortDateFormatter: DateFormatter = {
         let f = DateFormatter()
         f.dateFormat = "d MMM"
@@ -49,8 +51,14 @@ struct EvolutionTimelineView: View {
 
                 if isCurrent {
                     Circle()
-                        .stroke(Color.green.opacity(0.3), lineWidth: 3)
-                        .frame(width: 40, height: 40)
+                        .stroke(Color.green.opacity(isPulsing ? 0.0 : 0.5), lineWidth: 2)
+                        .frame(width: 32, height: 32)
+                        .scaleEffect(isPulsing ? 1.5 : 1.0)
+                        .animation(
+                            .easeOut(duration: 1.5).repeatForever(autoreverses: false),
+                            value: isPulsing
+                        )
+                        .onAppear { isPulsing = true }
                 }
 
                 Text("\(phase)")

@@ -32,7 +32,7 @@ struct EvolutionCarousel: View {
                 .padding(.top, 12)
                 .padding(.bottom, 10)
 
-            carouselBody
+            carousel
 
             // Indicator dots
             HStack(spacing: 8) {
@@ -58,30 +58,20 @@ struct EvolutionCarousel: View {
                 scrollTarget = currentPhase
             }
         }
-        .onChange(of: currentPhase) { newValue in
+        .onChange(of: currentPhase) { _, newValue in
             withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
                 selectedIndex = newValue
                 scrollTarget = newValue
             }
         }
-        .onChange(of: scrollTarget) { newValue in
+        .onChange(of: scrollTarget) { _, newValue in
             if let newValue {
                 selectedIndex = newValue
             }
         }
     }
 
-    @ViewBuilder
-    private var carouselBody: some View {
-        if #available(iOS 17.0, *) {
-            modernCarousel
-        } else {
-            legacyCarousel
-        }
-    }
-
-    @available(iOS 17.0, *)
-    private var modernCarousel: some View {
+    private var carousel: some View {
         GeometryReader { proxy in
             let horizontalInset = max(0, (proxy.size.width - cardWidth) / 2)
             ScrollView(.horizontal) {
@@ -114,30 +104,13 @@ struct EvolutionCarousel: View {
             .scrollIndicators(.hidden)
             .scrollTargetBehavior(.viewAligned)
             .scrollPosition(id: $scrollTarget, anchor: .center)
+            .defaultScrollAnchor(.center)
             .scrollClipDisabled()
             .padding(.top, 4)
             .contentMargins(.horizontal, horizontalInset, for: .scrollContent)
             .frame(height: cardHeight + 24)
         }
         .frame(height: cardHeight + 24)
-    }
-
-    private var legacyCarousel: some View {
-        TabView(selection: $selectedIndex) {
-            // Origin card (index 0)
-            cardView(for: 0)
-                .padding(.horizontal)
-                .tag(0)
-
-            // Phase cards (index 1 to maxPhase)
-            ForEach(1...essence.maxPhases, id: \.self) { phase in
-                cardView(for: phase)
-                    .padding(.horizontal)
-                    .tag(phase)
-            }
-        }
-        .tabViewStyle(.page(indexDisplayMode: .never))
-        .frame(height: 260)
     }
 
     @ViewBuilder
@@ -191,50 +164,35 @@ struct EvolutionOriginCard: View {
         .background(cardBackground)
     }
 
-    /// Asset name for blob based on mood: "evolutions/blob/happy/1"
+    /// Asset name for blob based on mood: "blob/happy/1"
     private var blobAssetName: String {
-        "evolutions/blob/\(mood.rawValue)/1"
+        "blob/\(mood.rawValue)/1"
     }
 
     private var originImageView: some View {
-        HStack(spacing: 8) {
-            // Blob image - try UIImage for namespace support
-            if let blobImage = UIImage(named: blobAssetName) {
-                Image(uiImage: blobImage)
+        GeometryReader { proxy in
+            let totalWidth = proxy.size.width
+            let blobSize = totalWidth * 0.45  // ~2/3 of content
+            let essenceSize = totalWidth * 0.25  // ~1/3 of content
+
+            HStack(spacing: 6) {
+                // Blob image (2/3)
+                Image(blobAssetName)
                     .resizable()
                     .scaledToFit()
-                    .frame(width: 50, height: 50)
-            } else {
-                // Fallback placeholder
-                Circle()
-                    .fill(Color.secondary.opacity(0.2))
-                    .frame(width: 50, height: 50)
-                    .overlay {
-                        Image(systemName: "circle.fill")
-                            .foregroundStyle(.secondary)
-                    }
-            }
+                    .frame(width: blobSize, height: blobSize)
 
-            Text("+")
-                .font(.title2.weight(.medium))
-                .foregroundStyle(.secondary)
+                Text("+")
+                    .font(.callout.weight(.medium))
+                    .foregroundStyle(.secondary)
 
-            // Essence image
-            if let essenceImage = UIImage(named: essence.assetName) {
-                Image(uiImage: essenceImage)
+                // Essence image (1/3)
+                Image(essence.assetName)
                     .resizable()
                     .scaledToFit()
-                    .frame(width: 50, height: 50)
-            } else {
-                // Fallback placeholder
-                Circle()
-                    .fill(essence.themeColor.opacity(0.2))
-                    .frame(width: 50, height: 50)
-                    .overlay {
-                        Image(systemName: "leaf.fill")
-                            .foregroundStyle(essence.themeColor)
-                    }
+                    .frame(width: essenceSize, height: essenceSize)
             }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
     }
 
@@ -243,7 +201,7 @@ struct EvolutionOriginCard: View {
         if #available(iOS 26.0, *) {
             Color.clear
                 .glassEffect(
-                    .regular.tint(essence.themeColor.opacity(0.15)),
+                    .regular.tint(essence.themeColor.opacity(0.08)),
                     in: RoundedRectangle(cornerRadius: 20)
                 )
         } else {
@@ -251,7 +209,7 @@ struct EvolutionOriginCard: View {
                 .fill(.ultraThinMaterial)
                 .overlay {
                     RoundedRectangle(cornerRadius: 20)
-                        .stroke(essence.themeColor.opacity(0.3), lineWidth: 1)
+                        .stroke(essence.themeColor.opacity(0.15), lineWidth: 1)
                 }
         }
     }
@@ -340,12 +298,6 @@ struct EvolutionPhaseCard: View {
         } else {
             RoundedRectangle(cornerRadius: 20)
                 .fill(.ultraThinMaterial)
-                .overlay {
-                    if isCurrentPhase {
-                        RoundedRectangle(cornerRadius: 20)
-                            .stroke(essence.themeColor.opacity(0.5), lineWidth: 2)
-                    }
-                }
         }
     }
 }

@@ -10,7 +10,7 @@ enum BlobEvolution: CaseIterable, EvolutionType {
     var assetName: String { "blob" }
 
     func assetName(for mood: Mood) -> String {
-        "blob/\(mood.rawValue)"
+        "blob/\(mood.rawValue)/1"
     }
 
     func windConfig(for level: WindLevel) -> WindConfig {

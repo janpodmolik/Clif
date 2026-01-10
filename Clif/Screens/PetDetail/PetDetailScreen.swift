@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct PetDetailSheet: View {
+struct PetDetailScreen: View {
     // MARK: - Pet Properties
     let petName: String
     let evolutionHistory: EvolutionHistory
@@ -43,10 +43,18 @@ struct PetDetailSheet: View {
                 VStack(spacing: 20) {
                     WeatherCard(windLevel: windLevel)
 
+                    StatCardView(
+                        stat: ScreenTimeStat(
+                            usedMinutes: usedMinutes,
+                            limitMinutes: limitMinutes
+                        )
+                    )
+                    
                     PetDetailHeader(
                         petName: petName,
                         mood: mood,
                         streak: streak,
+                        evolutionPhase: evolutionHistory.currentPhase,
                         purposeLabel: purposeLabel
                     )
 
@@ -58,15 +66,9 @@ struct PetDetailSheet: View {
 
                     EvolutionTimelineView(history: evolutionHistory)
 
-                    StatCardView(
-                        stat: ScreenTimeStat(
-                            usedMinutes: usedMinutes,
-                            limitMinutes: limitMinutes
-                        )
-                    )
-
                     BlockedAppsChart(
                         stats: weeklyStats,
+                        themeColor: evolutionHistory.essence.themeColor,
                         onTap: onSeeAllStats
                     )
 
@@ -116,7 +118,7 @@ struct PetDetailSheet: View {
 #Preview("Full Screen Modal") {
     Text("Tap to open")
         .fullScreenCover(isPresented: .constant(true)) {
-            PetDetailSheet(
+            PetDetailScreen(
                 petName: "Fern",
                 evolutionHistory: EvolutionHistory(
                     createdAt: Calendar.current.date(byAdding: .day, value: -14, to: Date())!,

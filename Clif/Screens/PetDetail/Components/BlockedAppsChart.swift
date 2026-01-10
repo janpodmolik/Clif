@@ -2,6 +2,7 @@ import SwiftUI
 
 struct BlockedAppsChart: View {
     let stats: BlockedAppsWeeklyStats
+    var themeColor: Color = .green
     var onTap: (() -> Void)?
 
     @State private var selectedDay: BlockedAppsDailyStat?
@@ -77,9 +78,9 @@ struct BlockedAppsChart: View {
                     .stroke(Color.secondary.opacity(0.2), lineWidth: 1)
                     .frame(height: barHeight)
 
-                // Fill bar
+                // Fill bar with color based on usage intensity
                 RoundedRectangle(cornerRadius: 6)
-                    .fill(Color.secondary.opacity(0.4))
+                    .fill(barColor(for: normalized))
                     .frame(height: max(0, normalized * barHeight))
             }
             .frame(height: barHeight)
@@ -93,15 +94,23 @@ struct BlockedAppsChart: View {
         .contentShape(Rectangle())
     }
 
+    /// Returns color based on usage intensity - uses themeColor with varying opacity/saturation
+    private func barColor(for normalized: CGFloat) -> Color {
+        // Higher usage = lighter color, lower usage = darker color
+        let baseOpacity = 1.0
+        let opacityReduction = Double(normalized) * 0.6
+        return themeColor.opacity(baseOpacity - opacityReduction)
+    }
+
     private var summaryRow: some View {
         HStack {
-            Label(formatMinutes(stats.averageMinutes), systemImage: "chart.line.downtrend.xyaxis")
-                .font(.caption)
-                .foregroundStyle(.secondary)
-
-            Text("avg")
-                .font(.caption)
-                .foregroundStyle(.tertiary)
+            Label {
+                Text("\(formatMinutes(stats.averageMinutes)) average")
+            } icon: {
+                Image(systemName: "chart.bar.xaxis")
+            }
+            .font(.caption)
+            .foregroundStyle(.secondary)
 
             Spacer()
 
@@ -200,9 +209,11 @@ struct DayDetailSheet: View {
 
 #Preview {
     VStack {
-        BlockedAppsChart(stats: .mock())
+        BlockedAppsChart(stats: .mock(), themeColor: .green)
 
-        BlockedAppsChart(stats: .mock(), onTap: {})
+        BlockedAppsChart(stats: .mock(), themeColor: .blue, onTap: {})
+
+        BlockedAppsChart(stats: .mock(), themeColor: .purple, onTap: {})
     }
     .padding()
 }

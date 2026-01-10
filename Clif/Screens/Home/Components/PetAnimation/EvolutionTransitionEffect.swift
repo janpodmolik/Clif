@@ -135,8 +135,8 @@ private struct EvolutionTransitionPreview: View {
                     isActive: true,
                     config: .default,
                     particleConfig: .default,
-                    oldAssetName: "plant/happy/1",
-                    newAssetName: "plant/happy/2",
+                    oldAssetName: "evolutions/plant/happy/1",
+                    newAssetName: "evolutions/plant/happy/2",
                     onComplete: {
                         isActive = false
                         key = UUID()
@@ -145,7 +145,7 @@ private struct EvolutionTransitionPreview: View {
                 .id(key)
                 .frame(width: 150, height: 200)
             } else {
-                Image("plant/happy/1")
+                Image("evolutions/plant/happy/1")
                     .resizable()
                     .scaledToFit()
                     .frame(width: 150, height: 200)

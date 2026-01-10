@@ -32,7 +32,7 @@ struct WeatherCard: View {
 
     private var petStatusText: String {
         switch windLevel {
-        case .none: return "Your pet is thriving"
+        case .none: return "Uuumi is thriving"
         case .low: return "Feeling the breeze"
         case .medium: return "Getting a bit stressed"
         case .high: return "Struggling to hold on"

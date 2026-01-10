@@ -216,8 +216,8 @@ struct PetDebugView: View {
                                         isActive: true,
                                         config: currentTransitionConfig,
                                         particleConfig: currentParticleConfig,
-                                        oldAssetName: PlantEvolution(rawValue: plantPhase)?.assetName(for: windLevel) ?? "plant/happy/1",
-                                        newAssetName: PlantEvolution(rawValue: transitionToPhase)?.assetName(for: windLevel) ?? "plant/happy/2",
+                                        oldAssetName: PlantEvolution(rawValue: plantPhase)?.assetName(for: windLevel) ?? "evolutions/plant/happy/1",
+                                        newAssetName: PlantEvolution(rawValue: transitionToPhase)?.assetName(for: windLevel) ?? "evolutions/plant/happy/2",
                                         onComplete: {
                                             // Hide transition FIRST to prevent glitch from syncTransitionPhases
                                             showEvolutionTransition = false

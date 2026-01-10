@@ -63,7 +63,7 @@ struct HomeScreen: View {
             }
         }
         .fullScreenCover(isPresented: $showPetDetail) {
-            PetDetailSheet(
+            PetDetailScreen(
                 petName: "Fern",
                 evolutionHistory: EvolutionHistory(
                     createdAt: Calendar.current.date(byAdding: .day, value: -14, to: Date())!,
