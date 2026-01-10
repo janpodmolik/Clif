@@ -62,7 +62,8 @@ struct PetDetailScreen: View {
                         currentPhase: evolutionHistory.currentPhase,
                         essence: evolutionHistory.essence,
                         mood: mood,
-                        isBlownAway: isBlownAway
+                        isBlownAway: isBlownAway,
+                        themeColor: evolutionHistory.essence.themeColor
                     )
 
                     EvolutionTimelineView(

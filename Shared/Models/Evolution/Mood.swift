@@ -16,4 +16,9 @@ enum Mood: String, CaseIterable {
         case .high: self = .sad
         }
     }
+
+    /// Mood used for asset lookup - blown falls back to sad (no blown assets exist)
+    var forAsset: Mood {
+        self == .blown ? .sad : self
+    }
 }

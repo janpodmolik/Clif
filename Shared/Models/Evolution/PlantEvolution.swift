@@ -1,4 +1,4 @@
-import Foundation
+import SwiftUI
 
 /// Plant evolution with multiple phases.
 enum PlantEvolution: Int, CaseIterable, EvolutionType {
@@ -9,6 +9,7 @@ enum PlantEvolution: Int, CaseIterable, EvolutionType {
 
     static let evolutionId = "plant"
     static let displayName = "Plant"
+    static let themeColor: Color = .green
 
     var assetName: String { "plant-\(rawValue)" }
 
@@ -24,8 +25,7 @@ enum PlantEvolution: Int, CaseIterable, EvolutionType {
     }
 
     func assetName(for mood: Mood) -> String {
-        let moodFolder = mood == .blown ? Mood.sad.rawValue : mood.rawValue
-        return "evolutions/plant/\(moodFolder)/\(rawValue)"
+        "evolutions/plant/\(mood.forAsset.rawValue)/\(rawValue)"
     }
 
     func windConfig(for level: WindLevel) -> WindConfig {

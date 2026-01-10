@@ -23,6 +23,11 @@ enum Essence: String, Codable, CaseIterable {
         evolutionType.evolutionId
     }
 
+    /// Convenience: themeColor from EvolutionType
+    var themeColor: Color {
+        evolutionType.themeColor
+    }
+
     /// Convenience: all phases count from EvolutionType
     var maxPhases: Int {
         switch self {
@@ -33,13 +38,6 @@ enum Essence: String, Codable, CaseIterable {
     /// Asset path for essence icon: "evolutions/plant/essence"
     var assetName: String {
         "evolutions/\(rawValue)/essence"
-    }
-
-    /// Theme color for UI elements
-    var themeColor: Color {
-        switch self {
-        case .plant: return .green
-        }
     }
 
     /// Returns all evolution phases for this essence

@@ -5,6 +5,7 @@ struct EvolutionCarousel: View {
     let essence: Essence
     let mood: Mood
     var isBlownAway: Bool = false
+    var themeColor: Color = .green
 
     @State private var selectedIndex: Int = 0
     @State private var scrollTarget: Int?
@@ -102,7 +103,7 @@ struct EvolutionCarousel: View {
     @ViewBuilder
     private func cardView(for index: Int) -> some View {
         if index == 0 {
-            EvolutionOriginCard(essence: essence, mood: mood)
+            EvolutionOriginCard(essence: essence, mood: mood, themeColor: themeColor)
         } else {
             EvolutionPhaseCard(
                 phase: index,
@@ -110,20 +111,26 @@ struct EvolutionCarousel: View {
                 isLocked: index > currentPhase,
                 essence: essence,
                 mood: mood,
-                isBlownAway: isBlownAway
+                isBlownAway: isBlownAway,
+                themeColor: themeColor
             )
         }
     }
 
     private func dotColor(for index: Int) -> Color {
-        if index == 0 {
-            // Origin dot - always filled with essence color
-            return essence.themeColor
+        let phase = index // phase number = index (origin is 0, phases are 1+)
+
+        // Current phase when blown away = red
+        if phase == currentPhase && isBlownAway {
+            return .red
         }
-        let phase = index // phase number = index (since origin is 0)
+
+        // All unlocked phases (including origin) use themeColor
         if phase <= currentPhase {
-            return .green
+            return themeColor
         }
+
+        // Locked phases
         return Color.secondary.opacity(0.3)
     }
 }
@@ -133,6 +140,7 @@ struct EvolutionCarousel: View {
 struct EvolutionOriginCard: View {
     let essence: Essence
     let mood: Mood
+    var themeColor: Color = .green
 
     var body: some View {
         VStack(spacing: 12) {
@@ -153,7 +161,7 @@ struct EvolutionOriginCard: View {
 
     /// Asset name for blob based on mood: "blob/happy/1"
     private var blobAssetName: String {
-        "blob/\(mood.rawValue)/1"
+        "blob/\(mood.forAsset.rawValue)/1"
     }
 
     private var originImageView: some View {
@@ -188,7 +196,7 @@ struct EvolutionOriginCard: View {
         if #available(iOS 26.0, *) {
             Color.clear
                 .glassEffect(
-                    .regular.tint(essence.themeColor.opacity(0.08)),
+                    .regular.tint(themeColor.opacity(0.08)),
                     in: RoundedRectangle(cornerRadius: 20)
                 )
         } else {
@@ -196,7 +204,7 @@ struct EvolutionOriginCard: View {
                 .fill(.ultraThinMaterial)
                 .overlay {
                     RoundedRectangle(cornerRadius: 20)
-                        .stroke(essence.themeColor.opacity(0.15), lineWidth: 1)
+                        .stroke(themeColor.opacity(0.15), lineWidth: 1)
                 }
         }
     }
@@ -211,6 +219,7 @@ struct EvolutionPhaseCard: View {
     let essence: Essence
     let mood: Mood
     var isBlownAway: Bool = false
+    var themeColor: Color = .green
 
     var body: some View {
         VStack(spacing: 12) {
@@ -280,24 +289,31 @@ struct EvolutionPhaseCard: View {
         }
     }
 
-    private var currentPhaseTintColor: Color {
-        isBlownAway ? .red : essence.themeColor
-    }
-
     @ViewBuilder
     private var cardBackground: some View {
         if #available(iOS 26.0, *) {
             Color.clear
                 .glassEffect(
-                    isCurrentPhase
-                        ? .regular.tint(currentPhaseTintColor.opacity(0.2))
-                        : .regular,
+                    isLocked ? .regular : .regular.tint(cardTintColor.opacity(0.08)),
                     in: RoundedRectangle(cornerRadius: 20)
                 )
         } else {
             RoundedRectangle(cornerRadius: 20)
                 .fill(.ultraThinMaterial)
+                .overlay {
+                    if !isLocked {
+                        RoundedRectangle(cornerRadius: 20)
+                            .stroke(cardTintColor.opacity(0.15), lineWidth: 1)
+                    }
+                }
         }
+    }
+
+    private var cardTintColor: Color {
+        if isCurrentPhase && isBlownAway {
+            return .red
+        }
+        return themeColor
     }
 }
 
@@ -308,19 +324,23 @@ struct EvolutionPhaseCard: View {
             EvolutionCarousel(
                 currentPhase: 2,
                 essence: .plant,
-                mood: .happy
+                mood: .happy,
+                themeColor: .green
             )
 
             EvolutionCarousel(
                 currentPhase: 1,
                 essence: .plant,
-                mood: .sad
+                mood: .sad,
+                isBlownAway: true,
+                themeColor: .green
             )
 
             EvolutionCarousel(
                 currentPhase: 4,
                 essence: .plant,
-                mood: .neutral
+                mood: .neutral,
+                themeColor: .green
             )
         }
         .padding()

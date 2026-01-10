@@ -1,4 +1,4 @@
-import Foundation
+import SwiftUI
 
 /// Protocol defining the interface for all pet evolution types.
 protocol EvolutionType: CaseIterable, Hashable {
@@ -7,6 +7,9 @@ protocol EvolutionType: CaseIterable, Hashable {
 
     /// Display name for UI (e.g., "Blob", "Plant")
     static var displayName: String { get }
+
+    /// Theme color for UI elements
+    static var themeColor: Color { get }
 
     /// Base asset name for this evolution/phase (e.g., "plant-1", "blob")
     var assetName: String { get }
