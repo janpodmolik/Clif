@@ -20,6 +20,7 @@ struct EvolutionHistory: Codable, Equatable {
     let createdAt: Date
     let essence: Essence
     private(set) var events: [EvolutionEvent]
+    private(set) var blownAt: Date?
 
     var currentPhase: Int {
         events.last?.toPhase ?? 1
@@ -33,10 +34,15 @@ struct EvolutionHistory: Codable, Equatable {
         currentPhase < maxPhase
     }
 
-    init(createdAt: Date = Date(), essence: Essence, events: [EvolutionEvent] = []) {
+    var isBlown: Bool {
+        blownAt != nil
+    }
+
+    init(createdAt: Date = Date(), essence: Essence, events: [EvolutionEvent] = [], blownAt: Date? = nil) {
         self.createdAt = createdAt
         self.essence = essence
         self.events = events
+        self.blownAt = blownAt
     }
 
     mutating func recordEvolution(to phase: Int) {
@@ -46,6 +52,10 @@ struct EvolutionHistory: Codable, Equatable {
             date: Date()
         )
         events.append(event)
+    }
+
+    mutating func markAsBlown() {
+        blownAt = Date()
     }
 
     /// Returns dates for each phase transition for timeline display.

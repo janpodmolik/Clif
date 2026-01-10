@@ -56,7 +56,8 @@ struct PetDetailDebugView: View {
         return EvolutionHistory(
             createdAt: Calendar.current.date(byAdding: .day, value: -14, to: Date())!,
             essence: essence,
-            events: currentPhase > 1 ? events : []
+            events: currentPhase > 1 ? events : [],
+            blownAt: isBlownAway ? Date() : nil
         )
     }
 
@@ -458,6 +459,7 @@ struct PetDetailDebugView: View {
         case .happy: return "😊"
         case .neutral: return "😐"
         case .sad: return "😢"
+        case .blown: return "😵"
         }
     }
 

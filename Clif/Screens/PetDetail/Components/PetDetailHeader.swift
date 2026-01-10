@@ -12,6 +12,7 @@ struct PetDetailHeader: View {
         case .happy: return "😌"
         case .neutral: return "😐"
         case .sad: return "😞"
+        case .blown: return "😵"
         }
     }
 

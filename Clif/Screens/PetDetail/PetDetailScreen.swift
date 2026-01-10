@@ -30,7 +30,7 @@ struct PetDetailScreen: View {
     @Environment(\.dismiss) private var dismiss
 
     private var mood: Mood {
-        Mood(from: windLevel)
+        isBlownAway ? .blown : Mood(from: windLevel)
     }
 
     private var canEvolve: Bool {
@@ -41,7 +41,9 @@ struct PetDetailScreen: View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 20) {
-                    WeatherCard(windLevel: windLevel)
+                    if !isBlownAway {
+                        WeatherCard(windLevel: windLevel)
+                    }
 
                     StatCardView(
                         stat: ScreenTimeStat(
@@ -61,14 +63,19 @@ struct PetDetailScreen: View {
                     EvolutionCarousel(
                         currentPhase: evolutionHistory.currentPhase,
                         essence: evolutionHistory.essence,
-                        mood: mood
+                        mood: mood,
+                        isBlownAway: isBlownAway
                     )
 
-                    EvolutionTimelineView(history: evolutionHistory)
+                    EvolutionTimelineView(
+                        history: evolutionHistory,
+                        blownAt: evolutionHistory.blownAt
+                    )
 
                     BlockedAppsChart(
                         stats: weeklyStats,
                         themeColor: evolutionHistory.essence.themeColor,
+                        blownDate: evolutionHistory.blownAt,
                         onTap: onSeeAllStats
                     )
 

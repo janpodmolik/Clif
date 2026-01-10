@@ -12,7 +12,8 @@ enum BlobEvolution: CaseIterable, EvolutionType {
     var displayScale: CGFloat { 0.75 }
 
     func assetName(for mood: Mood) -> String {
-        "blob/\(mood.rawValue)/1"
+        let moodFolder = mood == .blown ? Mood.sad.rawValue : mood.rawValue
+        return "blob/\(moodFolder)/1"
     }
 
     func windConfig(for level: WindLevel) -> WindConfig {

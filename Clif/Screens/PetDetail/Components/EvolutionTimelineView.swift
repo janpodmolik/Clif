@@ -2,8 +2,11 @@ import SwiftUI
 
 struct EvolutionTimelineView: View {
     let history: EvolutionHistory
+    var blownAt: Date? = nil
 
     @State private var isPulsing = false
+
+    private var isBlown: Bool { blownAt != nil }
 
     private let shortDateFormatter: DateFormatter = {
         let f = DateFormatter()
@@ -32,9 +35,25 @@ struct EvolutionTimelineView: View {
                 .padding(.horizontal, 16)
             }
             .scrollClipDisabled()
+
+            if let blownAt {
+                blownAwayLabel(date: blownAt)
+            }
         }
         .padding()
         .glassCard()
+    }
+
+    private func blownAwayLabel(date: Date) -> some View {
+        HStack(spacing: 6) {
+            Image(systemName: "wind")
+            Text("Blown away")
+                .fontWeight(.medium)
+            Text(shortDateFormatter.string(from: date))
+                .foregroundStyle(.secondary)
+        }
+        .font(.caption)
+        .foregroundStyle(.red)
     }
 
     private func milestoneItem(phase: Int) -> some View {
@@ -50,8 +69,9 @@ struct EvolutionTimelineView: View {
                     .frame(width: 32, height: 32)
 
                 if isCurrent {
+                    let pulseColor: Color = isBlown ? .red : .green
                     Circle()
-                        .stroke(Color.green.opacity(isPulsing ? 0.0 : 0.5), lineWidth: 2)
+                        .stroke(pulseColor.opacity(isPulsing ? 0.0 : 0.5), lineWidth: 2)
                         .frame(width: 32, height: 32)
                         .scaleEffect(isPulsing ? 1.5 : 1.0)
                         .animation(
@@ -89,7 +109,7 @@ struct EvolutionTimelineView: View {
 
     private func circleColor(isUnlocked: Bool, isCurrent: Bool) -> Color {
         if isCurrent {
-            return .green
+            return isBlown ? .red : .green
         } else if isUnlocked {
             return .primary.opacity(0.6)
         } else {

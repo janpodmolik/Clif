@@ -32,11 +32,6 @@ struct PetDetailActions: View {
 
     private var blownAwayActions: some View {
         VStack(spacing: 12) {
-            Text("This pet was blown away by the wind.")
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-                .multilineTextAlignment(.center)
-
             HStack(spacing: 16) {
                 replayButton
                 Spacer()
@@ -88,7 +83,7 @@ struct PetDetailActions: View {
         Button(action: onReplay) {
             HStack(spacing: 6) {
                 Image(systemName: "memories")
-                Text("Replay")
+                Text("Replay Blow")
             }
             .font(.subheadline.weight(.medium))
             .foregroundStyle(.blue)

@@ -11,11 +11,6 @@ struct StatusCardDebugView: View {
     @State private var evolutionStage: Int = 2
     private let maxEvolutionStage = 4
 
-    // MARK: - Mood State (auto + override)
-
-    @State private var useMoodOverride: Bool = false
-    @State private var moodOverride: Mood = .happy
-
     // MARK: - Screen Time State
 
     @State private var usedMinutes: Double = 83
@@ -31,7 +26,6 @@ struct StatusCardDebugView: View {
     // MARK: - Section Expansion
 
     @State private var isPetSectionExpanded: Bool = true
-    @State private var isMoodSectionExpanded: Bool = true
     @State private var isTimeSectionExpanded: Bool = true
     @State private var isButtonsSectionExpanded: Bool = true
     @State private var isPresetsSectionExpanded: Bool = true
@@ -43,16 +37,15 @@ struct StatusCardDebugView: View {
         return usedMinutes / limitMinutes
     }
 
-    private var autoMood: Mood {
+    private var currentMood: Mood {
+        if isBlownAway {
+            return .blown
+        }
         switch progress {
         case 0..<0.5: return .happy
         case 0.5..<0.8: return .neutral
         default: return .sad
         }
-    }
-
-    private var currentMood: Mood {
-        useMoodOverride ? moodOverride : autoMood
     }
 
     private var usedTimeText: String {
@@ -145,7 +138,6 @@ struct StatusCardDebugView: View {
         ScrollView {
             VStack(spacing: 16) {
                 petIdentitySection
-                moodSection
                 screenTimeSection
                 buttonsSection
                 presetsSection
@@ -196,40 +188,6 @@ struct StatusCardDebugView: View {
                         ForEach(1...maxEvolutionStage, id: \.self) { stage in
                             Text("\(stage)").tag(stage)
                         }
-                    }
-                    .pickerStyle(.segmented)
-                }
-            }
-        }
-    }
-
-    // MARK: - Mood Section
-
-    private var moodSection: some View {
-        collapsibleSection(
-            title: "Mood",
-            systemImage: "face.smiling",
-            isExpanded: $isMoodSectionExpanded
-        ) {
-            VStack(spacing: 12) {
-                // Auto mood display
-                HStack {
-                    Text("Auto (from progress)")
-                        .foregroundStyle(.secondary)
-                    Spacer()
-                    Text(moodEmoji(for: autoMood))
-                        .font(.title2)
-                }
-
-                // Override toggle
-                Toggle("Override mood", isOn: $useMoodOverride)
-
-                // Manual mood picker
-                if useMoodOverride {
-                    Picker("Mood", selection: $moodOverride) {
-                        Text("😊 Happy").tag(Mood.happy)
-                        Text("😐 Neutral").tag(Mood.neutral)
-                        Text("😢 Sad").tag(Mood.sad)
                     }
                     .pickerStyle(.segmented)
                 }
@@ -413,7 +371,6 @@ struct StatusCardDebugView: View {
             streakCount = 12
             showEvolveButton = false
             showDetailButton = true
-            useMoodOverride = false
             isBlownAway = false
         }
     }
@@ -428,7 +385,6 @@ struct StatusCardDebugView: View {
             streakCount = 7
             showEvolveButton = true
             showDetailButton = true
-            useMoodOverride = false
             isBlownAway = false
         }
     }
@@ -443,7 +399,6 @@ struct StatusCardDebugView: View {
             streakCount = 30
             showEvolveButton = false
             showDetailButton = true
-            useMoodOverride = false
             isBlownAway = false
         }
     }
@@ -458,7 +413,6 @@ struct StatusCardDebugView: View {
             streakCount = 0
             showEvolveButton = false
             showDetailButton = true
-            useMoodOverride = false
             isBlownAway = false
         }
     }
@@ -473,7 +427,6 @@ struct StatusCardDebugView: View {
             streakCount = 5
             showEvolveButton = false
             showDetailButton = true
-            useMoodOverride = false
             isBlownAway = false
         }
     }
@@ -488,8 +441,6 @@ struct StatusCardDebugView: View {
             streakCount = 0
             showEvolveButton = false
             showDetailButton = true
-            useMoodOverride = true
-            moodOverride = .sad
             isBlownAway = true
         }
     }
@@ -503,14 +454,6 @@ struct StatusCardDebugView: View {
             return mins > 0 ? "\(hours)h \(mins)m" : "\(hours)h"
         }
         return "\(mins)m"
-    }
-
-    private func moodEmoji(for mood: Mood) -> String {
-        switch mood {
-        case .happy: return "😊"
-        case .neutral: return "😐"
-        case .sad: return "😢"
-        }
     }
 
     // MARK: - Collapsible Section

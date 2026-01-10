@@ -135,7 +135,7 @@ struct PetDebugView: View {
         switch Mood(from: windLevel) {
         case .happy: return .green
         case .neutral: return .yellow
-        case .sad: return .red
+        case .sad, .blown: return .red
         }
     }
 

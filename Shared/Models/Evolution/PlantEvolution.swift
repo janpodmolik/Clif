@@ -24,7 +24,8 @@ enum PlantEvolution: Int, CaseIterable, EvolutionType {
     }
 
     func assetName(for mood: Mood) -> String {
-        "evolutions/plant/\(mood.rawValue)/\(rawValue)"
+        let moodFolder = mood == .blown ? Mood.sad.rawValue : mood.rawValue
+        return "evolutions/plant/\(moodFolder)/\(rawValue)"
     }
 
     func windConfig(for level: WindLevel) -> WindConfig {

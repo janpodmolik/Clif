@@ -3,6 +3,7 @@ import SwiftUI
 struct BlockedAppsChart: View {
     let stats: BlockedAppsWeeklyStats
     var themeColor: Color = .green
+    var blownDate: Date? = nil
     var onTap: (() -> Void)?
 
     @State private var selectedDay: BlockedAppsDailyStat?
@@ -80,7 +81,7 @@ struct BlockedAppsChart: View {
 
                 // Fill bar with color based on usage intensity
                 RoundedRectangle(cornerRadius: 6)
-                    .fill(barColor(for: normalized))
+                    .fill(barColor(for: normalized, day: day))
                     .frame(height: max(0, normalized * barHeight))
             }
             .frame(height: barHeight)
@@ -95,7 +96,11 @@ struct BlockedAppsChart: View {
     }
 
     /// Returns color based on usage intensity - uses themeColor with varying opacity/saturation
-    private func barColor(for normalized: CGFloat) -> Color {
+    /// If the day matches blownDate, returns red color
+    private func barColor(for normalized: CGFloat, day: BlockedAppsDailyStat) -> Color {
+        if let blownDate, Calendar.current.isDate(day.date, inSameDayAs: blownDate) {
+            return .red
+        }
         // Higher usage = lighter color, lower usage = darker color
         let baseOpacity = 1.0
         let opacityReduction = Double(normalized) * 0.6

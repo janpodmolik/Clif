@@ -37,7 +37,7 @@ enum EmojiSet {
         switch mood {
         case .happy: return happyEmojis
         case .neutral: return neutralEmojis
-        case .sad: return sadEmojis
+        case .sad, .blown: return sadEmojis
         }
     }
 

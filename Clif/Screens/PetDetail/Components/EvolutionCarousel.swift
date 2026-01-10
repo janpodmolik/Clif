@@ -4,6 +4,7 @@ struct EvolutionCarousel: View {
     let currentPhase: Int
     let essence: Essence
     let mood: Mood
+    var isBlownAway: Bool = false
 
     @State private var selectedIndex: Int = 0
     @State private var scrollTarget: Int? = nil
@@ -14,10 +15,11 @@ struct EvolutionCarousel: View {
     /// Total cards = 1 (origin) + maxPhase (evolution phases)
     private var totalCards: Int { 1 + essence.maxPhases }
 
-    init(currentPhase: Int, essence: Essence, mood: Mood) {
+    init(currentPhase: Int, essence: Essence, mood: Mood, isBlownAway: Bool = false) {
         self.currentPhase = currentPhase
         self.essence = essence
         self.mood = mood
+        self.isBlownAway = isBlownAway
         // Default to current phase card (index 0 = origin, index 1 = phase 1, etc.)
         self._selectedIndex = State(initialValue: currentPhase)
         self._scrollTarget = State(initialValue: currentPhase)
@@ -123,7 +125,8 @@ struct EvolutionCarousel: View {
                 isCurrentPhase: index == currentPhase,
                 isLocked: index > currentPhase,
                 essence: essence,
-                mood: mood
+                mood: mood,
+                isBlownAway: isBlownAway
             )
         }
     }
@@ -223,6 +226,7 @@ struct EvolutionPhaseCard: View {
     let isLocked: Bool
     let essence: Essence
     let mood: Mood
+    var isBlownAway: Bool = false
 
     var body: some View {
         VStack(spacing: 12) {
@@ -268,7 +272,14 @@ struct EvolutionPhaseCard: View {
 
     @ViewBuilder
     private var statusBadge: some View {
-        if isCurrentPhase {
+        if isBlownAway && isCurrentPhase {
+            Text("Blown")
+                .font(.caption2.weight(.medium))
+                .foregroundStyle(.white)
+                .padding(.horizontal, 10)
+                .padding(.vertical, 4)
+                .background(Color.red, in: Capsule())
+        } else if isCurrentPhase {
             Text("Current")
                 .font(.caption2.weight(.medium))
                 .foregroundStyle(.white)
@@ -286,13 +297,17 @@ struct EvolutionPhaseCard: View {
         }
     }
 
+    private var currentPhaseTintColor: Color {
+        isBlownAway ? .red : essence.themeColor
+    }
+
     @ViewBuilder
     private var cardBackground: some View {
         if #available(iOS 26.0, *) {
             Color.clear
                 .glassEffect(
                     isCurrentPhase
-                        ? .regular.tint(essence.themeColor.opacity(0.2))
+                        ? .regular.tint(currentPhaseTintColor.opacity(0.2))
                         : .regular,
                     in: RoundedRectangle(cornerRadius: 20)
                 )
