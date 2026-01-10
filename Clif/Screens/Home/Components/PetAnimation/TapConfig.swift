@@ -38,7 +38,7 @@ struct TapConfig: Equatable {
         case .bounce:
             return TapConfig(
                 intensity: 0.15,    // 15% vertical displacement
-                decayRate: 4.0,     // medium decay for bounce settle
+                decayRate: 4.0,     // medium decay for jump settle
                 frequency: 8        // Hz for oscillation on landing
             )
         }

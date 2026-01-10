@@ -1151,7 +1151,7 @@ struct PetDebugView: View {
           decayRate: \(String(format: "%.1f", jiggleConfig.decayRate))
           frequency: \(String(format: "%.1f", jiggleConfig.frequency))
 
-        Tap Config (bounce):
+        Tap Config (jump):
           intensity: \(String(format: "%.3f", bounceConfig.intensity))
           decayRate: \(String(format: "%.1f", bounceConfig.decayRate))
           frequency: \(String(format: "%.1f", bounceConfig.frequency))

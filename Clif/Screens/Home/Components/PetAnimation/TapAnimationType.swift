@@ -14,7 +14,7 @@ enum TapAnimationType: Int, CaseIterable {
         case .wiggle: return "Wiggle"
         case .squeeze: return "Squeeze"
         case .jiggle: return "Jiggle"
-        case .bounce: return "Bounce"
+        case .bounce: return "Jump"
         }
     }
 

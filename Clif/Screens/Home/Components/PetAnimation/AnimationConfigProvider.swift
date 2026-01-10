@@ -151,7 +151,7 @@ enum AnimationConfigProvider {
         }
     }
 
-    // MARK: - Bounce Tap Configs
+    // MARK: - Jump Tap Configs
 
     private static func bounceConfig(for evolution: any EvolutionType) -> TapConfig {
         switch evolution {
