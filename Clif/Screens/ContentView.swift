@@ -20,6 +20,10 @@ struct ContentView: View {
 
     @State private var activeTab: AppTab = .home
     @State private var selectedPetId: UUID?
+    @State private var showSearch = false
+    @State private var showPremium = false
+
+    @Namespace private var tabButtonNamespace
 
     #if DEBUG
     @State private var showPetDebug = false
@@ -51,6 +55,12 @@ struct ContentView: View {
                 selectedPetId = petId
                 activeTab = .home
             }
+        }
+        .sheet(isPresented: $showSearch) {
+            SearchSheet()
+        }
+        .sheet(isPresented: $showPremium) {
+            PremiumSheet()
         }
         #if DEBUG
         .fullScreenCover(isPresented: $showPetDebug) {
@@ -93,18 +103,44 @@ struct ContentView: View {
                 .glassEffect(.regular.interactive(), in: .capsule)
             }
 
-            Button {
-                #if DEBUG
-                showPetDebug = true
-                #endif
-            } label: {
-                Image(systemName: "plus")
-                    .font(.title2.weight(.semibold))
-                    .foregroundStyle(.primary)
-                    .frame(width: 55, height: 55)
-            }
-            .buttonStyle(.plain)
-            .glassEffect(.regular.interactive(), in: .circle)
+            centerButton()
+                .glassEffect(.regular.interactive(), in: .circle)
+                .glassEffectID("centerButton", in: tabButtonNamespace)
+        }
+    }
+
+    private var centerButtonIcon: String {
+        switch activeTab {
+        case .home: "plus"
+        case .overview: "magnifyingglass"
+        case .profile: "sparkles"
+        }
+    }
+
+    @ViewBuilder
+    private func centerButton() -> some View {
+        Button {
+            handleCenterButtonTap()
+        } label: {
+            Image(systemName: centerButtonIcon)
+                .font(.title2.weight(.semibold))
+                .foregroundStyle(.primary)
+                .contentTransition(.symbolEffect(.replace))
+                .frame(width: 55, height: 55)
+        }
+        .buttonStyle(.plain)
+    }
+
+    private func handleCenterButtonTap() {
+        switch activeTab {
+        case .home:
+            #if DEBUG
+            showPetDebug = true
+            #endif
+        case .overview:
+            showSearch = true
+        case .profile:
+            showPremium = true
         }
     }
 
@@ -125,18 +161,8 @@ struct ContentView: View {
             .background(.ultraThinMaterial, in: Capsule())
         }
 
-        Button {
-            #if DEBUG
-            showPetDebug = true
-            #endif
-        } label: {
-            Image(systemName: "plus")
-                .font(.title2.weight(.semibold))
-                .foregroundStyle(.primary)
-                .frame(width: 55, height: 55)
-        }
-        .buttonStyle(.plain)
-        .background(.ultraThinMaterial, in: Circle())
+        centerButton()
+            .background(.ultraThinMaterial, in: Circle())
     }
 }
 
