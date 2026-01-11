@@ -14,33 +14,15 @@ struct PetHistoryRow: View {
     }
 
     private var statusText: String {
-        if pet.isBlown {
-            return "Odfouknut"
-        } else if pet.isCompleted {
-            return "Dokončeno"
-        } else {
-            return "Archivováno"
-        }
+        pet.isBlown ? "Odfouknut" : "Dokončeno"
     }
 
     private var statusIcon: String {
-        if pet.isBlown {
-            return "wind"
-        } else if pet.isCompleted {
-            return "checkmark.circle.fill"
-        } else {
-            return "archivebox.fill"
-        }
+        pet.isBlown ? "wind" : "checkmark.circle.fill"
     }
 
     private var statusColor: Color {
-        if pet.isBlown {
-            return .red
-        } else if pet.isCompleted {
-            return .green
-        } else {
-            return .secondary
-        }
+        pet.isBlown ? .red : .green
     }
 
     var body: some View {
@@ -84,14 +66,10 @@ struct PetHistoryRow: View {
                     }
                     .font(.subheadline)
 
-                    HStack(spacing: 12) {
-                        Label("\(pet.totalDays) dní", systemImage: "calendar")
-
-                        HStack(spacing: 4) {
-                            Image(systemName: "flame.fill")
-                                .foregroundStyle(.orange)
-                            Text("\(pet.finalStreak)")
-                        }
+                    HStack(spacing: 4) {
+                        Image(systemName: "flame.fill")
+                            .foregroundStyle(.orange)
+                        Text("\(pet.totalDays) dní")
                     }
                     .font(.caption)
                     .foregroundStyle(.secondary)

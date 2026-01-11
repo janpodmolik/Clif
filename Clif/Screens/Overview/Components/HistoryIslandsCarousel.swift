@@ -66,7 +66,7 @@ struct HistoryIslandsCarousel: View {
 #Preview {
     VStack {
         HistoryIslandsCarousel(
-            pets: ArchivedPet.mockList().filter { $0.isCompleted },
+            pets: ArchivedPet.mockList().filter { !$0.isBlown },
             onSelect: { _ in }
         )
 

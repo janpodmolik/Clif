@@ -8,7 +8,7 @@ struct OverviewScreen: View {
     private let archivedPets = ArchivedPet.mockList()
 
     private var completedPets: [ArchivedPet] {
-        archivedPets.filter { $0.isCompleted }
+        archivedPets.filter { !$0.isBlown }
     }
 
     var body: some View {

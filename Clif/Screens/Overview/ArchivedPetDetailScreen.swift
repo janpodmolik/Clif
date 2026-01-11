@@ -18,7 +18,7 @@ struct ArchivedPetDetailScreen: View {
                     PetDetailHeader(
                         petName: pet.name,
                         mood: mood,
-                        streak: pet.finalStreak,
+                        streak: pet.totalDays,
                         evolutionPhase: pet.finalPhase,
                         purposeLabel: pet.purpose
                     )
@@ -60,10 +60,10 @@ struct ArchivedPetDetailScreen: View {
 
     private var statusBadge: some View {
         HStack(spacing: 8) {
-            Image(systemName: pet.isBlown ? "wind" : (pet.isCompleted ? "trophy.fill" : "archivebox.fill"))
-                .foregroundStyle(pet.isBlown ? .red : (pet.isCompleted ? .yellow : .secondary))
+            Image(systemName: pet.isBlown ? "wind" : "trophy.fill")
+                .foregroundStyle(pet.isBlown ? .red : .yellow)
 
-            Text(pet.isBlown ? "Odfouknut" : (pet.isCompleted ? "Dokončeno" : "Archivováno"))
+            Text(pet.isBlown ? "Odfouknut" : "Dokončeno")
                 .font(.subheadline)
                 .fontWeight(.medium)
         }
@@ -79,17 +79,9 @@ struct ArchivedPetDetailScreen: View {
 
             HStack {
                 summaryItem(
-                    icon: "calendar",
-                    title: "Celkem dní",
-                    value: "\(pet.totalDays)"
-                )
-
-                Spacer()
-
-                summaryItem(
                     icon: "flame.fill",
-                    title: "Nejlepší streak",
-                    value: "\(pet.finalStreak)",
+                    title: "Celkem dní",
+                    value: "\(pet.totalDays)",
                     iconColor: .orange
                 )
 
@@ -102,11 +94,11 @@ struct ArchivedPetDetailScreen: View {
                 )
             }
 
-            if let archivedDate = formatDate(pet.archivedAt) {
+            if let date = formatDate(pet.archivedAt) {
                 HStack {
                     Image(systemName: "clock")
                         .foregroundStyle(.secondary)
-                    Text("Archivováno \(archivedDate)")
+                    Text(pet.isBlown ? "Odfouknut \(date)" : "Dokončeno \(date)")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }

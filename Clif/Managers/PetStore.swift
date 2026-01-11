@@ -4,9 +4,9 @@ import Foundation
 final class PetStore {
     private(set) var archivedPets: [ArchivedPet] = []
 
-    /// Peti co dosáhli phase 4 a nebyli blown (pro Hall of Fame)
+    /// Peti co nebyli blown (pro Hall of Fame)
     var completedPets: [ArchivedPet] {
-        archivedPets.filter { $0.isCompleted }
+        archivedPets.filter { !$0.isBlown }
     }
 
     init() {

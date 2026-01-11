@@ -14,8 +14,7 @@ struct PetHistoryRowDebugView: View {
     // MARK: - Status State
 
     @State private var isBlown: Bool = false
-    @State private var totalDays: Int = 28
-    @State private var finalStreak: Int = 21
+    @State private var totalDays: Int = 21
     @State private var daysAgo: Int = 14
 
     // MARK: - Section Expansion
@@ -32,7 +31,7 @@ struct PetHistoryRowDebugView: View {
             phase: phase,
             isBlown: isBlown,
             daysAgo: daysAgo,
-            streak: finalStreak
+            totalDays: totalDays
         )
     }
 
@@ -178,33 +177,6 @@ struct PetHistoryRowDebugView: View {
                         } label: {
                             Image(systemName: "plus.circle.fill")
                                 .font(.title2)
-                                .foregroundStyle(.blue)
-                        }
-                    }
-                }
-
-                HStack {
-                    Text("Final Streak")
-                        .foregroundStyle(.secondary)
-                    Spacer()
-                    HStack(spacing: 12) {
-                        Button {
-                            if finalStreak > 0 { finalStreak -= 1 }
-                        } label: {
-                            Image(systemName: "minus.circle.fill")
-                                .font(.title2)
-                                .foregroundStyle(.secondary)
-                        }
-
-                        Text("\(finalStreak)")
-                            .font(.system(.body, design: .monospaced, weight: .semibold))
-                            .frame(width: 40)
-
-                        Button {
-                            finalStreak += 1
-                        } label: {
-                            Image(systemName: "plus.circle.fill")
-                                .font(.title2)
                                 .foregroundStyle(.orange)
                         }
                     }
@@ -283,8 +255,7 @@ struct PetHistoryRowDebugView: View {
             purpose = "Social Media"
             phase = 4
             isBlown = false
-            totalDays = 42
-            finalStreak = 35
+            totalDays = 35
             daysAgo = 7
         }
     }
@@ -295,8 +266,7 @@ struct PetHistoryRowDebugView: View {
             purpose = "Gaming"
             phase = 2
             isBlown = true
-            totalDays = 8
-            finalStreak = 3
+            totalDays = 3
             daysAgo = 2
         }
     }
@@ -308,7 +278,6 @@ struct PetHistoryRowDebugView: View {
             phase = 1
             isBlown = false
             totalDays = 5
-            finalStreak = 5
             daysAgo = 1
         }
     }
@@ -319,8 +288,7 @@ struct PetHistoryRowDebugView: View {
             purpose = "Entertainment"
             phase = 3
             isBlown = false
-            totalDays = 60
-            finalStreak = 28
+            totalDays = 28
             daysAgo = 30
         }
     }
@@ -331,8 +299,7 @@ struct PetHistoryRowDebugView: View {
             purpose = "All Apps"
             phase = 4
             isBlown = false
-            totalDays = 100
-            finalStreak = 90
+            totalDays = 90
             daysAgo = 3
         }
     }
@@ -344,7 +311,6 @@ struct PetHistoryRowDebugView: View {
             phase = 1
             isBlown = true
             totalDays = 2
-            finalStreak = 0
             daysAgo = 5
         }
     }
