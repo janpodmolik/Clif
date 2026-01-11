@@ -39,7 +39,7 @@ struct HistoryIslandsCarousel: View {
 
     private var carouselContent: some View {
         ScrollView(.horizontal, showsIndicators: false) {
-            HStack(alignment: .bottom, spacing: islandSpacing) {
+            LazyHStack(alignment: .bottom, spacing: islandSpacing) {
                 ForEach(pets) { pet in
                     HistoryIslandView(pet: pet, height: carouselHeight) {
                         onSelect(pet)
