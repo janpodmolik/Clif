@@ -3,6 +3,11 @@ import SwiftUI
 struct OverviewScreen: View {
     @State private var selectedPet: ArchivedPet?
     @State private var selectedActivePet: ActivePet?
+    @State private var historyViewMode: HistoryViewMode = .list
+
+    enum HistoryViewMode {
+        case list, grid
+    }
 
     // Mock data for now
     private let weeklyStats = BlockedAppsWeeklyStats.mock()
@@ -118,6 +123,20 @@ struct OverviewScreen: View {
                 Text("Historie")
                     .font(.headline)
                 Spacer()
+
+                Button {
+                    withAnimation(.easeInOut(duration: 0.2)) {
+                        historyViewMode = historyViewMode == .list ? .grid : .list
+                    }
+                } label: {
+                    Image(systemName: historyViewMode == .list ? "square.grid.2x2" : "list.bullet")
+                        .font(.title3)
+                        .foregroundStyle(.primary)
+                        .contentTransition(.symbolEffect(.replace))
+                        .frame(width: 32, height: 32)
+                }
+                .buttonStyle(.plain)
+
                 Text("\(archivedPets.count)")
                     .font(.caption)
                     .padding(.horizontal, 8)
@@ -128,10 +147,20 @@ struct OverviewScreen: View {
             if archivedPets.isEmpty {
                 emptyHistoryState
             } else {
-                LazyVStack(spacing: 12) {
-                    ForEach(archivedPets) { pet in
-                        PetHistoryRow(pet: pet) {
-                            selectedPet = pet
+                if historyViewMode == .list {
+                    LazyVStack(spacing: 12) {
+                        ForEach(archivedPets) { pet in
+                            PetHistoryRow(pet: pet) {
+                                selectedPet = pet
+                            }
+                        }
+                    }
+                } else {
+                    LazyVGrid(columns: [GridItem(.flexible(), spacing: 12), GridItem(.flexible(), spacing: 12)], spacing: 12) {
+                        ForEach(archivedPets) { pet in
+                            PetHistoryGridItem(pet: pet) {
+                                selectedPet = pet
+                            }
                         }
                     }
                 }
