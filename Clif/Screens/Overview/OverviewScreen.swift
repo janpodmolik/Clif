@@ -1,8 +1,112 @@
 import SwiftUI
 
 struct OverviewScreen: View {
+    @State private var selectedPet: ArchivedPet?
+
+    // Mock data for now
+    private let weeklyStats = BlockedAppsWeeklyStats.mock()
+    private let archivedPets = ArchivedPet.mockList()
+
+    private var completedPets: [ArchivedPet] {
+        archivedPets.filter { $0.isCompleted }
+    }
+
     var body: some View {
-        Text("Přehled")
+        ScrollView {
+            VStack(alignment: .leading, spacing: 24) {
+                headerSection
+
+                ScreenTimeOverviewCard(stats: weeklyStats)
+
+                HistoryIslandsCarousel(pets: completedPets) { pet in
+                    selectedPet = pet
+                }
+
+                historySection
+            }
+            .padding(.horizontal, 20)
+            .padding(.top, 20)
+            .padding(.bottom, 110)
+        }
+        .background(OverviewBackground())
+        .fullScreenCover(item: $selectedPet) { pet in
+            ArchivedPetDetailScreen(pet: pet)
+        }
+    }
+
+    private var headerSection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Přehled")
+                .font(.system(size: 32, weight: .bold))
+            Text("Historie tvých petů a času u obrazovky.")
+                .foregroundStyle(.secondary)
+        }
+    }
+
+    private var historySection: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            HStack {
+                Text("Historie")
+                    .font(.headline)
+                Spacer()
+                Text("\(archivedPets.count)")
+                    .font(.caption)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(.ultraThinMaterial, in: Capsule())
+            }
+
+            if archivedPets.isEmpty {
+                emptyHistoryState
+            } else {
+                LazyVStack(spacing: 12) {
+                    ForEach(archivedPets) { pet in
+                        PetHistoryRow(pet: pet) {
+                            selectedPet = pet
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private var emptyHistoryState: some View {
+        VStack(spacing: 12) {
+            Image(systemName: "clock.arrow.circlepath")
+                .font(.system(size: 40))
+                .foregroundStyle(.secondary)
+            Text("Zatím žádná historie")
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+            Text("Archivovaní peti se zobrazí zde.")
+                .font(.caption)
+                .foregroundStyle(.tertiary)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 32)
+    }
+}
+
+private struct OverviewBackground: View {
+    @Environment(\.colorScheme) private var colorScheme
+
+    var body: some View {
+        ZStack {
+            if colorScheme == .dark {
+                Color.black.ignoresSafeArea()
+            } else {
+                LinearGradient(
+                    colors: [
+                        Color.green.opacity(0.08),
+                        Color.blue.opacity(0.05),
+                        Color(uiColor: .systemBackground)
+                    ],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+                .ignoresSafeArea()
+            }
+        }
     }
 }
 

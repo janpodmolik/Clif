@@ -44,4 +44,5 @@ enum DefaultsKeys {
     static let lastMonitorUpdate = "lastMonitorUpdate"
     static let notification90Sent = "notification90Sent"
     static let notificationLastMinuteSent = "notificationLastMinuteSent"
+    static let archivedPets = "archivedPets"
 }

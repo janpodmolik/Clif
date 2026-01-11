@@ -110,4 +110,18 @@ struct SharedDefaults {
         get { defaults?.bool(forKey: DefaultsKeys.notificationLastMinuteSent) ?? false }
         set { defaults?.set(newValue, forKey: DefaultsKeys.notificationLastMinuteSent) }
     }
+
+    // MARK: - Raw Data Access (for types not available in extensions)
+
+    static func data(forKey key: String) -> Data? {
+        defaults?.data(forKey: key)
+    }
+
+    static func setData(_ data: Data?, forKey key: String) {
+        if let data {
+            defaults?.set(data, forKey: key)
+        } else {
+            defaults?.removeObject(forKey: key)
+        }
+    }
 }
