@@ -46,7 +46,7 @@ struct ContentView: View {
         }
         .preferredColorScheme(isDarkModeEnabled ? .dark : .light)
         #if DEBUG
-        .sheet(isPresented: $showPetDebug) {
+        .fullScreenCover(isPresented: $showPetDebug) {
             PetDebugView()
         }
         #endif

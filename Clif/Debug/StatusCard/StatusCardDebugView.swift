@@ -20,6 +20,7 @@ struct StatusCardDebugView: View {
     // MARK: - Button Visibility State
 
     @State private var showEvolveButton: Bool = false
+    @State private var daysUntilEvolution: Int = 1
     @State private var showDetailButton: Bool = true
     @State private var isBlownAway: Bool = false
 
@@ -116,6 +117,7 @@ struct StatusCardDebugView: View {
                 mood: currentMood,
                 purposeLabel: purposeLabel.isEmpty ? nil : purposeLabel,
                 isEvolutionAvailable: showEvolveButton,
+                daysUntilEvolution: showEvolveButton ? nil : daysUntilEvolution,
                 isSaveEnabled: isSaveEnabled,
                 showDetailButton: showDetailButton,
                 isBlownAway: isBlownAway,
@@ -290,6 +292,16 @@ struct StatusCardDebugView: View {
 
                 if !isBlownAway {
                     Toggle("Show Evolve Button", isOn: $showEvolveButton)
+
+                    if !showEvolveButton {
+                        HStack {
+                            Text("Days Until Evolution")
+                                .foregroundStyle(.secondary)
+                            Spacer()
+                            Stepper("\(daysUntilEvolution)", value: $daysUntilEvolution, in: 1...30)
+                                .frame(width: 120)
+                        }
+                    }
 
                     HStack {
                         Text("Blow Away Button")

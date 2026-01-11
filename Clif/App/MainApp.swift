@@ -8,6 +8,7 @@ struct MainApp: App {
     var appDelegate
 
     init() {
+        print("🟢 MainApp init")
         Task {
             await AppDelegate.requestNotificationPermission()
         }
@@ -16,6 +17,7 @@ struct MainApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .onAppear { print("🟢 ContentView appeared") }
                 .withDeepLinkHandling()
 //                .withDebugOverlay()
         }

@@ -2,6 +2,7 @@ import SwiftUI
 
 struct PetDetailActions: View {
     let canEvolve: Bool
+    let daysUntilEvolution: Int?
     let isBlownAway: Bool
     var onEvolve: () -> Void = {}
     var onBlowAway: () -> Void = {}
@@ -20,6 +21,8 @@ struct PetDetailActions: View {
         HStack(spacing: 16) {
             if canEvolve {
                 evolveButton
+            } else if let days = daysUntilEvolution {
+                evolutionCountdownLabel(days: days)
             }
 
             Spacer()
@@ -28,6 +31,15 @@ struct PetDetailActions: View {
         }
         .padding()
         .glassCard()
+    }
+
+    private func evolutionCountdownLabel(days: Int) -> some View {
+        HStack(spacing: 6) {
+            Image(systemName: "sparkles")
+            Text(days == 1 ? "Evolve Tomorrow" : "Evolve in \(days) days")
+        }
+        .font(.subheadline.weight(.medium))
+        .foregroundStyle(.secondary)
     }
 
     private var blownAwayActions: some View {
@@ -115,16 +127,25 @@ struct PetDetailActions: View {
     VStack(spacing: 20) {
         PetDetailActions(
             canEvolve: true,
+            daysUntilEvolution: nil,
             isBlownAway: false
         )
 
         PetDetailActions(
             canEvolve: false,
+            daysUntilEvolution: 1,
             isBlownAway: false
         )
 
         PetDetailActions(
             canEvolve: false,
+            daysUntilEvolution: 3,
+            isBlownAway: false
+        )
+
+        PetDetailActions(
+            canEvolve: false,
+            daysUntilEvolution: nil,
             isBlownAway: true
         )
     }

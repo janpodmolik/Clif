@@ -16,6 +16,7 @@ struct StatusCardContentView: View {
 
     // MARK: - Button State
     let isEvolutionAvailable: Bool
+    let daysUntilEvolution: Int?
     let isSaveEnabled: Bool
     let showDetailButton: Bool
     let isBlownAway: Bool
@@ -135,7 +136,7 @@ struct StatusCardContentView: View {
 
             Text("\(Int(progress * 100))%")
                 .font(.system(size: 20, weight: .semibold))
-                .foregroundStyle(progress > 1.0 ? .red : .secondary)
+                .foregroundStyle(progress > 1.0 ? .red : .primary)
         }
     }
 
@@ -154,12 +155,23 @@ struct StatusCardContentView: View {
         HStack(spacing: 12) {
             if isEvolutionAvailable {
                 evolveButton
+            } else if let days = daysUntilEvolution {
+                evolutionCountdownLabel(days: days)
             }
 
             Spacer()
 
             blowAwayButton
         }
+    }
+
+    private func evolutionCountdownLabel(days: Int) -> some View {
+        HStack(spacing: 6) {
+            Image(systemName: "sparkles")
+            Text(days == 1 ? "Evolve Tomorrow" : "Evolve in \(days) days")
+        }
+        .font(.system(size: 14, weight: .medium))
+        .foregroundStyle(.secondary)
     }
 
     private var blownAwayContent: some View {

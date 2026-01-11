@@ -3,6 +3,8 @@ import SwiftUI
 struct EvolutionTimelineView: View {
     let history: EvolutionHistory
     var blownAt: Date? = nil
+    var canEvolve: Bool = false
+    var daysUntilEvolution: Int? = nil
 
     @State private var isPulsing = false
 
@@ -38,10 +40,40 @@ struct EvolutionTimelineView: View {
 
             if let blownAt {
                 blownAwayLabel(date: blownAt)
+            } else {
+                evolutionStatusLabel
             }
         }
         .padding()
         .glassCard()
+    }
+
+    @ViewBuilder
+    private var evolutionStatusLabel: some View {
+        if canEvolve {
+            HStack(spacing: 6) {
+                Image(systemName: "sparkles")
+                Text("Ready to evolve!")
+                    .fontWeight(.medium)
+            }
+            .font(.caption)
+            .foregroundStyle(.green)
+        } else if history.currentPhase >= history.maxPhase {
+            HStack(spacing: 6) {
+                Image(systemName: "checkmark.seal.fill")
+                Text("Fully evolved")
+                    .fontWeight(.medium)
+            }
+            .font(.caption)
+            .foregroundStyle(.secondary)
+        } else if let days = daysUntilEvolution {
+            HStack(spacing: 6) {
+                Image(systemName: "sparkles")
+                Text(days == 1 ? "Next evolution tomorrow" : "Next evolution in \(days) days")
+            }
+            .font(.caption)
+            .foregroundStyle(.secondary)
+        }
     }
 
     private func blownAwayLabel(date: Date) -> some View {

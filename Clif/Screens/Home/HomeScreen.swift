@@ -52,6 +52,7 @@ struct HomeScreen: View {
                     mood: .happy,
                     purposeLabel: "Social Media",
                     isEvolutionAvailable: false,
+                    daysUntilEvolution: 1,
                     isSaveEnabled: true,
                     showDetailButton: true,
                     isBlownAway: false,

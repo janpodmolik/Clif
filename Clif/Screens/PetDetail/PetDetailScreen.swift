@@ -19,6 +19,9 @@ struct PetDetailScreen: View {
     // MARK: - Blocked Apps
     let blockedAppCount: Int
 
+    // MARK: - Evolution
+    var daysUntilEvolution: Int? = 1
+
     // MARK: - Actions
     var onEvolve: () -> Void = {}
     var onBlowAway: () -> Void = {}
@@ -68,7 +71,9 @@ struct PetDetailScreen: View {
 
                     EvolutionTimelineView(
                         history: evolutionHistory,
-                        blownAt: evolutionHistory.blownAt
+                        blownAt: evolutionHistory.blownAt,
+                        canEvolve: canEvolve,
+                        daysUntilEvolution: daysUntilEvolution
                     )
 
                     BlockedAppsChart(
@@ -85,6 +90,7 @@ struct PetDetailScreen: View {
 
                     PetDetailActions(
                         canEvolve: canEvolve,
+                        daysUntilEvolution: daysUntilEvolution,
                         isBlownAway: isBlownAway,
                         onEvolve: onEvolve,
                         onBlowAway: onBlowAway,
