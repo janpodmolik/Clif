@@ -1,9 +1,12 @@
+import FamilyControls
 import SwiftUI
 
 struct OverviewScreen: View {
     @State private var selectedPet: ArchivedPet?
     @State private var selectedActivePet: ActivePet?
     @State private var historyViewMode: HistoryViewMode = .list
+
+    @ObservedObject private var screenTimeManager = ScreenTimeManager.shared
 
     enum HistoryViewMode {
         case list, grid
@@ -23,7 +26,11 @@ struct OverviewScreen: View {
             VStack(alignment: .leading, spacing: 24) {
                 headerSection
 
-                ScreenTimeOverviewCard(stats: weeklyStats)
+                ScreenTimeOverviewCard(
+                    stats: weeklyStats,
+                    applicationTokens: screenTimeManager.activitySelection.applicationTokens,
+                    categoryTokens: screenTimeManager.activitySelection.categoryTokens
+                )
 
                 HistoryIslandsCarousel(pets: completedPets) { pet in
                     selectedPet = pet
