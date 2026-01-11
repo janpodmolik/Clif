@@ -43,7 +43,6 @@ struct EvolutionCarousel: View {
             }
             .padding(.bottom)
         }
-        .glassCard()
         .task(id: currentPhase) {
             selectedIndex = currentPhase
             // Small delay to ensure ScrollView is ready
@@ -91,6 +90,7 @@ struct EvolutionCarousel: View {
             .scrollTargetBehavior(.viewAligned)
             .scrollPosition(id: $scrollTarget, anchor: .center)
             .defaultScrollAnchor(.center)
+            .scrollClipDisabled()
             .padding(.top, 4)
             .contentMargins(.horizontal, horizontalInset, for: .scrollContent)
             .frame(height: cardHeight + 24)
