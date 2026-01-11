@@ -3,10 +3,10 @@ import SwiftUI
 
 /// Debug version of FloatingIslandView with full debug parameter support.
 /// Use this for testing and configuring animation parameters.
-struct DebugFloatingIslandView<Evolution: EvolutionType>: View {
+struct DebugFloatingIslandView: View {
     let screenHeight: CGFloat
     let screenWidth: CGFloat?
-    let evolution: Evolution
+    let pet: any PetDisplayable
     let windLevel: WindLevel
 
     // Debug overrides (nil = use default config)
@@ -62,7 +62,7 @@ struct DebugFloatingIslandView<Evolution: EvolutionType>: View {
     private var petOffset: CGFloat { -petHeight }
 
     private var activeWindConfig: WindConfig {
-        let baseConfig = debugWindConfig ?? evolution.windConfig(for: windLevel)
+        let baseConfig = debugWindConfig ?? pet.windConfig(for: windLevel)
         return WindConfig(
             intensity: baseConfig.intensity * windIntensityScale,
             bendCurve: baseConfig.bendCurve,
@@ -95,7 +95,7 @@ struct DebugFloatingIslandView<Evolution: EvolutionType>: View {
     }
 
     private var activeIdleConfig: IdleConfig {
-        let baseConfig = debugIdleConfig ?? AnimationConfigProvider.idleConfig(for: evolution)
+        let baseConfig = debugIdleConfig ?? pet.idleConfig
         guard baseConfig.enabled else { return baseConfig }
 
         return IdleConfig(
@@ -140,7 +140,7 @@ struct DebugFloatingIslandView<Evolution: EvolutionType>: View {
 
             // Pet with animation effects, speech bubble, and mood-aware image (top layer)
             ZStack {
-                Image(evolution.assetName(for: windLevel))
+                Image(pet.assetName(for: windLevel))
                     .resizable()
                     .scaledToFit()
                     .frame(height: petHeight)
@@ -154,7 +154,7 @@ struct DebugFloatingIslandView<Evolution: EvolutionType>: View {
                             petImageSize = newSize
                         }
                     }
-                    .scaleEffect(evolution.displayScale, anchor: .bottom)
+                    .scaleEffect(pet.displayScale, anchor: .bottom)
                     .petAnimation(
                         intensity: activeWindConfig.intensity,
                         direction: windDirection,
@@ -215,8 +215,8 @@ struct DebugFloatingIslandView<Evolution: EvolutionType>: View {
             tapType = randomTapType()
         }
 
-        // Get config from provider (or debug override)
-        let tapConfig = debugTapConfig ?? AnimationConfigProvider.tapConfig(for: evolution, type: tapType)
+        // Get config from pet (or debug override)
+        let tapConfig = debugTapConfig ?? pet.tapConfig(for: tapType)
 
         // Update state
         currentTapType = tapType

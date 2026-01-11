@@ -20,11 +20,11 @@ struct EvolutionScaleDebugView: View {
 
     // MARK: - Computed Properties
 
-    private var currentEvolution: any EvolutionType {
+    private var currentPet: any PetDisplayable {
         if isBlobSelected {
-            return BlobEvolution.blob
+            return Blob.shared
         } else {
-            return selectedEssence.phase(at: selectedPhase) ?? BlobEvolution.blob
+            return selectedEssence.phase(at: selectedPhase) ?? Blob.shared
         }
     }
 
@@ -45,16 +45,16 @@ struct EvolutionScaleDebugView: View {
     }
 
     private var currentAssetName: String {
-        currentEvolution.assetName(for: selectedMood)
+        currentPet.assetName(for: selectedMood)
     }
 
     private var currentScale: CGFloat {
-        scales[currentKey] ?? currentEvolution.displayScale
+        scales[currentKey] ?? currentPet.displayScale
     }
 
     private var currentScaleBinding: Binding<CGFloat> {
         Binding(
-            get: { scales[currentKey] ?? currentEvolution.displayScale },
+            get: { scales[currentKey] ?? currentPet.displayScale },
             set: { scales[currentKey] = $0 }
         )
     }
@@ -93,7 +93,7 @@ struct EvolutionScaleDebugView: View {
     private func initializeScales() {
         // Blob
         if scales["blob"] == nil {
-            scales["blob"] = BlobEvolution.blob.displayScale
+            scales["blob"] = Blob.shared.displayScale
         }
 
         // All essences
@@ -379,26 +379,21 @@ struct EvolutionScaleDebugView: View {
         var lines: [String] = ["// === Evolution Scale Export ==="]
 
         // Blob
-        let blobScale = scales["blob"] ?? BlobEvolution.blob.displayScale
+        let blobScale = scales["blob"] ?? Blob.shared.displayScale
         lines.append("")
-        lines.append("// BlobEvolution displayScale:")
-        lines.append("var displayScale: CGFloat { \(String(format: "%.2f", blobScale)) }")
+        lines.append("// Blob displayScale:")
+        lines.append("let displayScale: CGFloat = \(String(format: "%.2f", blobScale))")
 
         // Group by essence
         for essence in Essence.allCases {
             lines.append("")
-            lines.append("// \(essence.displayName)Evolution displayScale values:")
-            lines.append("var displayScale: CGFloat {")
-            lines.append("    switch self {")
+            lines.append("// \(essence.displayName) EvolutionPhase displayScale values:")
 
             for phase in 1...essence.maxPhases {
                 let key = "\(essence.rawValue)-\(phase)"
                 let scale = scales[key] ?? essence.phase(at: phase)?.displayScale ?? 1.0
-                lines.append("    case .phase\(phase): return \(String(format: "%.2f", scale))")
+                lines.append("// Phase \(phase): \(String(format: "%.2f", scale))")
             }
-
-            lines.append("    }")
-            lines.append("}")
         }
 
         let export = lines.joined(separator: "\n")

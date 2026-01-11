@@ -1,10 +1,10 @@
 import SwiftUI
 
 /// Displays the floating island scene with rock, grass, and animated pet.
-struct FloatingIslandView<Evolution: EvolutionType>: View {
+struct FloatingIslandView: View {
     let screenHeight: CGFloat
     let screenWidth: CGFloat?
-    let evolution: Evolution
+    let pet: any PetDisplayable
     let windLevel: WindLevel
     var windDirection: CGFloat = 1.0
 
@@ -14,14 +14,14 @@ struct FloatingIslandView<Evolution: EvolutionType>: View {
     init(
         screenHeight: CGFloat,
         screenWidth: CGFloat? = nil,
-        evolution: Evolution,
+        pet: any PetDisplayable,
         windLevel: WindLevel,
         windDirection: CGFloat = 1.0,
         windRhythm: WindRhythm? = nil
     ) {
         self.screenHeight = screenHeight
         self.screenWidth = screenWidth
-        self.evolution = evolution
+        self.pet = pet
         self.windLevel = windLevel
         self.windDirection = windDirection
         self.windRhythm = windRhythm
@@ -45,11 +45,11 @@ struct FloatingIslandView<Evolution: EvolutionType>: View {
     private var petOffset: CGFloat { -petHeight }
 
     private var windConfig: WindConfig {
-        evolution.windConfig(for: windLevel)
+        pet.windConfig(for: windLevel)
     }
 
     private var idleConfig: IdleConfig {
-        AnimationConfigProvider.idleConfig(for: evolution)
+        pet.idleConfig
     }
 
     private var currentMood: Mood {
@@ -81,11 +81,11 @@ struct FloatingIslandView<Evolution: EvolutionType>: View {
 
             // Pet with animation effects, speech bubble, and mood-aware image (top layer)
             ZStack {
-                Image(evolution.assetName(for: windLevel))
+                Image(pet.assetName(for: windLevel))
                     .resizable()
                     .scaledToFit()
                     .frame(height: petHeight)
-                    .scaleEffect(evolution.displayScale, anchor: .bottom)
+                    .scaleEffect(pet.displayScale, anchor: .bottom)
                     .petAnimation(
                         intensity: windConfig.intensity,
                         direction: windDirection,
@@ -135,7 +135,7 @@ struct FloatingIslandView<Evolution: EvolutionType>: View {
 
     private func triggerTap() {
         let tapType = randomTapType()
-        let tapConfig = AnimationConfigProvider.tapConfig(for: evolution, type: tapType)
+        let tapConfig = pet.tapConfig(for: tapType)
 
         currentTapType = tapType
         currentTapConfig = tapConfig
@@ -160,7 +160,7 @@ struct FloatingIslandView<Evolution: EvolutionType>: View {
             FloatingIslandView(
                 screenHeight: geometry.size.height,
                 screenWidth: geometry.size.width,
-                evolution: BlobEvolution.blob,
+                pet: Blob.shared,
                 windLevel: .none
             )
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
@@ -176,7 +176,7 @@ struct FloatingIslandView<Evolution: EvolutionType>: View {
             FloatingIslandView(
                 screenHeight: geometry.size.height,
                 screenWidth: geometry.size.width,
-                evolution: PlantEvolution.phase2,
+                pet: Essence.plant.phase(at: 2)!,
                 windLevel: .medium
             )
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
@@ -192,7 +192,7 @@ struct FloatingIslandView<Evolution: EvolutionType>: View {
             FloatingIslandView(
                 screenHeight: geometry.size.height,
                 screenWidth: geometry.size.width,
-                evolution: PlantEvolution.phase4,
+                pet: Essence.plant.phase(at: 4)!,
                 windLevel: .high
             )
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)

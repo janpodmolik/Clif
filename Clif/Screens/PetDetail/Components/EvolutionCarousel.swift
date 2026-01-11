@@ -158,9 +158,8 @@ struct EvolutionOriginCard: View {
         .background(cardBackground)
     }
 
-    /// Asset name for blob based on mood: "blob/happy/1"
     private var blobAssetName: String {
-        "blob/\(mood.forAsset.rawValue)/1"
+        Blob.shared.assetName(for: mood)
     }
 
     private var originImageView: some View {

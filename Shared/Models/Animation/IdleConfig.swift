@@ -1,7 +1,7 @@
 import Foundation
 
 /// Configuration for idle breathing animation.
-struct IdleConfig: Equatable {
+struct IdleConfig: Equatable, Hashable {
     /// Whether idle animation is enabled.
     var enabled: Bool
 

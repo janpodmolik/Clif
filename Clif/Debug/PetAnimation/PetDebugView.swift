@@ -152,9 +152,19 @@ struct PetDebugView: View {
     private var currentEvolutionName: String {
         switch selectedEvolutionType {
         case .blob:
-            return "BlobEvolution.blob"
+            return "Blob.shared"
         case .plant:
-            return "PlantEvolution.phase\(plantPhase)"
+            return "Essence.plant.phase(at: \(plantPhase))"
+        }
+    }
+
+    /// Current pet for rendering
+    private var currentPet: any PetDisplayable {
+        switch selectedEvolutionType {
+        case .blob:
+            return Blob.shared
+        case .plant:
+            return Essence.plant.phase(at: plantPhase) ?? Blob.shared
         }
     }
 
@@ -177,80 +187,50 @@ struct PetDebugView: View {
                         windRhythm: windLinesBurstActive ? nil : debugWindRhythm
                     )
 
-                    // Floating island with pet - render appropriate evolution type
-                    ZStack {
-                        Group {
-                            switch selectedEvolutionType {
-                            case .blob:
-                                DebugFloatingIslandView(
-                                    screenHeight: geometry.size.height,
-                                    screenWidth: geometry.size.width,
-                                    evolution: BlobEvolution.blob,
-                                    windLevel: windLevel,
-                                    debugWindConfig: customWindConfig,
-                                    windDirection: direction,
-                                    windIntensityScale: windIntensityScale,
-                                    idleIntensityScale: idleIntensityScale,
-                                    windRhythm: debugWindRhythm,
-                                    debugTapType: selectedTapType,
-                                    debugTapConfig: customTapConfig,
-                                    debugIdleConfig: currentIdleConfig,
-                                    debugHapticType: selectedHapticType,
-                                    debugHapticDuration: hapticDuration,
-                                    debugHapticIntensity: Float(hapticIntensity),
-                                    externalTapTime: $tapTime,
-                                    debugSpeechBubbleState: debugSpeechBubbleState,
-                                    debugCustomText: debugCustomText,
-                                    blowAwayOffsetX: blowAwayOffsetX,
-                                    blowAwayRotation: blowAwayRotation
-                                )
-                            case .plant:
-                                DebugFloatingIslandView(
-                                    screenHeight: geometry.size.height,
-                                    screenWidth: geometry.size.width,
-                                    evolution: PlantEvolution(rawValue: plantPhase) ?? .phase1,
-                                    windLevel: windLevel,
-                                    debugWindConfig: customWindConfig,
-                                    windDirection: direction,
-                                    windIntensityScale: windIntensityScale,
-                                    idleIntensityScale: idleIntensityScale,
-                                    windRhythm: debugWindRhythm,
-                                    debugTapType: selectedTapType,
-                                    debugTapConfig: customTapConfig,
-                                    debugIdleConfig: currentIdleConfig,
-                                    debugHapticType: selectedHapticType,
-                                    debugHapticDuration: hapticDuration,
-                                    debugHapticIntensity: Float(hapticIntensity),
-                                    externalTapTime: $tapTime,
-                                    debugSpeechBubbleState: debugSpeechBubbleState,
-                                    debugCustomText: debugCustomText,
-                                    blowAwayOffsetX: blowAwayOffsetX,
-                                    blowAwayRotation: blowAwayRotation,
-                                    evolutionTransitionView: showEvolutionTransition ? AnyView(
-                                        EvolutionTransitionView(
-                                            isActive: true,
-                                            config: currentTransitionConfig,
-                                            particleConfig: currentParticleConfig,
-                                            oldAssetName: PlantEvolution(rawValue: plantPhase)?.assetName(for: windLevel) ?? "evolutions/plant/happy/1",
-                                            newAssetName: PlantEvolution(rawValue: transitionToPhase)?.assetName(for: windLevel) ?? "evolutions/plant/happy/2",
-                                            oldScale: (PlantEvolution(rawValue: plantPhase) ?? .phase1).displayScale,
-                                            newScale: (PlantEvolution(rawValue: transitionToPhase) ?? .phase2).displayScale,
-                                            cameraTransform: $cameraTransform,
-                                            onComplete: {
-                                                // Hide transition FIRST to prevent glitch from syncTransitionPhases
-                                                showEvolutionTransition = false
-                                                isTransitioning = false
-                                                // Then update phase (this triggers syncTransitionPhases via onChange)
-                                                plantPhase = transitionToPhase
-                                                restorePostTransition()
-                                            }
-                                        )
-                                        .id(evolutionTransitionKey)
-                                    ) : nil
-                                )
-                            }
-                        }
-                    }
+                    // Floating island with pet
+                    DebugFloatingIslandView(
+                        screenHeight: geometry.size.height,
+                        screenWidth: geometry.size.width,
+                        pet: currentPet,
+                        windLevel: windLevel,
+                        debugWindConfig: customWindConfig,
+                        windDirection: direction,
+                        windIntensityScale: windIntensityScale,
+                        idleIntensityScale: idleIntensityScale,
+                        windRhythm: debugWindRhythm,
+                        debugTapType: selectedTapType,
+                        debugTapConfig: customTapConfig,
+                        debugIdleConfig: currentIdleConfig,
+                        debugHapticType: selectedHapticType,
+                        debugHapticDuration: hapticDuration,
+                        debugHapticIntensity: Float(hapticIntensity),
+                        externalTapTime: $tapTime,
+                        debugSpeechBubbleState: debugSpeechBubbleState,
+                        debugCustomText: debugCustomText,
+                        blowAwayOffsetX: blowAwayOffsetX,
+                        blowAwayRotation: blowAwayRotation,
+                        evolutionTransitionView: showEvolutionTransition && selectedEvolutionType == .plant ? AnyView(
+                            EvolutionTransitionView(
+                                isActive: true,
+                                config: currentTransitionConfig,
+                                particleConfig: currentParticleConfig,
+                                oldAssetName: Essence.plant.phase(at: plantPhase)?.assetName(for: windLevel) ?? "evolutions/plant/happy/1",
+                                newAssetName: Essence.plant.phase(at: transitionToPhase)?.assetName(for: windLevel) ?? "evolutions/plant/happy/2",
+                                oldScale: Essence.plant.phase(at: plantPhase)?.displayScale ?? 1.0,
+                                newScale: Essence.plant.phase(at: transitionToPhase)?.displayScale ?? 1.0,
+                                cameraTransform: $cameraTransform,
+                                onComplete: {
+                                    // Hide transition FIRST to prevent glitch from syncTransitionPhases
+                                    showEvolutionTransition = false
+                                    isTransitioning = false
+                                    // Then update phase (this triggers syncTransitionPhases via onChange)
+                                    plantPhase = transitionToPhase
+                                    restorePostTransition()
+                                }
+                            )
+                            .id(evolutionTransitionKey)
+                        ) : nil
+                    )
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
                 }
                 .scaleEffect(cameraTransform.scale)
@@ -1166,22 +1146,18 @@ struct PetDebugView: View {
     }
 
     private func copyConfig() {
-        let currentEvolution: any EvolutionType = selectedEvolutionType == .blob
-            ? BlobEvolution.blob
-            : PlantEvolution(rawValue: plantPhase) ?? .phase1
-
         let wiggleConfig = useCustomTapConfig && selectedTapType == .wiggle
             ? customTapConfig!
-            : AnimationConfigProvider.tapConfig(for: currentEvolution, type: .wiggle)
+            : currentPet.tapConfig(for: .wiggle)
         let squeezeConfig = useCustomTapConfig && selectedTapType == .squeeze
             ? customTapConfig!
-            : AnimationConfigProvider.tapConfig(for: currentEvolution, type: .squeeze)
+            : currentPet.tapConfig(for: .squeeze)
         let jiggleConfig = useCustomTapConfig && selectedTapType == .jiggle
             ? customTapConfig!
-            : AnimationConfigProvider.tapConfig(for: currentEvolution, type: .jiggle)
+            : currentPet.tapConfig(for: .jiggle)
         let bounceConfig = useCustomTapConfig && selectedTapType == .bounce
             ? customTapConfig!
-            : AnimationConfigProvider.tapConfig(for: currentEvolution, type: .bounce)
+            : currentPet.tapConfig(for: .bounce)
 
         let windConfig = customWindConfig ?? WindConfig(
             intensity: 0.5,

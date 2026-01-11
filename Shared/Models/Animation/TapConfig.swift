@@ -1,7 +1,7 @@
 import Foundation
 
 /// Configuration for tap animation parameters.
-struct TapConfig: Equatable {
+struct TapConfig: Equatable, Hashable {
     var intensity: CGFloat
     var decayRate: CGFloat
     var frequency: CGFloat

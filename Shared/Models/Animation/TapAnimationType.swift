@@ -1,7 +1,7 @@
-import UIKit
+import Foundation
 
 /// Types of tap animations available for pet interaction.
-enum TapAnimationType: Int, CaseIterable {
+enum TapAnimationType: Int, CaseIterable, Hashable {
     case none = 0
     case wiggle = 1
     case squeeze = 2
@@ -25,16 +25,6 @@ enum TapAnimationType: Int, CaseIterable {
         case .squeeze: return 0.5
         case .jiggle: return 0.7
         case .bounce: return 0.8
-        }
-    }
-
-    var hapticStyle: UIImpactFeedbackGenerator.FeedbackStyle {
-        switch self {
-        case .none: return .light
-        case .wiggle: return .light
-        case .squeeze: return .medium
-        case .jiggle: return .soft
-        case .bounce: return .rigid
         }
     }
 }
