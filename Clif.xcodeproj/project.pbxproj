@@ -33,6 +33,12 @@
 		B493879B2F0E428B0090C730 /* WindLevel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B49387952F0E428B0090C730 /* WindLevel.swift */; };
 		B493879E2F0E428B0090C730 /* WindConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = B49387972F0E428B0090C730 /* WindConfig.swift */; };
 		B49387A02F0E428B0090C730 /* WindLevel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B49387952F0E428B0090C730 /* WindLevel.swift */; };
+		B4ANI1012F0E00010001B001 /* IdleConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4ANI0012F0E00010001B001 /* IdleConfig.swift */; };
+		B4ANI1022F0E00010001B002 /* TapAnimationType.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4ANI0022F0E00010001B002 /* TapAnimationType.swift */; };
+		B4ANI1032F0E00010001B003 /* TapConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4ANI0032F0E00010001B003 /* TapConfig.swift */; };
+		B4ANI2012F0E00010001B001 /* IdleConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4ANI0012F0E00010001B001 /* IdleConfig.swift */; };
+		B4ANI2022F0E00010001B002 /* TapAnimationType.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4ANI0022F0E00010001B002 /* TapAnimationType.swift */; };
+		B4ANI2032F0E00010001B003 /* TapConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4ANI0032F0E00010001B003 /* TapConfig.swift */; };
 		B4C4C0922EE7FECE00E469E8 /* ManagedSettings.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B4924ADF2EE57EEE0033475C /* ManagedSettings.framework */; };
 		B4C4C09A2EE7FECE00E469E8 /* ShieldAction.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = B4C4C0912EE7FECE00E469E8 /* ShieldAction.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		B4C4C09F2EE7FEFF00E469E8 /* SharedDefaults.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4924AF52EE5807E0033475C /* SharedDefaults.swift */; };
@@ -41,22 +47,16 @@
 		B4D351232F123D620076C09B /* Essence.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4D351202F123D620076C09B /* Essence.swift */; };
 		B4D351262F123DD00076C09B /* StatType.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4D351252F123DD00076C09B /* StatType.swift */; };
 		B4D351272F123DD00076C09B /* BlockedAppsDailyStat.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4D351242F123DD00076C09B /* BlockedAppsDailyStat.swift */; };
-		B4F8F9EB2FEC35C900E9E6D8 /* SharedDefaults.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4924AF52EE5807E0033475C /* SharedDefaults.swift */; };
-		B4F8F9EC2FEC35C900E9E6D8 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = B45862142EE5B92C0088CB78 /* Constants.swift */; };
 		B4EVO1012F0E00010001A001 /* Blob.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4EVO0012F0E00010001A001 /* Blob.swift */; };
 		B4EVO1022F0E00010001A002 /* EvolutionPhase.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4EVO0022F0E00010001A002 /* EvolutionPhase.swift */; };
 		B4EVO1032F0E00010001A003 /* EvolutionTree.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4EVO0032F0E00010001A003 /* EvolutionTree.swift */; };
 		B4EVO1042F0E00010001A004 /* PetDisplayable.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4EVO0042F0E00010001A004 /* PetDisplayable.swift */; };
-		B4ANI1012F0E00010001B001 /* IdleConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4ANI0012F0E00010001B001 /* IdleConfig.swift */; };
-		B4ANI1022F0E00010001B002 /* TapAnimationType.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4ANI0022F0E00010001B002 /* TapAnimationType.swift */; };
-		B4ANI1032F0E00010001B003 /* TapConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4ANI0032F0E00010001B003 /* TapConfig.swift */; };
 		B4EVO2012F0E00010001A001 /* Blob.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4EVO0012F0E00010001A001 /* Blob.swift */; };
 		B4EVO2022F0E00010001A002 /* EvolutionPhase.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4EVO0022F0E00010001A002 /* EvolutionPhase.swift */; };
 		B4EVO2032F0E00010001A003 /* EvolutionTree.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4EVO0032F0E00010001A003 /* EvolutionTree.swift */; };
 		B4EVO2042F0E00010001A004 /* PetDisplayable.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4EVO0042F0E00010001A004 /* PetDisplayable.swift */; };
-		B4ANI2012F0E00010001B001 /* IdleConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4ANI0012F0E00010001B001 /* IdleConfig.swift */; };
-		B4ANI2022F0E00010001B002 /* TapAnimationType.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4ANI0022F0E00010001B002 /* TapAnimationType.swift */; };
-		B4ANI2032F0E00010001B003 /* TapConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4ANI0032F0E00010001B003 /* TapConfig.swift */; };
+		B4F8F9EB2FEC35C900E9E6D8 /* SharedDefaults.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4924AF52EE5807E0033475C /* SharedDefaults.swift */; };
+		B4F8F9EC2FEC35C900E9E6D8 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = B45862142EE5B92C0088CB78 /* Constants.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -132,6 +132,9 @@
 		B493878C2F0E39F40090C730 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		B49387952F0E428B0090C730 /* WindLevel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindLevel.swift; sourceTree = "<group>"; };
 		B49387972F0E428B0090C730 /* WindConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindConfig.swift; sourceTree = "<group>"; };
+		B4ANI0012F0E00010001B001 /* IdleConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IdleConfig.swift; sourceTree = "<group>"; };
+		B4ANI0022F0E00010001B002 /* TapAnimationType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TapAnimationType.swift; sourceTree = "<group>"; };
+		B4ANI0032F0E00010001B003 /* TapConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TapConfig.swift; sourceTree = "<group>"; };
 		B4C4C0912EE7FECE00E469E8 /* ShieldAction.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = ShieldAction.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		B4D351202F123D620076C09B /* Essence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Essence.swift; sourceTree = "<group>"; };
 		B4D351212F123D620076C09B /* EvolutionHistory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EvolutionHistory.swift; sourceTree = "<group>"; };
@@ -141,9 +144,6 @@
 		B4EVO0022F0E00010001A002 /* EvolutionPhase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EvolutionPhase.swift; sourceTree = "<group>"; };
 		B4EVO0032F0E00010001A003 /* EvolutionTree.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EvolutionTree.swift; sourceTree = "<group>"; };
 		B4EVO0042F0E00010001A004 /* PetDisplayable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PetDisplayable.swift; sourceTree = "<group>"; };
-		B4ANI0012F0E00010001B001 /* IdleConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IdleConfig.swift; sourceTree = "<group>"; };
-		B4ANI0022F0E00010001B002 /* TapAnimationType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TapAnimationType.swift; sourceTree = "<group>"; };
-		B4ANI0032F0E00010001B003 /* TapConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TapConfig.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */

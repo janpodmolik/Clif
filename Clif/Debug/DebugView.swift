@@ -35,6 +35,7 @@ struct DebugView: View {
                         evolutionScaleSection
                         statusCardSection
                         petDetailSection
+                        petHistoryRowSection
                         supabaseSection
                         extensionLogSection
                     }
@@ -319,6 +320,21 @@ struct DebugView: View {
             .frame(maxWidth: .infinity)
             .padding()
             .background(Color.cyan.opacity(0.2))
+            .cornerRadius(12)
+        }
+    }
+
+    // MARK: - Pet History Row Debug
+
+    private var petHistoryRowSection: some View {
+        NavigationLink(destination: PetHistoryRowDebugView()) {
+            HStack {
+                Image(systemName: "list.bullet.rectangle")
+                Text("Pet History Row Debug")
+            }
+            .frame(maxWidth: .infinity)
+            .padding()
+            .background(Color.indigo.opacity(0.2))
             .cornerRadius(12)
         }
     }

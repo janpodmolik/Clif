@@ -31,20 +31,16 @@ struct HistoryIslandView: View {
     // Offset to move content up so pet stays visible after clipping
     private var contentOffset: CGFloat { scaledIslandHeight * bottomClipFraction }
 
-    private var phase: EvolutionPhase? {
-        pet.essence.phase(at: pet.finalPhase)
-    }
-
     private var petAssetName: String {
-        phase?.assetName(for: .happy) ?? pet.essence.assetName
+        pet.phase?.assetName(for: .happy) ?? pet.essence.assetName
     }
 
     private var displayScale: CGFloat {
-        phase?.displayScale ?? 1.0
+        pet.phase?.displayScale ?? 1.0
     }
 
     private var idleConfig: IdleConfig {
-        phase?.idleConfig ?? .default
+        pet.phase?.idleConfig ?? .default
     }
 
     var body: some View {
@@ -136,7 +132,7 @@ struct HistoryIslandView: View {
     private func triggerRandomMovement() {
         let movementType = [TapAnimationType.wiggle, .squeeze, .jiggle, .bounce].randomElement() ?? .wiggle
         currentMovementType = movementType
-        currentMovementConfig = phase?.tapConfig(for: movementType) ?? .default(for: movementType)
+        currentMovementConfig = pet.phase?.tapConfig(for: movementType) ?? .default(for: movementType)
         movementTriggerTime = Date().timeIntervalSinceReferenceDate
     }
 }

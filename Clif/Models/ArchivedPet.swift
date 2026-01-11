@@ -12,6 +12,7 @@ struct ArchivedPet: Codable, Identifiable, Equatable {
     var isBlown: Bool { evolutionHistory.isBlown }
     var finalPhase: Int { evolutionHistory.currentPhase }
     var essence: Essence { evolutionHistory.essence }
+    var phase: EvolutionPhase? { essence.phase(at: finalPhase) }
     var isCompleted: Bool { finalPhase == evolutionHistory.maxPhase && !isBlown }
 
     init(

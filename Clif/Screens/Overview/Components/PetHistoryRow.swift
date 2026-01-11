@@ -6,10 +6,11 @@ struct PetHistoryRow: View {
 
     private var assetName: String {
         let mood: Mood = pet.isBlown ? .sad : .happy
-        if let evolution = pet.essence.phase(at: pet.finalPhase) {
-            return evolution.assetName(for: mood)
-        }
-        return pet.essence.assetName
+        return pet.phase?.assetName(for: mood) ?? pet.essence.assetName
+    }
+
+    private var displayScale: CGFloat {
+        pet.phase?.displayScale ?? 1.0
     }
 
     private var statusText: String {
@@ -44,12 +45,13 @@ struct PetHistoryRow: View {
 
     var body: some View {
         Button(action: onTap) {
-            HStack(spacing: 14) {
+            HStack(alignment: .bottom, spacing: 14) {
                 // Pet image
                 Image(assetName)
                     .resizable()
                     .scaledToFit()
                     .frame(width: 50, height: 50)
+                    .scaleEffect(displayScale)
                     .opacity(pet.isBlown ? 0.5 : 1.0)
 
                 // Info
