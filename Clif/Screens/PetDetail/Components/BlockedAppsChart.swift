@@ -3,6 +3,7 @@ import SwiftUI
 struct BlockedAppsChart: View {
     let stats: BlockedAppsWeeklyStats
     var themeColor: Color = .green
+    var dailyLimitMinutes: Int? = nil
     var blownDate: Date? = nil
     var onTap: (() -> Void)?
 
@@ -96,9 +97,9 @@ struct BlockedAppsChart: View {
     }
 
     /// Returns color based on usage intensity - uses themeColor with varying opacity/saturation
-    /// If the day matches blownDate, returns red color
+    /// If the day exceeds daily limit, returns red color
     private func barColor(for normalized: CGFloat, day: BlockedAppsDailyStat) -> Color {
-        if let blownDate, Calendar.current.isDate(day.date, inSameDayAs: blownDate) {
+        if let limit = dailyLimitMinutes, day.totalMinutes > limit {
             return .red
         }
         // Higher usage = lighter color, lower usage = darker color
@@ -208,7 +209,7 @@ struct DayDetailSheet: View {
 #if DEBUG
 #Preview {
     NavigationStack {
-        PetDetailScreenDebug()
+        PetActiveDetailScreenDebug()
     }
 }
 

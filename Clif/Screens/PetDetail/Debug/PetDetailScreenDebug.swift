@@ -1,7 +1,7 @@
 #if DEBUG
 import SwiftUI
 
-struct PetDetailScreenDebug: View {
+struct PetActiveDetailScreenDebug: View {
     @Environment(\.dismiss) private var dismiss
 
     // MARK: - Pet Identity State
@@ -96,7 +96,7 @@ struct PetDetailScreenDebug: View {
             }
         }
         .fullScreenCover(isPresented: $showSheet) {
-            PetDetailScreen(
+            PetActiveDetailScreen(
                 petName: petName,
                 evolutionHistory: evolutionHistory,
                 streak: streakCount,
@@ -514,7 +514,7 @@ struct PetDetailScreenDebug: View {
 
 #Preview {
     NavigationStack {
-        PetDetailScreenDebug()
+        PetActiveDetailScreenDebug()
     }
 }
 #endif

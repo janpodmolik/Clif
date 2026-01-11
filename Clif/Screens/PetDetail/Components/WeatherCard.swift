@@ -17,27 +17,11 @@ struct WeatherCard: View {
     }
 
     private var windIcon: String {
-        if isBlownAway {
-            return "cloud.bolt.fill"
-        }
-        switch windLevel {
-        case .none: return "sun.max.fill"
-        case .low: return "wind"
-        case .medium: return "wind"
-        case .high: return "tornado"
-        }
+        isBlownAway ? "cloud.bolt.fill" : windLevel.icon
     }
 
     private var windColor: Color {
-        if isBlownAway {
-            return .red
-        }
-        switch windLevel {
-        case .none: return .yellow
-        case .low: return .green
-        case .medium: return .orange
-        case .high: return .red
-        }
+        isBlownAway ? .red : windLevel.color
     }
 
     private var petStatusText: String {

@@ -43,7 +43,7 @@ struct PetHistoryDetailScreen: View {
                     BlockedAppsChart(
                         stats: pet.weeklyStats,
                         themeColor: pet.essence.themeColor,
-                        blownDate: pet.evolutionHistory.blownAt
+                        dailyLimitMinutes: pet.dailyLimitMinutes
                     )
 
                     limitStatsCard

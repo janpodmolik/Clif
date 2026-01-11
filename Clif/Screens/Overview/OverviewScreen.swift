@@ -2,10 +2,12 @@ import SwiftUI
 
 struct OverviewScreen: View {
     @State private var selectedPet: ArchivedPet?
+    @State private var selectedActivePet: ActivePet?
 
     // Mock data for now
     private let weeklyStats = BlockedAppsWeeklyStats.mock()
     private let archivedPets = ArchivedPet.mockList()
+    private let activePets = ActivePet.mockList()
 
     private var completedPets: [ArchivedPet] {
         archivedPets.filter { !$0.isBlown }
@@ -22,6 +24,8 @@ struct OverviewScreen: View {
                     selectedPet = pet
                 }
 
+                activeSection
+
                 historySection
             }
             .padding(.horizontal, 20)
@@ -32,6 +36,28 @@ struct OverviewScreen: View {
         .fullScreenCover(item: $selectedPet) { pet in
             PetHistoryDetailScreen(pet: pet)
         }
+        .fullScreenCover(item: $selectedActivePet) { pet in
+            PetActiveDetailScreen(
+                petName: pet.name,
+                evolutionHistory: pet.evolutionHistory,
+                streak: pet.streak,
+                purposeLabel: pet.purpose,
+                windLevel: pet.windLevel,
+                isBlownAway: false,
+                usedMinutes: pet.usedMinutes,
+                limitMinutes: pet.limitMinutes,
+                weeklyStats: pet.weeklyStats,
+                blockedAppCount: pet.blockedAppCount,
+                daysUntilEvolution: pet.daysUntilEvolution,
+                showOverviewActions: true,
+                onShowOnHomepage: {
+                    selectedActivePet = nil
+                    if let url = URL(string: "clif://pet/\(pet.id.uuidString)") {
+                        UIApplication.shared.open(url)
+                    }
+                }
+            )
+        }
     }
 
     private var headerSection: some View {
@@ -41,6 +67,49 @@ struct OverviewScreen: View {
             Text("Historie tvých petů a času u obrazovky.")
                 .foregroundStyle(.secondary)
         }
+    }
+
+    private var activeSection: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            HStack {
+                Text("Aktuální")
+                    .font(.headline)
+                Spacer()
+                Text("\(activePets.count)")
+                    .font(.caption)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(.ultraThinMaterial, in: Capsule())
+            }
+
+            if activePets.isEmpty {
+                emptyActiveState
+            } else {
+                LazyVStack(spacing: 12) {
+                    ForEach(activePets) { pet in
+                        PetActiveRow(pet: pet) {
+                            selectedActivePet = pet
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private var emptyActiveState: some View {
+        VStack(spacing: 12) {
+            Image(systemName: "leaf.fill")
+                .font(.system(size: 40))
+                .foregroundStyle(.secondary)
+            Text("Žádní aktivní peti")
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+            Text("Vytvoř si nového peta na homepage.")
+                .font(.caption)
+                .foregroundStyle(.tertiary)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 32)
     }
 
     private var historySection: some View {

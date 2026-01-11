@@ -19,6 +19,7 @@ struct ContentView: View {
     private var isDarkModeEnabled: Bool = false
 
     @State private var activeTab: AppTab = .home
+    @State private var selectedPetId: UUID?
 
     #if DEBUG
     @State private var showPetDebug = false
@@ -45,6 +46,12 @@ struct ContentView: View {
                 .padding(.horizontal, 20)
         }
         .preferredColorScheme(isDarkModeEnabled ? .dark : .light)
+        .onReceive(NotificationCenter.default.publisher(for: .selectPet)) { notification in
+            if let petId = notification.userInfo?["petId"] as? UUID {
+                selectedPetId = petId
+                activeTab = .home
+            }
+        }
         #if DEBUG
         .fullScreenCover(isPresented: $showPetDebug) {
             PetDebugView()

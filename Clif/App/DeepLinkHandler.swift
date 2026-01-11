@@ -34,6 +34,20 @@ private enum DeepLinkHandler {
             print("[DeepLink] Opened from shield notification")
             #endif
             // TODO: Navigate to session tracking view when implemented
+
+        case "pet":
+            if let petIdString = url.pathComponents.dropFirst().first,
+               let petId = UUID(uuidString: petIdString) {
+                #if DEBUG
+                print("[DeepLink] Navigate to pet: \(petId)")
+                #endif
+                NotificationCenter.default.post(
+                    name: .selectPet,
+                    object: nil,
+                    userInfo: ["petId": petId]
+                )
+            }
+
         default:
             break
         }
@@ -42,4 +56,5 @@ private enum DeepLinkHandler {
 
 extension Notification.Name {
     static let deepLinkReceived = Notification.Name("deepLinkReceived")
+    static let selectPet = Notification.Name("selectPet")
 }

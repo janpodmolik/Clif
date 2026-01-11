@@ -22,7 +22,7 @@ struct PetHistoryRow: View {
 
     var body: some View {
         Button(action: onTap) {
-            HStack(alignment: .top, spacing: 14) {
+            HStack(alignment: .center, spacing: 14) {
                 Image(assetName)
                     .resizable()
                     .scaledToFit()
@@ -33,11 +33,12 @@ struct PetHistoryRow: View {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(pet.name)
                         .font(.headline)
+                        .foregroundStyle(pet.isBlown ? .secondary : .primary)
 
                     if let purpose = pet.purpose {
                         Text(purpose)
                             .font(.subheadline)
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(pet.isBlown ? .tertiary : .secondary)
                     }
 
                     HStack(spacing: 12) {
@@ -54,7 +55,7 @@ struct PetHistoryRow: View {
                         }
                     }
                     .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(pet.isBlown ? .tertiary : .secondary)
                 }
 
                 Spacer()
@@ -63,7 +64,7 @@ struct PetHistoryRow: View {
                     VStack(alignment: .trailing, spacing: 4) {
                         Text(relativeDate)
                             .font(.caption)
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(.tertiary)
 
                         Spacer()
                             .frame(minHeight: 0)
@@ -79,6 +80,7 @@ struct PetHistoryRow: View {
                     Text(relativeDate)
                         .font(.caption)
                         .foregroundStyle(.secondary)
+                        .frame(maxHeight: .infinity, alignment: .top)
                 }
             }
             .fixedSize(horizontal: false, vertical: true)

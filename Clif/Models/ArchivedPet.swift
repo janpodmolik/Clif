@@ -129,6 +129,9 @@ extension ArchivedPet {
         [
             .mock(name: "Fern", phase: 4, isBlown: false, daysAgo: 28, totalDays: 21),
             .mock(name: "Ivy", phase: 4, isBlown: false, daysAgo: 45, totalDays: 18),
+            .mock(name: "Willow", phase: 4, isBlown: false, daysAgo: 60, totalDays: 25),
+            .mock(name: "Sage", phase: 4, isBlown: false, daysAgo: 90, totalDays: 30),
+            .mock(name: "Clover", phase: 4, isBlown: false, daysAgo: 120, totalDays: 28),
             .mock(name: "Moss", phase: 3, isBlown: true, daysAgo: 14, totalDays: 9),
             .mock(name: "Sprout", phase: 2, isBlown: true, daysAgo: 10, totalDays: 4),
             .mock(name: "Leaf", phase: 1, isBlown: true, daysAgo: 5, totalDays: 2)

@@ -116,8 +116,8 @@ struct HistoryIslandView: View {
         }
         .padding(.horizontal, 10)
         .padding(.vertical, 6)
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 8))
-    }
+        .background(.ultraThickMaterial, in: RoundedRectangle(cornerRadius: 8))
+    } 
 
     // MARK: - Random Movement
 
