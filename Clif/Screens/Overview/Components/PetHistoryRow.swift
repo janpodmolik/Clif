@@ -13,22 +13,16 @@ struct PetHistoryRow: View {
         pet.phase?.displayScale ?? 1.0
     }
 
-    private var statusText: String {
-        pet.isBlown ? "Odfouknut" : "Dokončeno"
-    }
-
-    private var statusIcon: String {
-        pet.isBlown ? "wind" : "checkmark.circle.fill"
-    }
-
-    private var statusColor: Color {
-        pet.isBlown ? .red : .green
+    private var relativeDate: String {
+        let formatter = RelativeDateTimeFormatter()
+        formatter.locale = Locale(identifier: "cs_CZ")
+        formatter.unitsStyle = .short
+        return formatter.localizedString(for: pet.archivedAt, relativeTo: Date())
     }
 
     var body: some View {
         Button(action: onTap) {
-            HStack(alignment: .bottom, spacing: 14) {
-                // Pet image
+            HStack(alignment: .top, spacing: 14) {
                 Image(assetName)
                     .resizable()
                     .scaledToFit()
@@ -36,47 +30,69 @@ struct PetHistoryRow: View {
                     .scaleEffect(displayScale)
                     .opacity(pet.isBlown ? 0.5 : 1.0)
 
-                // Info
                 VStack(alignment: .leading, spacing: 4) {
-                    HStack {
-                        Text(pet.name)
-                            .font(.headline)
+                    Text(pet.name)
+                        .font(.headline)
 
-                        Spacer()
-
-                        // Status badge
-                        HStack(spacing: 4) {
-                            Image(systemName: statusIcon)
-                            Text(statusText)
-                        }
-                        .font(.caption)
-                        .foregroundStyle(statusColor)
-                    }
-
-                    HStack {
-                        if let purpose = pet.purpose {
-                            Text(purpose)
-                                .foregroundStyle(.secondary)
-                        }
-
-                        Spacer()
-
-                        Text("Fáze \(pet.finalPhase)/\(pet.evolutionHistory.maxPhase)")
+                    if let purpose = pet.purpose {
+                        Text(purpose)
+                            .font(.subheadline)
                             .foregroundStyle(.secondary)
                     }
-                    .font(.subheadline)
 
-                    HStack(spacing: 4) {
-                        Image(systemName: "flame.fill")
-                            .foregroundStyle(.orange)
-                        Text("\(pet.totalDays) dní")
+                    HStack(spacing: 12) {
+                        HStack(spacing: 4) {
+                            Image(systemName: "flame.fill")
+                                .foregroundStyle(.orange)
+                            Text("\(pet.totalDays) dní")
+                        }
+
+                        if pet.finalPhase < pet.evolutionHistory.maxPhase {
+                            Text("🧬 \(pet.finalPhase)/\(pet.evolutionHistory.maxPhase)")
+                        } else {
+                            Text("🧬 \(pet.evolutionHistory.maxPhase)")
+                        }
                     }
                     .font(.caption)
                     .foregroundStyle(.secondary)
                 }
+
+                Spacer()
+
+                if pet.isBlown {
+                    VStack(alignment: .trailing, spacing: 4) {
+                        Text(relativeDate)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+
+                        Spacer()
+                            .frame(minHeight: 0)
+
+                        HStack(spacing: 4) {
+                            Image(systemName: "wind")
+                            Text("Odfouknut")
+                        }
+                        .font(.caption)
+                        .foregroundStyle(.red)
+                    }
+                } else {
+                    Text(relativeDate)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
             }
+            .fixedSize(horizontal: false, vertical: true)
             .padding(14)
-            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
+            .background {
+                if pet.isBlown {
+                    RoundedRectangle(cornerRadius: 16)
+                        .fill(.ultraThinMaterial)
+                } else {
+                    RoundedRectangle(cornerRadius: 16)
+                        .fill(pet.essence.themeColor.opacity(0.15))
+                        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
+                }
+            }
         }
         .buttonStyle(.plain)
     }

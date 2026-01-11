@@ -52,7 +52,8 @@ extension ArchivedPet {
             }
         }
 
-        let blownAt = isBlown ? calendar.date(byAdding: .day, value: -1, to: Date()) : nil
+        let archivedAt = calendar.date(byAdding: .day, value: -daysAgo + totalDays, to: Date()) ?? Date()
+        let blownAt = isBlown ? archivedAt : nil
 
         return ArchivedPet(
             name: name,
@@ -63,6 +64,7 @@ extension ArchivedPet {
                 blownAt: blownAt
             ),
             purpose: "Social Media",
+            archivedAt: archivedAt,
             totalDays: totalDays
         )
     }
