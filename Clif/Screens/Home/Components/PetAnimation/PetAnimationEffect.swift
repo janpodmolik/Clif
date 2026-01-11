@@ -35,6 +35,7 @@ struct PetAnimationEffect: ViewModifier {
 
     // Idle parameters
     let idleConfig: IdleConfig
+    let idlePhaseOffset: TimeInterval
 
     // Screen width for calculating max sample offset (pet can fly to screen edge)
     let screenWidth: CGFloat?
@@ -100,7 +101,9 @@ struct PetAnimationEffect: ViewModifier {
     func body(content: Content) -> some View {
         TimelineView(.animation) { context in
             // Use shared rhythm time when available, otherwise fall back to local time
-            let time: TimeInterval = windRhythm?.elapsedTime ?? context.date.timeIntervalSince(startTime)
+            // Add idlePhaseOffset to desynchronize breathing between multiple pets
+            let baseTime: TimeInterval = windRhythm?.elapsedTime ?? context.date.timeIntervalSince(startTime)
+            let time: TimeInterval = baseTime + idlePhaseOffset
 
             // Wave function for rotation (synchronized with shader)
             // Pet bends IN the wind direction (wind pushes it)
@@ -193,6 +196,7 @@ extension View {
     ///   - tapType: Type of tap animation to play
     ///   - tapConfig: Configuration for tap animation parameters
     ///   - idleConfig: Configuration for idle breathing animation
+    ///   - idlePhaseOffset: Time offset to desynchronize breathing between multiple pets (0 = no offset)
     ///   - screenWidth: Screen width for max sample offset (allows pet to fly to screen edge)
     ///   - windRhythm: Optional shared rhythm for synchronized wind effects with wind lines
     ///   - onTransformUpdate: Callback providing current rotation and sway values for overlays
@@ -206,6 +210,7 @@ extension View {
         tapType: TapAnimationType = .none,
         tapConfig: TapConfig = .none,
         idleConfig: IdleConfig = .default,
+        idlePhaseOffset: TimeInterval = 0,
         screenWidth: CGFloat? = nil,
         windRhythm: WindRhythm? = nil,
         onTransformUpdate: ((PetAnimationTransform) -> Void)? = nil
@@ -220,6 +225,7 @@ extension View {
             tapType: tapType,
             tapConfig: tapConfig,
             idleConfig: idleConfig,
+            idlePhaseOffset: idlePhaseOffset,
             screenWidth: screenWidth,
             windRhythm: windRhythm,
             onTransformUpdate: onTransformUpdate

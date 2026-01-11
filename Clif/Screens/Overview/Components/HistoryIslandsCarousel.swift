@@ -11,13 +11,6 @@ struct HistoryIslandsCarousel: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            HStack {
-                Image(systemName: "trophy.fill")
-                    .foregroundStyle(.yellow)
-                Text("Hall of Fame")
-                    .font(.headline)
-            }
-
             if pets.isEmpty {
                 emptyState
             } else {

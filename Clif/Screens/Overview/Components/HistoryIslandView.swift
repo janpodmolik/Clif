@@ -5,12 +5,31 @@ struct HistoryIslandView: View {
     let height: CGFloat
     let onTap: () -> Void
 
-    @State private var isBreathing = false
+    // Animation state
+    @State private var movementTriggerTime: TimeInterval = -1
+    @State private var currentMovementType: TapAnimationType = .none
+    @State private var currentMovementConfig: TapConfig = .none
+    @State private var randomMovementTimer: Timer?
 
-    // Poměry podle FloatingIslandView: island 60%, pet 10% výšky
-    private var islandHeight: CGFloat { height * 0.6 }
-    private var petHeight: CGFloat { height * 0.10 }
-    private var petOffset: CGFloat { -petHeight }
+    // Random phase offset for breathing desync (0-2.5s = one full breath cycle)
+    private let idlePhaseOffset: TimeInterval = .random(in: 0...2.5)
+
+    // Scale factor for enlarging the island (pet will be more visible)
+    private let scaleFactor: CGFloat = 2.5
+    // How much of the bottom to clip (0.35 = 35%)
+    private let bottomClipFraction: CGFloat = 0.35
+
+    // Base dimensions (before scaling)
+    private var baseIslandHeight: CGFloat { height * 0.4 }
+    private var basePetHeight: CGFloat { height * 0.1 }
+
+    // Scaled dimensions
+    private var scaledIslandHeight: CGFloat { baseIslandHeight * scaleFactor }
+    private var scaledPetHeight: CGFloat { basePetHeight * scaleFactor }
+    private var petOffset: CGFloat { -scaledPetHeight * 1.2 }
+
+    // Offset to move content up so pet stays visible after clipping
+    private var contentOffset: CGFloat { scaledIslandHeight * bottomClipFraction }
 
     private var petAssetName: String {
         if let evolution = pet.essence.phase(at: pet.finalPhase) {
@@ -19,8 +38,16 @@ struct HistoryIslandView: View {
         return pet.essence.assetName
     }
 
+    private var evolution: any EvolutionType {
+        pet.essence.phase(at: pet.finalPhase) ?? PlantEvolution.phase4
+    }
+
     private var displayScale: CGFloat {
-        pet.essence.phase(at: pet.finalPhase)?.displayScale ?? 1.0
+        evolution.displayScale
+    }
+
+    private var idleConfig: IdleConfig {
+        AnimationConfigProvider.idleConfig(for: evolution)
     }
 
     var body: some View {
@@ -32,7 +59,7 @@ struct HistoryIslandView: View {
                     Image("rock")
                         .resizable()
                         .scaledToFit()
-                        .frame(maxHeight: islandHeight)
+                        .frame(maxHeight: scaledIslandHeight)
                         .overlay(alignment: .top) {
                             Image("grass")
                                 .resizable()
@@ -40,42 +67,80 @@ struct HistoryIslandView: View {
                         }
 
                     // Pet positioned on top of grass
-                    ZStack {
-                        Image(petAssetName)
-                            .resizable()
-                            .scaledToFit()
-                            .frame(height: petHeight)
-                            .scaleEffect(displayScale, anchor: .bottom)
-                            .scaleEffect(isBreathing ? 1.02 : 1.0)
-                            .animation(
-                                .easeInOut(duration: 2.5).repeatForever(autoreverses: true),
-                                value: isBreathing
-                            )
-                    }
-                    .padding(.top, petHeight * 0.6)
-                    .offset(y: petOffset)
+                    Image(petAssetName)
+                        .resizable()
+                        .scaledToFit()
+                        .frame(height: scaledPetHeight)
+                        .scaleEffect(displayScale, anchor: .bottom)
+                        .petAnimation(
+                            intensity: 0,
+                            tapTime: movementTriggerTime,
+                            tapType: currentMovementType,
+                            tapConfig: currentMovementConfig,
+                            idleConfig: idleConfig,
+                            idlePhaseOffset: idlePhaseOffset
+                        )
+                        .padding(.top, scaledPetHeight * 0.6)
+                        .offset(y: petOffset)
                 }
+                .offset(y: contentOffset)
                 .overlay(alignment: .bottom) {
-                    nameLabel
+                    labelsStack
                         .offset(y: -8)
                 }
             }
             .frame(height: height, alignment: .bottom)
+            .clipped()
         }
         .buttonStyle(.plain)
         .onAppear {
-            isBreathing = true
+            scheduleRandomMovement()
+        }
+        .onDisappear {
+            randomMovementTimer?.invalidate()
         }
     }
 
-    private var nameLabel: some View {
-        Text(pet.name)
-            .font(.caption)
-            .fontWeight(.semibold)
-            .foregroundStyle(.primary)
-            .padding(.horizontal, 10)
-            .padding(.vertical, 4)
-            .background(.ultraThinMaterial, in: Capsule())
+    private var labelsStack: some View {
+        VStack(spacing: 4) {
+            // Name
+            Text(pet.name)
+                .font(.caption)
+                .fontWeight(.semibold)
+                .foregroundStyle(.primary)
+
+            // Purpose (if available)
+            if let purpose = pet.purpose {
+                Text(purpose)
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+            }
+
+            // Date
+            Text(pet.archivedAt, format: .dateTime.day().month(.abbreviated))
+                .font(.caption2)
+                .foregroundStyle(.tertiary)
+        }
+        .padding(.horizontal, 10)
+        .padding(.vertical, 6)
+        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 8))
+    }
+
+    // MARK: - Random Movement
+
+    private func scheduleRandomMovement() {
+        let delay = Double.random(in: 3...8)
+        randomMovementTimer = Timer.scheduledTimer(withTimeInterval: delay, repeats: false) { _ in
+            triggerRandomMovement()
+            scheduleRandomMovement()
+        }
+    }
+
+    private func triggerRandomMovement() {
+        let movementType = [TapAnimationType.wiggle, .squeeze, .jiggle, .bounce].randomElement() ?? .wiggle
+        currentMovementType = movementType
+        currentMovementConfig = AnimationConfigProvider.tapConfig(for: evolution, type: movementType)
+        movementTriggerTime = Date().timeIntervalSinceReferenceDate
     }
 }
 
