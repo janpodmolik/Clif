@@ -30,7 +30,7 @@ struct OverviewScreen: View {
         }
         .background(OverviewBackground())
         .fullScreenCover(item: $selectedPet) { pet in
-            ArchivedPetDetailScreen(pet: pet)
+            PetHistoryDetailScreen(pet: pet)
         }
     }
 
