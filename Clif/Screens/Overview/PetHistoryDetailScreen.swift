@@ -100,7 +100,7 @@ struct PetHistoryDetailScreen: View {
 
                 Text(formatDate(pet.archivedAt))
                     .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(.primary)
             }
 
             Spacer()

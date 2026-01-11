@@ -21,6 +21,7 @@ struct EvolutionTimelineView: View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Evolution Timeline")
                 .font(.headline)
+                .padding(.horizontal)
 
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 0) {
@@ -35,17 +36,19 @@ struct EvolutionTimelineView: View {
                     }
                 }
                 .padding(.vertical, 8)
-                .padding(.horizontal, 16)
             }
-            .scrollClipDisabled()
+            .contentMargins(.horizontal, 16, for: .scrollContent)
 
-            if let blownAt {
-                blownAwayLabel(date: blownAt)
-            } else {
-                evolutionStatusLabel
+            Group {
+                if let blownAt {
+                    blownAwayLabel(date: blownAt)
+                } else {
+                    evolutionStatusLabel
+                }
             }
+            .padding(.horizontal)
         }
-        .padding()
+        .padding(.vertical)
         .glassCard()
     }
 

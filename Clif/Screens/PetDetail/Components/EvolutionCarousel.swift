@@ -91,7 +91,6 @@ struct EvolutionCarousel: View {
             .scrollTargetBehavior(.viewAligned)
             .scrollPosition(id: $scrollTarget, anchor: .center)
             .defaultScrollAnchor(.center)
-            .scrollClipDisabled()
             .padding(.top, 4)
             .contentMargins(.horizontal, horizontalInset, for: .scrollContent)
             .frame(height: cardHeight + 24)
@@ -199,7 +198,8 @@ struct EvolutionOriginCard: View {
                 )
         } else {
             RoundedRectangle(cornerRadius: 20)
-                .fill(.ultraThinMaterial)
+                .fill(themeColor.opacity(0.08))
+                .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 20))
                 .overlay {
                     RoundedRectangle(cornerRadius: 20)
                         .stroke(themeColor.opacity(0.15), lineWidth: 1)
@@ -297,7 +297,8 @@ struct EvolutionPhaseCard: View {
                 )
         } else {
             RoundedRectangle(cornerRadius: 20)
-                .fill(.ultraThinMaterial)
+                .fill(isLocked ? Color.clear : cardTintColor.opacity(0.08))
+                .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 20))
                 .overlay {
                     if !isLocked {
                         RoundedRectangle(cornerRadius: 20)
