@@ -4,7 +4,7 @@ import SwiftUI
 
 struct PetScreenTimeCarousel: View {
     let activePets: [ActivePet]
-    let fallbackStats: BlockedAppsWeeklyStats
+    let fallbackStats: WeeklyUsageStats
     var applicationTokens: Set<ApplicationToken> = []
     var categoryTokens: Set<ActivityCategoryToken> = []
     var onPetTap: (ActivePet) -> Void

@@ -10,7 +10,7 @@ struct PetActiveDetailScreenDebug: View {
     @State private var purposeLabel: String = "Social Media"
     @State private var essence: Essence = .plant
     @State private var currentPhase: Int = 2
-    @State private var streakCount: Int = 12
+    @State private var totalDays: Int = 12
 
     // MARK: - Weather State
 
@@ -18,8 +18,8 @@ struct PetActiveDetailScreenDebug: View {
 
     // MARK: - Screen Time State
 
-    @State private var usedMinutes: Double = 83
-    @State private var limitMinutes: Double = 180
+    @State private var todayUsedMinutes: Double = 83
+    @State private var dailyLimitMinutes: Double = 180
 
     // MARK: - Pet State
 
@@ -99,20 +99,20 @@ struct PetActiveDetailScreenDebug: View {
             PetActiveDetailScreen(
                 petName: petName,
                 evolutionHistory: evolutionHistory,
-                streak: streakCount,
+                totalDays: totalDays,
                 purposeLabel: purposeLabel.isEmpty ? nil : purposeLabel,
                 windLevel: windLevel,
                 isBlownAway: isBlownAway,
-                usedMinutes: Int(usedMinutes),
-                limitMinutes: Int(limitMinutes),
+                todayUsedMinutes: Int(todayUsedMinutes),
+                dailyLimitMinutes: Int(dailyLimitMinutes),
                 weeklyStats: .mock(),
-                blockedAppCount: 12,
+                limitedAppCount: 12,
                 onEvolve: { print("Evolve tapped") },
                 onBlowAway: { print("Blow Away tapped") },
                 onReplay: { print("Replay tapped") },
                 onDelete: { print("Delete tapped") },
                 onSeeAllStats: { print("See all stats tapped") },
-                onBlockedApps: { print("Blocked apps tapped") }
+                onLimitedApps: { print("Limited apps tapped") }
             )
         }
     }
@@ -140,7 +140,7 @@ struct PetActiveDetailScreenDebug: View {
 
                     HStack(spacing: 16) {
                         Label("Phase \(currentPhase)/\(essence.maxPhases)", systemImage: "sparkles")
-                        Label("\(streakCount) days", systemImage: "flame.fill")
+                        Label("\(totalDays) days", systemImage: "calendar")
                             .foregroundStyle(.orange)
                     }
                     .font(.subheadline)
@@ -223,24 +223,24 @@ struct PetActiveDetailScreenDebug: View {
                 }
 
                 HStack {
-                    Text("Streak")
+                    Text("Total Days")
                         .foregroundStyle(.secondary)
                     Spacer()
                     HStack(spacing: 12) {
                         Button {
-                            if streakCount > 0 { streakCount -= 1 }
+                            if totalDays > 0 { totalDays -= 1 }
                         } label: {
                             Image(systemName: "minus.circle.fill")
                                 .font(.title2)
                                 .foregroundStyle(.secondary)
                         }
 
-                        Text("\(streakCount)")
+                        Text("\(totalDays)")
                             .font(.system(.body, design: .monospaced, weight: .semibold))
                             .frame(width: 40)
 
                         Button {
-                            streakCount += 1
+                            totalDays += 1
                         } label: {
                             Image(systemName: "plus.circle.fill")
                                 .font(.title2)
@@ -295,13 +295,13 @@ struct PetActiveDetailScreenDebug: View {
             VStack(spacing: 16) {
                 VStack(alignment: .leading, spacing: 4) {
                     HStack {
-                        Text("Used")
+                        Text("Used Today")
                             .foregroundStyle(.secondary)
                         Spacer()
-                        Text(formatTime(minutes: Int(usedMinutes)))
+                        Text(formatTime(minutes: Int(todayUsedMinutes)))
                             .font(.system(.body, design: .monospaced))
                     }
-                    Slider(value: $usedMinutes, in: 0...300, step: 1)
+                    Slider(value: $todayUsedMinutes, in: 0...300, step: 1)
                 }
 
                 VStack(alignment: .leading, spacing: 4) {
@@ -309,17 +309,17 @@ struct PetActiveDetailScreenDebug: View {
                         Text("Limit")
                             .foregroundStyle(.secondary)
                         Spacer()
-                        Text(formatTime(minutes: Int(limitMinutes)))
+                        Text(formatTime(minutes: Int(dailyLimitMinutes)))
                             .font(.system(.body, design: .monospaced))
                     }
-                    Slider(value: $limitMinutes, in: 1...480, step: 1)
+                    Slider(value: $dailyLimitMinutes, in: 1...480, step: 1)
                 }
 
                 HStack {
                     Text("Progress")
                         .foregroundStyle(.secondary)
                     Spacer()
-                    let progress = usedMinutes / limitMinutes
+                    let progress = todayUsedMinutes / dailyLimitMinutes
                     Text("\(Int(progress * 100))%")
                         .font(.system(.body, design: .monospaced, weight: .semibold))
                         .foregroundStyle(progressColor(for: progress))
@@ -370,10 +370,10 @@ struct PetActiveDetailScreenDebug: View {
             petName = "Fern"
             purposeLabel = "Social Media"
             currentPhase = 2
-            streakCount = 12
+            totalDays = 12
             windLevel = .medium
-            usedMinutes = 83
-            limitMinutes = 180
+            todayUsedMinutes = 83
+            dailyLimitMinutes = 180
             isBlownAway = false
         }
     }
@@ -383,10 +383,10 @@ struct PetActiveDetailScreenDebug: View {
             petName = "Sprout"
             purposeLabel = "Gaming"
             currentPhase = 2
-            streakCount = 7
+            totalDays = 7
             windLevel = .low
-            usedMinutes = 60
-            limitMinutes = 180
+            todayUsedMinutes = 60
+            dailyLimitMinutes = 180
             isBlownAway = false
         }
     }
@@ -396,10 +396,10 @@ struct PetActiveDetailScreenDebug: View {
             petName = "Elder Oak"
             purposeLabel = "Work Apps"
             currentPhase = 4
-            streakCount = 30
+            totalDays = 30
             windLevel = .none
-            usedMinutes = 45
-            limitMinutes = 180
+            todayUsedMinutes = 45
+            dailyLimitMinutes = 180
             isBlownAway = false
         }
     }
@@ -409,10 +409,10 @@ struct PetActiveDetailScreenDebug: View {
             petName = "Seedling"
             purposeLabel = ""
             currentPhase = 1
-            streakCount = 0
+            totalDays = 0
             windLevel = .none
-            usedMinutes = 0
-            limitMinutes = 180
+            todayUsedMinutes = 0
+            dailyLimitMinutes = 180
             isBlownAway = false
         }
     }
@@ -422,10 +422,10 @@ struct PetActiveDetailScreenDebug: View {
             petName = "Willow"
             purposeLabel = "Streaming"
             currentPhase = 3
-            streakCount = 5
+            totalDays = 5
             windLevel = .high
-            usedMinutes = 170
-            limitMinutes = 180
+            todayUsedMinutes = 170
+            dailyLimitMinutes = 180
             isBlownAway = false
         }
     }
@@ -435,10 +435,10 @@ struct PetActiveDetailScreenDebug: View {
             petName = "Willow"
             purposeLabel = "Social Media"
             currentPhase = 3
-            streakCount = 0
+            totalDays = 0
             windLevel = .high
-            usedMinutes = 230
-            limitMinutes = 180
+            todayUsedMinutes = 230
+            dailyLimitMinutes = 180
             isBlownAway = true
         }
     }

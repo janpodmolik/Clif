@@ -4,20 +4,20 @@ struct PetActiveDetailScreen: View {
     // MARK: - Pet Properties
     let petName: String
     let evolutionHistory: EvolutionHistory
-    let streak: Int
+    let totalDays: Int
     let purposeLabel: String?
     let windLevel: WindLevel
     let isBlownAway: Bool
 
     // MARK: - Screen Time Properties
-    let usedMinutes: Int
-    let limitMinutes: Int
+    let todayUsedMinutes: Int
+    let dailyLimitMinutes: Int
 
     // MARK: - Stats
-    let weeklyStats: BlockedAppsWeeklyStats
+    let weeklyStats: WeeklyUsageStats
 
-    // MARK: - Blocked Apps
-    let blockedAppCount: Int
+    // MARK: - Limited Apps
+    let limitedAppCount: Int
 
     // MARK: - Evolution
     var daysUntilEvolution: Int? = 1
@@ -31,7 +31,7 @@ struct PetActiveDetailScreen: View {
     var onReplay: () -> Void = {}
     var onDelete: () -> Void = {}
     var onSeeAllStats: () -> Void = {}
-    var onBlockedApps: () -> Void = {}
+    var onLimitedApps: () -> Void = {}
     var onShowOnHomepage: () -> Void = {}
 
     @Environment(\.dismiss) private var dismiss
@@ -52,15 +52,15 @@ struct PetActiveDetailScreen: View {
 
                     StatCardView(
                         stat: ScreenTimeStat(
-                            usedMinutes: usedMinutes,
-                            limitMinutes: limitMinutes
+                            usedMinutes: todayUsedMinutes,
+                            limitMinutes: dailyLimitMinutes
                         )
                     )
 
                     PetDetailHeader(
                         petName: petName,
                         mood: mood,
-                        streak: streak,
+                        totalDays: totalDays,
                         evolutionPhase: evolutionHistory.currentPhase,
                         purposeLabel: purposeLabel
                     )
@@ -83,13 +83,12 @@ struct PetActiveDetailScreen: View {
                     WeeklyHistoryCard(
                         stats: weeklyStats,
                         themeColor: evolutionHistory.essence.themeColor,
-                        dailyLimitMinutes: limitMinutes,
                         onTap: onSeeAllStats
                     )
 
-                    BlockedAppsBadge(
-                        appCount: blockedAppCount,
-                        onTap: onBlockedApps
+                    LimitedAppsBadge(
+                        appCount: limitedAppCount,
+                        onTap: onLimitedApps
                     )
 
                     if showOverviewActions {
@@ -181,14 +180,14 @@ struct PetActiveDetailScreen: View {
                         )
                     ]
                 ),
-                streak: 12,
+                totalDays: 12,
                 purposeLabel: "Social Media",
                 windLevel: .medium,
                 isBlownAway: false,
-                usedMinutes: 83,
-                limitMinutes: 180,
+                todayUsedMinutes: 83,
+                dailyLimitMinutes: 180,
                 weeklyStats: .mock(),
-                blockedAppCount: 12
+                limitedAppCount: 12
             )
         }
 }
@@ -214,14 +213,14 @@ struct PetActiveDetailScreen: View {
                         )
                     ]
                 ),
-                streak: 19,
+                totalDays: 19,
                 purposeLabel: "Social Media",
                 windLevel: .low,
                 isBlownAway: false,
-                usedMinutes: 25,
-                limitMinutes: 90,
+                todayUsedMinutes: 25,
+                dailyLimitMinutes: 90,
                 weeklyStats: .mock(),
-                blockedAppCount: 8,
+                limitedAppCount: 8,
                 showOverviewActions: true
             )
         }

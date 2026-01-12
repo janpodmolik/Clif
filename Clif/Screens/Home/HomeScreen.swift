@@ -77,14 +77,14 @@ struct HomeScreen: View {
                         )
                     ]
                 ),
-                streak: 19,
+                totalDays: 19,
                 purposeLabel: "Social Media",
                 windLevel: .high,
                 isBlownAway: false,
-                usedMinutes: 32,
-                limitMinutes: 120,
+                todayUsedMinutes: 32,
+                dailyLimitMinutes: 120,
                 weeklyStats: .mock(),
-                blockedAppCount: 12
+                limitedAppCount: 12
             )
         }
         .onAppear {

@@ -4,7 +4,7 @@ struct PetScreenTimeCard: View {
     let pet: ActivePet
     var onTap: () -> Void
 
-    @State private var selectedDay: BlockedAppsDailyStat?
+    @State private var selectedDay: DailyUsageStat?
 
     private var assetName: String {
         pet.essence.phase(at: pet.currentPhase)?.assetName(for: mood) ?? pet.essence.assetName
@@ -15,8 +15,8 @@ struct PetScreenTimeCard: View {
     }
 
     private var progress: Double {
-        guard pet.limitMinutes > 0 else { return 0 }
-        return min(Double(pet.usedMinutes) / Double(pet.limitMinutes), 1.0)
+        guard pet.dailyLimitMinutes > 0 else { return 0 }
+        return min(Double(pet.todayUsedMinutes) / Double(pet.dailyLimitMinutes), 1.0)
     }
 
     private var progressPercent: Int {
@@ -30,7 +30,7 @@ struct PetScreenTimeCard: View {
                 .onTapGesture(perform: onTap)
 
             if !pet.applicationTokens.isEmpty || !pet.categoryTokens.isEmpty {
-                BlockedAppsPreview(
+                LimitedAppsPreview(
                     applicationTokens: pet.applicationTokens,
                     categoryTokens: pet.categoryTokens
                 )
@@ -44,7 +44,6 @@ struct PetScreenTimeCard: View {
 
             PetWeeklyChart(
                 stats: pet.weeklyStats,
-                limitMinutes: pet.limitMinutes,
                 themeColor: .green,
                 onDayTap: { day in
                     selectedDay = day
@@ -93,10 +92,10 @@ struct PetScreenTimeCard: View {
     private var progressSection: some View {
         VStack(alignment: .leading, spacing: 4) {
             HStack(alignment: .lastTextBaseline, spacing: 8) {
-                Text(formatMinutes(pet.usedMinutes))
+                Text(formatMinutes(pet.todayUsedMinutes))
                     .font(.system(size: 28, weight: .bold))
 
-                Text("/ \(formatMinutes(pet.limitMinutes))")
+                Text("/ \(formatMinutes(pet.dailyLimitMinutes))")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
             }
@@ -136,7 +135,7 @@ struct PetScreenTimeCard: View {
 
 #Preview("Under Limit") {
     PetScreenTimeCard(
-        pet: .mock(usedMinutes: 45, limitMinutes: 120),
+        pet: .mock(todayUsedMinutes: 45, dailyLimitMinutes: 120),
         onTap: {}
     )
     .padding()
@@ -144,7 +143,7 @@ struct PetScreenTimeCard: View {
 
 #Preview("Near Limit") {
     PetScreenTimeCard(
-        pet: .mock(usedMinutes: 100, limitMinutes: 120),
+        pet: .mock(todayUsedMinutes: 100, dailyLimitMinutes: 120),
         onTap: {}
     )
     .padding()
@@ -152,7 +151,7 @@ struct PetScreenTimeCard: View {
 
 #Preview("Over Limit") {
     PetScreenTimeCard(
-        pet: .mock(usedMinutes: 140, limitMinutes: 120),
+        pet: .mock(todayUsedMinutes: 140, dailyLimitMinutes: 120),
         onTap: {}
     )
     .padding()

@@ -1,10 +1,9 @@
 import SwiftUI
 
 struct PetWeeklyChart: View {
-    let stats: BlockedAppsWeeklyStats
-    let limitMinutes: Int?
+    let stats: WeeklyUsageStats
     var themeColor: Color = .green
-    var onDayTap: ((BlockedAppsDailyStat) -> Void)?
+    var onDayTap: ((DailyUsageStat) -> Void)?
 
     private let barHeight: CGFloat = 70
 
@@ -16,7 +15,7 @@ struct PetWeeklyChart: View {
     }()
 
     private var chartMax: Int {
-        max(stats.maxMinutes, limitMinutes ?? 0, 1)
+        max(stats.maxMinutes, stats.dailyLimitMinutes, 1)
     }
 
     var body: some View {
@@ -35,12 +34,12 @@ struct PetWeeklyChart: View {
 
     // MARK: - Bar Column
 
-    private func barColumn(day: BlockedAppsDailyStat) -> some View {
+    private func barColumn(day: DailyUsageStat) -> some View {
         let normalized = chartMax > 0
             ? CGFloat(day.totalMinutes) / CGFloat(chartMax)
             : 0
         let isToday = Calendar.current.isDateInToday(day.date)
-        let isOverLimit = limitMinutes.map { day.totalMinutes > $0 } ?? false
+        let isOverLimit = day.totalMinutes > stats.dailyLimitMinutes
 
         return VStack(spacing: 4) {
             Text(formatMinutesShort(day.totalMinutes))
@@ -107,8 +106,7 @@ struct PetWeeklyChart: View {
 
 #Preview {
     PetWeeklyChart(
-        stats: .mock(),
-        limitMinutes: 90,
+        stats: .mock(dailyLimitMinutes: 90),
         themeColor: .green
     )
     .padding()

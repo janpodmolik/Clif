@@ -2,7 +2,7 @@ import FamilyControls
 import ManagedSettings
 import SwiftUI
 
-struct BlockedAppsPreview: View {
+struct LimitedAppsPreview: View {
     let applicationTokens: Set<ApplicationToken>
     let categoryTokens: Set<ActivityCategoryToken>
 

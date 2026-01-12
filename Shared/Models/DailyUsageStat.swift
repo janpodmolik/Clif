@@ -1,25 +1,29 @@
 import Foundation
 
-/// Daily blocked apps usage data point.
-struct BlockedAppsDailyStat: Codable, Identifiable, Equatable {
+/// Daily usage data point for limited apps.
+struct DailyUsageStat: Codable, Identifiable, Equatable {
     let id: UUID
+    let petId: UUID
     let date: Date
     let totalMinutes: Int
 
-    init(id: UUID = UUID(), date: Date, totalMinutes: Int) {
+    init(id: UUID = UUID(), petId: UUID, date: Date, totalMinutes: Int) {
         self.id = id
+        self.petId = petId
         self.date = date
         self.totalMinutes = totalMinutes
     }
 }
 
 /// Weekly stats container for chart display.
-struct BlockedAppsWeeklyStats: Codable, Equatable {
-    let days: [BlockedAppsDailyStat]
+struct WeeklyUsageStats: Codable, Equatable {
+    let days: [DailyUsageStat]
+    let dailyLimitMinutes: Int
     let previousWeekTotal: Int?
 
-    init(days: [BlockedAppsDailyStat], previousWeekTotal: Int? = nil) {
+    init(days: [DailyUsageStat], dailyLimitMinutes: Int, previousWeekTotal: Int? = nil) {
         self.days = days
+        self.dailyLimitMinutes = dailyLimitMinutes
         self.previousWeekTotal = previousWeekTotal
     }
 
@@ -43,12 +47,12 @@ struct BlockedAppsWeeklyStats: Codable, Equatable {
     }
 
     /// Day with highest usage
-    var worstDay: BlockedAppsDailyStat? {
+    var worstDay: DailyUsageStat? {
         days.max(by: { $0.totalMinutes < $1.totalMinutes })
     }
 
     /// Day with lowest usage
-    var bestDay: BlockedAppsDailyStat? {
+    var bestDay: DailyUsageStat? {
         days.min(by: { $0.totalMinutes < $1.totalMinutes })
     }
 
@@ -58,23 +62,29 @@ struct BlockedAppsWeeklyStats: Codable, Equatable {
         return days.map { CGFloat($0.totalMinutes) / CGFloat(maxMinutes) }
     }
 
+    /// Days over limit count.
+    var daysOverLimit: Int {
+        days.filter { $0.totalMinutes > dailyLimitMinutes }.count
+    }
+
     /// Empty stats
-    static func empty() -> BlockedAppsWeeklyStats {
-        BlockedAppsWeeklyStats(days: [], previousWeekTotal: nil)
+    static func empty(dailyLimitMinutes: Int = 60) -> WeeklyUsageStats {
+        WeeklyUsageStats(days: [], dailyLimitMinutes: dailyLimitMinutes)
     }
 
     /// Creates mock data for preview/debug purposes
-    static func mock() -> BlockedAppsWeeklyStats {
+    static func mock(dailyLimitMinutes: Int = 60) -> WeeklyUsageStats {
         let calendar = Calendar.current
         let today = Date()
-        let days = (0..<7).map { dayOffset -> BlockedAppsDailyStat in
+        let mockPetId = UUID()
+        let days = (0..<7).map { dayOffset -> DailyUsageStat in
             let date = calendar.date(byAdding: .day, value: -6 + dayOffset, to: today)!
             let minutes = Int.random(in: 30...180)
-            return BlockedAppsDailyStat(date: date, totalMinutes: minutes)
+            return DailyUsageStat(petId: mockPetId, date: date, totalMinutes: minutes)
         }
         // Mock previous week total (slightly higher to show improvement)
         let currentTotal = days.reduce(0) { $0 + $1.totalMinutes }
         let previousWeekTotal = Int(Double(currentTotal) * 1.15)
-        return BlockedAppsWeeklyStats(days: days, previousWeekTotal: previousWeekTotal)
+        return WeeklyUsageStats(days: days, dailyLimitMinutes: dailyLimitMinutes, previousWeekTotal: previousWeekTotal)
     }
 }

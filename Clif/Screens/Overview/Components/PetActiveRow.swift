@@ -17,8 +17,8 @@ struct PetActiveRow: View {
     }
 
     private var progress: Double {
-        guard pet.limitMinutes > 0 else { return 0 }
-        return min(Double(pet.usedMinutes) / Double(pet.limitMinutes), 1.0)
+        guard pet.dailyLimitMinutes > 0 else { return 0 }
+        return min(Double(pet.todayUsedMinutes) / Double(pet.dailyLimitMinutes), 1.0)
     }
 
     var body: some View {
@@ -42,9 +42,9 @@ struct PetActiveRow: View {
 
                     HStack(spacing: 12) {
                         HStack(spacing: 4) {
-                            Image(systemName: "flame.fill")
+                            Image(systemName: "calendar")
                                 .foregroundStyle(.orange)
-                            Text("\(pet.streak) dní")
+                            Text("\(pet.totalDays) dní")
                         }
 
                         Text("🧬 \(pet.currentPhase)/\(pet.evolutionHistory.maxPhase)")
@@ -78,7 +78,7 @@ struct PetActiveRow: View {
     }
 
     private var remainingMinutes: Int {
-        max(pet.limitMinutes - pet.usedMinutes, 0)
+        max(pet.dailyLimitMinutes - pet.todayUsedMinutes, 0)
     }
 
     private var progressIndicator: some View {
@@ -114,10 +114,10 @@ struct PetActiveRow: View {
 
 #Preview {
     VStack(spacing: 12) {
-        PetActiveRow(pet: .mock(name: "Fern", phase: 2, windLevel: .none, usedMinutes: 10)) {}
-        PetActiveRow(pet: .mock(name: "Ivy", phase: 3, windLevel: .low, usedMinutes: 45)) {}
-        PetActiveRow(pet: .mock(name: "Sage", phase: 2, windLevel: .medium, usedMinutes: 67)) {}
-        PetActiveRow(pet: .mock(name: "Willow", phase: 1, windLevel: .high, usedMinutes: 130, limitMinutes: 120)) {}
+        PetActiveRow(pet: .mock(name: "Fern", phase: 2, windLevel: .none, todayUsedMinutes: 10)) {}
+        PetActiveRow(pet: .mock(name: "Ivy", phase: 3, windLevel: .low, todayUsedMinutes: 45)) {}
+        PetActiveRow(pet: .mock(name: "Sage", phase: 2, windLevel: .medium, todayUsedMinutes: 67)) {}
+        PetActiveRow(pet: .mock(name: "Willow", phase: 1, windLevel: .high, todayUsedMinutes: 130, dailyLimitMinutes: 120)) {}
     }
     .padding()
 }

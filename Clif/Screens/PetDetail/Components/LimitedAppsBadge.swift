@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct BlockedAppsBadge: View {
+struct LimitedAppsBadge: View {
     let appCount: Int
     var onTap: (() -> Void)?
 
@@ -14,7 +14,7 @@ struct BlockedAppsBadge: View {
                     .foregroundStyle(.secondary)
 
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("Blocked Apps")
+                    Text("Limited Apps")
                         .font(.subheadline.weight(.medium))
 
                     Text("\(appCount) apps monitored")
@@ -40,8 +40,8 @@ struct BlockedAppsBadge: View {
 #if DEBUG
 #Preview {
     VStack(spacing: 16) {
-        BlockedAppsBadge(appCount: 12, onTap: {})
-        BlockedAppsBadge(appCount: 5)
+        LimitedAppsBadge(appCount: 12, onTap: {})
+        LimitedAppsBadge(appCount: 5)
     }
     .padding()
 }

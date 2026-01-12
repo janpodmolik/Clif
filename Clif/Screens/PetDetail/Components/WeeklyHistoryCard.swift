@@ -1,12 +1,11 @@
 import SwiftUI
 
 struct WeeklyHistoryCard: View {
-    let stats: BlockedAppsWeeklyStats
+    let stats: WeeklyUsageStats
     var themeColor: Color = .green
-    var dailyLimitMinutes: Int? = nil
     var onTap: (() -> Void)?
 
-    @State private var selectedDay: BlockedAppsDailyStat?
+    @State private var selectedDay: DailyUsageStat?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -14,7 +13,6 @@ struct WeeklyHistoryCard: View {
 
             PetWeeklyChart(
                 stats: stats,
-                limitMinutes: dailyLimitMinutes,
                 themeColor: themeColor,
                 onDayTap: { day in
                     selectedDay = day
@@ -88,7 +86,7 @@ struct WeeklyHistoryCard: View {
 // MARK: - Day Detail Sheet
 
 struct DayDetailSheet: View {
-    let day: BlockedAppsDailyStat
+    let day: DailyUsageStat
 
     @Environment(\.dismiss) private var dismiss
 
@@ -165,6 +163,6 @@ struct DayDetailSheet: View {
 }
 
 #Preview("Day Detail") {
-    DayDetailSheet(day: BlockedAppsDailyStat(date: Date(), totalMinutes: 127))
+    DayDetailSheet(day: DailyUsageStat(petId: UUID(), date: Date(), totalMinutes: 127))
 }
 #endif

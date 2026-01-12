@@ -19,7 +19,7 @@ struct PetHistoryDetailScreen: View {
                     PetDetailHeader(
                         petName: pet.name,
                         mood: mood,
-                        streak: pet.totalDays,
+                        totalDays: pet.totalDays,
                         evolutionPhase: pet.finalPhase,
                         purposeLabel: pet.purpose
                     )
@@ -42,13 +42,12 @@ struct PetHistoryDetailScreen: View {
 
                     WeeklyHistoryCard(
                         stats: pet.weeklyStats,
-                        themeColor: pet.essence.themeColor,
-                        dailyLimitMinutes: pet.dailyLimitMinutes
+                        themeColor: pet.essence.themeColor
                     )
 
                     limitStatsCard
 
-                    BlockedAppsBadge(appCount: pet.appUsage.count) {
+                    LimitedAppsBadge(appCount: pet.appUsage.count) {
                         showAppUsageSheet = true
                     }
                 }
@@ -216,7 +215,7 @@ struct PetHistoryDetailScreen: View {
 // MARK: - App Usage Detail Sheet
 
 struct AppUsageDetailSheet: View {
-    let appUsage: [ArchivedAppUsage]
+    let appUsage: [AppUsage]
     let dailyLimitMinutes: Int
     let totalDays: Int
 
@@ -252,7 +251,7 @@ struct AppUsageDetailSheet: View {
                     }
                 }
 
-                Section("Blokované aplikace") {
+                Section("Limitované aplikace") {
                     ForEach(appUsage) { app in
                         HStack {
                             Text(app.displayName)
@@ -303,11 +302,7 @@ struct AppUsageDetailSheet: View {
 
 #Preview("App Usage Sheet") {
     AppUsageDetailSheet(
-        appUsage: [
-            ArchivedAppUsage(displayName: "Instagram", totalMinutes: 180),
-            ArchivedAppUsage(displayName: "TikTok", totalMinutes: 120),
-            ArchivedAppUsage(displayName: "Twitter", totalMinutes: 45)
-        ],
+        appUsage: AppUsage.mockList(days: 14),
         dailyLimitMinutes: 60,
         totalDays: 14
     )

@@ -3,11 +3,11 @@ import ManagedSettings
 import SwiftUI
 
 struct FallbackScreenTimeCard: View {
-    let stats: BlockedAppsWeeklyStats
+    let stats: WeeklyUsageStats
     var applicationTokens: Set<ApplicationToken> = []
     var categoryTokens: Set<ActivityCategoryToken> = []
 
-    @State private var selectedDay: BlockedAppsDailyStat?
+    @State private var selectedDay: DailyUsageStat?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
@@ -16,7 +16,7 @@ struct FallbackScreenTimeCard: View {
             totalTimeSection
 
             if !applicationTokens.isEmpty || !categoryTokens.isEmpty {
-                BlockedAppsPreview(
+                LimitedAppsPreview(
                     applicationTokens: applicationTokens,
                     categoryTokens: categoryTokens
                 )
@@ -24,7 +24,6 @@ struct FallbackScreenTimeCard: View {
 
             PetWeeklyChart(
                 stats: stats,
-                limitMinutes: nil,
                 themeColor: .green,
                 onDayTap: { day in
                     selectedDay = day

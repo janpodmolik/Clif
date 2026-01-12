@@ -13,7 +13,7 @@ struct OverviewScreen: View {
     }
 
     // Mock data for now - stored in @State to prevent regeneration on view updates
-    @State private var weeklyStats = BlockedAppsWeeklyStats.mock()
+    @State private var weeklyStats = WeeklyUsageStats.mock()
     @State private var archivedPets = ArchivedPet.mockList()
     @State private var activePets = ActivePet.mockList()
 
@@ -59,14 +59,14 @@ struct OverviewScreen: View {
             PetActiveDetailScreen(
                 petName: pet.name,
                 evolutionHistory: pet.evolutionHistory,
-                streak: pet.streak,
+                totalDays: pet.totalDays,
                 purposeLabel: pet.purpose,
                 windLevel: pet.windLevel,
                 isBlownAway: false,
-                usedMinutes: pet.usedMinutes,
-                limitMinutes: pet.limitMinutes,
+                todayUsedMinutes: pet.todayUsedMinutes,
+                dailyLimitMinutes: pet.dailyLimitMinutes,
                 weeklyStats: pet.weeklyStats,
-                blockedAppCount: pet.blockedAppCount,
+                limitedAppCount: pet.limitedAppCount,
                 daysUntilEvolution: pet.daysUntilEvolution,
                 showOverviewActions: true,
                 onShowOnHomepage: {

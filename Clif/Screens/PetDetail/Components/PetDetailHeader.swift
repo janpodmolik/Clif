@@ -3,7 +3,7 @@ import SwiftUI
 struct PetDetailHeader: View {
     let petName: String
     let mood: Mood
-    let streak: Int
+    let totalDays: Int
     let evolutionPhase: Int
     let purposeLabel: String?
 
@@ -38,7 +38,7 @@ struct PetDetailHeader: View {
 
             VStack(alignment: .trailing, spacing: 8) {
                 evolutionBadge
-                streakBadge
+                daysBadge
             }
         }
         .padding()
@@ -61,12 +61,12 @@ struct PetDetailHeader: View {
         .background(Color.purple.opacity(0.15), in: Capsule())
     }
 
-    private var streakBadge: some View {
+    private var daysBadge: some View {
         HStack(spacing: 6) {
-            Image(systemName: "flame.fill")
+            Image(systemName: "calendar")
                 .foregroundStyle(.orange)
 
-            Text("\(streak)")
+            Text("\(totalDays)")
                 .fontWeight(.semibold)
 
             Text("days")
@@ -85,7 +85,7 @@ struct PetDetailHeader: View {
         PetDetailHeader(
             petName: "Fern",
             mood: .happy,
-            streak: 12,
+            totalDays: 12,
             evolutionPhase: 2,
             purposeLabel: "Social Media"
         )
@@ -93,7 +93,7 @@ struct PetDetailHeader: View {
         PetDetailHeader(
             petName: "Bloom",
             mood: .sad,
-            streak: 3,
+            totalDays: 3,
             evolutionPhase: 4,
             purposeLabel: nil
         )
