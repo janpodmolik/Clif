@@ -25,6 +25,10 @@ struct ContentView: View {
 
     @Namespace private var tabButtonNamespace
 
+    private let tabBarHeight: CGFloat = 55
+    private let premiumParticleOverlaySize = CGSize(width: 90, height: 120)
+    private let premiumParticleOverlayBottomOffset: CGFloat = 6
+
     #if DEBUG
     @State private var showPetDebug = false
     #endif
@@ -48,6 +52,23 @@ struct ContentView: View {
         .safeAreaInset(edge: .bottom, spacing: 0) {
             customTabBar()
                 .padding(.horizontal, 20)
+        }
+        .overlayPreferenceValue(CenterButtonAnchorKey.self) { anchor in
+            GeometryReader { geo in
+                if showPremiumButtonEffect, let anchor {
+                    let rect = geo[anchor]
+                    let centerY = rect.minY + premiumParticleOverlayBottomOffset
+                        - premiumParticleOverlaySize.height / 2
+                    PremiumTabBarParticles()
+                        .frame(
+                            width: premiumParticleOverlaySize.width,
+                            height: premiumParticleOverlaySize.height
+                        )
+                        .position(x: rect.midX, y: centerY)
+                        .accessibilityHidden(true)
+                }
+            }
+            .allowsHitTesting(false)
         }
         .preferredColorScheme(isDarkModeEnabled ? .dark : .light)
         .onReceive(NotificationCenter.default.publisher(for: .selectPet)) { notification in
@@ -75,12 +96,12 @@ struct ContentView: View {
             GlassEffectContainer(spacing: 10) {
                 tabBarContent()
             }
-            .frame(height: 55)
+            .frame(height: tabBarHeight)
         } else {
             HStack(spacing: 10) {
                 tabBarContentFallback()
             }
-            .frame(height: 55)
+            .frame(height: tabBarHeight)
         }
     }
 
@@ -117,6 +138,10 @@ struct ContentView: View {
         }
     }
 
+    private var showPremiumButtonEffect: Bool {
+        activeTab == .profile
+    }
+
     @ViewBuilder
     private func centerButton() -> some View {
         Button {
@@ -129,6 +154,7 @@ struct ContentView: View {
                 .frame(width: 55, height: 55)
         }
         .buttonStyle(.plain)
+        .anchorPreference(key: CenterButtonAnchorKey.self, value: .bounds) { $0 }
     }
 
     private func handleCenterButtonTap() {
@@ -168,4 +194,12 @@ struct ContentView: View {
 
 #Preview {
     ContentView()
+}
+
+private struct CenterButtonAnchorKey: PreferenceKey {
+    static var defaultValue: Anchor<CGRect>?
+
+    static func reduce(value: inout Anchor<CGRect>?, nextValue: () -> Anchor<CGRect>?) {
+        value = nextValue() ?? value
+    }
 }
