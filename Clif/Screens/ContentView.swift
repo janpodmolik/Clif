@@ -172,6 +172,7 @@ struct ContentView: View {
     }
 
     private func handleCenterButtonTap() {
+        UIImpactFeedbackGenerator(style: .light).impactOccurred()
         switch activeTab {
         case .home:
             #if DEBUG
@@ -189,6 +190,7 @@ struct ContentView: View {
         HStack(spacing: 0) {
             ForEach(AppTab.allCases, id: \.self) { tab in
                 Button {
+                    UIImpactFeedbackGenerator(style: .light).impactOccurred()
                     activeTab = tab
                 } label: {
                     VStack(spacing: 3) {

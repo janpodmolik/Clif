@@ -76,6 +76,7 @@ where Tab.RawValue == String, Tab.AllCases: RandomAccessCollection {
         @objc func tabSelected(_ control: UISegmentedControl) {
             let allCases = Array(Tab.allCases)
             if control.selectedSegmentIndex < allCases.count {
+                UIImpactFeedbackGenerator(style: .light).impactOccurred()
                 parent.activeTab = allCases[control.selectedSegmentIndex]
             }
         }
