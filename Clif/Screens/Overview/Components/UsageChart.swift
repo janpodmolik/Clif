@@ -60,8 +60,8 @@ struct UsageChart<Stats: UsageStatsProtocol>: View {
                             .id(index)
                     }
                 }
-                .padding(.horizontal, 4)
             }
+            .contentMargins(.horizontal, 16, for: .scrollContent)
             .frame(height: totalHeight)
             .onAppear {
                 if !stats.days.isEmpty {

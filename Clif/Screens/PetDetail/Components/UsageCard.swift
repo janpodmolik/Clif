@@ -29,6 +29,7 @@ struct UsageCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             headerRow
+                .padding(.horizontal)
 
             UsageChart(
                 stats: displayedStats,
@@ -38,10 +39,12 @@ struct UsageCard: View {
                     selectedDay = day
                 }
             )
+            .padding(.horizontal, isScrollable ? 0 : 16)
 
             summaryRow
+                .padding(.horizontal)
         }
-        .padding()
+        .padding(.vertical)
         .glassCard()
         .sheet(item: $selectedDay) { day in
             DayDetailSheet(day: day)
