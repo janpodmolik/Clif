@@ -55,10 +55,10 @@ struct ContentView: View {
         }
         .overlayPreferenceValue(CenterButtonAnchorKey.self) { anchor in
             GeometryReader { geo in
-                if showPremiumButtonEffect, let anchor {
+                if let anchor {
                     let rect = geo[anchor]
                     let centerY = rect.maxY - premiumParticleSize.height / 2 + premiumParticleVerticalOffset
-                    PremiumTabBarParticles()
+                    PremiumTabBarParticles(isDarkMode: isDarkModeEnabled, isActive: showPremiumButtonEffect)
                         .frame(width: premiumParticleSize.width, height: premiumParticleSize.height)
                         .position(x: rect.midX, y: centerY)
                         .allowsHitTesting(false)

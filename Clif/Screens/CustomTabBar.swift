@@ -18,21 +18,7 @@ where Tab.RawValue == String, Tab.AllCases: RandomAccessCollection {
         let control = UISegmentedControl(items: Array(items))
         control.selectedSegmentIndex = Tab.allCases.firstIndex(of: activeTab).map { Tab.allCases.distance(from: Tab.allCases.startIndex, to: $0) } ?? 0
 
-        for (index, tab) in Tab.allCases.enumerated() {
-            let renderer = ImageRenderer(content: tabItemView(tab))
-            renderer.scale = 2
-            if let image = renderer.uiImage {
-                control.setImage(image, forSegmentAt: index)
-            }
-        }
-
-        DispatchQueue.main.async {
-            for subview in control.subviews {
-                if subview is UIImageView && subview != control.subviews.last {
-                    subview.alpha = 0
-                }
-            }
-        }
+        configureImages(for: control, coordinator: context.coordinator)
 
         control.selectedSegmentTintColor = UIColor(barTint)
         control.setTitleTextAttributes([
@@ -44,6 +30,30 @@ where Tab.RawValue == String, Tab.AllCases: RandomAccessCollection {
 
         control.addTarget(context.coordinator, action: #selector(context.coordinator.tabSelected(_:)), for: .valueChanged)
         return control
+    }
+
+    private func configureImages(for control: UISegmentedControl, coordinator: Coordinator) {
+        Task.detached(priority: .userInitiated) {
+            var images: [Int: UIImage] = [:]
+            for (index, tab) in Tab.allCases.enumerated() {
+                let renderer = await ImageRenderer(content: tabItemView(tab))
+                await MainActor.run { renderer.scale = 2 }
+                if let image = await renderer.uiImage {
+                    images[index] = image
+                }
+            }
+
+            await MainActor.run {
+                for (index, image) in images {
+                    control.setImage(image, forSegmentAt: index)
+                }
+                for subview in control.subviews {
+                    if subview is UIImageView && subview != control.subviews.last {
+                        subview.alpha = 0
+                    }
+                }
+            }
+        }
     }
 
     func updateUIView(_ uiView: UISegmentedControl, context: Context) {
