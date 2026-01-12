@@ -1,4 +1,5 @@
 import Foundation
+import ManagedSettings
 
 /// Daily usage for a specific app.
 struct AppDailyUsage: Codable, Identifiable, Equatable {
@@ -13,10 +14,11 @@ struct AppDailyUsage: Codable, Identifiable, Equatable {
 }
 
 /// Usage data for a single limited app with daily breakdown.
-struct AppUsage: Codable, Identifiable, Equatable {
+struct AppUsage: Identifiable, Equatable {
     let id: UUID
     let petId: UUID
     let displayName: String
+    let applicationToken: ApplicationToken?
     var dailyUsage: [AppDailyUsage]
 
     var totalMinutes: Int {
@@ -34,11 +36,53 @@ struct AppUsage: Codable, Identifiable, Equatable {
         return dailyUsage.first { calendar.isDate($0.date, inSameDayAs: date) }?.minutes
     }
 
-    init(id: UUID = UUID(), petId: UUID, displayName: String, dailyUsage: [AppDailyUsage] = []) {
+    init(
+        id: UUID = UUID(),
+        petId: UUID,
+        displayName: String,
+        applicationToken: ApplicationToken? = nil,
+        dailyUsage: [AppDailyUsage] = []
+    ) {
         self.id = id
         self.petId = petId
         self.displayName = displayName
+        self.applicationToken = applicationToken
         self.dailyUsage = dailyUsage
+    }
+}
+
+// MARK: - Codable
+
+extension AppUsage: Codable {
+    private enum CodingKeys: String, CodingKey {
+        case id, petId, displayName, applicationTokenData, dailyUsage
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(UUID.self, forKey: .id)
+        petId = try container.decode(UUID.self, forKey: .petId)
+        displayName = try container.decode(String.self, forKey: .displayName)
+        dailyUsage = try container.decode([AppDailyUsage].self, forKey: .dailyUsage)
+
+        if let tokenData = try container.decodeIfPresent(Data.self, forKey: .applicationTokenData) {
+            applicationToken = try? PropertyListDecoder().decode(ApplicationToken.self, from: tokenData)
+        } else {
+            applicationToken = nil
+        }
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(id, forKey: .id)
+        try container.encode(petId, forKey: .petId)
+        try container.encode(displayName, forKey: .displayName)
+        try container.encode(dailyUsage, forKey: .dailyUsage)
+
+        if let token = applicationToken,
+           let tokenData = try? PropertyListEncoder().encode(token) {
+            try container.encode(tokenData, forKey: .applicationTokenData)
+        }
     }
 }
 
