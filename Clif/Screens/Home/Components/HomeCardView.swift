@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct StatusCardContentView: View {
+struct HomeCardContentView: View {
     // MARK: - Screen Time Properties
     let streakCount: Int
     let usedTimeText: String
@@ -31,9 +31,15 @@ struct StatusCardContentView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            headerRow
-            infoRow
-            timeRow
+            // Tappable area above progress bar
+            VStack(alignment: .leading, spacing: 12) {
+                headerRow
+                infoRow
+                timeRow
+            }
+            .contentShape(Rectangle())
+            .onTapGesture(perform: onDetailTapped)
+
             ProgressBarView(progress: progress)
             buttonsRow
         }
@@ -272,7 +278,7 @@ struct StatusCardContentView: View {
 #if DEBUG
 #Preview {
     NavigationStack {
-        StatusCardDebugView()
+        HomeCardDebugView()
     }
 }
 #endif

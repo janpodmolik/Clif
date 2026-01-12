@@ -39,9 +39,11 @@ struct PetScreenTimeCarousel: View {
         ScrollView(.horizontal) {
             HStack(spacing: 12) {
                 ForEach(Array(activePets.enumerated()), id: \.element.id) { _, pet in
-                    PetScreenTimeCard(pet: pet) {
-                        onPetTap(pet)
-                    }
+                    PetScreenTimeCard(
+                        pet: pet,
+                        onTap: { onPetTap(pet) },
+                        onDetailTap: { onPetTap(pet) }
+                    )
                     .frame(width: cardWidth)
                     .id(pet.id)
                 }

@@ -1,7 +1,7 @@
 #if DEBUG
 import SwiftUI
 
-struct StatusCardDebugView: View {
+struct HomeCardDebugView: View {
     @Environment(\.dismiss) private var dismiss
 
     // MARK: - Pet Identity State
@@ -80,7 +80,7 @@ struct StatusCardDebugView: View {
                 controlsPanel
             }
         }
-        .navigationTitle("StatusCard Debug")
+        .navigationTitle("HomeCard Debug")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
@@ -106,7 +106,7 @@ struct StatusCardDebugView: View {
             )
             .ignoresSafeArea()
 
-            StatusCardContentView(
+            HomeCardContentView(
                 streakCount: streakCount,
                 usedTimeText: usedTimeText,
                 dailyLimitText: dailyLimitText,
@@ -511,7 +511,7 @@ struct StatusCardDebugView: View {
 
 #Preview {
     NavigationStack {
-        StatusCardDebugView()
+        HomeCardDebugView()
     }
 }
 #endif

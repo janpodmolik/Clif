@@ -33,7 +33,7 @@ struct DebugView: View {
                         debugToolsSection
                         petAnimationSection
                         evolutionScaleSection
-                        statusCardSection
+                        homeCardSection
                         petDetailSection
                         petHistoryRowSection
                         supabaseSection
@@ -294,13 +294,13 @@ struct DebugView: View {
         }
     }
 
-    // MARK: - StatusCard Debug
+    // MARK: - HomeCard Debug
 
-    private var statusCardSection: some View {
-        NavigationLink(destination: StatusCardDebugView()) {
+    private var homeCardSection: some View {
+        NavigationLink(destination: HomeCardDebugView()) {
             HStack {
                 Image(systemName: "rectangle.on.rectangle")
-                Text("StatusCard Debug")
+                Text("HomeCard Debug")
             }
             .frame(maxWidth: .infinity)
             .padding()

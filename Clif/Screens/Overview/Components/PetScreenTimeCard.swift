@@ -3,6 +3,7 @@ import SwiftUI
 struct PetScreenTimeCard: View {
     let pet: ActivePet
     var onTap: () -> Void
+    var onDetailTap: () -> Void = {}
 
     @State private var selectedDay: DailyUsageStat?
 
@@ -26,21 +27,15 @@ struct PetScreenTimeCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
             headerSection
-                .contentShape(Rectangle())
-                .onTapGesture(perform: onTap)
 
             if !pet.applicationTokens.isEmpty || !pet.categoryTokens.isEmpty {
                 LimitedAppsPreview(
                     applicationTokens: pet.applicationTokens,
                     categoryTokens: pet.categoryTokens
                 )
-                .contentShape(Rectangle())
-                .onTapGesture(perform: onTap)
             }
 
             progressSection
-                .contentShape(Rectangle())
-                .onTapGesture(perform: onTap)
 
             UsageChart(
                 stats: pet.weeklyStats,
@@ -53,10 +48,10 @@ struct PetScreenTimeCard: View {
             Text("Prumerne \(formatMinutes(pet.weeklyStats.averageMinutes)) denne")
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
-                .contentShape(Rectangle())
-                .onTapGesture(perform: onTap)
         }
         .padding(18)
+        .contentShape(Rectangle())
+        .onTapGesture(perform: onTap)
         .glassCard()
         .sheet(item: $selectedDay) { day in
             DayDetailSheet(day: day)
@@ -84,6 +79,13 @@ struct PetScreenTimeCard: View {
             }
 
             Spacer()
+
+            Button(action: onDetailTap) {
+                Image(systemName: "ellipsis")
+                    .font(.system(size: 24))
+                    .foregroundStyle(.primary)
+            }
+            .buttonStyle(.plain)
         }
     }
 

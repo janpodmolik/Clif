@@ -40,8 +40,8 @@ struct HomeScreen: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
                 .ignoresSafeArea(.container, edges: .bottom)
 
-                // Status card
-                StatusCardContentView(
+                // Home card
+                HomeCardContentView(
                     streakCount: 19,
                     usedTimeText: "32m",
                     dailyLimitText: "2h",
