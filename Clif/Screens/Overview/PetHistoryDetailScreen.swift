@@ -36,19 +36,12 @@ struct PetHistoryDetailScreen: View {
                         history: pet.evolutionHistory,
                         blownAt: pet.evolutionHistory.blownAt,
                         canEvolve: false,
-                        daysUntilEvolution: nil,
-                        themeColor: pet.essence.themeColor
+                        daysUntilEvolution: nil
                     )
 
-                    UsageCard(
-                        stats: pet.fullStats,
-                        themeColor: pet.essence.themeColor
-                    )
+                    UsageCard(stats: pet.fullStats)
 
-                    TrendMiniChart(
-                        stats: pet.fullStats,
-                        themeColor: pet.essence.themeColor
-                    )
+                    TrendMiniChart(stats: pet.fullStats)
 
                     limitStatsCard
 

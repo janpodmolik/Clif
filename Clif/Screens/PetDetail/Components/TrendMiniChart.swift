@@ -2,7 +2,6 @@ import SwiftUI
 
 struct TrendMiniChart: View {
     let stats: FullUsageStats
-    var themeColor: Color = .green
 
     private let chartHeight: CGFloat = 40
 
@@ -77,7 +76,7 @@ struct TrendMiniChart: View {
                     }
                 }
             }
-            .stroke(themeColor, style: StrokeStyle(lineWidth: 2, lineCap: .round, lineJoin: .round))
+            .stroke(.green, style: StrokeStyle(lineWidth: 2, lineCap: .round, lineJoin: .round))
         }
         .frame(height: chartHeight)
     }
@@ -117,7 +116,7 @@ struct TrendMiniChart: View {
 }
 
 #Preview("30 days") {
-    TrendMiniChart(stats: .mock(days: 30, dailyLimitMinutes: 90), themeColor: .purple)
+    TrendMiniChart(stats: .mock(days: 30, dailyLimitMinutes: 90))
         .padding()
 }
 #endif

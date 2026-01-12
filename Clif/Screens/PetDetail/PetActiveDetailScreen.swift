@@ -79,15 +79,9 @@ struct PetActiveDetailScreen: View {
                         daysUntilEvolution: daysUntilEvolution
                     )
 
-                    UsageCard(
-                        stats: fullStats,
-                        themeColor: evolutionHistory.essence.themeColor
-                    )
+                    UsageCard(stats: fullStats)
 
-                    TrendMiniChart(
-                        stats: fullStats,
-                        themeColor: evolutionHistory.essence.themeColor
-                    )
+                    TrendMiniChart(stats: fullStats)
 
                     LimitedAppsBadge(
                         appCount: limitedAppCount,
@@ -141,7 +135,10 @@ struct PetActiveDetailScreen: View {
                 .padding(.vertical, 12)
                 .background(
                     LinearGradient(
-                        colors: [evolutionHistory.essence.themeColor, evolutionHistory.essence.themeColor.opacity(0.7)],
+                        colors: [
+                            evolutionHistory.essence.themeColor,
+                            evolutionHistory.essence.themeColor.opacity(0.7)
+                        ],
                         startPoint: .leading,
                         endPoint: .trailing
                     ),
@@ -229,3 +226,4 @@ struct PetActiveDetailScreen: View {
         }
 }
 #endif
+

@@ -5,7 +5,6 @@ struct EvolutionTimelineView: View {
     var blownAt: Date? = nil
     var canEvolve: Bool = false
     var daysUntilEvolution: Int? = nil
-    var themeColor: Color = .green
 
     @State private var isPulsing = false
 
@@ -61,11 +60,11 @@ struct EvolutionTimelineView: View {
                     .fontWeight(.medium)
             }
             .font(.caption)
-            .foregroundStyle(themeColor)
+            .foregroundStyle(.green)
         } else if history.currentPhase >= history.maxPhase {
             HStack(spacing: 6) {
                 Image(systemName: "checkmark.seal.fill")
-                    .foregroundStyle(themeColor)
+                    .foregroundStyle(.green)
                 Text("Fully evolved")
                     .fontWeight(.medium)
             }
@@ -106,7 +105,7 @@ struct EvolutionTimelineView: View {
                     .frame(width: 32, height: 32)
 
                 if isCurrent {
-                    let pulseColor: Color = isBlown ? .red : themeColor
+                    let pulseColor: Color = isBlown ? .red : .green
                     Circle()
                         .stroke(pulseColor.opacity(isPulsing ? 0.0 : 0.5), lineWidth: 2)
                         .frame(width: 32, height: 32)
@@ -146,7 +145,7 @@ struct EvolutionTimelineView: View {
 
     private func circleColor(isUnlocked: Bool, isCurrent: Bool) -> Color {
         if isCurrent {
-            return isBlown ? .red : themeColor
+            return isBlown ? .red : .green
         } else if isUnlocked {
             return .primary.opacity(0.6)
         } else {

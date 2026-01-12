@@ -22,7 +22,7 @@ struct EvolutionCarousel: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.horizontal)
                 .padding(.top, 12)
-                .padding(.bottom, 10)
+                .padding(.bottom, 20)
 
             carousel
 
@@ -41,7 +41,8 @@ struct EvolutionCarousel: View {
                         }
                 }
             }
-            .padding(.bottom)
+            .padding(.top)
+            .padding(.bottom, 20)
         }
         .task(id: currentPhase) {
             selectedIndex = currentPhase
@@ -275,7 +276,7 @@ struct EvolutionPhaseCard: View {
                 .foregroundStyle(.white)
                 .padding(.horizontal, 10)
                 .padding(.vertical, 4)
-                .background(Color.green, in: Capsule())
+                .background(themeColor, in: Capsule())
         } else if isLocked {
             Text("Locked")
                 .font(.caption2)

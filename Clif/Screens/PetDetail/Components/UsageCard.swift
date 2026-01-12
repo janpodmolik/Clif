@@ -7,7 +7,6 @@ enum UsageViewMode: String, CaseIterable {
 
 struct UsageCard: View {
     let stats: FullUsageStats
-    var themeColor: Color = .green
 
     @State private var viewMode: UsageViewMode = .week
     @State private var selectedDay: DailyUsageStat?
@@ -34,7 +33,6 @@ struct UsageCard: View {
             UsageChart(
                 stats: displayedStats,
                 scrollable: isScrollable,
-                themeColor: themeColor,
                 onDayTap: { day in
                     selectedDay = day
                 }
@@ -169,27 +167,18 @@ struct DayDetailSheet: View {
 
 #if DEBUG
 #Preview("Short history (no toggle)") {
-    UsageCard(
-        stats: FullUsageStats.mock(days: 5),
-        themeColor: .green
-    )
-    .padding()
+    UsageCard(stats: FullUsageStats.mock(days: 5))
+        .padding()
 }
 
 #Preview("Week+ history (with toggle)") {
-    UsageCard(
-        stats: FullUsageStats.mock(days: 14),
-        themeColor: .purple
-    )
-    .padding()
+    UsageCard(stats: FullUsageStats.mock(days: 14))
+        .padding()
 }
 
 #Preview("Long history") {
-    UsageCard(
-        stats: FullUsageStats.mock(days: 30),
-        themeColor: .orange
-    )
-    .padding()
+    UsageCard(stats: FullUsageStats.mock(days: 30))
+        .padding()
 }
 
 #Preview("Day Detail") {
