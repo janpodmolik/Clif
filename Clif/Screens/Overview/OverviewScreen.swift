@@ -12,10 +12,10 @@ struct OverviewScreen: View {
         case list, grid
     }
 
-    // Mock data for now
-    private let weeklyStats = BlockedAppsWeeklyStats.mock()
-    private let archivedPets = ArchivedPet.mockList()
-    private let activePets = ActivePet.mockList()
+    // Mock data for now - stored in @State to prevent regeneration on view updates
+    @State private var weeklyStats = BlockedAppsWeeklyStats.mock()
+    @State private var archivedPets = ArchivedPet.mockList()
+    @State private var activePets = ActivePet.mockList()
 
     private var completedPets: [ArchivedPet] {
         archivedPets.filter { !$0.isBlown }
