@@ -186,20 +186,28 @@ struct ContentView: View {
 
     @ViewBuilder
     private func tabBarContentFallback() -> some View {
-        GeometryReader { geo in
-            CustomTabBar(size: geo.size, activeTab: $activeTab) { tab in
-                VStack(spacing: 3) {
-                    Image(systemName: tab.symbol)
-                        .font(.title3)
-                    Text(tab.rawValue)
-                        .font(.system(size: 10))
-                        .fontWeight(.medium)
+        HStack(spacing: 0) {
+            ForEach(AppTab.allCases, id: \.self) { tab in
+                Button {
+                    activeTab = tab
+                } label: {
+                    VStack(spacing: 3) {
+                        Image(systemName: tab.symbol)
+                            .font(.title3)
+                        Text(tab.rawValue)
+                            .font(.system(size: 10))
+                            .fontWeight(.medium)
+                    }
+                    .symbolVariant(.fill)
+                    .foregroundStyle(.primary.opacity(activeTab == tab ? 1 : 0.45))
+                    .frame(maxWidth: .infinity)
                 }
-                .symbolVariant(.fill)
-                .frame(maxWidth: .infinity)
+                .buttonStyle(.plain)
             }
-            .background(.ultraThinMaterial, in: Capsule())
         }
+        .frame(maxWidth: .infinity)
+        .frame(height: tabBarHeight)
+        .background(.ultraThinMaterial, in: Capsule())
 
         centerButtonFallback()
     }
