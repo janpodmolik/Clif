@@ -1,5 +1,18 @@
 import SwiftUI
 
+struct PressableButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .scaleEffect(configuration.isPressed ? 0.92 : 1.0)
+            .opacity(configuration.isPressed ? 0.8 : 1.0)
+            .animation(.easeOut(duration: 0.15), value: configuration.isPressed)
+    }
+}
+
+extension ButtonStyle where Self == PressableButtonStyle {
+    static var pressableButton: PressableButtonStyle { PressableButtonStyle() }
+}
+
 enum AppTab: String, CaseIterable {
     case home = "Home"
     case overview = "Přehled"
@@ -101,7 +114,7 @@ struct ContentView: View {
                 .glassEffect(.regular.interactive(), in: .capsule)
             }
 
-            centerButtonGlass()
+            actionButtonGlass()
         }
     }
 
@@ -111,32 +124,33 @@ struct ContentView: View {
 
     @ViewBuilder
     @available(iOS 26.0, *)
-    private func centerButtonGlass() -> some View {
-        centerButton()
+    private func actionButtonGlass() -> some View {
+        actionButton()
             .glassEffect(.regular.interactive(), in: .circle)
     }
 
     @ViewBuilder
-    private func centerButtonFallback() -> some View {
-        centerButton()
+    private func actionButtonFallback() -> some View {
+        actionButton()
             .background(.ultraThinMaterial, in: Circle())
     }
 
     @ViewBuilder
-    private func centerButton() -> some View {
+    private func actionButton() -> some View {
         Button {
-            handleCenterButtonTap()
+            handleActionButtonTap()
         } label: {
-            centerButtonIcon
+            actionButtonIcon
                 .font(.title2.weight(.semibold))
                 .contentTransition(.symbolEffect(.replace))
                 .frame(width: 55, height: 55)
         }
-        .buttonStyle(.plain)
+        .contentShape(Circle().inset(by: -10))
+        .buttonStyle(.pressableButton)
     }
 
     @ViewBuilder
-    private var centerButtonIcon: some View {
+    private var actionButtonIcon: some View {
         switch activeTab {
         case .home:
             Image(systemName: "plus")
@@ -148,7 +162,7 @@ struct ContentView: View {
         }
     }
 
-    private func handleCenterButtonTap() {
+    private func handleActionButtonTap() {
         UIImpactFeedbackGenerator(style: .light).impactOccurred()
         switch activeTab {
         case .home:
@@ -200,7 +214,7 @@ struct ContentView: View {
         .padding(.horizontal, 4)
         .background(.ultraThinMaterial, in: Capsule())
 
-        centerButtonFallback()
+        actionButtonFallback()
     }
 }
 
