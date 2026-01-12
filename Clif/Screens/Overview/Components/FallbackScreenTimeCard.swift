@@ -22,7 +22,7 @@ struct FallbackScreenTimeCard: View {
                 )
             }
 
-            PetOverviewChart(
+            PetWeeklyChart(
                 stats: stats,
                 limitMinutes: nil,
                 themeColor: .green,

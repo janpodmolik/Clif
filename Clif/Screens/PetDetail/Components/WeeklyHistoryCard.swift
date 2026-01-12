@@ -1,21 +1,25 @@
 import SwiftUI
 
-struct BlockedAppsChart: View {
+struct WeeklyHistoryCard: View {
     let stats: BlockedAppsWeeklyStats
     var themeColor: Color = .green
     var dailyLimitMinutes: Int? = nil
-    var blownDate: Date? = nil
     var onTap: (() -> Void)?
 
     @State private var selectedDay: BlockedAppsDailyStat?
-
-    private let barHeight: CGFloat = 60
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             headerRow
 
-            chartView
+            PetWeeklyChart(
+                stats: stats,
+                limitMinutes: dailyLimitMinutes,
+                themeColor: themeColor,
+                onDayTap: { day in
+                    selectedDay = day
+                }
+            )
 
             summaryRow
         }
@@ -53,61 +57,6 @@ struct BlockedAppsChart: View {
         }
     }
 
-    private var chartView: some View {
-        HStack(spacing: 8) {
-            ForEach(Array(stats.days.enumerated()), id: \.element.id) { index, day in
-                Button {
-                    selectedDay = day
-                } label: {
-                    dayColumn(day: day, index: index)
-                }
-                .buttonStyle(.plain)
-            }
-        }
-        .frame(height: barHeight + 24) // bar + label
-    }
-
-    private func dayColumn(day: BlockedAppsDailyStat, index: Int) -> some View {
-        let normalized = stats.maxMinutes > 0
-            ? CGFloat(day.totalMinutes) / CGFloat(stats.maxMinutes)
-            : 0
-
-        return VStack(spacing: 4) {
-            // Container with border that fills based on usage
-            ZStack(alignment: .bottom) {
-                // Empty container border
-                RoundedRectangle(cornerRadius: 6)
-                    .stroke(Color.secondary.opacity(0.2), lineWidth: 1)
-                    .frame(height: barHeight)
-
-                // Fill bar with color based on usage intensity
-                RoundedRectangle(cornerRadius: 6)
-                    .fill(barColor(for: normalized, day: day))
-                    .frame(height: max(0, normalized * barHeight))
-            }
-            .frame(height: barHeight)
-
-            // Day label
-            Text(dayLabel(for: index))
-                .font(.caption2)
-                .foregroundStyle(.secondary)
-        }
-        .frame(maxWidth: .infinity)
-        .contentShape(Rectangle())
-    }
-
-    /// Returns color based on usage intensity - uses themeColor with varying opacity/saturation
-    /// If the day exceeds daily limit, returns red color
-    private func barColor(for normalized: CGFloat, day: BlockedAppsDailyStat) -> Color {
-        if let limit = dailyLimitMinutes, day.totalMinutes > limit {
-            return .red
-        }
-        // Higher usage = lighter color, lower usage = darker color
-        let baseOpacity = 1.0
-        let opacityReduction = Double(normalized) * 0.6
-        return themeColor.opacity(baseOpacity - opacityReduction)
-    }
-
     private var summaryRow: some View {
         HStack {
             Label {
@@ -124,15 +73,6 @@ struct BlockedAppsChart: View {
                 .font(.caption)
                 .foregroundStyle(.secondary)
         }
-    }
-
-    private func dayLabel(for index: Int) -> String {
-        guard index < stats.days.count else { return "" }
-        let day = stats.days[index].date
-        let formatter = DateFormatter()
-        formatter.dateFormat = "E"
-        let dayName = formatter.string(from: day)
-        return String(dayName.prefix(1))
     }
 
     private func formatMinutes(_ minutes: Int) -> String {
@@ -215,11 +155,11 @@ struct DayDetailSheet: View {
 
 #Preview {
     VStack {
-        BlockedAppsChart(stats: .mock(), themeColor: .green)
+        WeeklyHistoryCard(stats: .mock(), themeColor: .green)
 
-        BlockedAppsChart(stats: .mock(), themeColor: .blue, onTap: {})
+        WeeklyHistoryCard(stats: .mock(), themeColor: .blue, onTap: {})
 
-        BlockedAppsChart(stats: .mock(), themeColor: .purple, onTap: {})
+        WeeklyHistoryCard(stats: .mock(), themeColor: .purple, onTap: {})
     }
     .padding()
 }

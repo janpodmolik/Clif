@@ -80,7 +80,7 @@ struct PetActiveDetailScreen: View {
                         daysUntilEvolution: daysUntilEvolution
                     )
 
-                    BlockedAppsChart(
+                    WeeklyHistoryCard(
                         stats: weeklyStats,
                         themeColor: evolutionHistory.essence.themeColor,
                         dailyLimitMinutes: limitMinutes,

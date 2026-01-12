@@ -42,7 +42,7 @@ struct PetScreenTimeCard: View {
                 .contentShape(Rectangle())
                 .onTapGesture(perform: onTap)
 
-            PetOverviewChart(
+            PetWeeklyChart(
                 stats: pet.weeklyStats,
                 limitMinutes: pet.limitMinutes,
                 themeColor: .green,

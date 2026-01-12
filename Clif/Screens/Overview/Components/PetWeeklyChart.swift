@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct PetOverviewChart: View {
+struct PetWeeklyChart: View {
     let stats: BlockedAppsWeeklyStats
     let limitMinutes: Int?
     var themeColor: Color = .green
@@ -40,11 +40,12 @@ struct PetOverviewChart: View {
             ? CGFloat(day.totalMinutes) / CGFloat(chartMax)
             : 0
         let isToday = Calendar.current.isDateInToday(day.date)
+        let isOverLimit = limitMinutes.map { day.totalMinutes > $0 } ?? false
 
         return VStack(spacing: 4) {
             Text(formatMinutesShort(day.totalMinutes))
                 .font(.system(size: 9, weight: .medium))
-                .foregroundStyle(.secondary)
+                .foregroundStyle(isOverLimit ? .red : .secondary)
                 .frame(height: 12)
 
             ZStack(alignment: .bottom) {
@@ -53,7 +54,7 @@ struct PetOverviewChart: View {
                     .frame(height: barHeight)
 
                 RoundedRectangle(cornerRadius: 6)
-                    .fill(barGradient(isToday: isToday))
+                    .fill(barGradient(isToday: isToday, isOverLimit: isOverLimit))
                     .frame(height: max(8, barHeight * normalized))
             }
             .frame(height: barHeight)
@@ -66,7 +67,14 @@ struct PetOverviewChart: View {
         .frame(maxWidth: .infinity)
     }
 
-    private func barGradient(isToday: Bool) -> LinearGradient {
+    private func barGradient(isToday: Bool, isOverLimit: Bool) -> LinearGradient {
+        if isOverLimit {
+            return LinearGradient(
+                colors: [.red.opacity(0.9), .red.opacity(0.6)],
+                startPoint: .bottom,
+                endPoint: .top
+            )
+        }
         if isToday {
             return LinearGradient(
                 colors: [.blue.opacity(0.9), .cyan],
@@ -98,7 +106,7 @@ struct PetOverviewChart: View {
 }
 
 #Preview {
-    PetOverviewChart(
+    PetWeeklyChart(
         stats: .mock(),
         limitMinutes: 90,
         themeColor: .green
