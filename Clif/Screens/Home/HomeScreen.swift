@@ -83,7 +83,7 @@ struct HomeScreen: View {
                 isBlownAway: false,
                 todayUsedMinutes: 32,
                 dailyLimitMinutes: 120,
-                weeklyStats: .mock(),
+                fullStats: .mock(days: 19),
                 limitedAppCount: 12
             )
         }

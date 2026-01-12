@@ -40,8 +40,13 @@ struct PetHistoryDetailScreen: View {
                         themeColor: pet.essence.themeColor
                     )
 
-                    WeeklyHistoryCard(
-                        stats: pet.weeklyStats,
+                    UsageCard(
+                        stats: pet.fullStats,
+                        themeColor: pet.essence.themeColor
+                    )
+
+                    TrendMiniChart(
+                        stats: pet.fullStats,
                         themeColor: pet.essence.themeColor
                     )
 

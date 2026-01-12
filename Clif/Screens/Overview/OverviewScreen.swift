@@ -65,7 +65,7 @@ struct OverviewScreen: View {
                 isBlownAway: false,
                 todayUsedMinutes: pet.todayUsedMinutes,
                 dailyLimitMinutes: pet.dailyLimitMinutes,
-                weeklyStats: pet.weeklyStats,
+                fullStats: pet.fullStats,
                 limitedAppCount: pet.limitedAppCount,
                 daysUntilEvolution: pet.daysUntilEvolution,
                 showOverviewActions: true,

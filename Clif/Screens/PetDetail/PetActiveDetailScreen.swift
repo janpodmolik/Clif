@@ -14,7 +14,7 @@ struct PetActiveDetailScreen: View {
     let dailyLimitMinutes: Int
 
     // MARK: - Stats
-    let weeklyStats: WeeklyUsageStats
+    let fullStats: FullUsageStats
 
     // MARK: - Limited Apps
     let limitedAppCount: Int
@@ -30,7 +30,6 @@ struct PetActiveDetailScreen: View {
     var onBlowAway: () -> Void = {}
     var onReplay: () -> Void = {}
     var onDelete: () -> Void = {}
-    var onSeeAllStats: () -> Void = {}
     var onLimitedApps: () -> Void = {}
     var onShowOnHomepage: () -> Void = {}
 
@@ -80,10 +79,14 @@ struct PetActiveDetailScreen: View {
                         daysUntilEvolution: daysUntilEvolution
                     )
 
-                    WeeklyHistoryCard(
-                        stats: weeklyStats,
-                        themeColor: evolutionHistory.essence.themeColor,
-                        onTap: onSeeAllStats
+                    UsageCard(
+                        stats: fullStats,
+                        themeColor: evolutionHistory.essence.themeColor
+                    )
+
+                    TrendMiniChart(
+                        stats: fullStats,
+                        themeColor: evolutionHistory.essence.themeColor
                     )
 
                     LimitedAppsBadge(
@@ -186,7 +189,7 @@ struct PetActiveDetailScreen: View {
                 isBlownAway: false,
                 todayUsedMinutes: 83,
                 dailyLimitMinutes: 180,
-                weeklyStats: .mock(),
+                fullStats: .mock(days: 14),
                 limitedAppCount: 12
             )
         }
@@ -219,7 +222,7 @@ struct PetActiveDetailScreen: View {
                 isBlownAway: false,
                 todayUsedMinutes: 25,
                 dailyLimitMinutes: 90,
-                weeklyStats: .mock(),
+                fullStats: .mock(days: 19),
                 limitedAppCount: 8,
                 showOverviewActions: true
             )

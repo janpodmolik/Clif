@@ -1,18 +1,38 @@
 import SwiftUI
 
-struct WeeklyHistoryCard: View {
-    let stats: WeeklyUsageStats
-    var themeColor: Color = .green
-    var onTap: (() -> Void)?
+enum UsageViewMode: String, CaseIterable {
+    case week = "7 dní"
+    case all = "Vše"
+}
 
+struct UsageCard: View {
+    let stats: FullUsageStats
+    var themeColor: Color = .green
+
+    @State private var viewMode: UsageViewMode = .week
     @State private var selectedDay: DailyUsageStat?
+
+    private var displayedStats: FullUsageStats {
+        switch viewMode {
+        case .week:
+            let lastSevenDays = Array(stats.days.suffix(7))
+            return FullUsageStats(days: lastSevenDays, dailyLimitMinutes: stats.dailyLimitMinutes)
+        case .all:
+            return stats
+        }
+    }
+
+    private var isScrollable: Bool {
+        viewMode == .all && stats.days.count > 7
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             headerRow
 
             UsageChart(
-                stats: stats,
+                stats: displayedStats,
+                scrollable: isScrollable,
                 themeColor: themeColor,
                 onDayTap: { day in
                     selectedDay = day
@@ -33,24 +53,23 @@ struct WeeklyHistoryCard: View {
             Image(systemName: "clock.arrow.circlepath")
                 .foregroundStyle(.secondary)
 
-            Text("History")
+            Text("Historie")
                 .font(.headline)
 
             Spacer()
 
-            Text("Last 7 days")
-                .font(.caption)
-                .foregroundStyle(.secondary)
-
-            if onTap != nil {
-                Button {
-                    onTap?()
-                } label: {
-                    Image(systemName: "chevron.right")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+            if stats.days.count > 7 {
+                Picker("", selection: $viewMode) {
+                    ForEach(UsageViewMode.allCases, id: \.self) { mode in
+                        Text(mode.rawValue).tag(mode)
+                    }
                 }
-                .buttonStyle(.plain)
+                .pickerStyle(.segmented)
+                .frame(width: 120)
+            } else {
+                Text("\(stats.days.count) dní")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
             }
         }
     }
@@ -58,7 +77,7 @@ struct WeeklyHistoryCard: View {
     private var summaryRow: some View {
         HStack {
             Label {
-                Text("\(formatMinutes(stats.averageMinutes)) average")
+                Text("\(formatMinutes(displayedStats.averageMinutes)) průměr")
             } icon: {
                 Image(systemName: "chart.bar.xaxis")
             }
@@ -67,7 +86,7 @@ struct WeeklyHistoryCard: View {
 
             Spacer()
 
-            Text("Total: \(formatMinutes(stats.totalMinutes))")
+            Text("Celkem: \(formatMinutes(displayedStats.totalMinutes))")
                 .font(.caption)
                 .foregroundStyle(.secondary)
         }
@@ -92,6 +111,7 @@ struct DayDetailSheet: View {
 
     private let dateFormatter: DateFormatter = {
         let f = DateFormatter()
+        f.locale = Locale(identifier: "cs_CZ")
         f.dateStyle = .full
         return f
     }()
@@ -101,7 +121,7 @@ struct DayDetailSheet: View {
             List {
                 Section {
                     HStack {
-                        Label("Total Time", systemImage: "clock.fill")
+                        Label("Celkový čas", systemImage: "clock.fill")
                         Spacer()
                         Text(formatMinutes(day.totalMinutes))
                             .foregroundStyle(.secondary)
@@ -110,9 +130,9 @@ struct DayDetailSheet: View {
 
                 Section {
                     ContentUnavailableView {
-                        Label("App Details", systemImage: "app.badge")
+                        Label("Detail aplikací", systemImage: "app.badge")
                     } description: {
-                        Text("Detailed app usage will be available once connected to Family Controls.")
+                        Text("Detailní využití aplikací bude dostupné po připojení k Family Controls.")
                     }
                 }
             }
@@ -145,20 +165,27 @@ struct DayDetailSheet: View {
 }
 
 #if DEBUG
-#Preview {
-    NavigationStack {
-        PetActiveDetailScreenDebug()
-    }
+#Preview("Short history (no toggle)") {
+    UsageCard(
+        stats: FullUsageStats.mock(days: 5),
+        themeColor: .green
+    )
+    .padding()
 }
 
-#Preview {
-    VStack {
-        WeeklyHistoryCard(stats: .mock(), themeColor: .green)
+#Preview("Week+ history (with toggle)") {
+    UsageCard(
+        stats: FullUsageStats.mock(days: 14),
+        themeColor: .purple
+    )
+    .padding()
+}
 
-        WeeklyHistoryCard(stats: .mock(), themeColor: .blue, onTap: {})
-
-        WeeklyHistoryCard(stats: .mock(), themeColor: .purple, onTap: {})
-    }
+#Preview("Long history") {
+    UsageCard(
+        stats: FullUsageStats.mock(days: 30),
+        themeColor: .orange
+    )
     .padding()
 }
 

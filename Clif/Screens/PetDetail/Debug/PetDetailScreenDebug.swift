@@ -105,13 +105,12 @@ struct PetActiveDetailScreenDebug: View {
                 isBlownAway: isBlownAway,
                 todayUsedMinutes: Int(todayUsedMinutes),
                 dailyLimitMinutes: Int(dailyLimitMinutes),
-                weeklyStats: .mock(),
+                fullStats: .mock(days: totalDays > 0 ? totalDays : 7),
                 limitedAppCount: 12,
                 onEvolve: { print("Evolve tapped") },
                 onBlowAway: { print("Blow Away tapped") },
                 onReplay: { print("Replay tapped") },
                 onDelete: { print("Delete tapped") },
-                onSeeAllStats: { print("See all stats tapped") },
                 onLimitedApps: { print("Limited apps tapped") }
             )
         }
