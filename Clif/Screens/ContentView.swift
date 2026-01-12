@@ -22,6 +22,8 @@ struct ContentView: View {
     @State private var showSearch = false
     @State private var showPremium = false
 
+    @Namespace private var tabIndicatorNamespace
+
     private let tabBarHeight: CGFloat = 55
 
     #if DEBUG
@@ -166,7 +168,9 @@ struct ContentView: View {
             ForEach(AppTab.allCases, id: \.self) { tab in
                 Button {
                     UIImpactFeedbackGenerator(style: .light).impactOccurred()
-                    activeTab = tab
+                    withAnimation(.snappy(duration: 0.25)) {
+                        activeTab = tab
+                    }
                 } label: {
                     VStack(spacing: 3) {
                         Image(systemName: tab.symbol)
@@ -177,13 +181,23 @@ struct ContentView: View {
                     }
                     .symbolVariant(.fill)
                     .foregroundStyle(.primary.opacity(activeTab == tab ? 1 : 0.45))
-                    .frame(maxWidth: .infinity)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .background {
+                        if activeTab == tab {
+                            Capsule()
+                                .fill(.gray.opacity(0.3))
+                                .padding(.vertical, 4)
+                                .matchedGeometryEffect(id: "tabIndicator", in: tabIndicatorNamespace)
+                        }
+                    }
+                    .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
             }
         }
         .frame(maxWidth: .infinity)
         .frame(height: tabBarHeight)
+        .padding(.horizontal, 4)
         .background(.ultraThinMaterial, in: Capsule())
 
         centerButtonFallback()
