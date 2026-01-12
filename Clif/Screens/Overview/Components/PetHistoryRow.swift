@@ -4,6 +4,13 @@ struct PetHistoryRow: View {
     let pet: ArchivedPet
     let onTap: () -> Void
 
+    private static let relativeDateFormatter: RelativeDateTimeFormatter = {
+        let formatter = RelativeDateTimeFormatter()
+        formatter.locale = Locale(identifier: "cs_CZ")
+        formatter.unitsStyle = .short
+        return formatter
+    }()
+
     private var assetName: String {
         let mood: Mood = pet.isBlown ? .sad : .happy
         return pet.phase?.assetName(for: mood) ?? pet.essence.assetName
@@ -14,10 +21,7 @@ struct PetHistoryRow: View {
     }
 
     private var relativeDate: String {
-        let formatter = RelativeDateTimeFormatter()
-        formatter.locale = Locale(identifier: "cs_CZ")
-        formatter.unitsStyle = .short
-        return formatter.localizedString(for: pet.archivedAt, relativeTo: Date())
+        Self.relativeDateFormatter.localizedString(for: pet.archivedAt, relativeTo: Date())
     }
 
     var body: some View {

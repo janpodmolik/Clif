@@ -8,6 +8,13 @@ struct PetOverviewChart: View {
 
     private let barHeight: CGFloat = 70
 
+    private static let dayFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "cs_CZ")
+        formatter.setLocalizedDateFormatFromTemplate("EEE")
+        return formatter
+    }()
+
     private var chartMax: Int {
         max(stats.maxMinutes, limitMinutes ?? 0, 1)
     }
@@ -77,10 +84,7 @@ struct PetOverviewChart: View {
     // MARK: - Helpers
 
     private func dayLabel(for date: Date) -> String {
-        let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "cs_CZ")
-        formatter.setLocalizedDateFormatFromTemplate("EEE")
-        return formatter.string(from: date)
+        Self.dayFormatter.string(from: date)
     }
 
     private func formatMinutesShort(_ minutes: Int) -> String {
