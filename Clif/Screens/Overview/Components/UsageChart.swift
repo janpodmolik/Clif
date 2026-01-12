@@ -7,6 +7,8 @@ struct UsageChart<Stats: UsageStatsProtocol>: View {
     var themeColor: Color = .green
     var onDayTap: ((DailyUsageStat) -> Void)?
 
+    @State private var isPulsing = false
+
     private let barHeight: CGFloat = 70
     private let barWidth: CGFloat = 36
 
@@ -33,10 +35,16 @@ struct UsageChart<Stats: UsageStatsProtocol>: View {
     }
 
     var body: some View {
-        if scrollable {
-            scrollableContent
-        } else {
-            fixedContent
+        Group {
+            if scrollable {
+                scrollableContent
+            } else {
+                fixedContent
+            }
+        }
+        .id(stats.days.count)
+        .onAppear {
+            isPulsing = true
         }
     }
 
@@ -103,8 +111,21 @@ struct UsageChart<Stats: UsageStatsProtocol>: View {
                     .frame(height: barHeight)
 
                 RoundedRectangle(cornerRadius: 6)
-                    .fill(barGradient(isToday: isToday, isOverLimit: isOverLimit))
+                    .fill(barGradient(isOverLimit: isOverLimit))
                     .frame(height: max(8, barHeight * normalized))
+                    .overlay {
+                        if isToday {
+                            let pulseColor: Color = isOverLimit ? .red : themeColor
+                            RoundedRectangle(cornerRadius: 6)
+                                .stroke(pulseColor.opacity(isPulsing ? 0.0 : 0.6), lineWidth: 2)
+                                .frame(height: max(8, barHeight * normalized))
+                                .scaleEffect(isPulsing ? 1.15 : 1.0)
+                                .animation(
+                                    .easeOut(duration: 1.5).repeatForever(autoreverses: false),
+                                    value: isPulsing
+                                )
+                        }
+                    }
             }
             .frame(height: barHeight)
 
@@ -129,17 +150,10 @@ struct UsageChart<Stats: UsageStatsProtocol>: View {
             .foregroundStyle(isToday ? .primary : .secondary)
     }
 
-    private func barGradient(isToday: Bool, isOverLimit: Bool) -> LinearGradient {
+    private func barGradient(isOverLimit: Bool) -> LinearGradient {
         if isOverLimit {
             return LinearGradient(
                 colors: [.red.opacity(0.9), .red.opacity(0.6)],
-                startPoint: .bottom,
-                endPoint: .top
-            )
-        }
-        if isToday {
-            return LinearGradient(
-                colors: [.blue.opacity(0.9), .cyan],
                 startPoint: .bottom,
                 endPoint: .top
             )
