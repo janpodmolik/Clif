@@ -2,11 +2,219 @@ import SwiftUI
 
 struct SearchSheet: View {
     @Environment(\.dismiss) private var dismiss
-    @State private var searchText = ""
+
+    @State private var filter = PetSearchFilter()
+    @State private var selectedPet: ArchivedPet?
+    @State private var activeFilterSheet: FilterType?
+
+    private enum FilterType: Identifiable {
+        case status
+        case date
+        case duration
+        case essence
+
+        var id: Self { self }
+    }
+
+    private let archivedPets = ArchivedPet.mockList()
+
+    private var filteredPets: [ArchivedPet] {
+        archivedPets.filter { pet in
+            // Text search (name + purpose)
+            if !filter.searchText.isEmpty {
+                let searchLower = filter.searchText.lowercased()
+                let nameMatch = pet.name.lowercased().contains(searchLower)
+                let purposeMatch = pet.purpose?.lowercased().contains(searchLower) ?? false
+                if !nameMatch && !purposeMatch {
+                    return false
+                }
+            }
+
+            // Date range filter
+            if let interval = filter.dateRange.dateInterval(
+                customStart: filter.customStartDate,
+                customEnd: filter.customEndDate
+            ) {
+                if !interval.contains(pet.archivedAt) {
+                    return false
+                }
+            }
+
+            // Status filter
+            switch filter.statusFilter {
+            case .all:
+                break
+            case .completed:
+                if pet.isBlown { return false }
+            case .blownAway:
+                if !pet.isBlown { return false }
+            }
+
+            // Essence filter
+            if !filter.essenceFilter.contains(pet.essence) {
+                return false
+            }
+
+            // Duration filter
+            if !filter.matchesDuration(days: pet.totalDays) {
+                return false
+            }
+
+            return true
+        }
+    }
 
     var body: some View {
         NavigationStack {
-            VStack(spacing: 24) {
+            Group {
+                if filteredPets.isEmpty {
+                    emptyState
+                } else {
+                    resultsList
+                }
+            }
+            .background(Color(.systemGroupedBackground))
+            .navigationTitle("Hledat")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    if filter.hasActiveFilters {
+                        Button("Reset") {
+                            withAnimation {
+                                filter.reset()
+                            }
+                        }
+                    }
+                }
+
+                ToolbarItem(placement: .primaryAction) {
+                    Button {
+                        dismiss()
+                    } label: {
+                        Image(systemName: "xmark")
+                            .font(.body.weight(.semibold))
+                            .foregroundStyle(.secondary)
+                    }
+                }
+            }
+            .safeAreaInset(edge: .top) {
+                filterPillsBar
+            }
+            .searchable(text: $filter.searchText, prompt: "Hledat pety...")
+        }
+        .tint(.primary)
+        .sheet(item: $activeFilterSheet) { type in
+            filterSheet(for: type)
+        }
+        .fullScreenCover(item: $selectedPet) { pet in
+            PetHistoryDetailScreen(pet: pet)
+        }
+    }
+
+    // MARK: - Subviews
+
+    private var filterPillsBar: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 8) {
+                FilterPill(
+                    label: filter.statusFilter == .all ? "Stav" : filter.statusFilter.rawValue,
+                    isActive: filter.statusFilter != .all
+                ) {
+                    activeFilterSheet = .status
+                }
+
+                FilterPill(
+                    label: filter.dateRange == .all ? "Období" : filter.dateRange.rawValue,
+                    isActive: filter.dateRange != .all
+                ) {
+                    activeFilterSheet = .date
+                }
+
+                FilterPill(
+                    label: filter.isDurationFiltered ? filter.durationLabel : "Délka",
+                    isActive: filter.isDurationFiltered
+                ) {
+                    activeFilterSheet = .duration
+                }
+
+                FilterPill(
+                    label: filter.essenceFilter == Set(Essence.allCases) ? "Essence" : "\(filter.essenceFilter.count) essence",
+                    isActive: filter.essenceFilter != Set(Essence.allCases)
+                ) {
+                    activeFilterSheet = .essence
+                }
+            }
+            .padding(.horizontal)
+            .padding(.vertical, 8)
+        }
+        .background(Color(.systemGroupedBackground))
+    }
+
+    private var resultsList: some View {
+        ScrollView {
+            LazyVStack(spacing: 12) {
+                HStack {
+                    Text("\(filteredPets.count) výsledků")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+
+                    Spacer()
+                }
+                .padding(.horizontal, 4)
+
+                ForEach(filteredPets) { pet in
+                    PetHistoryRow(pet: pet) {
+                        selectedPet = pet
+                    }
+                }
+            }
+            .padding()
+        }
+    }
+
+    @ViewBuilder
+    private func filterSheet(for type: FilterType) -> some View {
+        switch type {
+        case .status:
+            StatusFilterSheet(selection: $filter.statusFilter)
+        case .date:
+            DateFilterSheet(
+                dateRange: $filter.dateRange,
+                customStart: $filter.customStartDate,
+                customEnd: $filter.customEndDate
+            )
+        case .duration:
+            DurationFilterSheet(
+                minDuration: $filter.minDuration,
+                maxDuration: $filter.maxDuration
+            )
+        case .essence:
+            EssenceFilterSheet(selection: $filter.essenceFilter)
+        }
+    }
+
+    private var emptyState: some View {
+        VStack(spacing: 24) {
+            if filter.hasActiveFilters || !filter.searchText.isEmpty {
+                Image(systemName: "magnifyingglass")
+                    .font(.system(size: 48))
+                    .foregroundStyle(.secondary)
+
+                Text("Žádné výsledky")
+                    .font(.title2.weight(.semibold))
+
+                Text("Zkus změnit vyhledávání nebo filtry.")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+
+                Button("Vymazat filtry") {
+                    withAnimation {
+                        filter.reset()
+                    }
+                }
+                .buttonStyle(.bordered)
+            } else {
                 Image(systemName: "magnifyingglass")
                     .font(.system(size: 48))
                     .foregroundStyle(.secondary)
@@ -14,25 +222,39 @@ struct SearchSheet: View {
                 Text("Vyhledávání v historii")
                     .font(.title2.weight(.semibold))
 
-                Text("Zde budeš moct vyhledávat mezi svými pety.")
+                Text("Zadej jméno peta nebo použij filtry.")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
             }
-            .padding()
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(Color(.systemGroupedBackground))
-            .navigationTitle("Hledat")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Zavřít") {
-                        dismiss()
-                    }
-                }
-            }
-            .searchable(text: $searchText, prompt: "Hledat pety...")
         }
+        .padding()
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        .padding(.top, 60)
+    }
+}
+
+// MARK: - Filter Pill
+
+private struct FilterPill: View {
+    let label: String
+    let isActive: Bool
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            Text(label)
+                .font(.subheadline)
+                .padding(.horizontal, 12)
+                .padding(.vertical, 8)
+                .background(isActive ? Color.primary.opacity(0.1) : Color.clear)
+                .overlay {
+                    Capsule()
+                        .strokeBorder(Color.primary.opacity(isActive ? 0.5 : 0.3), lineWidth: 1)
+                }
+                .clipShape(Capsule())
+        }
+        .buttonStyle(.plain)
     }
 }
 
