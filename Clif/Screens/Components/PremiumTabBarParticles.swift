@@ -53,6 +53,7 @@ struct PremiumTabBarParticles: View {
     private func renderParticles(in context: GraphicsContext, size: CGSize, time: Double, count: Int) {
         let midX = size.width / 2
         let height = size.height
+        let spawnHeight = height * 0.84
 
         for index in 0..<count {
             let seed = Double(index + 1)
@@ -65,7 +66,8 @@ struct PremiumTabBarParticles: View {
             let drift = sin(time * (0.9 + seed * 0.07) + seed * 2.0) * (isSmoke ? 3.5 : 7.5)
 
             let x = midX + CGFloat(spread + drift * (1 - progress))
-            let y = height - CGFloat(progress) * height
+            let originJitter = (seeded(seed, 8.1) - 0.5) * 12
+            let y = (spawnHeight + CGFloat(originJitter)) - CGFloat(progress) * height
 
             let baseSize = isSmoke ? 5.5 : 2.2
             let sizeVariance = isSmoke ? 4.5 : 3.0

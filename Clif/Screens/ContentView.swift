@@ -26,8 +26,8 @@ struct ContentView: View {
     @Namespace private var tabButtonNamespace
 
     private let tabBarHeight: CGFloat = 55
-    private let premiumParticleOverlaySize = CGSize(width: 90, height: 180)
-    private let premiumParticleOverlayBottomOffset: CGFloat = 6
+    private let premiumParticleSize = CGSize(width: 90, height: 180)
+    private let premiumParticleVerticalOffset: CGFloat = -10
 
     #if DEBUG
     @State private var showPetDebug = false
@@ -52,6 +52,20 @@ struct ContentView: View {
         .safeAreaInset(edge: .bottom, spacing: 0) {
             customTabBar()
                 .padding(.horizontal, 20)
+        }
+        .overlayPreferenceValue(CenterButtonAnchorKey.self) { anchor in
+            GeometryReader { geo in
+                if showPremiumButtonEffect, let anchor {
+                    let rect = geo[anchor]
+                    let centerY = rect.maxY - premiumParticleSize.height / 2 + premiumParticleVerticalOffset
+                    PremiumTabBarParticles()
+                        .frame(width: premiumParticleSize.width, height: premiumParticleSize.height)
+                        .position(x: rect.midX, y: centerY)
+                        .allowsHitTesting(false)
+                        .accessibilityHidden(true)
+                }
+            }
+            .allowsHitTesting(false)
         }
         .preferredColorScheme(isDarkModeEnabled ? .dark : .light)
         .onReceive(NotificationCenter.default.publisher(for: .selectPet)) { notification in
@@ -107,22 +121,7 @@ struct ContentView: View {
                 .glassEffect(.regular.interactive(), in: .capsule)
             }
 
-            centerButton()
-                .glassEffect(.regular.interactive(), in: .circle)
-                .glassEffectID("centerButton", in: tabButtonNamespace)
-                .overlay(alignment: .bottom) {
-                    if showPremiumButtonEffect {
-                        PremiumTabBarParticles()
-                            .frame(
-                                width: premiumParticleOverlaySize.width,
-                                height: premiumParticleOverlaySize.height
-                            )
-                            .offset(y: -premiumParticleOverlaySize.height / 2)
-                            .allowsHitTesting(false)
-                            .accessibilityHidden(true)
-                    }
-                }
-                .zIndex(-1)
+            centerButtonGlass()
         }
     }
 
@@ -140,6 +139,22 @@ struct ContentView: View {
 
     private var premiumGoldColor: Color {
         Color(red: 0.9, green: 0.7, blue: 0.3)
+    }
+
+    @ViewBuilder
+    @available(iOS 26.0, *)
+    private func centerButtonGlass() -> some View {
+        centerButton()
+            .glassEffect(.regular.interactive(), in: .circle)
+            .glassEffectID("centerButton", in: tabButtonNamespace)
+            .anchorPreference(key: CenterButtonAnchorKey.self, value: .bounds) { $0 }
+    }
+
+    @ViewBuilder
+    private func centerButtonFallback() -> some View {
+        centerButton()
+            .background(.ultraThinMaterial, in: Circle())
+            .anchorPreference(key: CenterButtonAnchorKey.self, value: .bounds) { $0 }
     }
 
     @ViewBuilder
@@ -186,22 +201,18 @@ struct ContentView: View {
             .background(.ultraThinMaterial, in: Capsule())
         }
 
-        centerButton()
-            .background(.ultraThinMaterial, in: Circle())
-            .background(alignment: .bottom) {
-                if showPremiumButtonEffect {
-                    PremiumTabBarParticles()
-                        .frame(
-                            width: premiumParticleOverlaySize.width,
-                            height: premiumParticleOverlaySize.height
-                        )
-                        .offset(y: premiumParticleOverlayBottomOffset)
-                        .accessibilityHidden(true)
-                }
-            }
+        centerButtonFallback()
     }
 }
 
 #Preview {
     ContentView()
+}
+
+private struct CenterButtonAnchorKey: PreferenceKey {
+    static var defaultValue: Anchor<CGRect>?
+
+    static func reduce(value: inout Anchor<CGRect>?, nextValue: () -> Anchor<CGRect>?) {
+        value = nextValue() ?? value
+    }
 }
