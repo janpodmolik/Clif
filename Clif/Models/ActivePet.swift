@@ -1,4 +1,6 @@
+import FamilyControls
 import Foundation
+import ManagedSettings
 
 struct ActivePet: Identifiable, Equatable {
     let id: UUID
@@ -10,7 +12,12 @@ struct ActivePet: Identifiable, Equatable {
     let usedMinutes: Int
     let limitMinutes: Int
     let weeklyStats: BlockedAppsWeeklyStats
-    let blockedAppCount: Int
+    let applicationTokens: Set<ApplicationToken>
+    let categoryTokens: Set<ActivityCategoryToken>
+
+    var blockedAppCount: Int {
+        applicationTokens.count + categoryTokens.count
+    }
 
     var essence: Essence { evolutionHistory.essence }
     var currentPhase: Int { evolutionHistory.currentPhase }
@@ -39,7 +46,8 @@ struct ActivePet: Identifiable, Equatable {
         usedMinutes: Int,
         limitMinutes: Int,
         weeklyStats: BlockedAppsWeeklyStats,
-        blockedAppCount: Int
+        applicationTokens: Set<ApplicationToken> = [],
+        categoryTokens: Set<ActivityCategoryToken> = []
     ) {
         self.id = id
         self.name = name
@@ -50,7 +58,8 @@ struct ActivePet: Identifiable, Equatable {
         self.usedMinutes = usedMinutes
         self.limitMinutes = limitMinutes
         self.weeklyStats = weeklyStats
-        self.blockedAppCount = blockedAppCount
+        self.applicationTokens = applicationTokens
+        self.categoryTokens = categoryTokens
     }
 }
 
@@ -89,8 +98,7 @@ extension ActivePet {
             windLevel: windLevel,
             usedMinutes: usedMinutes,
             limitMinutes: limitMinutes,
-            weeklyStats: .mock(),
-            blockedAppCount: 8
+            weeklyStats: .mock()
         )
     }
 

@@ -25,22 +25,29 @@ struct OverviewScreen: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 24) {
                 headerSection
+                    .padding(.horizontal, 20)
 
-                ScreenTimeOverviewCard(
-                    stats: weeklyStats,
+                PetScreenTimeCarousel(
+                    activePets: activePets,
+                    fallbackStats: weeklyStats,
                     applicationTokens: screenTimeManager.activitySelection.applicationTokens,
-                    categoryTokens: screenTimeManager.activitySelection.categoryTokens
+                    categoryTokens: screenTimeManager.activitySelection.categoryTokens,
+                    onPetTap: { pet in
+                        selectedActivePet = pet
+                    }
                 )
 
                 HistoryIslandsCarousel(pets: completedPets) { pet in
                     selectedPet = pet
                 }
+                .padding(.horizontal, 20)
 
                 activeSection
+                    .padding(.horizontal, 20)
 
                 historySection
+                    .padding(.horizontal, 20)
             }
-            .padding(.horizontal, 20)
             .padding(.top, 20)
             .padding(.bottom, 110)
         }
