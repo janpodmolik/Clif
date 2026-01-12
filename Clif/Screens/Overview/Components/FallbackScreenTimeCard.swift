@@ -22,7 +22,7 @@ struct FallbackScreenTimeCard: View {
                 )
             }
 
-            PetWeeklyChart(
+            UsageChart(
                 stats: stats,
                 themeColor: .green,
                 onDayTap: { day in

@@ -24,7 +24,7 @@ enum UsageTrend: String, Codable {
 }
 
 /// Full statistics container for extended history display (5-30 days).
-struct FullUsageStats: Codable, Equatable {
+struct FullUsageStats: Codable, Equatable, UsageStatsProtocol {
     let days: [DailyUsageStat]
     let dailyLimitMinutes: Int
 

@@ -1,5 +1,12 @@
 import Foundation
 
+/// Protocol for usage stats that can be displayed in charts.
+protocol UsageStatsProtocol {
+    var days: [DailyUsageStat] { get }
+    var dailyLimitMinutes: Int { get }
+    var maxMinutes: Int { get }
+}
+
 /// Daily usage data point for limited apps.
 struct DailyUsageStat: Codable, Identifiable, Equatable {
     let id: UUID
@@ -16,7 +23,7 @@ struct DailyUsageStat: Codable, Identifiable, Equatable {
 }
 
 /// Weekly stats container for chart display.
-struct WeeklyUsageStats: Codable, Equatable {
+struct WeeklyUsageStats: Codable, Equatable, UsageStatsProtocol {
     let days: [DailyUsageStat]
     let dailyLimitMinutes: Int
     let previousWeekTotal: Int?

@@ -11,7 +11,7 @@ struct WeeklyHistoryCard: View {
         VStack(alignment: .leading, spacing: 12) {
             headerRow
 
-            PetWeeklyChart(
+            UsageChart(
                 stats: stats,
                 themeColor: themeColor,
                 onDayTap: { day in
