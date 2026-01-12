@@ -17,7 +17,6 @@
 		B46F91272F0EF01C002738FD /* Mood.swift in Sources */ = {isa = PBXBuildFile; fileRef = B46F91262F0EF01C002738FD /* Mood.swift */; };
 		B46F91282F0EF01C002738FD /* Mood.swift in Sources */ = {isa = PBXBuildFile; fileRef = B46F91262F0EF01C002738FD /* Mood.swift */; };
 		B47A5F2B2F152D850068232C /* FullUsageStats.swift in Sources */ = {isa = PBXBuildFile; fileRef = B47A5F2A2F152D850068232C /* FullUsageStats.swift */; };
-		B4APP1012F15A0010001A001 /* AppUsage.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4APP0012F15A0010001A001 /* AppUsage.swift */; };
 		B4924ACC2EE57ED90033475C /* DeviceActivity.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B4924ACB2EE57ED90033475C /* DeviceActivity.framework */; };
 		B4924AD42EE57ED90033475C /* DeviceActivityMonitor.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = B4924AC92EE57ED90033475C /* DeviceActivityMonitor.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		B4924AE02EE57EEE0033475C /* ManagedSettings.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B4924ADF2EE57EEE0033475C /* ManagedSettings.framework */; };
@@ -41,6 +40,7 @@
 		B4ANI2012F0E00010001B001 /* IdleConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4ANI0012F0E00010001B001 /* IdleConfig.swift */; };
 		B4ANI2022F0E00010001B002 /* TapAnimationType.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4ANI0022F0E00010001B002 /* TapAnimationType.swift */; };
 		B4ANI2032F0E00010001B003 /* TapConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4ANI0032F0E00010001B003 /* TapConfig.swift */; };
+		B4APP1012F15A0010001A001 /* AppUsage.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4APP0012F15A0010001A001 /* AppUsage.swift */; };
 		B4C4C0922EE7FECE00E469E8 /* ManagedSettings.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B4924ADF2EE57EEE0033475C /* ManagedSettings.framework */; };
 		B4C4C09A2EE7FECE00E469E8 /* ShieldAction.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = B4C4C0912EE7FECE00E469E8 /* ShieldAction.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		B4C4C09F2EE7FEFF00E469E8 /* SharedDefaults.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4924AF52EE5807E0033475C /* SharedDefaults.swift */; };
@@ -138,12 +138,12 @@
 		B4ANI0012F0E00010001B001 /* IdleConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IdleConfig.swift; sourceTree = "<group>"; };
 		B4ANI0022F0E00010001B002 /* TapAnimationType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TapAnimationType.swift; sourceTree = "<group>"; };
 		B4ANI0032F0E00010001B003 /* TapConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TapConfig.swift; sourceTree = "<group>"; };
+		B4APP0012F15A0010001A001 /* AppUsage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppUsage.swift; sourceTree = "<group>"; };
 		B4C4C0912EE7FECE00E469E8 /* ShieldAction.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = ShieldAction.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		B4D351202F123D620076C09B /* Essence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Essence.swift; sourceTree = "<group>"; };
 		B4D351212F123D620076C09B /* EvolutionHistory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EvolutionHistory.swift; sourceTree = "<group>"; };
 		B4D351242F123DD00076C09B /* DailyUsageStat.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailyUsageStat.swift; sourceTree = "<group>"; };
 		B4D351252F123DD00076C09B /* StatType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatType.swift; sourceTree = "<group>"; };
-		B4APP0012F15A0010001A001 /* AppUsage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppUsage.swift; sourceTree = "<group>"; };
 		B4EVO0012F0E00010001A001 /* Blob.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Blob.swift; sourceTree = "<group>"; };
 		B4EVO0022F0E00010001A002 /* EvolutionPhase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EvolutionPhase.swift; sourceTree = "<group>"; };
 		B4EVO0032F0E00010001A003 /* EvolutionTree.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EvolutionTree.swift; sourceTree = "<group>"; };
