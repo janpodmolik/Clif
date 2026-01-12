@@ -2,14 +2,35 @@ import SwiftUI
 
 struct PremiumTabBarParticles: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.colorScheme) private var colorScheme
 
-    private let particleCount = 28
-    private let sparkColors: [Color] = [
-        Color(red: 1.0, green: 0.95, blue: 0.8),
-        Color(red: 1.0, green: 0.88, blue: 0.6),
-        Color(red: 1.0, green: 0.98, blue: 0.9)
-    ]
-    private let smokeColor = Color(red: 1.0, green: 0.9, blue: 0.75)
+    private let particleCount = 56
+
+    private var sparkColors: [Color] {
+        if colorScheme == .dark {
+            [
+                Color(red: 1.0, green: 0.95, blue: 0.8),
+                Color(red: 1.0, green: 0.88, blue: 0.6),
+                Color(red: 1.0, green: 0.98, blue: 0.9)
+            ]
+        } else {
+            [
+                Color(red: 0.85, green: 0.65, blue: 0.2),
+                Color(red: 0.9, green: 0.55, blue: 0.1),
+                Color(red: 0.8, green: 0.5, blue: 0.15)
+            ]
+        }
+    }
+
+    private var smokeColor: Color {
+        colorScheme == .dark
+            ? Color(red: 1.0, green: 0.9, blue: 0.75)
+            : Color(red: 0.85, green: 0.6, blue: 0.25)
+    }
+
+    private var opacityMultiplier: Double {
+        colorScheme == .dark ? 1.0 : 1.4
+    }
 
     var body: some View {
         Group {
@@ -46,13 +67,13 @@ struct PremiumTabBarParticles: View {
             let x = midX + CGFloat(spread + drift * (1 - progress))
             let y = height - CGFloat(progress) * height
 
-            let baseSize = isSmoke ? 4.5 : 1.6
-            let sizeVariance = isSmoke ? 3.8 : 2.2
+            let baseSize = isSmoke ? 5.5 : 2.2
+            let sizeVariance = isSmoke ? 4.5 : 3.0
             let particleSize = (baseSize + seeded(seed, 4.2) * sizeVariance) * (0.7 + (1 - progress) * 0.5)
 
-            let baseOpacity = isSmoke ? 0.18 : 0.7
-            let opacityVariance = isSmoke ? 0.12 : 0.25
-            let opacity = (baseOpacity + seeded(seed, 5.6) * opacityVariance) * (1 - progress)
+            let baseOpacity = isSmoke ? 0.22 : 0.8
+            let opacityVariance = isSmoke ? 0.15 : 0.3
+            let opacity = (baseOpacity + seeded(seed, 5.6) * opacityVariance) * (1 - progress) * opacityMultiplier
 
             let color = isSmoke ? smokeColor : sparkColors[index % sparkColors.count]
             let rect = CGRect(

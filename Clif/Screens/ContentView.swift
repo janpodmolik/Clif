@@ -26,7 +26,7 @@ struct ContentView: View {
     @Namespace private var tabButtonNamespace
 
     private let tabBarHeight: CGFloat = 55
-    private let premiumParticleOverlaySize = CGSize(width: 90, height: 120)
+    private let premiumParticleOverlaySize = CGSize(width: 90, height: 180)
     private let premiumParticleOverlayBottomOffset: CGFloat = 6
 
     #if DEBUG
@@ -52,23 +52,6 @@ struct ContentView: View {
         .safeAreaInset(edge: .bottom, spacing: 0) {
             customTabBar()
                 .padding(.horizontal, 20)
-        }
-        .overlayPreferenceValue(CenterButtonAnchorKey.self) { anchor in
-            GeometryReader { geo in
-                if showPremiumButtonEffect, let anchor {
-                    let rect = geo[anchor]
-                    let centerY = rect.minY + premiumParticleOverlayBottomOffset
-                        - premiumParticleOverlaySize.height / 2
-                    PremiumTabBarParticles()
-                        .frame(
-                            width: premiumParticleOverlaySize.width,
-                            height: premiumParticleOverlaySize.height
-                        )
-                        .position(x: rect.midX, y: centerY)
-                        .accessibilityHidden(true)
-                }
-            }
-            .allowsHitTesting(false)
         }
         .preferredColorScheme(isDarkModeEnabled ? .dark : .light)
         .onReceive(NotificationCenter.default.publisher(for: .selectPet)) { notification in
@@ -127,6 +110,19 @@ struct ContentView: View {
             centerButton()
                 .glassEffect(.regular.interactive(), in: .circle)
                 .glassEffectID("centerButton", in: tabButtonNamespace)
+                .overlay(alignment: .bottom) {
+                    if showPremiumButtonEffect {
+                        PremiumTabBarParticles()
+                            .frame(
+                                width: premiumParticleOverlaySize.width,
+                                height: premiumParticleOverlaySize.height
+                            )
+                            .offset(y: -premiumParticleOverlaySize.height / 2)
+                            .allowsHitTesting(false)
+                            .accessibilityHidden(true)
+                    }
+                }
+                .zIndex(-1)
         }
     }
 
@@ -142,6 +138,10 @@ struct ContentView: View {
         activeTab == .profile
     }
 
+    private var premiumGoldColor: Color {
+        Color(red: 0.9, green: 0.7, blue: 0.3)
+    }
+
     @ViewBuilder
     private func centerButton() -> some View {
         Button {
@@ -149,12 +149,11 @@ struct ContentView: View {
         } label: {
             Image(systemName: centerButtonIcon)
                 .font(.title2.weight(.semibold))
-                .foregroundStyle(.primary)
+                .foregroundStyle(showPremiumButtonEffect ? premiumGoldColor : .primary)
                 .contentTransition(.symbolEffect(.replace))
                 .frame(width: 55, height: 55)
         }
         .buttonStyle(.plain)
-        .anchorPreference(key: CenterButtonAnchorKey.self, value: .bounds) { $0 }
     }
 
     private func handleCenterButtonTap() {
@@ -189,17 +188,20 @@ struct ContentView: View {
 
         centerButton()
             .background(.ultraThinMaterial, in: Circle())
+            .background(alignment: .bottom) {
+                if showPremiumButtonEffect {
+                    PremiumTabBarParticles()
+                        .frame(
+                            width: premiumParticleOverlaySize.width,
+                            height: premiumParticleOverlaySize.height
+                        )
+                        .offset(y: premiumParticleOverlayBottomOffset)
+                        .accessibilityHidden(true)
+                }
+            }
     }
 }
 
 #Preview {
     ContentView()
-}
-
-private struct CenterButtonAnchorKey: PreferenceKey {
-    static var defaultValue: Anchor<CGRect>?
-
-    static func reduce(value: inout Anchor<CGRect>?, nextValue: () -> Anchor<CGRect>?) {
-        value = nextValue() ?? value
-    }
 }
