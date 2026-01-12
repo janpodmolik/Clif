@@ -19,15 +19,10 @@ struct ContentView: View {
     private var isDarkModeEnabled: Bool = false
 
     @State private var activeTab: AppTab = .home
-    @State private var selectedPetId: UUID?
     @State private var showSearch = false
     @State private var showPremium = false
 
-    @Namespace private var tabButtonNamespace
-
     private let tabBarHeight: CGFloat = 55
-    private let premiumParticleSize = CGSize(width: 90, height: 180)
-    private let premiumParticleVerticalOffset: CGFloat = -10
 
     #if DEBUG
     @State private var showPetDebug = false
@@ -53,26 +48,9 @@ struct ContentView: View {
             customTabBar()
                 .padding(.horizontal, 20)
         }
-        .overlayPreferenceValue(CenterButtonAnchorKey.self) { anchor in
-            GeometryReader { geo in
-                if let anchor {
-                    let rect = geo[anchor]
-                    let centerY = rect.maxY - premiumParticleSize.height / 2 + premiumParticleVerticalOffset
-                    PremiumTabBarParticles(isDarkMode: isDarkModeEnabled, isActive: showPremiumButtonEffect)
-                        .frame(width: premiumParticleSize.width, height: premiumParticleSize.height)
-                        .position(x: rect.midX, y: centerY)
-                        .allowsHitTesting(false)
-                        .accessibilityHidden(true)
-                }
-            }
-            .allowsHitTesting(false)
-        }
         .preferredColorScheme(isDarkModeEnabled ? .dark : .light)
-        .onReceive(NotificationCenter.default.publisher(for: .selectPet)) { notification in
-            if let petId = notification.userInfo?["petId"] as? UUID {
-                selectedPetId = petId
-                activeTab = .home
-            }
+        .onReceive(NotificationCenter.default.publisher(for: .selectPet)) { _ in
+            activeTab = .home
         }
         .sheet(isPresented: $showSearch) {
             SearchSheet()
@@ -125,18 +103,6 @@ struct ContentView: View {
         }
     }
 
-    private var centerButtonIcon: String {
-        switch activeTab {
-        case .home: "plus"
-        case .overview: "magnifyingglass"
-        case .profile: "sparkles"
-        }
-    }
-
-    private var showPremiumButtonEffect: Bool {
-        activeTab == .profile
-    }
-
     private var premiumGoldColor: Color {
         Color(red: 0.9, green: 0.7, blue: 0.3)
     }
@@ -146,15 +112,12 @@ struct ContentView: View {
     private func centerButtonGlass() -> some View {
         centerButton()
             .glassEffect(.regular.interactive(), in: .circle)
-            .glassEffectID("centerButton", in: tabButtonNamespace)
-            .anchorPreference(key: CenterButtonAnchorKey.self, value: .bounds) { $0 }
     }
 
     @ViewBuilder
     private func centerButtonFallback() -> some View {
         centerButton()
             .background(.ultraThinMaterial, in: Circle())
-            .anchorPreference(key: CenterButtonAnchorKey.self, value: .bounds) { $0 }
     }
 
     @ViewBuilder
@@ -162,13 +125,25 @@ struct ContentView: View {
         Button {
             handleCenterButtonTap()
         } label: {
-            Image(systemName: centerButtonIcon)
+            centerButtonIcon
                 .font(.title2.weight(.semibold))
-                .foregroundStyle(showPremiumButtonEffect ? premiumGoldColor : .primary)
                 .contentTransition(.symbolEffect(.replace))
                 .frame(width: 55, height: 55)
         }
         .buttonStyle(.plain)
+    }
+
+    @ViewBuilder
+    private var centerButtonIcon: some View {
+        switch activeTab {
+        case .home:
+            Image(systemName: "plus")
+        case .overview:
+            Image(systemName: "magnifyingglass")
+        case .profile:
+            Image(systemName: "crown.fill")
+                .foregroundStyle(premiumGoldColor)
+        }
     }
 
     private func handleCenterButtonTap() {
@@ -217,12 +192,4 @@ struct ContentView: View {
 
 #Preview {
     ContentView()
-}
-
-private struct CenterButtonAnchorKey: PreferenceKey {
-    static var defaultValue: Anchor<CGRect>?
-
-    static func reduce(value: inout Anchor<CGRect>?, nextValue: () -> Anchor<CGRect>?) {
-        value = nextValue() ?? value
-    }
 }
