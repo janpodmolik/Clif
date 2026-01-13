@@ -39,6 +39,7 @@ struct EvolutionTransitionView: View {
                 let shockwave = shockwaveState(progress: progress)
                 let shakeOffset = cameraShakeOffset(progress: progress)
                 let currentTransform = EvolutionCameraTransform(scale: cameraScale, offset: shakeOffset)
+                let particleOverscan = particleOverscanScale(for: size)
 
                 ZStack {
                     if glowOpacity > 0 {
@@ -93,6 +94,8 @@ struct EvolutionTransitionView: View {
                             config: particleConfig,
                             size: size
                         )
+                        .frame(width: size.width * particleOverscan, height: size.height * particleOverscan)
+                        .position(x: size.width / 2, y: size.height / 2)
                         .blendMode(.screen)
                     }
                 }
@@ -195,6 +198,14 @@ struct EvolutionTransitionView: View {
         Circle()
             .stroke(glowColor.opacity(0.85), lineWidth: max(2, min(size.width, size.height) * 0.02))
             .frame(width: size.width * 0.8, height: size.width * 0.8)
+    }
+
+    private func particleOverscanScale(for size: CGSize) -> CGFloat {
+        let minDimension = max(1, min(size.width, size.height))
+        let maxRadius = minDimension * 0.8
+        // Keep room for max base radius, upward drift, and wobble.
+        let maxExtraOffset: CGFloat = 24 + 15 + 3
+        return max(1.0, (maxRadius + maxExtraOffset) * 2 / minDimension)
     }
 
     private func glowIntensity(progress: CGFloat) -> CGFloat {

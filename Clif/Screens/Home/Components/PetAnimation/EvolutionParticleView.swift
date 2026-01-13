@@ -134,8 +134,8 @@ struct EvolutionParticleView: View {
         // Slower ease out - particles decelerate gradually as they float away
         let easedProgress = 1 - pow(1 - adjustedProgress, 2.5)
 
-        // Use uniform radius based on smaller dimension for circular spread
-        let maxRadius = min(canvasSize.width, canvasSize.height) * 0.8
+        // Use base (unscaled) size so overscan doesn't inflate the spread
+        let maxRadius = min(size.width, size.height) * 0.8
 
         // Base radius from center
         let baseRadius = particle.initialRadius * 3
