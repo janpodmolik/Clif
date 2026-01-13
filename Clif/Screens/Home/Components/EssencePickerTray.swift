@@ -268,18 +268,20 @@ private struct EssenceStagingCard: View {
     private func fillOverlay(themeColor: Color) -> some View {
         GeometryReader { proxy in
             let height = proxy.size.height
-            RoundedRectangle(cornerRadius: 16)
+            let fillHeight = max(0, height * fillProgress)
+            Rectangle()
                 .fill(
                     LinearGradient(
                         colors: [
-                            themeColor.opacity(0.35),
-                            themeColor.opacity(0.15)
+                            themeColor.opacity(0.45),
+                            themeColor.opacity(0.18)
                         ],
                         startPoint: .bottom,
                         endPoint: .top
                     )
                 )
-                .frame(height: height * fillProgress)
+                .frame(height: fillHeight)
+                .frame(maxWidth: .infinity)
                 .frame(maxHeight: .infinity, alignment: .bottom)
         }
         .clipShape(RoundedRectangle(cornerRadius: 16))
