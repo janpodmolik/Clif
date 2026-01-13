@@ -154,7 +154,7 @@ struct PetDebugView: View {
         case .blob:
             return "Blob.shared"
         case .plant:
-            return "Essence.plant.phase(at: \(plantPhase))"
+            return "EvolutionPath.plant.phase(at: \(plantPhase))"
         }
     }
 
@@ -164,7 +164,7 @@ struct PetDebugView: View {
         case .blob:
             return Blob.shared
         case .plant:
-            return Essence.plant.phase(at: plantPhase) ?? Blob.shared
+            return EvolutionPath.plant.phase(at: plantPhase) ?? Blob.shared
         }
     }
 
@@ -214,10 +214,10 @@ struct PetDebugView: View {
                                 isActive: true,
                                 config: currentTransitionConfig,
                                 particleConfig: currentParticleConfig,
-                                oldAssetName: Essence.plant.phase(at: plantPhase)?.assetName(for: windLevel) ?? "evolutions/plant/happy/1",
-                                newAssetName: Essence.plant.phase(at: transitionToPhase)?.assetName(for: windLevel) ?? "evolutions/plant/happy/2",
-                                oldScale: Essence.plant.phase(at: plantPhase)?.displayScale ?? 1.0,
-                                newScale: Essence.plant.phase(at: transitionToPhase)?.displayScale ?? 1.0,
+                                oldAssetName: EvolutionPath.plant.phase(at: plantPhase)?.assetName(for: windLevel) ?? "evolutions/plant/happy/1",
+                                newAssetName: EvolutionPath.plant.phase(at: transitionToPhase)?.assetName(for: windLevel) ?? "evolutions/plant/happy/2",
+                                oldScale: EvolutionPath.plant.phase(at: plantPhase)?.displayScale ?? 1.0,
+                                newScale: EvolutionPath.plant.phase(at: transitionToPhase)?.displayScale ?? 1.0,
                                 cameraTransform: $cameraTransform,
                                 onComplete: {
                                     // Hide transition FIRST to prevent glitch from syncTransitionPhases

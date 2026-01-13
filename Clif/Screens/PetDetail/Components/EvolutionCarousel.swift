@@ -15,10 +15,16 @@ struct EvolutionCarousel: View {
     /// True if pet is still a blob (no essence)
     private var isBlob: Bool { essence == nil }
 
+    /// Evolution path for current essence
+    private var evolutionPath: EvolutionPath? {
+        guard let essence else { return nil }
+        return EvolutionPath.path(for: essence)
+    }
+
     /// Total cards = 1 for blob, or 1 (origin) + maxPhase (evolution phases) for evolved
     private var totalCards: Int {
-        guard let essence else { return 1 }
-        return 1 + essence.maxPhases
+        guard let evolutionPath else { return 1 }
+        return 1 + evolutionPath.maxPhases
     }
 
     var body: some View {
@@ -114,14 +120,14 @@ struct EvolutionCarousel: View {
         if isBlob {
             // Blob-only card (no essence yet)
             BlobOnlyCard(mood: mood)
-        } else if index == 0, let essence {
-            EvolutionOriginCard(essence: essence, mood: mood, themeColor: themeColor)
-        } else if let essence {
+        } else if index == 0, let essence, let path = evolutionPath {
+            EvolutionOriginCard(essence: essence, path: path, mood: mood, themeColor: themeColor)
+        } else if let path = evolutionPath {
             EvolutionPhaseCard(
                 phase: index,
                 isCurrentPhase: index == currentPhase,
                 isLocked: index > currentPhase,
-                essence: essence,
+                evolutionPath: path,
                 mood: mood,
                 isBlownAway: isBlownAway,
                 themeColor: themeColor
@@ -191,6 +197,7 @@ struct BlobOnlyCard: View {
 
 struct EvolutionOriginCard: View {
     let essence: Essence
+    let path: EvolutionPath
     let mood: Mood
     var themeColor: Color = .green
 
@@ -202,7 +209,7 @@ struct EvolutionOriginCard: View {
             Text("Origin")
                 .font(.subheadline.weight(.semibold))
 
-            Text(essence.displayName)
+            Text(path.displayName)
                 .font(.caption)
                 .foregroundStyle(.secondary)
         }
@@ -268,7 +275,7 @@ struct EvolutionPhaseCard: View {
     let phase: Int
     let isCurrentPhase: Bool
     let isLocked: Bool
-    let essence: Essence
+    let evolutionPath: EvolutionPath
     let mood: Mood
     var isBlownAway: Bool = false
     var themeColor: Color = .green
@@ -298,7 +305,7 @@ struct EvolutionPhaseCard: View {
                     .font(.system(size: 32))
                     .foregroundStyle(.secondary.opacity(0.5))
             }
-        } else if let evolution = essence.phase(at: phase) {
+        } else if let evolution = evolutionPath.phase(at: phase) {
             Image(evolution.assetName(for: mood))
                 .resizable()
                 .scaledToFit()

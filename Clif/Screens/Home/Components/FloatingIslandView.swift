@@ -176,7 +176,7 @@ struct FloatingIslandView: View {
             FloatingIslandView(
                 screenHeight: geometry.size.height,
                 screenWidth: geometry.size.width,
-                pet: Essence.plant.phase(at: 2)!,
+                pet: EvolutionPath.plant.phase(at: 2)!,
                 windLevel: .medium
             )
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
@@ -192,7 +192,7 @@ struct FloatingIslandView: View {
             FloatingIslandView(
                 screenHeight: geometry.size.height,
                 screenWidth: geometry.size.width,
-                pet: Essence.plant.phase(at: 4)!,
+                pet: EvolutionPath.plant.phase(at: 4)!,
                 windLevel: .high
             )
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)

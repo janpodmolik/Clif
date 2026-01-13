@@ -26,7 +26,7 @@ struct EssencePickerSheet: View {
                 }
             }
             .confirmationDialog(
-                "Apply \(selectedEssence?.displayName ?? "") Essence?",
+                "Apply \(selectedEssence.map { EvolutionPath.path(for: $0).displayName } ?? "") Essence?",
                 isPresented: $showConfirmation,
                 titleVisibility: .visible
             ) {
@@ -77,6 +77,10 @@ private struct EssenceRow: View {
     let essence: Essence
     let onTap: () -> Void
 
+    private var path: EvolutionPath {
+        EvolutionPath.path(for: essence)
+    }
+
     var body: some View {
         Button(action: onTap) {
             HStack(spacing: 16) {
@@ -86,11 +90,11 @@ private struct EssenceRow: View {
                     .frame(width: 60, height: 60)
 
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(essence.displayName)
+                    Text(path.displayName)
                         .font(.headline)
                         .foregroundStyle(.primary)
 
-                    Text("\(essence.maxPhases) evolution phases")
+                    Text("\(path.maxPhases) evolution phases")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
@@ -99,29 +103,29 @@ private struct EssenceRow: View {
 
                 Image(systemName: "chevron.right")
                     .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(essence.themeColor)
+                    .foregroundStyle(path.themeColor)
             }
             .padding()
-            .background(rowBackground(for: essence))
+            .background(rowBackground)
         }
         .buttonStyle(.plain)
     }
 
     @ViewBuilder
-    private func rowBackground(for essence: Essence) -> some View {
+    private var rowBackground: some View {
         if #available(iOS 26.0, *) {
             Color.clear
                 .glassEffect(
-                    .regular.tint(essence.themeColor.opacity(0.1)),
+                    .regular.tint(path.themeColor.opacity(0.1)),
                     in: RoundedRectangle(cornerRadius: 16)
                 )
         } else {
             RoundedRectangle(cornerRadius: 16)
-                .fill(essence.themeColor.opacity(0.08))
+                .fill(path.themeColor.opacity(0.08))
                 .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
                 .overlay {
                     RoundedRectangle(cornerRadius: 16)
-                        .stroke(essence.themeColor.opacity(0.15), lineWidth: 1)
+                        .stroke(path.themeColor.opacity(0.15), lineWidth: 1)
                 }
         }
     }

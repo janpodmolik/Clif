@@ -61,8 +61,12 @@ struct PetActiveDetailScreenDebug: View {
         )
     }
 
+    private var evolutionPath: EvolutionPath {
+        EvolutionPath.path(for: essence)
+    }
+
     private var canEvolve: Bool {
-        currentPhase < essence.maxPhases && !isBlownAway
+        currentPhase < evolutionPath.maxPhases && !isBlownAway
     }
 
     // MARK: - Body
@@ -138,7 +142,7 @@ struct PetActiveDetailScreenDebug: View {
                         .font(.title2.weight(.bold))
 
                     HStack(spacing: 16) {
-                        Label("Phase \(currentPhase)/\(essence.maxPhases)", systemImage: "sparkles")
+                        Label("Phase \(currentPhase)/\(evolutionPath.maxPhases)", systemImage: "sparkles")
                         Label("\(totalDays) days", systemImage: "calendar")
                             .foregroundStyle(.orange)
                     }
@@ -214,7 +218,7 @@ struct PetActiveDetailScreenDebug: View {
                         .foregroundStyle(.secondary)
 
                     Picker("Phase", selection: $currentPhase) {
-                        ForEach(1...essence.maxPhases, id: \.self) { phase in
+                        ForEach(1...evolutionPath.maxPhases, id: \.self) { phase in
                             Text("\(phase)").tag(phase)
                         }
                     }

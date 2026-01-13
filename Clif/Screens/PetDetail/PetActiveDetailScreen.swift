@@ -47,7 +47,7 @@ struct PetActiveDetailScreen: View {
     }
 
     private var themeColor: Color {
-        evolutionHistory.essence?.themeColor ?? .secondary
+        evolutionHistory.essence.map { EvolutionPath.path(for: $0).themeColor } ?? .secondary
     }
 
     var body: some View {

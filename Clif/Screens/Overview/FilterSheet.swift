@@ -279,6 +279,7 @@ struct EssenceFilterSheet: View {
         NavigationStack {
             List {
                 ForEach(Essence.allCases, id: \.self) { essence in
+                    let path = EvolutionPath.path(for: essence)
                     Button {
                         if selection.contains(essence) {
                             selection.remove(essence)
@@ -292,14 +293,14 @@ struct EssenceFilterSheet: View {
                                 .scaledToFit()
                                 .frame(width: 24, height: 24)
 
-                            Text(essence.displayName)
+                            Text(path.displayName)
                                 .foregroundStyle(.primary)
 
                             Spacer()
 
                             if selection.contains(essence) {
                                 Image(systemName: "checkmark.circle.fill")
-                                    .foregroundStyle(essence.themeColor)
+                                    .foregroundStyle(path.themeColor)
                             } else {
                                 Image(systemName: "circle")
                                     .foregroundStyle(.secondary)

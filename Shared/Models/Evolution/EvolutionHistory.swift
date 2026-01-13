@@ -34,7 +34,8 @@ struct EvolutionHistory: Codable, Equatable {
     }
 
     var maxPhase: Int {
-        essence?.maxPhases ?? 0
+        guard let essence else { return 0 }
+        return EvolutionPath.path(for: essence).maxPhases
     }
 
     var canEvolve: Bool {

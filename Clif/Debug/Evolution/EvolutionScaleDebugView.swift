@@ -20,11 +20,15 @@ struct EvolutionScaleDebugView: View {
 
     // MARK: - Computed Properties
 
+    private var selectedPath: EvolutionPath {
+        EvolutionPath.path(for: selectedEssence)
+    }
+
     private var currentPet: any PetDisplayable {
         if isBlobSelected {
             return Blob.shared
         } else {
-            return selectedEssence.phase(at: selectedPhase) ?? Blob.shared
+            return selectedPath.phase(at: selectedPhase) ?? Blob.shared
         }
     }
 
@@ -98,10 +102,11 @@ struct EvolutionScaleDebugView: View {
 
         // All essences
         for essence in Essence.allCases {
-            for phase in 1...essence.maxPhases {
+            let path = EvolutionPath.path(for: essence)
+            for phase in 1...path.maxPhases {
                 let key = "\(essence.rawValue)-\(phase)"
                 if scales[key] == nil {
-                    scales[key] = essence.phase(at: phase)?.displayScale ?? 1.0
+                    scales[key] = path.phase(at: phase)?.displayScale ?? 1.0
                 }
             }
         }
@@ -191,7 +196,7 @@ struct EvolutionScaleDebugView: View {
                         }
                     )) {
                         ForEach(Essence.allCases, id: \.self) { essence in
-                            Text(essence.displayName).tag(essence)
+                            Text(EvolutionPath.path(for: essence).displayName).tag(essence)
                         }
                     }
                     .pickerStyle(.menu)
@@ -205,14 +210,14 @@ struct EvolutionScaleDebugView: View {
                     .foregroundStyle(.secondary)
                 Spacer()
                 Picker("Phase", selection: $selectedPhase) {
-                    ForEach(1...selectedEssence.maxPhases, id: \.self) { phase in
+                    ForEach(1...selectedPath.maxPhases, id: \.self) { phase in
                         Text("\(phase)").tag(phase)
                     }
                 }
                 .pickerStyle(.segmented)
-                .frame(width: CGFloat(selectedEssence.maxPhases) * 50)
+                .frame(width: CGFloat(selectedPath.maxPhases) * 50)
             }
-            .disabled(isBlobSelected || selectedEssence.maxPhases < 1)
+            .disabled(isBlobSelected || selectedPath.maxPhases < 1)
 
             // Mood picker
             HStack {
@@ -309,7 +314,7 @@ struct EvolutionScaleDebugView: View {
         if isBlobSelected {
             return true // Can go to first essence
         }
-        if selectedPhase < selectedEssence.maxPhases {
+        if selectedPhase < selectedPath.maxPhases {
             return true
         }
         // Can go to next essence
@@ -330,7 +335,7 @@ struct EvolutionScaleDebugView: View {
             // Go to previous essence's last phase or blob
             if let currentIndex = Essence.allCases.firstIndex(of: selectedEssence), currentIndex > 0 {
                 selectedEssence = Essence.allCases[currentIndex - 1]
-                selectedPhase = selectedEssence.maxPhases
+                selectedPhase = EvolutionPath.path(for: selectedEssence).maxPhases
             } else {
                 // Go to blob
                 isBlobSelected = true
@@ -347,7 +352,7 @@ struct EvolutionScaleDebugView: View {
             return
         }
 
-        if selectedPhase < selectedEssence.maxPhases {
+        if selectedPhase < selectedPath.maxPhases {
             selectedPhase += 1
         } else {
             // Go to next essence's first phase
@@ -386,12 +391,13 @@ struct EvolutionScaleDebugView: View {
 
         // Group by essence
         for essence in Essence.allCases {
+            let path = EvolutionPath.path(for: essence)
             lines.append("")
-            lines.append("// \(essence.displayName) EvolutionPhase displayScale values:")
+            lines.append("// \(path.displayName) EvolutionPhase displayScale values:")
 
-            for phase in 1...essence.maxPhases {
+            for phase in 1...path.maxPhases {
                 let key = "\(essence.rawValue)-\(phase)"
-                let scale = scales[key] ?? essence.phase(at: phase)?.displayScale ?? 1.0
+                let scale = scales[key] ?? path.phase(at: phase)?.displayScale ?? 1.0
                 lines.append("// Phase \(phase): \(String(format: "%.2f", scale))")
             }
         }

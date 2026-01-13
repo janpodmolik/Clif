@@ -32,7 +32,7 @@ struct HomeScreen: View {
                 FloatingIslandView(
                     screenHeight: geometry.size.height,
                     screenWidth: geometry.size.width,
-                    pet: Essence.plant.phase(at: 4)!,
+                    pet: EvolutionPath.plant.phase(at: 4)!,
                     windLevel: .high,
                     windDirection: 1.0,
                     windRhythm: windRhythm

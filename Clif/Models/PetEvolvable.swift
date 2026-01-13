@@ -15,16 +15,27 @@ extension PetEvolvable {
     var canEvolve: Bool { evolutionHistory.canEvolve }
     var isBlown: Bool { evolutionHistory.isBlown }
 
+    /// The evolution path for this pet, if essence is assigned.
+    var evolutionPath: EvolutionPath? {
+        guard let essence else { return nil }
+        return EvolutionPath.path(for: essence)
+    }
+
+    /// Current evolution phase, if pet has essence and is at phase 1+.
+    var phase: EvolutionPhase? {
+        evolutionPath?.phase(at: currentPhase)
+    }
+
     // MARK: - Display Properties
 
     /// Theme color for the pet. Falls back to `.secondary` for blobs.
     var themeColor: Color {
-        essence?.themeColor ?? .secondary
+        evolutionPath?.themeColor ?? .secondary
     }
 
     /// Display scale for the current evolution phase.
     var displayScale: CGFloat {
-        essence?.phase(at: currentPhase)?.displayScale ?? Blob.shared.displayScale
+        phase?.displayScale ?? Blob.shared.displayScale
     }
 
     // MARK: - Asset Resolution
@@ -35,7 +46,7 @@ extension PetEvolvable {
         guard let essence else {
             return Blob.shared.assetName(for: mood)
         }
-        return essence.phase(at: currentPhase)?.assetName(for: mood) ?? essence.assetName
+        return phase?.assetName(for: mood) ?? essence.assetName
     }
 
     /// Returns the asset name based on wind level.

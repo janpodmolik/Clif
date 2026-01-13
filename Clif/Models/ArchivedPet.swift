@@ -14,9 +14,6 @@ struct ArchivedPet: Codable, Identifiable, Equatable, PetEvolvable {
     /// Alias for currentPhase - the phase when pet was archived
     var finalPhase: Int { currentPhase }
 
-    /// The evolution phase data for the final phase
-    var phase: EvolutionPhase? { essence?.phase(at: finalPhase) }
-
     /// Returns last 7 days of stats for chart display, or all if less than 7.
     var weeklyStats: WeeklyUsageStats {
         let lastSevenDays = Array(dailyStats.suffix(7))

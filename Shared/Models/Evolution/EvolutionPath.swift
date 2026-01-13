@@ -1,8 +1,9 @@
 import SwiftUI
 
-/// Represents an entire evolution tree with all its phases.
-struct EvolutionTree: Hashable {
-    let evolutionId: String
+/// Represents an evolution path with all its phases.
+/// Each Essence maps to exactly one EvolutionPath.
+struct EvolutionPath: Hashable {
+    let id: String
     let displayName: String
     let themeColor: Color
     let phases: [EvolutionPhase]
@@ -16,11 +17,22 @@ struct EvolutionTree: Hashable {
     var maxPhases: Int { phases.count }
 }
 
-// MARK: - Plant Evolution Tree
+// MARK: - Essence Lookup
 
-extension EvolutionTree {
-    static let plant = EvolutionTree(
-        evolutionId: "plant",
+extension EvolutionPath {
+    /// Returns the evolution path for a given essence.
+    static func path(for essence: Essence) -> EvolutionPath {
+        switch essence {
+        case .plant: return .plant
+        }
+    }
+}
+
+// MARK: - Plant Evolution Path
+
+extension EvolutionPath {
+    static let plant = EvolutionPath(
+        id: "plant",
         displayName: "Plant",
         themeColor: .green,
         phases: [
