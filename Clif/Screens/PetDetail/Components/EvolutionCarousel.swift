@@ -288,22 +288,27 @@ struct EvolutionPhaseCard: View {
         }
     }
 
+    private var cardTintOpacity: Double {
+        if isLocked { return 0 }
+        return isCurrentPhase ? 0.15 : 0.08
+    }
+
     @ViewBuilder
     private var cardBackground: some View {
         if #available(iOS 26.0, *) {
             Color.clear
                 .glassEffect(
-                    isLocked ? .regular : .regular.tint(cardTintColor.opacity(0.08)),
+                    isLocked ? .regular : .regular.tint(cardTintColor.opacity(cardTintOpacity)),
                     in: RoundedRectangle(cornerRadius: 20)
                 )
         } else {
             RoundedRectangle(cornerRadius: 20)
-                .fill(isLocked ? Color.clear : cardTintColor.opacity(0.08))
+                .fill(isLocked ? Color.clear : cardTintColor.opacity(cardTintOpacity))
                 .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 20))
                 .overlay {
                     if !isLocked {
                         RoundedRectangle(cornerRadius: 20)
-                            .stroke(cardTintColor.opacity(0.15), lineWidth: 1)
+                            .stroke(cardTintColor.opacity(isCurrentPhase ? 0.25 : 0.15), lineWidth: 1)
                     }
                 }
         }

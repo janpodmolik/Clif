@@ -120,34 +120,78 @@ struct PetActiveDetailScreen: View {
         }
     }
 
+    @ViewBuilder
     private var overviewActions: some View {
-        HStack {
-            Spacer()
+        if isBlownAway {
+            overviewBlownAwayActions
+        } else {
+            overviewNormalActions
+        }
+    }
 
-            Button(action: onShowOnHomepage) {
-                HStack(spacing: 8) {
-                    Image(systemName: "house.fill")
-                    Text("Zobrazit na homepage")
+    private var overviewNormalActions: some View {
+        HStack(spacing: 16) {
+            Button(action: onDelete) {
+                HStack(spacing: 6) {
+                    Image(systemName: "trash")
+                    Text("Smazat")
                 }
-                .font(.headline)
-                .foregroundStyle(.white)
-                .padding(.horizontal, 24)
-                .padding(.vertical, 12)
-                .background(
-                    LinearGradient(
-                        colors: [
-                            evolutionHistory.essence.themeColor,
-                            evolutionHistory.essence.themeColor.opacity(0.7)
-                        ],
-                        startPoint: .leading,
-                        endPoint: .trailing
-                    ),
-                    in: Capsule()
-                )
+                .font(.subheadline.weight(.medium))
+                .foregroundStyle(.red)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 10)
+                .background(Color.red.opacity(0.15), in: Capsule())
             }
             .buttonStyle(.plain)
 
             Spacer()
+
+            Button(action: onShowOnHomepage) {
+                HStack(spacing: 6) {
+                    Image(systemName: "house.fill")
+                    Text("Zobrazit")
+                }
+                .font(.subheadline.weight(.medium))
+                .foregroundStyle(evolutionHistory.essence.themeColor)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 10)
+                .background(evolutionHistory.essence.themeColor.opacity(0.15), in: Capsule())
+            }
+            .buttonStyle(.plain)
+        }
+        .padding()
+        .glassCard()
+    }
+
+    private var overviewBlownAwayActions: some View {
+        HStack(spacing: 16) {
+            Button(action: onReplay) {
+                HStack(spacing: 6) {
+                    Image(systemName: "memories")
+                    Text("Replay")
+                }
+                .font(.subheadline.weight(.medium))
+                .foregroundStyle(.blue)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 10)
+                .background(Color.blue.opacity(0.15), in: Capsule())
+            }
+            .buttonStyle(.plain)
+
+            Spacer()
+
+            Button(action: onDelete) {
+                HStack(spacing: 6) {
+                    Image(systemName: "trash")
+                    Text("Smazat")
+                }
+                .font(.subheadline.weight(.medium))
+                .foregroundStyle(.red)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 10)
+                .background(Color.red.opacity(0.15), in: Capsule())
+            }
+            .buttonStyle(.plain)
         }
         .padding()
         .glassCard()
@@ -221,6 +265,41 @@ struct PetActiveDetailScreen: View {
                 dailyLimitMinutes: 90,
                 fullStats: .mock(days: 19),
                 limitedAppCount: 8,
+                showOverviewActions: true
+            )
+        }
+}
+
+#Preview("Overview Blown Away") {
+    Text("Tap to open")
+        .fullScreenCover(isPresented: .constant(true)) {
+            PetActiveDetailScreen(
+                petName: "Dusty",
+                evolutionHistory: EvolutionHistory(
+                    createdAt: Calendar.current.date(byAdding: .day, value: -25, to: Date())!,
+                    essence: .plant,
+                    events: [
+                        EvolutionEvent(
+                            fromPhase: 1,
+                            toPhase: 2,
+                            date: Calendar.current.date(byAdding: .day, value: -18, to: Date())!
+                        ),
+                        EvolutionEvent(
+                            fromPhase: 2,
+                            toPhase: 3,
+                            date: Calendar.current.date(byAdding: .day, value: -10, to: Date())!
+                        )
+                    ],
+                    blownAt: Calendar.current.date(byAdding: .day, value: -2, to: Date())!
+                ),
+                totalDays: 25,
+                purposeLabel: "Gaming",
+                windLevel: .high,
+                isBlownAway: true,
+                todayUsedMinutes: 0,
+                dailyLimitMinutes: 60,
+                fullStats: .mock(days: 25),
+                limitedAppCount: 5,
                 showOverviewActions: true
             )
         }

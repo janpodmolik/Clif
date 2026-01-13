@@ -84,7 +84,7 @@ struct WindIntensityBars: View {
 
     private var barColor: Color {
         if isBlownAway {
-            return .purple
+            return .red
         }
         switch level {
         case .none: return .green
