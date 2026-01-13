@@ -1,5 +1,12 @@
 import SwiftUI
 
+/// State for drag operation, shared with overlay for preview rendering.
+struct EssenceDragState: Equatable {
+    var isDragging = false
+    var dragLocation: CGPoint = .zero
+    var draggedEssence: Essence?
+}
+
 /// Coordinates the essence picker overlay across the app.
 ///
 /// This coordinator exists because the essence picker needs to appear IN FRONT OF
@@ -16,9 +23,14 @@ final class EssencePickerCoordinator {
     var dragState = EssenceDragState()
     var dismissDragOffset: CGFloat = 0
     var petDropFrame: CGRect?
-    var onDropOnPet: ((Essence) -> Void)?
+
+    private var onDropOnPet: ((Essence) -> Void)?
+    private var cleanupWorkItem: DispatchWorkItem?
 
     func show(petDropFrame: CGRect?, onDropOnPet: @escaping (Essence) -> Void) {
+        cleanupWorkItem?.cancel()
+        cleanupWorkItem = nil
+
         self.petDropFrame = petDropFrame
         self.onDropOnPet = onDropOnPet
         isShowing = true
@@ -27,12 +39,16 @@ final class EssencePickerCoordinator {
     func dismiss() {
         isShowing = false
         dismissDragOffset = 0
-        // Reset state after animation completes
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) { [weak self] in
+
+        cleanupWorkItem?.cancel()
+        let workItem = DispatchWorkItem { [weak self] in
             self?.dragState = EssenceDragState()
             self?.petDropFrame = nil
             self?.onDropOnPet = nil
+            self?.cleanupWorkItem = nil
         }
+        cleanupWorkItem = workItem
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.4, execute: workItem)
     }
 
     func handleDrop(_ essence: Essence) {

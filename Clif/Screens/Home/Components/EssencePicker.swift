@@ -1,52 +1,34 @@
 import SwiftUI
-import Combine
-
-/// State for drag operation, shared with parent for overlay rendering
-struct EssenceDragState {
-    var isDragging: Bool = false
-    var dragLocation: CGPoint = .zero
-    var draggedEssence: Essence?
-}
 
 /// Essence picker with catalog and staging area.
 struct EssencePicker: View {
     @Environment(EssencePickerCoordinator.self) private var coordinator
 
     @State private var selectedEssence: Essence?
-    @StateObject private var hapticController = DragHapticController()
+    @State private var hapticController = DragHapticController()
 
-    private let dismissThreshold: CGFloat = 100
+    private enum Layout {
+        static let catalogSpacing: CGFloat = 12
+        static let sectionSpacing: CGFloat = 16
+    }
+
+    private enum Haptics {
+        static let maxDistanceMultiplier: CGFloat = 2.4
+        static let baseIntensity: CGFloat = 0.15
+        static let intensityRange: CGFloat = 0.85
+        static let fallbackIntensity: CGFloat = 0.2
+    }
 
     private var selectedPath: EvolutionPath? {
         selectedEssence.map { EvolutionPath.path(for: $0) }
     }
 
-    private var dismissDragGesture: some Gesture {
-        DragGesture()
-            .onChanged { value in
-                let translation = max(0, value.translation.height)
-                coordinator.dismissDragOffset = translation
-            }
-            .onEnded { value in
-                let velocity = value.predictedEndTranslation.height - value.translation.height
-                let shouldDismiss = value.translation.height > dismissThreshold || velocity > 300
-                if shouldDismiss {
-                    coordinator.dismiss()
-                } else {
-                    coordinator.dismissDragOffset = 0
-                }
-            }
-    }
-
     var body: some View {
-        VStack(spacing: 16) {
-            // Top section with dismiss drag support
+        VStack(spacing: Layout.sectionSpacing) {
             topSection
-                .gesture(dismissDragGesture)
 
-            // Catalog - NO dismiss drag (has scroll gesture)
             ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 12) {
+                HStack(spacing: Layout.catalogSpacing) {
                     ForEach(Essence.allCases, id: \.self) { essence in
                         EssenceCatalogCard(
                             essence: essence,
@@ -150,17 +132,30 @@ struct EssencePicker: View {
 
     private func updateDragHaptics(at location: CGPoint) {
         guard let petDropFrame = coordinator.petDropFrame else {
-            hapticController.updateIntensity(0.2)
+            hapticController.updateIntensity(Haptics.fallbackIntensity)
             return
         }
 
         let center = CGPoint(x: petDropFrame.midX, y: petDropFrame.midY)
         let distance = hypot(location.x - center.x, location.y - center.y)
-        let maxDistance = max(petDropFrame.width, petDropFrame.height) * 2.4
+        let maxDistance = max(petDropFrame.width, petDropFrame.height) * Haptics.maxDistanceMultiplier
         let normalized = max(0, min(1, 1 - (distance / maxDistance)))
-        let intensity = 0.15 + (normalized * 0.85)
+        let intensity = Haptics.baseIntensity + (normalized * Haptics.intensityRange)
         hapticController.updateIntensity(intensity)
     }
+}
+
+// MARK: - Card Style Constants
+
+private enum CardStyle {
+    static let imageSize: CGFloat = 60
+    static let padding: CGFloat = 12
+    static let cornerRadius: CGFloat = 16
+
+    static let glassTintOpacity: CGFloat = 0.15
+    static let fillOpacity: CGFloat = 0.1
+    static let strokeOpacity: CGFloat = 0.3
+    static let subtleStrokeOpacity: CGFloat = 0.2
 }
 
 // MARK: - Staging Card
@@ -172,47 +167,49 @@ private struct EssenceStagingCard: View {
         essence.map { EvolutionPath.path(for: $0) }
     }
 
+    private var themeColor: Color {
+        path?.themeColor ?? .secondary
+    }
+
     var body: some View {
         Group {
             if let essence {
                 Image(essence.assetName)
                     .resizable()
                     .scaledToFit()
-                    .frame(width: 60, height: 60)
+                    .frame(width: CardStyle.imageSize, height: CardStyle.imageSize)
             } else {
                 Image(systemName: "sparkles")
                     .font(.title)
                     .foregroundStyle(.tertiary)
-                    .frame(width: 60, height: 60)
+                    .frame(width: CardStyle.imageSize, height: CardStyle.imageSize)
             }
         }
-        .padding(12)
+        .padding(CardStyle.padding)
         .background(cardBackground)
     }
 
     @ViewBuilder
     private var cardBackground: some View {
-        let themeColor = path?.themeColor ?? .secondary
+        let shape = RoundedRectangle(cornerRadius: CardStyle.cornerRadius)
 
         if #available(iOS 26.0, *) {
             Color.clear
                 .glassEffect(
                     essence != nil
-                        ? .regular.tint(themeColor.opacity(0.15))
+                        ? .regular.tint(themeColor.opacity(CardStyle.glassTintOpacity))
                         : .regular,
-                    in: RoundedRectangle(cornerRadius: 16)
+                    in: shape
                 )
                 .overlay {
-                    RoundedRectangle(cornerRadius: 16)
-                        .stroke(themeColor.opacity(0.3), lineWidth: 2)
+                    shape.stroke(themeColor.opacity(CardStyle.strokeOpacity), lineWidth: 2)
                 }
         } else {
-            RoundedRectangle(cornerRadius: 16)
-                .fill(essence != nil ? themeColor.opacity(0.1) : Color.clear)
-                .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
+            shape
+                .fill(essence != nil ? themeColor.opacity(CardStyle.fillOpacity) : Color.clear)
+                .background(.ultraThinMaterial, in: shape)
                 .overlay {
-                    RoundedRectangle(cornerRadius: 16)
-                        .stroke(themeColor.opacity(0.3), lineWidth: 2)
+                    shape.stroke(themeColor.opacity(CardStyle.strokeOpacity), lineWidth: 2)
                 }
         }
     }
@@ -233,32 +230,39 @@ private struct EssenceCatalogCard: View {
         Image(essence.assetName)
             .resizable()
             .scaledToFit()
-            .frame(width: 60, height: 60)
-            .padding(12)
+            .frame(width: CardStyle.imageSize, height: CardStyle.imageSize)
+            .padding(CardStyle.padding)
             .background(cardBackground)
             .onTapGesture(perform: onTap)
     }
 
     @ViewBuilder
     private var cardBackground: some View {
+        let shape = RoundedRectangle(cornerRadius: CardStyle.cornerRadius)
+
         if #available(iOS 26.0, *) {
             Color.clear
                 .glassEffect(
                     isSelected
-                        ? .regular.tint(path.themeColor.opacity(0.15))
+                        ? .regular.tint(path.themeColor.opacity(CardStyle.glassTintOpacity))
                         : .regular,
-                    in: RoundedRectangle(cornerRadius: 16)
+                    in: shape
                 )
-        } else {
-            RoundedRectangle(cornerRadius: 16)
-                .fill(isSelected ? path.themeColor.opacity(0.1) : Color.clear)
-                .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
                 .overlay {
-                    RoundedRectangle(cornerRadius: 16)
-                        .stroke(
-                            isSelected ? path.themeColor.opacity(0.3) : Color.clear,
-                            lineWidth: 1
-                        )
+                    shape.stroke(
+                        isSelected ? path.themeColor.opacity(CardStyle.subtleStrokeOpacity) : Color.clear,
+                        lineWidth: 1
+                    )
+                }
+        } else {
+            shape
+                .fill(isSelected ? path.themeColor.opacity(CardStyle.fillOpacity) : Color.clear)
+                .background(.ultraThinMaterial, in: shape)
+                .overlay {
+                    shape.stroke(
+                        isSelected ? path.themeColor.opacity(CardStyle.subtleStrokeOpacity) : Color.clear,
+                        lineWidth: 1
+                    )
                 }
         }
     }
@@ -266,6 +270,14 @@ private struct EssenceCatalogCard: View {
 
 struct EssenceDragPreview: View {
     let essence: Essence
+
+    private enum Layout {
+        static let imageSize: CGFloat = 56
+        static let padding: CGFloat = 10
+        static let shadowOpacity: CGFloat = 0.18
+        static let shadowRadius: CGFloat = 8
+        static let shadowY: CGFloat = 6
+    }
 
     private var path: EvolutionPath {
         EvolutionPath.path(for: essence)
@@ -275,54 +287,57 @@ struct EssenceDragPreview: View {
         Image(essence.assetName)
             .resizable()
             .scaledToFit()
-            .frame(width: 56, height: 56)
-            .padding(10)
+            .frame(width: Layout.imageSize, height: Layout.imageSize)
+            .padding(Layout.padding)
             .background(previewBackground)
-            .shadow(color: .black.opacity(0.18), radius: 8, x: 0, y: 6)
+            .shadow(color: .black.opacity(Layout.shadowOpacity), radius: Layout.shadowRadius, x: 0, y: Layout.shadowY)
     }
 
     @ViewBuilder
     private var previewBackground: some View {
+        let shape = RoundedRectangle(cornerRadius: CardStyle.cornerRadius)
+
         if #available(iOS 26.0, *) {
             Color.clear
                 .glassEffect(
-                    .regular.tint(path.themeColor.opacity(0.15)),
-                    in: RoundedRectangle(cornerRadius: 16)
+                    .regular.tint(path.themeColor.opacity(CardStyle.glassTintOpacity)),
+                    in: shape
                 )
                 .overlay {
-                    RoundedRectangle(cornerRadius: 16)
-                        .stroke(path.themeColor.opacity(0.25), lineWidth: 1)
+                    shape.stroke(path.themeColor.opacity(CardStyle.subtleStrokeOpacity), lineWidth: 1)
                 }
         } else {
-            RoundedRectangle(cornerRadius: 16)
-                .fill(path.themeColor.opacity(0.12))
-                .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
+            shape
+                .fill(path.themeColor.opacity(CardStyle.fillOpacity))
+                .background(.ultraThinMaterial, in: shape)
                 .overlay {
-                    RoundedRectangle(cornerRadius: 16)
-                        .stroke(path.themeColor.opacity(0.25), lineWidth: 1)
+                    shape.stroke(path.themeColor.opacity(CardStyle.subtleStrokeOpacity), lineWidth: 1)
                 }
         }
     }
 }
 
-private final class DragHapticController: ObservableObject {
+private final class DragHapticController {
     private var timer: Timer?
     private var generator = UIImpactFeedbackGenerator(style: .light)
     private var intensity: CGFloat = 0.2
 
+    private static let tickInterval: TimeInterval = 0.15
+    private static let defaultIntensity: CGFloat = 0.2
+
     func startDragging() {
-        intensity = 0.2
+        intensity = Self.defaultIntensity
         timer?.invalidate()
         generator = UIImpactFeedbackGenerator(style: .light)
         generator.prepare()
 
-        timer = Timer.scheduledTimer(withTimeInterval: 0.15, repeats: true) { [weak self] _ in
+        timer = Timer.scheduledTimer(withTimeInterval: Self.tickInterval, repeats: true) { [weak self] _ in
             self?.tick()
         }
     }
 
-    func updateIntensity(_ intensity: CGFloat) {
-        self.intensity = max(0, min(1, intensity))
+    func updateIntensity(_ newIntensity: CGFloat) {
+        intensity = max(0, min(1, newIntensity))
     }
 
     func stop() {

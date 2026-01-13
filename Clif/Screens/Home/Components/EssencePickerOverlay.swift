@@ -4,7 +4,19 @@ import SwiftUI
 struct EssencePickerOverlay: View {
     @Environment(EssencePickerCoordinator.self) private var coordinator
 
-    private let dragPreviewOffset = CGSize(width: -20, height: -50)
+    private enum Layout {
+        static let dragPreviewOffset = CGSize(width: -20, height: -50)
+        static let trayInset: CGFloat = 10
+        static let dragHandleWidth: CGFloat = 36
+        static let dragHandleHeight: CGFloat = 5
+        static let dragHandleAreaHeight: CGFloat = 44
+    }
+
+    private enum Dismiss {
+        static let minDragDistance: CGFloat = 10
+        static let dragThreshold: CGFloat = 100
+        static let velocityThreshold: CGFloat = 300
+    }
 
     var body: some View {
         @Bindable var coordinator = coordinator
@@ -27,8 +39,8 @@ struct EssencePickerOverlay: View {
                         .contentShape(Rectangle())
                 }
                 .background(trayBackground)
-                .padding(.horizontal, 10)
-                .padding(.bottom, 10)
+                .padding(.horizontal, Layout.trayInset)
+                .padding(.bottom, Layout.trayInset)
                 .offset(y: coordinator.dismissDragOffset)
                 .transition(.move(edge: .bottom))
             }
@@ -38,8 +50,8 @@ struct EssencePickerOverlay: View {
                let essence = coordinator.dragState.draggedEssence {
                 EssenceDragPreview(essence: essence)
                     .position(
-                        x: coordinator.dragState.dragLocation.x + dragPreviewOffset.width,
-                        y: coordinator.dragState.dragLocation.y + dragPreviewOffset.height
+                        x: coordinator.dragState.dragLocation.x + Layout.dragPreviewOffset.width,
+                        y: coordinator.dragState.dragLocation.y + Layout.dragPreviewOffset.height
                     )
                     .allowsHitTesting(false)
             }
@@ -55,29 +67,26 @@ struct EssencePickerOverlay: View {
         VStack(spacing: 0) {
             Capsule()
                 .fill(Color.secondary.opacity(0.4))
-                .frame(width: 36, height: 5)
+                .frame(width: Layout.dragHandleWidth, height: Layout.dragHandleHeight)
         }
-        .frame(height: 44)
+        .frame(height: Layout.dragHandleAreaHeight)
         .frame(maxWidth: .infinity)
         .contentShape(Rectangle())
         .gesture(dismissDragGesture)
     }
 
     private var dismissDragGesture: some Gesture {
-        DragGesture(minimumDistance: 10)
+        DragGesture(minimumDistance: Dismiss.minDragDistance)
             .onChanged { value in
                 let translation = max(0, value.translation.height)
                 coordinator.dismissDragOffset = translation
             }
             .onEnded { value in
-                // Use predicted end translation to detect fast swipes
-                // If the predicted position is significantly past our threshold, dismiss
-                let predictedEndY = value.predictedEndTranslation.height
                 let currentY = value.translation.height
+                let velocity = value.predictedEndTranslation.height - currentY
 
-                // Dismiss if: dragged past threshold OR fast swipe detected
-                let draggedPastThreshold = currentY > 100
-                let fastSwipeDetected = predictedEndY > 200 && currentY > 20
+                let draggedPastThreshold = currentY > Dismiss.dragThreshold
+                let fastSwipeDetected = velocity > Dismiss.velocityThreshold
 
                 if draggedPastThreshold || fastSwipeDetected {
                     coordinator.dismiss()
