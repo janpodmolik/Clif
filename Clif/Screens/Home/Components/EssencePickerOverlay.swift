@@ -64,16 +64,22 @@ struct EssencePickerOverlay: View {
     }
 
     private var dismissDragGesture: some Gesture {
-        DragGesture()
+        DragGesture(minimumDistance: 10)
             .onChanged { value in
                 let translation = max(0, value.translation.height)
                 coordinator.dismissDragOffset = translation
             }
             .onEnded { value in
-                let velocity = value.predictedEndTranslation.height - value.translation.height
-                let shouldDismiss = value.translation.height > 100 || velocity > 300
+                // Use predicted end translation to detect fast swipes
+                // If the predicted position is significantly past our threshold, dismiss
+                let predictedEndY = value.predictedEndTranslation.height
+                let currentY = value.translation.height
 
-                if shouldDismiss {
+                // Dismiss if: dragged past threshold OR fast swipe detected
+                let draggedPastThreshold = currentY > 100
+                let fastSwipeDetected = predictedEndY > 200 && currentY > 20
+
+                if draggedPastThreshold || fastSwipeDetected {
                     coordinator.dismiss()
                 } else {
                     coordinator.dismissDragOffset = 0
