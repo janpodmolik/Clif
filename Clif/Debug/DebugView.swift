@@ -31,6 +31,7 @@ struct DebugView: View {
                         appSelectionSection
                         progressSection
                         debugToolsSection
+                        homeScreenSection
                         petAnimationSection
                         evolutionScaleSection
                         homeCardSection
@@ -260,6 +261,21 @@ struct DebugView: View {
             .frame(maxWidth: .infinity)
             .padding()
             .background(Color.purple.opacity(0.2))
+            .cornerRadius(12)
+        }
+    }
+
+    // MARK: - HomeScreen Debug
+
+    private var homeScreenSection: some View {
+        NavigationLink(destination: HomeScreenDebugView()) {
+            HStack {
+                Image(systemName: "house")
+                Text("HomeScreen Debug")
+            }
+            .frame(maxWidth: .infinity)
+            .padding()
+            .background(Color.teal.opacity(0.2))
             .cornerRadius(12)
         }
     }

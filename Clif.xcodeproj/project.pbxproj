@@ -49,6 +49,7 @@
 		B4D351232F123D620076C09B /* Essence.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4D351202F123D620076C09B /* Essence.swift */; };
 		B4D351262F123DD00076C09B /* StatType.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4D351252F123DD00076C09B /* StatType.swift */; };
 		B4D351272F123DD00076C09B /* DailyUsageStat.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4D351242F123DD00076C09B /* DailyUsageStat.swift */; };
+		B4ESS2012F0E00010001A001 /* Essence.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4D351202F123D620076C09B /* Essence.swift */; };
 		B4EVO1012F0E00010001A001 /* Blob.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4EVO0012F0E00010001A001 /* Blob.swift */; };
 		B4EVO1022F0E00010001A002 /* EvolutionPhase.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4EVO0022F0E00010001A002 /* EvolutionPhase.swift */; };
 		B4EVO1032F0E00010001A003 /* EvolutionPath.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4EVO0032F0E00010001A003 /* EvolutionPath.swift */; };
@@ -57,7 +58,6 @@
 		B4EVO2022F0E00010001A002 /* EvolutionPhase.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4EVO0022F0E00010001A002 /* EvolutionPhase.swift */; };
 		B4EVO2032F0E00010001A003 /* EvolutionPath.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4EVO0032F0E00010001A003 /* EvolutionPath.swift */; };
 		B4EVO2042F0E00010001A004 /* PetDisplayable.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4EVO0042F0E00010001A004 /* PetDisplayable.swift */; };
-		B4ESS2012F0E00010001A001 /* Essence.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4D351202F123D620076C09B /* Essence.swift */; };
 		B4F8F9EB2FEC35C900E9E6D8 /* SharedDefaults.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4924AF52EE5807E0033475C /* SharedDefaults.swift */; };
 		B4F8F9EC2FEC35C900E9E6D8 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = B45862142EE5B92C0088CB78 /* Constants.swift */; };
 /* End PBXBuildFile section */

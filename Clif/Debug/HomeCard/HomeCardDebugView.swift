@@ -6,9 +6,9 @@ struct HomeCardDebugView: View {
 
     // MARK: - Pet Identity State
 
-    @State private var petName: String = "Fern"
+    @State private var petName: String = "Blob"
     @State private var purposeLabel: String = "Social Media"
-    @State private var evolutionStage: Int = 2
+    @State private var evolutionStage: Int = 0
     private let maxEvolutionStage = 4
 
     // MARK: - Screen Time State
@@ -19,7 +19,7 @@ struct HomeCardDebugView: View {
 
     // MARK: - Button Visibility State
 
-    @State private var showEvolveButton: Bool = false
+    @State private var showEvolveButton: Bool = true
     @State private var daysUntilEvolution: Int = 1
     @State private var showDetailButton: Bool = true
     @State private var isBlownAway: Bool = false
@@ -187,6 +187,7 @@ struct HomeCardDebugView: View {
                         .foregroundStyle(.secondary)
 
                     Picker("Stage", selection: $evolutionStage) {
+                        Text("🫧").tag(0)
                         ForEach(1...maxEvolutionStage, id: \.self) { stage in
                             Text("\(stage)").tag(stage)
                         }
@@ -375,13 +376,13 @@ struct HomeCardDebugView: View {
 
     private func applyNormalPreset() {
         withAnimation(.easeInOut(duration: 0.2)) {
-            petName = "Fern"
+            petName = "Blob"
             purposeLabel = "Social Media"
-            evolutionStage = 2
-            usedMinutes = 85
+            evolutionStage = 0
+            usedMinutes = 45
             limitMinutes = 180
-            streakCount = 12
-            showEvolveButton = false
+            streakCount = 7
+            showEvolveButton = true
             showDetailButton = true
             isBlownAway = false
         }
@@ -389,10 +390,10 @@ struct HomeCardDebugView: View {
 
     private func applyEvolveReadyPreset() {
         withAnimation(.easeInOut(duration: 0.2)) {
-            petName = "Sprout"
+            petName = "Blob"
             purposeLabel = "Gaming"
-            evolutionStage = 2
-            usedMinutes = 60
+            evolutionStage = 0
+            usedMinutes = 30
             limitMinutes = 180
             streakCount = 7
             showEvolveButton = true
@@ -417,13 +418,14 @@ struct HomeCardDebugView: View {
 
     private func applyNewPetPreset() {
         withAnimation(.easeInOut(duration: 0.2)) {
-            petName = "Seedling"
+            petName = "Blob"
             purposeLabel = ""
-            evolutionStage = 1
+            evolutionStage = 0
             usedMinutes = 0
             limitMinutes = 180
             streakCount = 0
             showEvolveButton = false
+            daysUntilEvolution = 7
             showDetailButton = true
             isBlownAway = false
         }

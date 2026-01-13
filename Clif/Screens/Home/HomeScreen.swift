@@ -21,7 +21,7 @@ struct HomeScreen: View {
                 // Wind lines effect (scales with wind level)
                 // Wind area centered around pet (0.25-0.50 = matches PetDebugView)
                 WindLinesView(
-                    windLevel: .high,
+                    windLevel: .none,
                     direction: 1.0,
                     windAreaTop: 0.25,
                     windAreaBottom: 0.50,
@@ -32,8 +32,8 @@ struct HomeScreen: View {
                 FloatingIslandView(
                     screenHeight: geometry.size.height,
                     screenWidth: geometry.size.width,
-                    pet: EvolutionPath.plant.phase(at: 4)!,
-                    windLevel: .high,
+                    pet: Blob.shared,
+                    windLevel: .none,
                     windDirection: 1.0,
                     windRhythm: windRhythm
                 )
@@ -42,18 +42,18 @@ struct HomeScreen: View {
 
                 // Home card
                 HomeCardContentView(
-                    streakCount: 19,
+                    streakCount: 7,
                     usedTimeText: "32m",
                     dailyLimitText: "2h",
                     progress: 0.27,
-                    petName: "Fern",
-                    evolutionStage: 2,
+                    petName: "Blob",
+                    evolutionStage: 0,
                     maxEvolutionStage: 4,
                     mood: .happy,
                     purposeLabel: "Social Media",
-                    isEvolutionAvailable: false,
-                    daysUntilEvolution: 1,
-                    isSaveEnabled: true,
+                    isEvolutionAvailable: true,
+                    daysUntilEvolution: nil,
+                    isSaveEnabled: false,
                     showDetailButton: true,
                     isBlownAway: false,
                     onDetailTapped: { showPetDetail = true }
@@ -65,25 +65,19 @@ struct HomeScreen: View {
         }
         .fullScreenCover(isPresented: $showPetDetail) {
             PetActiveDetailScreen(
-                petName: "Fern",
+                petName: "Blob",
                 evolutionHistory: EvolutionHistory(
-                    createdAt: Calendar.current.date(byAdding: .day, value: -14, to: Date())!,
-                    essence: .plant,
-                    events: [
-                        EvolutionEvent(
-                            fromPhase: 1,
-                            toPhase: 2,
-                            date: Calendar.current.date(byAdding: .day, value: -7, to: Date())!
-                        )
-                    ]
+                    createdAt: Calendar.current.date(byAdding: .day, value: -7, to: Date())!,
+                    essence: nil,
+                    events: []
                 ),
-                totalDays: 19,
+                totalDays: 7,
                 purposeLabel: "Social Media",
-                windLevel: .high,
+                windLevel: .none,
                 isBlownAway: false,
                 todayUsedMinutes: 32,
                 dailyLimitMinutes: 120,
-                fullStats: .mock(days: 19),
+                fullStats: .mock(days: 7),
                 limitedAppCount: 12
             )
         }

@@ -29,6 +29,10 @@ struct HomeCardContentView: View {
     var onReplayTapped: () -> Void = {}
     var onDeleteTapped: () -> Void = {}
 
+    // MARK: - Computed
+
+    private var isBlob: Bool { evolutionStage == 0 }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             // Tappable area above progress bar
@@ -97,8 +101,10 @@ struct HomeCardContentView: View {
 
             Spacer()
 
-            Text("🧬 \(evolutionStage)")
-                .font(.system(size: 14, weight: .semibold))
+            if !isBlob {
+                Text("🧬 \(evolutionStage)")
+                    .font(.system(size: 14, weight: .semibold))
+            }
 
             streakBadge
         }
@@ -173,11 +179,19 @@ struct HomeCardContentView: View {
 
     private func evolutionCountdownLabel(days: Int) -> some View {
         HStack(spacing: 6) {
-            Image(systemName: "sparkles")
-            Text(days == 1 ? "Evolve Tomorrow" : "Evolve in \(days) days")
+            Image(systemName: isBlob ? "leaf.fill" : "sparkles")
+            Text(countdownText(days: days))
         }
         .font(.system(size: 14, weight: .medium))
         .foregroundStyle(.secondary)
+    }
+
+    private func countdownText(days: Int) -> String {
+        if isBlob {
+            return days == 1 ? "Ready for Essence Tomorrow" : "Ready for Essence in \(days) days"
+        } else {
+            return days == 1 ? "Evolve Tomorrow" : "Evolve in \(days) days"
+        }
     }
 
     private var blownAwayContent: some View {
@@ -199,8 +213,8 @@ struct HomeCardContentView: View {
     private var evolveButton: some View {
         Button(action: onEvolveTapped) {
             HStack(spacing: 6) {
-                Image(systemName: "sparkles")
-                Text("Evolve!")
+                Image(systemName: isBlob ? "leaf.fill" : "sparkles")
+                Text(isBlob ? "Use Essence" : "Evolve!")
             }
             .font(.system(size: 14, weight: .semibold))
             .foregroundStyle(.white)
