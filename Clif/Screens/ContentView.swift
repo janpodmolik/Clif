@@ -243,44 +243,45 @@ struct ContentView: View {
 
     @ViewBuilder
     private func essencePickerOverlay() -> some View {
-        ZStack {
+        ZStack(alignment: .bottom) {
             if essenceCoordinator.isShowing {
-                // Clear background for tap to dismiss
-                Color.clear
-                    .contentShape(Rectangle())
-                    .ignoresSafeArea()
-                    .onTapGesture {
-                        essenceCoordinator.hide()
-                    }
+                // Tap-to-dismiss background - covers area ABOVE the tray only
+                VStack(spacing: 0) {
+                    Color.clear
+                        .contentShape(Rectangle())
+                        .onTapGesture {
+                            dismissEssencePicker()
+                        }
+                }
+                .ignoresSafeArea()
 
-                VStack {
-                    Spacer()
+                // Tray with drag handle
+                VStack(spacing: 0) {
+                    // Drag handle area - only this responds to dismiss drag
+                    dragHandleArea
+
+                    // Tray content - blocks taps from reaching dismiss background
                     EssencePickerTray(
                         petDropFrame: essenceCoordinator.petDropFrame,
                         onDropOnPet: { essence in
                             essenceCoordinator.onDropOnPet?(essence)
-                            essenceCoordinator.hide()
+                            dismissEssencePicker()
                         },
                         onClose: {
-                            essenceCoordinator.hide()
+                            dismissEssencePicker()
                         },
                         dragState: Binding(
                             get: { essenceCoordinator.dragState },
                             set: { essenceCoordinator.dragState = $0 }
-                        ),
-                        dismissDragOffset: $trayDragOffset,
-                        onDismiss: {
-                            essenceCoordinator.hide()
-                        }
+                        )
                     )
-                    .background(trayBackground)
-                    // Match native sheet insets - equal distance from screen edges
-                    .padding(.horizontal, 10)
-                    .padding(.bottom, 10)
-                    .offset(y: trayDragOffset)
+                    .contentShape(Rectangle()) // Block taps from passing through
                 }
-                .ignoresSafeArea(edges: .bottom)
-                .transition(.move(edge: .bottom).combined(with: .opacity))
+                .background(trayBackground)
+                .padding(.horizontal, 10)
+                .padding(.bottom, 10)
+                .offset(y: trayDragOffset)
+                .transition(.move(edge: .bottom))
             }
 
             // Drag preview rendered at root level so it can appear above everything
@@ -292,10 +293,47 @@ struct ContentView: View {
                         y: essenceCoordinator.dragState.dragLocation.y + dragPreviewOffset.height
                     )
                     .allowsHitTesting(false)
-                    .ignoresSafeArea()
             }
         }
-        .animation(.spring(response: 0.5, dampingFraction: 0.8), value: essenceCoordinator.isShowing)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .ignoresSafeArea()
+        .animation(.spring(response: 0.45, dampingFraction: 0.85), value: essenceCoordinator.isShowing)
+        .animation(.interactiveSpring(response: 0.3, dampingFraction: 0.8), value: trayDragOffset)
+    }
+
+    @ViewBuilder
+    private var dragHandleArea: some View {
+        VStack(spacing: 0) {
+            Capsule()
+                .fill(Color.secondary.opacity(0.4))
+                .frame(width: 36, height: 5)
+        }
+        .frame(height: 30)
+        .frame(maxWidth: .infinity)
+        .contentShape(Rectangle())
+        .gesture(
+            DragGesture()
+                .onChanged { value in
+                    let translation = max(0, value.translation.height)
+                    trayDragOffset = translation
+                }
+                .onEnded { value in
+                    let velocity = value.predictedEndTranslation.height - value.translation.height
+                    let shouldDismiss = value.translation.height > dismissThreshold ||
+                                        velocity > 300
+
+                    if shouldDismiss {
+                        dismissEssencePicker()
+                    } else {
+                        trayDragOffset = 0
+                    }
+                }
+        )
+    }
+
+    private func dismissEssencePicker() {
+        essenceCoordinator.hide()
+        trayDragOffset = 0
     }
 
     @ViewBuilder

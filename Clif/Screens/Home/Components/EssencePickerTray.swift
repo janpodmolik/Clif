@@ -14,8 +14,6 @@ struct EssencePickerTray: View {
     var onDropOnPet: ((Essence) -> Void)?
     var onClose: (() -> Void)?
     @Binding var dragState: EssenceDragState
-    @Binding var dismissDragOffset: CGFloat
-    var onDismiss: (() -> Void)?
 
     @State private var selectedEssence: Essence?
     @State private var fillProgress: CGFloat = 0
@@ -23,7 +21,6 @@ struct EssencePickerTray: View {
     @StateObject private var hapticController = DragHapticController()
 
     private let fillDuration: TimeInterval = 1.0
-    private let dismissThreshold: CGFloat = 100
 
     private var selectedPath: EvolutionPath? {
         selectedEssence.map { EvolutionPath.path(for: $0) }
@@ -31,16 +28,6 @@ struct EssencePickerTray: View {
 
     var body: some View {
         VStack(spacing: 16) {
-            // Drag indicator with dismiss gesture
-            Capsule()
-                .fill(Color.secondary.opacity(0.4))
-                .frame(width: 36, height: 5)
-                .padding(.top, 8)
-                .frame(maxWidth: .infinity)
-                .frame(height: 24)
-                .contentShape(Rectangle())
-                .gesture(dismissGesture)
-
             // Top row: info + staging area
             HStack(spacing: 16) {
                 // Close button
@@ -188,31 +175,6 @@ struct EssencePickerTray: View {
         let normalized = max(0, min(1, 1 - (distance / maxDistance)))
         let intensity = 0.15 + (normalized * 0.85)
         hapticController.updateIntensity(intensity)
-    }
-
-    private var dismissGesture: some Gesture {
-        DragGesture()
-            .onChanged { value in
-                // Only allow dragging down
-                let translation = max(0, value.translation.height)
-                dismissDragOffset = translation
-            }
-            .onEnded { value in
-                if value.translation.height > dismissThreshold ||
-                   value.predictedEndTranslation.height > dismissThreshold * 2 {
-                    // Dismiss
-                    onDismiss?()
-                    // Reset offset after dismiss animation
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                        dismissDragOffset = 0
-                    }
-                } else {
-                    // Snap back
-                    withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-                        dismissDragOffset = 0
-                    }
-                }
-            }
     }
 }
 
@@ -438,10 +400,6 @@ private final class DragHapticController: ObservableObject {
 #if DEBUG
 #Preview {
     @Previewable @State var dragState = EssenceDragState()
-    @Previewable @State var dismissOffset: CGFloat = 0
-    EssencePickerTray(
-        dragState: $dragState,
-        dismissDragOffset: $dismissOffset
-    )
+    EssencePickerTray(dragState: $dragState)
 }
 #endif
