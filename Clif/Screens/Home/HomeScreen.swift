@@ -8,6 +8,7 @@ struct HomeScreen: View {
     /// Shared wind rhythm for synchronized effects between pet animation and wind lines
     @State private var windRhythm = WindRhythm()
     @State private var showPetDetail = false
+    @State private var showEssencePicker = false
 
     private var pet: ActivePet? { petManager.currentPet }
 
@@ -56,6 +57,13 @@ struct HomeScreen: View {
                 PetActiveDetailScreen(pet: pet)
             }
         }
+        .sheet(isPresented: $showEssencePicker) {
+            if let pet {
+                EssencePickerSheet { essence in
+                    pet.applyEssence(essence)
+                }
+            }
+        }
         .onAppear {
             windRhythm.start()
         }
@@ -84,7 +92,14 @@ struct HomeScreen: View {
             isSaveEnabled: false,
             showDetailButton: true,
             isBlownAway: pet.isBlown,
-            onDetailTapped: { showPetDetail = true }
+            onDetailTapped: { showPetDetail = true },
+            onEvolveTapped: {
+                if pet.isBlob {
+                    showEssencePicker = true
+                } else {
+                    pet.evolve()
+                }
+            }
         )
     }
 
