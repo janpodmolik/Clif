@@ -9,79 +9,42 @@ struct EssenceDragState {
 }
 
 /// Essence picker with catalog and staging area.
-struct EssencePickerTray: View {
-    var petDropFrame: CGRect?
-    var onDropOnPet: ((Essence) -> Void)?
-    var onClose: (() -> Void)?
-    @Binding var dragState: EssenceDragState
+struct EssencePicker: View {
+    @Environment(EssencePickerCoordinator.self) private var coordinator
 
     @State private var selectedEssence: Essence?
-    @State private var fillProgress: CGFloat = 0
-    @State private var lastDragLocation: CGPoint = .zero
     @StateObject private var hapticController = DragHapticController()
 
-    private let fillDuration: TimeInterval = 1.0
+    private let dismissThreshold: CGFloat = 100
 
     private var selectedPath: EvolutionPath? {
         selectedEssence.map { EvolutionPath.path(for: $0) }
     }
 
+    private var dismissDragGesture: some Gesture {
+        DragGesture()
+            .onChanged { value in
+                let translation = max(0, value.translation.height)
+                coordinator.dismissDragOffset = translation
+            }
+            .onEnded { value in
+                let velocity = value.predictedEndTranslation.height - value.translation.height
+                let shouldDismiss = value.translation.height > dismissThreshold || velocity > 300
+                if shouldDismiss {
+                    coordinator.dismiss()
+                } else {
+                    coordinator.dismissDragOffset = 0
+                }
+            }
+    }
+
     var body: some View {
         VStack(spacing: 16) {
-            // Top row: info + staging area
-            HStack(spacing: 16) {
-                // Close button
-                if onClose != nil {
-                    Button {
-                        onClose?()
-                    } label: {
-                        Image(systemName: "xmark.circle.fill")
-                            .font(.title2)
-                            .foregroundStyle(.secondary)
-                    }
-                }
+            // Top section with dismiss drag support
+            topSection
+                .gesture(dismissDragGesture)
 
-                // Info section
-                VStack(alignment: .leading, spacing: 4) {
-                    if let path = selectedPath {
-                        Text(path.displayName)
-                            .font(.headline)
-                    } else {
-                        Text("Select an essence")
-                            .font(.headline)
-                            .foregroundStyle(.secondary)
-                    }
-
-                    Text("Drag to your pet")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
-
-                Spacer()
-
-                // Staging area (right side, with border)
-                EssenceStagingCard(
-                    essence: selectedEssence,
-                    fillProgress: fillProgress
-                )
-                .onLongPressGesture(
-                    minimumDuration: fillDuration,
-                    maximumDistance: 20,
-                    pressing: { isPressing in
-                        handlePressingChanged(isPressing)
-                    },
-                    perform: {
-                        handleLongPressComplete()
-                    }
-                )
-                .simultaneousGesture(dragGesture)
-            }
-            .padding(.horizontal)
-
-            Divider()
-                .padding(.horizontal)
-
-            // Catalog - all essences
+            // Catalog - NO dismiss drag (has scroll gesture)
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 12) {
                     ForEach(Essence.allCases, id: \.self) { essence in
@@ -104,67 +67,89 @@ struct EssencePickerTray: View {
         }
     }
 
-    private var dragGesture: some Gesture {
-        DragGesture(minimumDistance: 0, coordinateSpace: .global)
-            .onChanged { value in
-                lastDragLocation = value.location
-                guard dragState.isDragging else { return }
-                dragState.dragLocation = value.location
-                updateDragHaptics(at: value.location)
-            }
-            .onEnded { value in
-                lastDragLocation = value.location
-                guard dragState.isDragging else { return }
-                handleDragEnded(at: value.location)
-            }
-    }
+    @ViewBuilder
+    private var topSection: some View {
+        VStack(spacing: 16) {
+            HStack(spacing: 16) {
+                // Close button
+                Button {
+                    coordinator.dismiss()
+                } label: {
+                    Image(systemName: "xmark.circle.fill")
+                        .font(.title2)
+                        .foregroundStyle(.secondary)
+                }
 
-    private func handlePressingChanged(_ isPressing: Bool) {
-        guard selectedEssence != nil else { return }
+                // Info section
+                VStack(alignment: .leading, spacing: 4) {
+                    if let path = selectedPath {
+                        Text(path.displayName)
+                            .font(.headline)
+                    } else {
+                        Text("Select an essence")
+                            .font(.headline)
+                            .foregroundStyle(.secondary)
+                    }
 
-        if isPressing {
-            fillProgress = 0
-            withAnimation(.linear(duration: fillDuration)) {
-                fillProgress = 1
+                    Text("Drag to your pet")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+
+                Spacer()
+
+                // Staging area - instant drag
+                EssenceStagingCard(essence: selectedEssence)
+                    .gesture(
+                        DragGesture(minimumDistance: 0, coordinateSpace: .global)
+                            .onChanged { value in
+                                guard selectedEssence != nil else { return }
+                                if !coordinator.dragState.isDragging {
+                                    startDragging()
+                                }
+                                coordinator.dragState.dragLocation = value.location
+                                updateDragHaptics(at: value.location)
+                            }
+                            .onEnded { value in
+                                guard coordinator.dragState.isDragging else { return }
+                                handleDragEnded(at: value.location)
+                            }
+                    )
             }
-            hapticController.startFilling()
-        } else if !dragState.isDragging {
-            withAnimation(.easeOut(duration: 0.2)) {
-                fillProgress = 0
-            }
-            hapticController.stop()
+            .padding(.horizontal)
+
+            Divider()
+                .padding(.horizontal)
         }
+        .contentShape(Rectangle())
     }
 
-    private func handleLongPressComplete() {
+    private func startDragging() {
         guard let essence = selectedEssence else { return }
-        dragState.isDragging = true
-        dragState.dragLocation = lastDragLocation
-        dragState.draggedEssence = essence
+        coordinator.dragState.isDragging = true
+        coordinator.dragState.draggedEssence = essence
         hapticController.startDragging()
-        updateDragHaptics(at: lastDragLocation)
+        HapticType.impactLight.trigger()
     }
 
     private func handleDragEnded(at location: CGPoint) {
         defer {
-            dragState.isDragging = false
-            dragState.draggedEssence = nil
+            coordinator.dragState.isDragging = false
+            coordinator.dragState.draggedEssence = nil
             hapticController.stop()
-            withAnimation(.easeOut(duration: 0.2)) {
-                fillProgress = 0
-            }
         }
 
         guard let essence = selectedEssence else { return }
-        guard let petDropFrame, petDropFrame.contains(location) else { return }
+        guard let petDropFrame = coordinator.petDropFrame,
+              petDropFrame.contains(location) else { return }
 
-        onDropOnPet?(essence)
+        coordinator.handleDrop(essence)
         selectedEssence = nil
         HapticType.notificationSuccess.trigger()
     }
 
     private func updateDragHaptics(at location: CGPoint) {
-        guard let petDropFrame else {
+        guard let petDropFrame = coordinator.petDropFrame else {
             hapticController.updateIntensity(0.2)
             return
         }
@@ -182,7 +167,6 @@ struct EssencePickerTray: View {
 
 private struct EssenceStagingCard: View {
     let essence: Essence?
-    let fillProgress: CGFloat
 
     private var path: EvolutionPath? {
         essence.map { EvolutionPath.path(for: $0) }
@@ -210,20 +194,6 @@ private struct EssenceStagingCard: View {
     private var cardBackground: some View {
         let themeColor = path?.themeColor ?? .secondary
 
-        ZStack {
-            baseBackground(themeColor: themeColor)
-            if fillProgress > 0 {
-                fillOverlay(themeColor: themeColor)
-            }
-        }
-        .overlay {
-            RoundedRectangle(cornerRadius: 16)
-                .stroke(themeColor.opacity(0.3), lineWidth: 2)
-        }
-    }
-
-    @ViewBuilder
-    private func baseBackground(themeColor: Color) -> some View {
         if #available(iOS 26.0, *) {
             Color.clear
                 .glassEffect(
@@ -232,34 +202,19 @@ private struct EssenceStagingCard: View {
                         : .regular,
                     in: RoundedRectangle(cornerRadius: 16)
                 )
+                .overlay {
+                    RoundedRectangle(cornerRadius: 16)
+                        .stroke(themeColor.opacity(0.3), lineWidth: 2)
+                }
         } else {
             RoundedRectangle(cornerRadius: 16)
                 .fill(essence != nil ? themeColor.opacity(0.1) : Color.clear)
                 .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
+                .overlay {
+                    RoundedRectangle(cornerRadius: 16)
+                        .stroke(themeColor.opacity(0.3), lineWidth: 2)
+                }
         }
-    }
-
-    private func fillOverlay(themeColor: Color) -> some View {
-        GeometryReader { proxy in
-            let height = proxy.size.height
-            let fillHeight = max(0, height * fillProgress)
-            Rectangle()
-                .fill(
-                    LinearGradient(
-                        colors: [
-                            themeColor.opacity(0.45),
-                            themeColor.opacity(0.18)
-                        ],
-                        startPoint: .bottom,
-                        endPoint: .top
-                    )
-                )
-                .frame(height: fillHeight)
-                .frame(maxWidth: .infinity)
-                .frame(maxHeight: .infinity, alignment: .bottom)
-        }
-        .clipShape(RoundedRectangle(cornerRadius: 16))
-        .allowsHitTesting(false)
     }
 }
 
@@ -355,12 +310,15 @@ private final class DragHapticController: ObservableObject {
     private var generator = UIImpactFeedbackGenerator(style: .light)
     private var intensity: CGFloat = 0.2
 
-    func startFilling() {
-        start(style: .heavy, intensity: 0.9, interval: 0.08)
-    }
-
     func startDragging() {
-        start(style: .light, intensity: 0.2, interval: 0.15)
+        intensity = 0.2
+        timer?.invalidate()
+        generator = UIImpactFeedbackGenerator(style: .light)
+        generator.prepare()
+
+        timer = Timer.scheduledTimer(withTimeInterval: 0.15, repeats: true) { [weak self] _ in
+            self?.tick()
+        }
     }
 
     func updateIntensity(_ intensity: CGFloat) {
@@ -370,21 +328,6 @@ private final class DragHapticController: ObservableObject {
     func stop() {
         timer?.invalidate()
         timer = nil
-    }
-
-    private func start(
-        style: UIImpactFeedbackGenerator.FeedbackStyle,
-        intensity: CGFloat,
-        interval: TimeInterval
-    ) {
-        self.intensity = max(0, min(1, intensity))
-        timer?.invalidate()
-        generator = UIImpactFeedbackGenerator(style: style)
-        generator.prepare()
-
-        timer = Timer.scheduledTimer(withTimeInterval: interval, repeats: true) { [weak self] _ in
-            self?.tick()
-        }
     }
 
     private func tick() {
@@ -399,7 +342,7 @@ private final class DragHapticController: ObservableObject {
 
 #if DEBUG
 #Preview {
-    @Previewable @State var dragState = EssenceDragState()
-    EssencePickerTray(dragState: $dragState)
+    EssencePicker()
+        .environment(EssencePickerCoordinator())
 }
 #endif

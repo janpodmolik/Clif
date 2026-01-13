@@ -16,7 +16,7 @@ extension ButtonStyle where Self == PressableButtonStyle {
 enum AppTab: String, CaseIterable {
     case home = "Home"
     case overview = "Přehled"
-    case profile = "Profil" 
+    case profile = "Profil"
 
     var symbol: String {
         switch self {
@@ -36,13 +36,10 @@ struct ContentView: View {
     @State private var showPremium = false
     @State private var essenceCoordinator = EssencePickerCoordinator()
     @State private var showMockSheet = false
-    @State private var trayDragOffset: CGFloat = 0
 
     @Namespace private var tabIndicatorNamespace
 
     private let tabBarHeight: CGFloat = 55
-    private let dragPreviewOffset = CGSize(width: -30, height: -70)
-    private let dismissThreshold: CGFloat = 100
 
     #if DEBUG
     @State private var showPetDebug = false
@@ -70,9 +67,7 @@ struct ContentView: View {
                     .padding(.horizontal, 20)
             }
 
-            // Essence picker overlay - rendered at root level so it appears
-            // IN FRONT OF the tab bar (higher z-index), not just above it
-            essencePickerOverlay()
+            EssencePickerOverlay()
         }
         .environment(essenceCoordinator)
         .preferredColorScheme(isDarkModeEnabled ? .dark : .light)
@@ -101,6 +96,8 @@ struct ContentView: View {
         }
         #endif
     }
+
+    // MARK: - Tab Bar
 
     @ViewBuilder
     private func customTabBar() -> some View {
@@ -239,117 +236,7 @@ struct ContentView: View {
         actionButtonFallback()
     }
 
-    // MARK: - Essence Picker Overlay
-
-    @ViewBuilder
-    private func essencePickerOverlay() -> some View {
-        ZStack(alignment: .bottom) {
-            if essenceCoordinator.isShowing {
-                // Tap-to-dismiss background - covers area ABOVE the tray only
-                VStack(spacing: 0) {
-                    Color.clear
-                        .contentShape(Rectangle())
-                        .onTapGesture {
-                            dismissEssencePicker()
-                        }
-                }
-                .ignoresSafeArea()
-
-                // Tray with drag handle
-                VStack(spacing: 0) {
-                    // Drag handle area - only this responds to dismiss drag
-                    dragHandleArea
-
-                    // Tray content - blocks taps from reaching dismiss background
-                    EssencePickerTray(
-                        petDropFrame: essenceCoordinator.petDropFrame,
-                        onDropOnPet: { essence in
-                            essenceCoordinator.onDropOnPet?(essence)
-                            dismissEssencePicker()
-                        },
-                        onClose: {
-                            dismissEssencePicker()
-                        },
-                        dragState: Binding(
-                            get: { essenceCoordinator.dragState },
-                            set: { essenceCoordinator.dragState = $0 }
-                        )
-                    )
-                    .contentShape(Rectangle()) // Block taps from passing through
-                }
-                .background(trayBackground)
-                .padding(.horizontal, 10)
-                .padding(.bottom, 10)
-                .offset(y: trayDragOffset)
-                .transition(.move(edge: .bottom))
-            }
-
-            // Drag preview rendered at root level so it can appear above everything
-            if essenceCoordinator.dragState.isDragging,
-               let essence = essenceCoordinator.dragState.draggedEssence {
-                EssenceDragPreview(essence: essence)
-                    .position(
-                        x: essenceCoordinator.dragState.dragLocation.x + dragPreviewOffset.width,
-                        y: essenceCoordinator.dragState.dragLocation.y + dragPreviewOffset.height
-                    )
-                    .allowsHitTesting(false)
-            }
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .ignoresSafeArea()
-        .animation(.spring(response: 0.45, dampingFraction: 0.85), value: essenceCoordinator.isShowing)
-        .animation(.interactiveSpring(response: 0.3, dampingFraction: 0.8), value: trayDragOffset)
-    }
-
-    @ViewBuilder
-    private var dragHandleArea: some View {
-        VStack(spacing: 0) {
-            Capsule()
-                .fill(Color.secondary.opacity(0.4))
-                .frame(width: 36, height: 5)
-        }
-        .frame(height: 30)
-        .frame(maxWidth: .infinity)
-        .contentShape(Rectangle())
-        .gesture(
-            DragGesture()
-                .onChanged { value in
-                    let translation = max(0, value.translation.height)
-                    trayDragOffset = translation
-                }
-                .onEnded { value in
-                    let velocity = value.predictedEndTranslation.height - value.translation.height
-                    let shouldDismiss = value.translation.height > dismissThreshold ||
-                                        velocity > 300
-
-                    if shouldDismiss {
-                        dismissEssencePicker()
-                    } else {
-                        trayDragOffset = 0
-                    }
-                }
-        )
-    }
-
-    private func dismissEssencePicker() {
-        essenceCoordinator.hide()
-        trayDragOffset = 0
-    }
-
-    @ViewBuilder
-    private var trayBackground: some View {
-        let cornerRadius = DeviceMetrics.sheetCornerRadius
-        if #available(iOS 26.0, *) {
-            RoundedRectangle(cornerRadius: cornerRadius)
-                .fill(.clear)
-                .glassEffect(.regular, in: RoundedRectangle(cornerRadius: cornerRadius))
-        } else {
-            RoundedRectangle(cornerRadius: cornerRadius)
-                .fill(.ultraThinMaterial)
-        }
-    }
-
-    // MARK: - Mock Sheet (for height comparison testing)
+    // MARK: - Mock Sheet (DEBUG)
 
     private var mockSheetContent: some View {
         VStack(spacing: 16) {

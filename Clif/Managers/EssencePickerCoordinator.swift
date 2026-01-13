@@ -14,6 +14,7 @@ import SwiftUI
 final class EssencePickerCoordinator {
     var isShowing = false
     var dragState = EssenceDragState()
+    var dismissDragOffset: CGFloat = 0
     var petDropFrame: CGRect?
     var onDropOnPet: ((Essence) -> Void)?
 
@@ -23,13 +24,19 @@ final class EssencePickerCoordinator {
         isShowing = true
     }
 
-    func hide() {
+    func dismiss() {
         isShowing = false
+        dismissDragOffset = 0
         // Reset state after animation completes
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) { [weak self] in
             self?.dragState = EssenceDragState()
             self?.petDropFrame = nil
             self?.onDropOnPet = nil
         }
+    }
+
+    func handleDrop(_ essence: Essence) {
+        onDropOnPet?(essence)
+        dismiss()
     }
 }
