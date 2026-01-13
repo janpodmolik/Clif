@@ -57,4 +57,7 @@ private enum DeepLinkHandler {
 extension Notification.Name {
     static let deepLinkReceived = Notification.Name("deepLinkReceived")
     static let selectPet = Notification.Name("selectPet")
+    #if DEBUG
+    static let showMockSheet = Notification.Name("showMockSheet")
+    #endif
 }

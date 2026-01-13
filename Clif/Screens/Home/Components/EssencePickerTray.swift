@@ -1,148 +1,133 @@
 import SwiftUI
 import Combine
 
+/// State for drag operation, shared with parent for overlay rendering
+struct EssenceDragState {
+    var isDragging: Bool = false
+    var dragLocation: CGPoint = .zero
+    var draggedEssence: Essence?
+}
+
 /// Essence picker with catalog and staging area.
 struct EssencePickerTray: View {
     var petDropFrame: CGRect?
     var onDropOnPet: ((Essence) -> Void)?
     var onClose: (() -> Void)?
+    @Binding var dragState: EssenceDragState
+    @Binding var dismissDragOffset: CGFloat
+    var onDismiss: (() -> Void)?
 
     @State private var selectedEssence: Essence?
     @State private var fillProgress: CGFloat = 0
-    @State private var isDragging = false
-    @State private var dragLocation: CGPoint = .zero
     @State private var lastDragLocation: CGPoint = .zero
-    @State private var trayFrame: CGRect = .zero
     @StateObject private var hapticController = DragHapticController()
 
     private let fillDuration: TimeInterval = 1.0
-    private let dragPreviewOffset = CGSize(width: -50, height: -100)
+    private let dismissThreshold: CGFloat = 100
 
     private var selectedPath: EvolutionPath? {
         selectedEssence.map { EvolutionPath.path(for: $0) }
     }
 
     var body: some View {
-        ZStack {
-            VStack(spacing: 16) {
-                // Top row: info + staging area
-                HStack(spacing: 16) {
-                    // Close button
-                    if onClose != nil {
-                        Button {
-                            onClose?()
-                        } label: {
-                            Image(systemName: "xmark.circle.fill")
-                                .font(.title2)
-                                .foregroundStyle(.secondary)
-                        }
+        VStack(spacing: 16) {
+            // Drag indicator with dismiss gesture
+            Capsule()
+                .fill(Color.secondary.opacity(0.4))
+                .frame(width: 36, height: 5)
+                .padding(.top, 8)
+                .frame(maxWidth: .infinity)
+                .frame(height: 24)
+                .contentShape(Rectangle())
+                .gesture(dismissGesture)
+
+            // Top row: info + staging area
+            HStack(spacing: 16) {
+                // Close button
+                if onClose != nil {
+                    Button {
+                        onClose?()
+                    } label: {
+                        Image(systemName: "xmark.circle.fill")
+                            .font(.title2)
+                            .foregroundStyle(.secondary)
                     }
+                }
 
-                    // Info section
-                    VStack(alignment: .leading, spacing: 4) {
-                        if let path = selectedPath {
-                            Text(path.displayName)
-                                .font(.headline)
-                        } else {
-                            Text("Select an essence")
-                                .font(.headline)
-                                .foregroundStyle(.secondary)
-                        }
-
-                        Text("Drag to your pet")
-                            .font(.caption)
+                // Info section
+                VStack(alignment: .leading, spacing: 4) {
+                    if let path = selectedPath {
+                        Text(path.displayName)
+                            .font(.headline)
+                    } else {
+                        Text("Select an essence")
+                            .font(.headline)
                             .foregroundStyle(.secondary)
                     }
 
-                    Spacer()
-
-                    // Staging area (right side, with border)
-                    EssenceStagingCard(
-                        essence: selectedEssence,
-                        fillProgress: fillProgress
-                    )
-                    .onLongPressGesture(
-                        minimumDuration: fillDuration,
-                        maximumDistance: 20,
-                        pressing: { isPressing in
-                            handlePressingChanged(isPressing)
-                        },
-                        perform: {
-                            handleLongPressComplete()
-                        }
-                    )
-                    .simultaneousGesture(dragGesture)
+                    Text("Drag to your pet")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
                 }
+
+                Spacer()
+
+                // Staging area (right side, with border)
+                EssenceStagingCard(
+                    essence: selectedEssence,
+                    fillProgress: fillProgress
+                )
+                .onLongPressGesture(
+                    minimumDuration: fillDuration,
+                    maximumDistance: 20,
+                    pressing: { isPressing in
+                        handlePressingChanged(isPressing)
+                    },
+                    perform: {
+                        handleLongPressComplete()
+                    }
+                )
+                .simultaneousGesture(dragGesture)
+            }
+            .padding(.horizontal)
+
+            Divider()
                 .padding(.horizontal)
 
-                Divider()
-                    .padding(.horizontal)
-
-                // Catalog - all essences
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 12) {
-                        ForEach(Essence.allCases, id: \.self) { essence in
-                            EssenceCatalogCard(
-                                essence: essence,
-                                isSelected: essence == selectedEssence
-                            ) {
-                                withAnimation(.easeInOut(duration: 0.2)) {
-                                    selectedEssence = essence
-                                }
+            // Catalog - all essences
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 12) {
+                    ForEach(Essence.allCases, id: \.self) { essence in
+                        EssenceCatalogCard(
+                            essence: essence,
+                            isSelected: essence == selectedEssence
+                        ) {
+                            withAnimation(.easeInOut(duration: 0.2)) {
+                                selectedEssence = essence
                             }
                         }
                     }
-                    .padding(.horizontal)
                 }
-            }
-            .padding(.vertical)
-
-            if isDragging, let essence = selectedEssence {
-                EssenceDragPreview(essence: essence)
-                    .position(
-                        x: dragLocationInTray.x + dragPreviewOffset.width,
-                        y: dragLocationInTray.y + dragPreviewOffset.height
-                    )
-                    .transition(.opacity)
-                    .allowsHitTesting(false)
+                .padding(.horizontal)
             }
         }
-        .background {
-            GeometryReader { proxy in
-                Color.clear
-                    .preference(
-                        key: TrayFramePreferenceKey.self,
-                        value: proxy.frame(in: .global)
-                    )
-            }
-        }
-        .onPreferenceChange(TrayFramePreferenceKey.self) { frame in
-            trayFrame = frame
-        }
+        .padding(.bottom)
         .onDisappear {
             hapticController.stop()
         }
-    }
-
-    private var dragLocationInTray: CGPoint {
-        guard trayFrame != .zero else { return dragLocation }
-        return CGPoint(
-            x: dragLocation.x - trayFrame.minX,
-            y: dragLocation.y - trayFrame.minY
-        )
     }
 
     private var dragGesture: some Gesture {
         DragGesture(minimumDistance: 0, coordinateSpace: .global)
             .onChanged { value in
                 lastDragLocation = value.location
-                guard isDragging else { return }
-                dragLocation = value.location
+                guard dragState.isDragging else { return }
+                dragState.dragLocation = value.location
                 updateDragHaptics(at: value.location)
             }
             .onEnded { value in
                 lastDragLocation = value.location
-                guard isDragging else { return }
+                guard dragState.isDragging else { return }
                 handleDragEnded(at: value.location)
             }
     }
@@ -156,7 +141,7 @@ struct EssencePickerTray: View {
                 fillProgress = 1
             }
             hapticController.startFilling()
-        } else if !isDragging {
+        } else if !dragState.isDragging {
             withAnimation(.easeOut(duration: 0.2)) {
                 fillProgress = 0
             }
@@ -165,16 +150,18 @@ struct EssencePickerTray: View {
     }
 
     private func handleLongPressComplete() {
-        guard selectedEssence != nil else { return }
-        isDragging = true
-        dragLocation = lastDragLocation
+        guard let essence = selectedEssence else { return }
+        dragState.isDragging = true
+        dragState.dragLocation = lastDragLocation
+        dragState.draggedEssence = essence
         hapticController.startDragging()
         updateDragHaptics(at: lastDragLocation)
     }
 
     private func handleDragEnded(at location: CGPoint) {
         defer {
-            isDragging = false
+            dragState.isDragging = false
+            dragState.draggedEssence = nil
             hapticController.stop()
             withAnimation(.easeOut(duration: 0.2)) {
                 fillProgress = 0
@@ -201,6 +188,31 @@ struct EssencePickerTray: View {
         let normalized = max(0, min(1, 1 - (distance / maxDistance)))
         let intensity = 0.15 + (normalized * 0.85)
         hapticController.updateIntensity(intensity)
+    }
+
+    private var dismissGesture: some Gesture {
+        DragGesture()
+            .onChanged { value in
+                // Only allow dragging down
+                let translation = max(0, value.translation.height)
+                dismissDragOffset = translation
+            }
+            .onEnded { value in
+                if value.translation.height > dismissThreshold ||
+                   value.predictedEndTranslation.height > dismissThreshold * 2 {
+                    // Dismiss
+                    onDismiss?()
+                    // Reset offset after dismiss animation
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                        dismissDragOffset = 0
+                    }
+                } else {
+                    // Snap back
+                    withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                        dismissDragOffset = 0
+                    }
+                }
+            }
     }
 }
 
@@ -335,7 +347,7 @@ private struct EssenceCatalogCard: View {
     }
 }
 
-private struct EssenceDragPreview: View {
+struct EssenceDragPreview: View {
     let essence: Essence
 
     private var path: EvolutionPath {
@@ -373,14 +385,6 @@ private struct EssenceDragPreview: View {
                         .stroke(path.themeColor.opacity(0.25), lineWidth: 1)
                 }
         }
-    }
-}
-
-private struct TrayFramePreferenceKey: PreferenceKey {
-    static var defaultValue: CGRect = .zero
-
-    static func reduce(value: inout CGRect, nextValue: () -> CGRect) {
-        value = nextValue()
     }
 }
 
@@ -433,6 +437,11 @@ private final class DragHapticController: ObservableObject {
 
 #if DEBUG
 #Preview {
-    EssencePickerTray()
+    @Previewable @State var dragState = EssenceDragState()
+    @Previewable @State var dismissOffset: CGFloat = 0
+    EssencePickerTray(
+        dragState: $dragState,
+        dismissDragOffset: $dismissOffset
+    )
 }
 #endif

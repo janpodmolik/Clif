@@ -3,12 +3,12 @@ import SwiftUI
 /// Main home screen displaying the floating island scene with pet and status card.
 struct HomeScreen: View {
     @Environment(PetManager.self) private var petManager
+    @Environment(EssencePickerCoordinator.self) private var essenceCoordinator
     @Environment(\.colorScheme) private var colorScheme
 
     /// Shared wind rhythm for synchronized effects between pet animation and wind lines
     @State private var windRhythm = WindRhythm()
     @State private var showPetDetail = false
-    @State private var showEssencePicker = false
     @State private var petFrame: CGRect = .zero
 
     private var pet: ActivePet? { petManager.currentPet }
@@ -65,20 +65,6 @@ struct HomeScreen: View {
                 PetActiveDetailScreen(pet: pet)
             }
         }
-        .sheet(isPresented: $showEssencePicker) {
-            EssencePickerTray(
-                petDropFrame: petDropFrame,
-                onDropOnPet: { essence in
-                    guard let pet else { return }
-                    pet.applyEssence(essence)
-                    showEssencePicker = false
-                },
-                onClose: { showEssencePicker = false }
-            )
-                .presentationDetents([.height(200)])
-                .presentationDragIndicator(.visible)
-                .presentationBackgroundInteraction(.enabled(upThrough: .height(200)))
-        }
         .onAppear {
             windRhythm.start()
         }
@@ -110,10 +96,17 @@ struct HomeScreen: View {
             onDetailTapped: { showPetDetail = true },
             onEvolveTapped: {
                 if pet.isBlob {
-                    showEssencePicker = true
+                    essenceCoordinator.show(petDropFrame: petDropFrame) { essence in
+                        pet.applyEssence(essence)
+                    }
                 } else {
                     pet.evolve()
                 }
+            },
+            onBlowAwayTapped: {
+                #if DEBUG
+                NotificationCenter.default.post(name: .showMockSheet, object: nil)
+                #endif
             }
         )
     }
@@ -131,4 +124,5 @@ struct HomeScreen: View {
 #Preview {
     HomeScreen()
         .environment(PetManager.mock())
+        .environment(EssencePickerCoordinator())
 }

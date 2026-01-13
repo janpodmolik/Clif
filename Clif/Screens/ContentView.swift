@@ -34,44 +34,66 @@ struct ContentView: View {
     @State private var activeTab: AppTab = .home
     @State private var showSearch = false
     @State private var showPremium = false
+    @State private var essenceCoordinator = EssencePickerCoordinator()
+    @State private var showMockSheet = false
+    @State private var trayDragOffset: CGFloat = 0
 
     @Namespace private var tabIndicatorNamespace
 
     private let tabBarHeight: CGFloat = 55
+    private let dragPreviewOffset = CGSize(width: -30, height: -70)
+    private let dismissThreshold: CGFloat = 100
 
     #if DEBUG
     @State private var showPetDebug = false
     #endif
 
     var body: some View {
-        TabView(selection: $activeTab) {
-            Tab(value: .home) {
-                HomeScreen()
-                    .toolbarVisibility(.hidden, for: .tabBar)
+        ZStack {
+            TabView(selection: $activeTab) {
+                Tab(value: .home) {
+                    HomeScreen()
+                        .toolbarVisibility(.hidden, for: .tabBar)
+                }
+                Tab(value: .overview) {
+                    OverviewScreen()
+                        .toolbarVisibility(.hidden, for: .tabBar)
+                }
+                Tab(value: .profile) {
+                    ProfileScreen()
+                        .toolbarVisibility(.hidden, for: .tabBar)
+                }
             }
-            Tab(value: .overview) {
-                OverviewScreen()
-                    .toolbarVisibility(.hidden, for: .tabBar)
+            .tint(.primary)
+            .safeAreaInset(edge: .bottom, spacing: 0) {
+                customTabBar()
+                    .padding(.horizontal, 20)
             }
-            Tab(value: .profile) {
-                ProfileScreen()
-                    .toolbarVisibility(.hidden, for: .tabBar)
-            }
+
+            // Essence picker overlay - rendered at root level so it appears
+            // IN FRONT OF the tab bar (higher z-index), not just above it
+            essencePickerOverlay()
         }
-        .tint(.primary)
-        .safeAreaInset(edge: .bottom, spacing: 0) {
-            customTabBar()
-                .padding(.horizontal, 20)
-        }
+        .environment(essenceCoordinator)
         .preferredColorScheme(isDarkModeEnabled ? .dark : .light)
         .onReceive(NotificationCenter.default.publisher(for: .selectPet)) { _ in
             activeTab = .home
         }
+        #if DEBUG
+        .onReceive(NotificationCenter.default.publisher(for: .showMockSheet)) { _ in
+            showMockSheet = true
+        }
+        #endif
         .sheet(isPresented: $showSearch) {
             SearchSheet()
         }
         .sheet(isPresented: $showPremium) {
             PremiumSheet()
+        }
+        .sheet(isPresented: $showMockSheet) {
+            mockSheetContent
+                .presentationDetents([.medium])
+                .presentationDragIndicator(.visible)
         }
         #if DEBUG
         .fullScreenCover(isPresented: $showPetDebug) {
@@ -216,9 +238,96 @@ struct ContentView: View {
 
         actionButtonFallback()
     }
+
+    // MARK: - Essence Picker Overlay
+
+    @ViewBuilder
+    private func essencePickerOverlay() -> some View {
+        ZStack {
+            if essenceCoordinator.isShowing {
+                // Clear background for tap to dismiss
+                Color.clear
+                    .contentShape(Rectangle())
+                    .ignoresSafeArea()
+                    .onTapGesture {
+                        essenceCoordinator.hide()
+                    }
+
+                VStack {
+                    Spacer()
+                    EssencePickerTray(
+                        petDropFrame: essenceCoordinator.petDropFrame,
+                        onDropOnPet: { essence in
+                            essenceCoordinator.onDropOnPet?(essence)
+                            essenceCoordinator.hide()
+                        },
+                        onClose: {
+                            essenceCoordinator.hide()
+                        },
+                        dragState: Binding(
+                            get: { essenceCoordinator.dragState },
+                            set: { essenceCoordinator.dragState = $0 }
+                        ),
+                        dismissDragOffset: $trayDragOffset,
+                        onDismiss: {
+                            essenceCoordinator.hide()
+                        }
+                    )
+                    .background(trayBackground)
+                    // Match native sheet insets - equal distance from screen edges
+                    .padding(.horizontal, 10)
+                    .padding(.bottom, 10)
+                    .offset(y: trayDragOffset)
+                }
+                .ignoresSafeArea(edges: .bottom)
+                .transition(.move(edge: .bottom).combined(with: .opacity))
+            }
+
+            // Drag preview rendered at root level so it can appear above everything
+            if essenceCoordinator.dragState.isDragging,
+               let essence = essenceCoordinator.dragState.draggedEssence {
+                EssenceDragPreview(essence: essence)
+                    .position(
+                        x: essenceCoordinator.dragState.dragLocation.x + dragPreviewOffset.width,
+                        y: essenceCoordinator.dragState.dragLocation.y + dragPreviewOffset.height
+                    )
+                    .allowsHitTesting(false)
+                    .ignoresSafeArea()
+            }
+        }
+        .animation(.spring(response: 0.5, dampingFraction: 0.8), value: essenceCoordinator.isShowing)
+    }
+
+    @ViewBuilder
+    private var trayBackground: some View {
+        let cornerRadius = DeviceMetrics.sheetCornerRadius
+        if #available(iOS 26.0, *) {
+            RoundedRectangle(cornerRadius: cornerRadius)
+                .fill(.clear)
+                .glassEffect(.regular, in: RoundedRectangle(cornerRadius: cornerRadius))
+        } else {
+            RoundedRectangle(cornerRadius: cornerRadius)
+                .fill(.ultraThinMaterial)
+        }
+    }
+
+    // MARK: - Mock Sheet (for height comparison testing)
+
+    private var mockSheetContent: some View {
+        VStack(spacing: 16) {
+            Text("Mock Sheet")
+                .font(.headline)
+            Text("Compare this height with essence picker tray")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+            Spacer()
+        }
+        .padding()
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
 }
 
 #Preview {
     ContentView()
-        .environment(PetManager.mock())
+        .environment(PetManager.mock(withActivePets: false))
 }
