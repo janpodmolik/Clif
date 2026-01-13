@@ -109,6 +109,21 @@ struct HomeScreenDebugView: View {
         }
     }
 
+    private var debugPet: ActivePet {
+        ActivePet(
+            name: petName,
+            evolutionHistory: EvolutionHistory(
+                createdAt: Calendar.current.date(byAdding: .day, value: -streakCount, to: Date())!,
+                essence: currentEssence,
+                events: []
+            ),
+            purpose: purposeLabel,
+            windLevel: windLevel,
+            todayUsedMinutes: Int(usedMinutes),
+            dailyLimitMinutes: Int(limitMinutes)
+        )
+    }
+
     // MARK: - Body
 
     var body: some View {
@@ -181,22 +196,7 @@ struct HomeScreenDebugView: View {
             .navigationBarTitleDisplayMode(.inline)
         }
         .fullScreenCover(isPresented: $showPetDetail) {
-            PetActiveDetailScreen(
-                petName: petName,
-                evolutionHistory: EvolutionHistory(
-                    createdAt: Calendar.current.date(byAdding: .day, value: -streakCount, to: Date())!,
-                    essence: currentEssence,
-                    events: []
-                ),
-                totalDays: streakCount,
-                purposeLabel: purposeLabel,
-                windLevel: windLevel,
-                isBlownAway: isBlownAway,
-                todayUsedMinutes: Int(usedMinutes),
-                dailyLimitMinutes: Int(limitMinutes),
-                fullStats: .mock(days: streakCount),
-                limitedAppCount: 12
-            )
+            PetActiveDetailScreen(pet: debugPet)
         }
         .onAppear {
             windRhythm.start()

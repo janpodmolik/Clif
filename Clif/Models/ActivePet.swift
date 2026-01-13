@@ -2,18 +2,19 @@ import FamilyControls
 import Foundation
 import ManagedSettings
 
-struct ActivePet: Identifiable, Equatable, PetEvolvable {
+@Observable
+final class ActivePet: Identifiable, PetEvolvable {
     let id: UUID
     let name: String
-    let evolutionHistory: EvolutionHistory
+    private(set) var evolutionHistory: EvolutionHistory
     let purpose: String?
-    let windLevel: WindLevel
-    let todayUsedMinutes: Int
+    var windLevel: WindLevel
+    var todayUsedMinutes: Int
     let dailyLimitMinutes: Int
-    let dailyStats: [DailyUsageStat]
-    let appUsage: [AppUsage]
-    let applicationTokens: Set<ApplicationToken>
-    let categoryTokens: Set<ActivityCategoryToken>
+    var dailyStats: [DailyUsageStat]
+    var appUsage: [AppUsage]
+    var applicationTokens: Set<ApplicationToken>
+    var categoryTokens: Set<ActivityCategoryToken>
 
     var totalDays: Int { dailyStats.count }
 
@@ -61,6 +62,29 @@ struct ActivePet: Identifiable, Equatable, PetEvolvable {
         let remaining = nextEvolutionDay - daysSinceCreation
         return remaining > 0 ? remaining : nil
     }
+
+    // MARK: - Mutations
+
+    /// Applies essence to blob, transforming it to phase 1 of the evolution path.
+    func applyEssence(_ essence: Essence) {
+        guard isBlob else { return }
+        evolutionHistory.applyEssence(essence)
+    }
+
+    /// Evolves pet to the next phase.
+    func evolve() {
+        guard canEvolve else { return }
+        let nextPhase = evolutionHistory.currentPhase + 1
+        evolutionHistory.recordEvolution(to: nextPhase)
+    }
+
+    /// Marks pet as blown away.
+    func blowAway() {
+        guard !isBlown else { return }
+        evolutionHistory.markAsBlown()
+    }
+
+    // MARK: - Init
 
     init(
         id: UUID = UUID(),

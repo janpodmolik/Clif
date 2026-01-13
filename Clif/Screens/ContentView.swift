@@ -16,7 +16,7 @@ extension ButtonStyle where Self == PressableButtonStyle {
 enum AppTab: String, CaseIterable {
     case home = "Home"
     case overview = "Přehled"
-    case profile = "Profil"
+    case profile = "Profil" 
 
     var symbol: String {
         switch self {
@@ -220,4 +220,5 @@ struct ContentView: View {
 
 #Preview {
     ContentView()
+        .environment(PetManager.mock())
 }

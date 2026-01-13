@@ -69,6 +69,17 @@ struct PetActiveDetailScreenDebug: View {
         currentPhase < evolutionPath.maxPhases && !isBlownAway
     }
 
+    private var debugPet: ActivePet {
+        ActivePet(
+            name: petName,
+            evolutionHistory: evolutionHistory,
+            purpose: purposeLabel.isEmpty ? nil : purposeLabel,
+            windLevel: windLevel,
+            todayUsedMinutes: Int(todayUsedMinutes),
+            dailyLimitMinutes: Int(dailyLimitMinutes)
+        )
+    }
+
     // MARK: - Body
 
     var body: some View {
@@ -101,17 +112,7 @@ struct PetActiveDetailScreenDebug: View {
         }
         .fullScreenCover(isPresented: $showSheet) {
             PetActiveDetailScreen(
-                petName: petName,
-                evolutionHistory: evolutionHistory,
-                totalDays: totalDays,
-                purposeLabel: purposeLabel.isEmpty ? nil : purposeLabel,
-                windLevel: windLevel,
-                isBlownAway: isBlownAway,
-                todayUsedMinutes: Int(todayUsedMinutes),
-                dailyLimitMinutes: Int(dailyLimitMinutes),
-                fullStats: .mock(days: totalDays > 0 ? totalDays : 7),
-                limitedAppCount: 12,
-                onEvolve: { print("Evolve tapped") },
+                pet: debugPet,
                 onBlowAway: { print("Blow Away tapped") },
                 onReplay: { print("Replay tapped") },
                 onDelete: { print("Delete tapped") },

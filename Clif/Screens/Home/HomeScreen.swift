@@ -2,11 +2,14 @@ import SwiftUI
 
 /// Main home screen displaying the floating island scene with pet and status card.
 struct HomeScreen: View {
+    @Environment(PetManager.self) private var petManager
     @Environment(\.colorScheme) private var colorScheme
 
     /// Shared wind rhythm for synchronized effects between pet animation and wind lines
     @State private var windRhythm = WindRhythm()
     @State private var showPetDetail = false
+
+    private var pet: ActivePet? { petManager.currentPet }
 
     var body: some View {
         GeometryReader { geometry in
@@ -18,68 +21,40 @@ struct HomeScreen: View {
                     DayBackgroundView()
                 }
 
-                // Wind lines effect (scales with wind level)
-                // Wind area centered around pet (0.25-0.50 = matches PetDebugView)
-                WindLinesView(
-                    windLevel: .none,
-                    direction: 1.0,
-                    windAreaTop: 0.25,
-                    windAreaBottom: 0.50,
-                    windRhythm: windRhythm
-                )
+                if let pet {
+                    // Wind lines effect (scales with wind level)
+                    WindLinesView(
+                        windLevel: pet.windLevel,
+                        direction: 1.0,
+                        windAreaTop: 0.25,
+                        windAreaBottom: 0.50,
+                        windRhythm: windRhythm
+                    )
 
-                // Floating island with pet
-                FloatingIslandView(
-                    screenHeight: geometry.size.height,
-                    screenWidth: geometry.size.width,
-                    pet: Blob.shared,
-                    windLevel: .none,
-                    windDirection: 1.0,
-                    windRhythm: windRhythm
-                )
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
-                .ignoresSafeArea(.container, edges: .bottom)
+                    // Floating island with pet
+                    FloatingIslandView(
+                        screenHeight: geometry.size.height,
+                        screenWidth: geometry.size.width,
+                        pet: pet.phase ?? Blob.shared,
+                        windLevel: pet.windLevel,
+                        windDirection: 1.0,
+                        windRhythm: windRhythm
+                    )
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
+                    .ignoresSafeArea(.container, edges: .bottom)
 
-                // Home card
-                HomeCardContentView(
-                    streakCount: 7,
-                    usedTimeText: "32m",
-                    dailyLimitText: "2h",
-                    progress: 0.27,
-                    petName: "Blob",
-                    evolutionStage: 0,
-                    maxEvolutionStage: 4,
-                    mood: .happy,
-                    purposeLabel: "Social Media",
-                    isEvolutionAvailable: true,
-                    daysUntilEvolution: nil,
-                    isSaveEnabled: false,
-                    showDetailButton: true,
-                    isBlownAway: false,
-                    onDetailTapped: { showPetDetail = true }
-                )
-                .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 24))
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
-                .padding(16)
+                    // Home card
+                    homeCard(for: pet)
+                        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 24))
+                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
+                        .padding(16)
+                }
             }
         }
         .fullScreenCover(isPresented: $showPetDetail) {
-            PetActiveDetailScreen(
-                petName: "Blob",
-                evolutionHistory: EvolutionHistory(
-                    createdAt: Calendar.current.date(byAdding: .day, value: -7, to: Date())!,
-                    essence: nil,
-                    events: []
-                ),
-                totalDays: 7,
-                purposeLabel: "Social Media",
-                windLevel: .none,
-                isBlownAway: false,
-                todayUsedMinutes: 32,
-                dailyLimitMinutes: 120,
-                fullStats: .mock(days: 7),
-                limitedAppCount: 12
-            )
+            if let pet {
+                PetActiveDetailScreen(pet: pet)
+            }
         }
         .onAppear {
             windRhythm.start()
@@ -88,8 +63,42 @@ struct HomeScreen: View {
             windRhythm.stop()
         }
     }
+
+    private func homeCard(for pet: ActivePet) -> some View {
+        let progress = pet.dailyLimitMinutes > 0
+            ? Double(pet.todayUsedMinutes) / Double(pet.dailyLimitMinutes)
+            : 0
+
+        return HomeCardContentView(
+            streakCount: 7, // TODO: get from streak manager
+            usedTimeText: formatMinutes(pet.todayUsedMinutes),
+            dailyLimitText: formatMinutes(pet.dailyLimitMinutes),
+            progress: progress,
+            petName: pet.name,
+            evolutionStage: pet.currentPhase,
+            maxEvolutionStage: pet.evolutionHistory.maxPhase,
+            mood: Mood(from: pet.windLevel),
+            purposeLabel: pet.purpose,
+            isEvolutionAvailable: pet.isBlob ? pet.canUseEssence : pet.canEvolve,
+            daysUntilEvolution: pet.isBlob ? pet.daysUntilEssence : pet.daysUntilEvolution,
+            isSaveEnabled: false,
+            showDetailButton: true,
+            isBlownAway: pet.isBlown,
+            onDetailTapped: { showPetDetail = true }
+        )
+    }
+
+    private func formatMinutes(_ minutes: Int) -> String {
+        let hours = minutes / 60
+        let mins = minutes % 60
+        if hours > 0 {
+            return mins > 0 ? "\(hours)h \(mins)m" : "\(hours)h"
+        }
+        return "\(mins)m"
+    }
 }
 
 #Preview {
     HomeScreen()
+        .environment(PetManager.mock())
 }

@@ -57,18 +57,7 @@ struct OverviewScreen: View {
         }
         .fullScreenCover(item: $selectedActivePet) { pet in
             PetActiveDetailScreen(
-                petName: pet.name,
-                evolutionHistory: pet.evolutionHistory,
-                totalDays: pet.totalDays,
-                purposeLabel: pet.purpose,
-                windLevel: pet.windLevel,
-                isBlownAway: false,
-                todayUsedMinutes: pet.todayUsedMinutes,
-                dailyLimitMinutes: pet.dailyLimitMinutes,
-                fullStats: pet.fullStats,
-                limitedAppCount: pet.limitedAppCount,
-                canProgress: pet.isBlob ? pet.canUseEssence : pet.canEvolve,
-                daysUntilProgress: pet.isBlob ? pet.daysUntilEssence : pet.daysUntilEvolution,
+                pet: pet,
                 showOverviewActions: true,
                 onShowOnHomepage: {
                     selectedActivePet = nil
