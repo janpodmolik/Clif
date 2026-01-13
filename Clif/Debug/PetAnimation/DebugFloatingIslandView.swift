@@ -154,7 +154,6 @@ struct DebugFloatingIslandView: View {
                             petImageSize = newSize
                         }
                     }
-                    .scaleEffect(pet.displayScale, anchor: .bottom)
                     .petAnimation(
                         intensity: activeWindConfig.intensity,
                         direction: windDirection,
@@ -168,9 +167,14 @@ struct DebugFloatingIslandView: View {
                         screenWidth: screenWidth,
                         windRhythm: windRhythm,
                         onTransformUpdate: { transform in
-                            petTransform = transform
+                            petTransform = PetAnimationTransform(
+                                rotation: transform.rotation,
+                                swayOffset: transform.swayOffset * pet.displayScale,
+                                topOffset: transform.topOffset * pet.displayScale
+                            )
                         }
                     )
+                    .scaleEffect(pet.displayScale, anchor: .bottom)
                     .offset(x: blowAwayOffsetX)
                     .rotationEffect(.degrees(blowAwayRotation), anchor: .bottom)
                     .opacity(evolutionTransitionView == nil ? 1.0 : 0.0)

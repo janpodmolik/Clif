@@ -57,7 +57,6 @@ struct HistoryIslandView: View {
                         .resizable()
                         .scaledToFit()
                         .frame(height: scaledPetHeight)
-                        .scaleEffect(pet.displayScale, anchor: .bottom)
                         .petAnimation(
                             intensity: 0,
                             tapTime: movementTriggerTime,
@@ -66,6 +65,7 @@ struct HistoryIslandView: View {
                             idleConfig: idleConfig,
                             idlePhaseOffset: idlePhaseOffset
                         )
+                        .scaleEffect(pet.displayScale, anchor: .bottom)
                         .padding(.top, scaledPetHeight * 0.6)
                         .offset(y: petOffset)
                 }

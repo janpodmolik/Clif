@@ -85,7 +85,6 @@ struct FloatingIslandView: View {
                     .resizable()
                     .scaledToFit()
                     .frame(height: petHeight)
-                    .scaleEffect(pet.displayScale, anchor: .bottom)
                     .petAnimation(
                         intensity: windConfig.intensity,
                         direction: windDirection,
@@ -99,9 +98,14 @@ struct FloatingIslandView: View {
                         screenWidth: screenWidth,
                         windRhythm: windRhythm,
                         onTransformUpdate: { transform in
-                            petTransform = transform
+                            petTransform = PetAnimationTransform(
+                                rotation: transform.rotation,
+                                swayOffset: transform.swayOffset * pet.displayScale,
+                                topOffset: transform.topOffset * pet.displayScale
+                            )
                         }
                     )
+                    .scaleEffect(pet.displayScale, anchor: .bottom)
                     .onTapGesture {
                         triggerTap()
                     }
