@@ -144,7 +144,7 @@ struct PetActiveDetailScreenDebug: View {
                     HStack(spacing: 16) {
                         Label("Phase \(currentPhase)/\(evolutionPath.maxPhases)", systemImage: "sparkles")
                         Label("\(totalDays) days", systemImage: "calendar")
-                            .foregroundStyle(.orange)
+                            .foregroundStyle(.secondary)
                     }
                     .font(.subheadline)
                 }

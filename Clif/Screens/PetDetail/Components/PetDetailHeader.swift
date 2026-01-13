@@ -64,7 +64,7 @@ struct PetDetailHeader: View {
     private var daysBadge: some View {
         HStack(spacing: 6) {
             Image(systemName: "calendar")
-                .foregroundStyle(.orange)
+                .foregroundStyle(.secondary)
 
             Text("\(totalDays)")
                 .fontWeight(.semibold)
@@ -75,7 +75,7 @@ struct PetDetailHeader: View {
         .font(.subheadline)
         .padding(.horizontal, 12)
         .padding(.vertical, 8)
-        .background(Color.orange.opacity(0.15), in: Capsule())
+        .background(Color.secondary.opacity(0.15), in: Capsule())
     }
 }
 

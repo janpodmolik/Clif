@@ -40,8 +40,8 @@ struct PetHistoryGridItem: View {
 
                 HStack(spacing: 8) {
                     HStack(spacing: 2) {
-                        Image(systemName: "flame.fill")
-                            .foregroundStyle(.orange)
+                        Image(systemName: "calendar")
+                            .foregroundStyle(.secondary)
                         Text("\(pet.totalDays)")
                     }
 

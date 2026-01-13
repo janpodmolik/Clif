@@ -42,8 +42,8 @@ struct PetHistoryRow: View {
 
                     HStack(spacing: 12) {
                         HStack(spacing: 4) {
-                            Image(systemName: "flame.fill")
-                                .foregroundStyle(.orange)
+                            Image(systemName: "calendar")
+                                .foregroundStyle(.secondary)
                             Text("\(pet.totalDays) dní")
                         }
 

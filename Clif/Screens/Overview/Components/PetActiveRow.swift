@@ -35,7 +35,7 @@ struct PetActiveRow: View {
                     HStack(spacing: 12) {
                         HStack(spacing: 4) {
                             Image(systemName: "calendar")
-                                .foregroundStyle(.orange)
+                                .foregroundStyle(.green)
                             Text("\(pet.totalDays) dní")
                         }
 

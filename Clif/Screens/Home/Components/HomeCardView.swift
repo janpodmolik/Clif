@@ -106,8 +106,8 @@ struct HomeCardContentView: View {
 
     private var evolutionBadge: some View {
         HStack(spacing: 4) {
-            Image(systemName: "flame.fill")
-                .foregroundStyle(.orange)
+            Image(systemName: "calendar")
+                .foregroundStyle(.secondary)
             Text("\(streakCount)")
         }
         .font(.system(size: 14, weight: .semibold))
@@ -115,8 +115,8 @@ struct HomeCardContentView: View {
 
     private var streakBadge: some View {
         HStack(spacing: 4) {
-            Image(systemName: "flame.fill")
-                .foregroundStyle(.orange)
+            Image(systemName: "calendar")
+                .foregroundStyle(.secondary)
             Text("\(streakCount)")
         }
         .font(.system(size: 14, weight: .semibold))
