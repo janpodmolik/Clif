@@ -10,6 +10,7 @@ struct FloatingIslandView: View {
 
     /// Optional shared wind rhythm for synchronized effects with wind lines.
     var windRhythm: WindRhythm?
+    var onPetFrameChange: ((CGRect) -> Void)?
 
     init(
         screenHeight: CGFloat,
@@ -17,7 +18,8 @@ struct FloatingIslandView: View {
         pet: any PetDisplayable,
         windLevel: WindLevel,
         windDirection: CGFloat = 1.0,
-        windRhythm: WindRhythm? = nil
+        windRhythm: WindRhythm? = nil,
+        onPetFrameChange: ((CGRect) -> Void)? = nil
     ) {
         self.screenHeight = screenHeight
         self.screenWidth = screenWidth
@@ -25,6 +27,7 @@ struct FloatingIslandView: View {
         self.windLevel = windLevel
         self.windDirection = windDirection
         self.windRhythm = windRhythm
+        self.onPetFrameChange = onPetFrameChange
     }
 
     // Internal tap state
@@ -85,6 +88,15 @@ struct FloatingIslandView: View {
                     .resizable()
                     .scaledToFit()
                     .frame(height: petHeight)
+                    .background {
+                        GeometryReader { proxy in
+                            Color.clear
+                                .preference(
+                                    key: PetFramePreferenceKey.self,
+                                    value: proxy.frame(in: .global)
+                                )
+                        }
+                    }
                     .petAnimation(
                         intensity: windConfig.intensity,
                         direction: windDirection,
@@ -132,6 +144,9 @@ struct FloatingIslandView: View {
             .onChange(of: windLevel) { _, newValue in
                 speechBubbleState.updateMood(Mood(from: newValue))
             }
+            .onPreferenceChange(PetFramePreferenceKey.self) { frame in
+                onPetFrameChange?(frame)
+            }
         }
     }
 
@@ -151,6 +166,14 @@ struct FloatingIslandView: View {
 
         // Attempt to trigger speech bubble (30% chance)
         speechBubbleState.triggerOnTap(mood: currentMood)
+    }
+}
+
+private struct PetFramePreferenceKey: PreferenceKey {
+    static var defaultValue: CGRect = .zero
+
+    static func reduce(value: inout CGRect, nextValue: () -> CGRect) {
+        value = nextValue()
     }
 }
 

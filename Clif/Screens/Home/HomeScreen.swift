@@ -9,8 +9,13 @@ struct HomeScreen: View {
     @State private var windRhythm = WindRhythm()
     @State private var showPetDetail = false
     @State private var showEssencePicker = false
+    @State private var petFrame: CGRect = .zero
 
     private var pet: ActivePet? { petManager.currentPet }
+    private var petDropFrame: CGRect? {
+        guard petFrame != .zero else { return nil }
+        return petFrame.insetBy(dx: -40, dy: -40)
+    }
 
     var body: some View {
         GeometryReader { geometry in
@@ -39,7 +44,10 @@ struct HomeScreen: View {
                         pet: pet.phase ?? Blob.shared,
                         windLevel: pet.windLevel,
                         windDirection: 1.0,
-                        windRhythm: windRhythm
+                        windRhythm: windRhythm,
+                        onPetFrameChange: { frame in
+                            petFrame = frame
+                        }
                     )
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
                     .ignoresSafeArea(.container, edges: .bottom)
@@ -58,11 +66,18 @@ struct HomeScreen: View {
             }
         }
         .sheet(isPresented: $showEssencePicker) {
-            if let pet {
-                EssencePickerSheet { essence in
+            EssencePickerTray(
+                petDropFrame: petDropFrame,
+                onDropOnPet: { essence in
+                    guard let pet else { return }
                     pet.applyEssence(essence)
-                }
-            }
+                    showEssencePicker = false
+                },
+                onClose: { showEssencePicker = false }
+            )
+                .presentationDetents([.height(200)])
+                .presentationDragIndicator(.visible)
+                .presentationBackgroundInteraction(.enabled(upThrough: .height(200)))
         }
         .onAppear {
             windRhythm.start()
