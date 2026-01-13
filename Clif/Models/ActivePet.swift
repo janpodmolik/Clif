@@ -2,7 +2,7 @@ import FamilyControls
 import Foundation
 import ManagedSettings
 
-struct ActivePet: Identifiable, Equatable {
+struct ActivePet: Identifiable, Equatable, PetEvolvable {
     let id: UUID
     let name: String
     let evolutionHistory: EvolutionHistory
@@ -30,18 +30,33 @@ struct ActivePet: Identifiable, Equatable {
         FullUsageStats(days: dailyStats, dailyLimitMinutes: dailyLimitMinutes)
     }
 
-    var essence: Essence { evolutionHistory.essence }
-    var currentPhase: Int { evolutionHistory.currentPhase }
-    var canEvolve: Bool { evolutionHistory.canEvolve }
-
-    var daysUntilEvolution: Int? {
-        guard !evolutionHistory.canEvolve else { return nil }
-        let daysSinceCreation = Calendar.current.dateComponents(
+    /// Days since pet was created
+    private var daysSinceCreation: Int {
+        Calendar.current.dateComponents(
             [.day],
             from: evolutionHistory.createdAt,
             to: Date()
         ).day ?? 0
-        let daysPerPhase = 7
+    }
+
+    /// True if blob can use essence (at least 1 day old)
+    var canUseEssence: Bool {
+        guard isBlob else { return false }
+        return daysSinceCreation >= 1
+    }
+
+    /// Days until essence can be used (for blob pets)
+    var daysUntilEssence: Int? {
+        guard isBlob, !canUseEssence else { return nil }
+        let remaining = 1 - daysSinceCreation
+        return remaining > 0 ? remaining : nil
+    }
+
+    /// Days until next evolution (1 day per phase)
+    var daysUntilEvolution: Int? {
+        guard !evolutionHistory.canEvolve else { return nil }
+        guard !isBlob else { return nil }
+        let daysPerPhase = 1
         let nextEvolutionDay = evolutionHistory.currentPhase * daysPerPhase
         let remaining = nextEvolutionDay - daysSinceCreation
         return remaining > 0 ? remaining : nil
@@ -80,6 +95,7 @@ extension ActivePet {
     static func mock(
         name: String = "Fern",
         phase: Int = 2,
+        essence: Essence? = .plant,
         windLevel: WindLevel = .medium,
         todayUsedMinutes: Int = 45,
         dailyLimitMinutes: Int = 120,
@@ -90,9 +106,10 @@ extension ActivePet {
         let createdAt = calendar.date(byAdding: .day, value: -totalDays, to: Date()) ?? Date()
 
         var events: [EvolutionEvent] = []
-        if phase > 1 {
+        // Only create events if essence is set and phase > 1
+        if essence != nil, phase > 1 {
             for p in 2...phase {
-                let offset = p * 7 - totalDays
+                let offset = p - totalDays
                 let date = calendar.date(byAdding: .day, value: offset, to: Date()) ?? Date()
                 events.append(EvolutionEvent(fromPhase: p - 1, toPhase: p, date: date))
             }
@@ -111,7 +128,7 @@ extension ActivePet {
             name: name,
             evolutionHistory: EvolutionHistory(
                 createdAt: createdAt,
-                essence: .plant,
+                essence: essence,
                 events: events
             ),
             purpose: "Social Media",
@@ -120,6 +137,22 @@ extension ActivePet {
             dailyLimitMinutes: dailyLimitMinutes,
             dailyStats: dailyStats,
             appUsage: AppUsage.mockList(days: totalDays, petId: petId)
+        )
+    }
+
+    /// Mock blob pet (no essence yet)
+    static func mockBlob(
+        name: String = "Blobby",
+        canUseEssence: Bool = false,
+        windLevel: WindLevel = .low
+    ) -> ActivePet {
+        let totalDays = canUseEssence ? 2 : 0
+        return mock(
+            name: name,
+            phase: 0,
+            essence: nil,
+            windLevel: windLevel,
+            totalDays: totalDays
         )
     }
 

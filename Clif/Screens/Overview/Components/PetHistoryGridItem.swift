@@ -4,13 +4,8 @@ struct PetHistoryGridItem: View {
     let pet: ArchivedPet
     let onTap: () -> Void
 
-    private var assetName: String {
-        let mood: Mood = pet.isBlown ? .sad : .happy
-        return pet.phase?.assetName(for: mood) ?? pet.essence.assetName
-    }
-
-    private var displayScale: CGFloat {
-        pet.phase?.displayScale ?? 1.0
+    private var mood: Mood {
+        pet.isBlown ? .sad : .happy
     }
 
     private var shortDate: String {
@@ -35,11 +30,11 @@ struct PetHistoryGridItem: View {
                     }
                 }
 
-                Image(assetName)
+                Image(pet.assetName(for: mood))
                     .resizable()
                     .scaledToFit()
                     .frame(width: 56, height: 56)
-                    .scaleEffect(displayScale)
+                    .scaleEffect(pet.displayScale)
                     .opacity(pet.isBlown ? 0.5 : 1.0)
                     .padding(.vertical, 8)
 
@@ -73,7 +68,7 @@ struct PetHistoryGridItem: View {
                         .fill(.ultraThinMaterial)
                 } else {
                     RoundedRectangle(cornerRadius: 16)
-                        .fill(pet.essence.themeColor.opacity(0.15))
+                        .fill(pet.themeColor.opacity(0.15))
                         .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
                 }
             }

@@ -19,8 +19,9 @@ struct PetActiveDetailScreen: View {
     // MARK: - Limited Apps
     let limitedAppCount: Int
 
-    // MARK: - Evolution
-    var daysUntilEvolution: Int? = 1
+    // MARK: - Evolution & Essence
+    var canProgress: Bool = false      // canUseEssence for blob, canEvolve for evolved
+    var daysUntilProgress: Int? = nil  // daysUntilEssence for blob, daysUntilEvolution for evolved
 
     // MARK: - Context
     var showOverviewActions: Bool = false
@@ -32,15 +33,21 @@ struct PetActiveDetailScreen: View {
     var onDelete: () -> Void = {}
     var onLimitedApps: () -> Void = {}
     var onShowOnHomepage: () -> Void = {}
+    var onEssenceSelected: (Essence) -> Void = { _ in }
 
     @Environment(\.dismiss) private var dismiss
+    @State private var showEssencePicker = false
 
     private var mood: Mood {
         isBlownAway ? .blown : Mood(from: windLevel)
     }
 
-    private var canEvolve: Bool {
-        evolutionHistory.canEvolve && !isBlownAway
+    private var isBlob: Bool {
+        evolutionHistory.isBlob
+    }
+
+    private var themeColor: Color {
+        evolutionHistory.essence?.themeColor ?? .secondary
     }
 
     var body: some View {
@@ -69,14 +76,14 @@ struct PetActiveDetailScreen: View {
                         essence: evolutionHistory.essence,
                         mood: mood,
                         isBlownAway: isBlownAway,
-                        themeColor: evolutionHistory.essence.themeColor
+                        themeColor: themeColor
                     )
 
                     EvolutionTimelineView(
                         history: evolutionHistory,
                         blownAt: evolutionHistory.blownAt,
-                        canEvolve: canEvolve,
-                        daysUntilEvolution: daysUntilEvolution
+                        canEvolve: !isBlob && canProgress,
+                        daysUntilEvolution: isBlob ? nil : daysUntilProgress
                     )
 
                     UsageCard(stats: fullStats)
@@ -92,10 +99,11 @@ struct PetActiveDetailScreen: View {
                         overviewActions
                     } else {
                         PetDetailActions(
-                            canEvolve: canEvolve,
-                            daysUntilEvolution: daysUntilEvolution,
+                            isBlob: isBlob,
+                            canProgress: canProgress,
+                            daysUntilProgress: daysUntilProgress,
                             isBlownAway: isBlownAway,
-                            onEvolve: onEvolve,
+                            onProgress: isBlob ? { showEssencePicker = true } : onEvolve,
                             onBlowAway: onBlowAway,
                             onReplay: onReplay,
                             onDelete: onDelete
@@ -115,6 +123,11 @@ struct PetActiveDetailScreen: View {
                             .font(.system(size: 16))
                             .foregroundStyle(.secondary)
                     }
+                }
+            }
+            .sheet(isPresented: $showEssencePicker) {
+                EssencePickerSheet { essence in
+                    onEssenceSelected(essence)
                 }
             }
         }
@@ -152,10 +165,10 @@ struct PetActiveDetailScreen: View {
                     Text("Zobrazit")
                 }
                 .font(.subheadline.weight(.medium))
-                .foregroundStyle(evolutionHistory.essence.themeColor)
+                .foregroundStyle(themeColor)
                 .padding(.horizontal, 16)
                 .padding(.vertical, 10)
-                .background(evolutionHistory.essence.themeColor.opacity(0.15), in: Capsule())
+                .background(themeColor.opacity(0.15), in: Capsule())
             }
             .buttonStyle(.plain)
         }
@@ -301,6 +314,51 @@ struct PetActiveDetailScreen: View {
                 fullStats: .mock(days: 25),
                 limitedAppCount: 5,
                 showOverviewActions: true
+            )
+        }
+}
+
+#Preview("Blob - Day 1") {
+    Text("Tap to open")
+        .fullScreenCover(isPresented: .constant(true)) {
+            PetActiveDetailScreen(
+                petName: "Blobby",
+                evolutionHistory: EvolutionHistory(
+                    createdAt: Date(),
+                    essence: nil
+                ),
+                totalDays: 0,
+                purposeLabel: "Focus",
+                windLevel: .none,
+                isBlownAway: false,
+                todayUsedMinutes: 15,
+                dailyLimitMinutes: 120,
+                fullStats: .mock(days: 1),
+                limitedAppCount: 5,
+                canProgress: false,
+                daysUntilProgress: 1
+            )
+        }
+}
+
+#Preview("Blob - Ready for Essence") {
+    Text("Tap to open")
+        .fullScreenCover(isPresented: .constant(true)) {
+            PetActiveDetailScreen(
+                petName: "Blobby",
+                evolutionHistory: EvolutionHistory(
+                    createdAt: Calendar.current.date(byAdding: .day, value: -2, to: Date())!,
+                    essence: nil
+                ),
+                totalDays: 2,
+                purposeLabel: "Focus",
+                windLevel: .low,
+                isBlownAway: false,
+                todayUsedMinutes: 30,
+                dailyLimitMinutes: 120,
+                fullStats: .mock(days: 2),
+                limitedAppCount: 5,
+                canProgress: true
             )
         }
 }

@@ -67,7 +67,8 @@ struct OverviewScreen: View {
                 dailyLimitMinutes: pet.dailyLimitMinutes,
                 fullStats: pet.fullStats,
                 limitedAppCount: pet.limitedAppCount,
-                daysUntilEvolution: pet.daysUntilEvolution,
+                canProgress: pet.isBlob ? pet.canUseEssence : pet.canEvolve,
+                daysUntilProgress: pet.isBlob ? pet.daysUntilEssence : pet.daysUntilEvolution,
                 showOverviewActions: true,
                 onShowOnHomepage: {
                     selectedActivePet = nil

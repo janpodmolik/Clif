@@ -2,7 +2,7 @@ import SwiftUI
 
 struct EvolutionCarousel: View {
     let currentPhase: Int
-    let essence: Essence
+    let essence: Essence?
     let mood: Mood
     var isBlownAway: Bool = false
     var themeColor: Color = .green
@@ -12,12 +12,18 @@ struct EvolutionCarousel: View {
     private let cardWidth: CGFloat = 230
     private let cardHeight: CGFloat = 240
 
-    /// Total cards = 1 (origin) + maxPhase (evolution phases)
-    private var totalCards: Int { 1 + essence.maxPhases }
+    /// True if pet is still a blob (no essence)
+    private var isBlob: Bool { essence == nil }
+
+    /// Total cards = 1 for blob, or 1 (origin) + maxPhase (evolution phases) for evolved
+    private var totalCards: Int {
+        guard let essence else { return 1 }
+        return 1 + essence.maxPhases
+    }
 
     var body: some View {
         VStack(spacing: 16) {
-            Text("Evolution Path")
+            Text(isBlob ? "Awaiting Essence" : "Evolution Path")
                 .font(.headline)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.horizontal)
@@ -26,23 +32,27 @@ struct EvolutionCarousel: View {
 
             carousel
 
-            // Indicator dots
-            HStack(spacing: 8) {
-                ForEach(0..<totalCards, id: \.self) { index in
-                    Circle()
-                        .fill(dotColor(for: index))
-                        .frame(width: 8, height: 8)
-                        .scaleEffect(index == selectedIndex ? 1.5 : 1.0)
-                        .animation(.spring(response: 0.3), value: selectedIndex)
-                        .onTapGesture {
-                            withAnimation {
-                                selectedIndex = index
+            // Indicator dots (only show if more than 1 card)
+            if totalCards > 1 {
+                HStack(spacing: 8) {
+                    ForEach(0..<totalCards, id: \.self) { index in
+                        Circle()
+                            .fill(dotColor(for: index))
+                            .frame(width: 8, height: 8)
+                            .scaleEffect(index == selectedIndex ? 1.5 : 1.0)
+                            .animation(.spring(response: 0.3), value: selectedIndex)
+                            .onTapGesture {
+                                withAnimation {
+                                    selectedIndex = index
+                                }
                             }
-                        }
+                    }
                 }
+                .padding(.top)
+                .padding(.bottom, 20)
+            } else {
+                Spacer().frame(height: 20)
             }
-            .padding(.top)
-            .padding(.bottom, 20)
         }
         .task(id: currentPhase) {
             selectedIndex = currentPhase
@@ -101,9 +111,12 @@ struct EvolutionCarousel: View {
 
     @ViewBuilder
     private func cardView(for index: Int) -> some View {
-        if index == 0 {
+        if isBlob {
+            // Blob-only card (no essence yet)
+            BlobOnlyCard(mood: mood)
+        } else if index == 0, let essence {
             EvolutionOriginCard(essence: essence, mood: mood, themeColor: themeColor)
-        } else {
+        } else if let essence {
             EvolutionPhaseCard(
                 phase: index,
                 isCurrentPhase: index == currentPhase,
@@ -131,6 +144,46 @@ struct EvolutionCarousel: View {
 
         // Locked phases
         return Color.secondary.opacity(0.3)
+    }
+}
+
+// MARK: - Blob Only Card
+
+struct BlobOnlyCard: View {
+    let mood: Mood
+
+    var body: some View {
+        VStack(spacing: 12) {
+            Image(Blob.shared.assetName(for: mood))
+                .resizable()
+                .scaledToFit()
+                .frame(height: 140)
+
+            Text("Blob")
+                .font(.subheadline.weight(.semibold))
+
+            Text("Awaiting essence")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+        }
+        .padding()
+        .frame(maxWidth: .infinity)
+        .background(cardBackground)
+    }
+
+    @ViewBuilder
+    private var cardBackground: some View {
+        if #available(iOS 26.0, *) {
+            Color.clear
+                .glassEffect(
+                    .regular,
+                    in: RoundedRectangle(cornerRadius: 20)
+                )
+        } else {
+            RoundedRectangle(cornerRadius: 20)
+                .fill(Color.secondary.opacity(0.05))
+                .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 20))
+        }
     }
 }
 
@@ -326,6 +379,14 @@ struct EvolutionPhaseCard: View {
 #Preview {
     ScrollView {
         VStack(spacing: 20) {
+            Text("Blob (no essence)").font(.caption)
+            EvolutionCarousel(
+                currentPhase: 0,
+                essence: nil,
+                mood: .happy
+            )
+
+            Text("With essence - Phase 2").font(.caption)
             EvolutionCarousel(
                 currentPhase: 2,
                 essence: .plant,
@@ -333,6 +394,7 @@ struct EvolutionPhaseCard: View {
                 themeColor: .green
             )
 
+            Text("Blown away at Phase 1").font(.caption)
             EvolutionCarousel(
                 currentPhase: 1,
                 essence: .plant,
@@ -341,6 +403,7 @@ struct EvolutionPhaseCard: View {
                 themeColor: .green
             )
 
+            Text("Fully evolved - Phase 4").font(.caption)
             EvolutionCarousel(
                 currentPhase: 4,
                 essence: .plant,

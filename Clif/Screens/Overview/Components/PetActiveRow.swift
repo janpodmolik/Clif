@@ -4,14 +4,6 @@ struct PetActiveRow: View {
     let pet: ActivePet
     let onTap: () -> Void
 
-    private var assetName: String {
-        pet.essence.phase(at: pet.currentPhase)?.assetName(for: mood) ?? pet.essence.assetName
-    }
-
-    private var displayScale: CGFloat {
-        pet.essence.phase(at: pet.currentPhase)?.displayScale ?? 1.0
-    }
-
     private var mood: Mood {
         Mood(from: pet.windLevel)
     }
@@ -24,11 +16,11 @@ struct PetActiveRow: View {
     var body: some View {
         Button(action: onTap) {
             HStack(alignment: .center, spacing: 14) {
-                Image(assetName)
+                Image(pet.assetName(for: mood))
                     .resizable()
                     .scaledToFit()
                     .frame(width: 50, height: 50)
-                    .scaleEffect(displayScale)
+                    .scaleEffect(pet.displayScale)
 
                 VStack(alignment: .leading, spacing: 4) {
                     Text(pet.name)

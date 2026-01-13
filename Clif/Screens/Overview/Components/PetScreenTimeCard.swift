@@ -7,10 +7,6 @@ struct PetScreenTimeCard: View {
 
     @State private var selectedDay: DailyUsageStat?
 
-    private var assetName: String {
-        pet.essence.phase(at: pet.currentPhase)?.assetName(for: mood) ?? pet.essence.assetName
-    }
-
     private var mood: Mood {
         Mood(from: pet.windLevel)
     }
@@ -62,7 +58,7 @@ struct PetScreenTimeCard: View {
 
     private var headerSection: some View {
         HStack(spacing: 10) {
-            Image(assetName)
+            Image(pet.assetName(for: mood))
                 .resizable()
                 .scaledToFit()
                 .frame(width: 36, height: 36)

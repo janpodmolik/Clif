@@ -51,7 +51,7 @@ struct SearchSheet: View {
             }
 
             // Essence filter
-            if !filter.essenceFilter.contains(pet.essence) {
+            if let essence = pet.essence, !filter.essenceFilter.contains(essence) {
                 return false
             }
 

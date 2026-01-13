@@ -31,13 +31,6 @@ struct HistoryIslandView: View {
     // Offset to move content up so pet stays visible after clipping
     private var contentOffset: CGFloat { scaledIslandHeight * bottomClipFraction }
 
-    private var petAssetName: String {
-        pet.phase?.assetName(for: .happy) ?? pet.essence.assetName
-    }
-
-    private var displayScale: CGFloat {
-        pet.phase?.displayScale ?? 1.0
-    }
 
     private var idleConfig: IdleConfig {
         pet.phase?.idleConfig ?? .default
@@ -60,11 +53,11 @@ struct HistoryIslandView: View {
                         }
 
                     // Pet positioned on top of grass
-                    Image(petAssetName)
+                    Image(pet.assetName(for: .happy))
                         .resizable()
                         .scaledToFit()
                         .frame(height: scaledPetHeight)
-                        .scaleEffect(displayScale, anchor: .bottom)
+                        .scaleEffect(pet.displayScale, anchor: .bottom)
                         .petAnimation(
                             intensity: 0,
                             tapTime: movementTriggerTime,

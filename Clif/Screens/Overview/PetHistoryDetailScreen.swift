@@ -29,7 +29,7 @@ struct PetHistoryDetailScreen: View {
                         essence: pet.essence,
                         mood: mood,
                         isBlownAway: pet.isBlown,
-                        themeColor: pet.essence.themeColor
+                        themeColor: pet.themeColor
                     )
 
                     EvolutionTimelineView(
@@ -81,8 +81,13 @@ struct PetHistoryDetailScreen: View {
                     Image(systemName: "wind")
                         .font(.title2)
                         .foregroundStyle(.red)
+                } else if let essence = pet.essence {
+                    Image(essence.assetName)
+                        .resizable()
+                        .scaledToFit()
+                        .padding(8)
                 } else {
-                    Image(pet.essence.assetName)
+                    Image(Blob.shared.assetName(for: .happy))
                         .resizable()
                         .scaledToFit()
                         .padding(8)
@@ -103,7 +108,7 @@ struct PetHistoryDetailScreen: View {
             Spacer()
         }
         .padding()
-        .background(pet.isBlown ? Color.clear : pet.essence.themeColor.opacity(0.1))
+        .background(pet.isBlown ? Color.clear : pet.themeColor.opacity(0.1))
         .clipShape(RoundedRectangle(cornerRadius: 32))
         .glassCard()
     }
@@ -167,7 +172,7 @@ struct PetHistoryDetailScreen: View {
                         .fill(Color.secondary.opacity(0.2))
 
                     RoundedRectangle(cornerRadius: 4)
-                        .fill(pet.essence.themeColor)
+                        .fill(pet.themeColor)
                         .frame(width: geometry.size.width * usageProgress)
                 }
             }
@@ -187,7 +192,7 @@ struct PetHistoryDetailScreen: View {
         VStack(spacing: 8) {
             Image(systemName: icon)
                 .font(.title3)
-                .foregroundStyle(pet.essence.themeColor)
+                .foregroundStyle(pet.themeColor)
 
             Text(value)
                 .font(.subheadline)

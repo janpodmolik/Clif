@@ -1,10 +1,11 @@
 import SwiftUI
 
 struct PetDetailActions: View {
-    let canEvolve: Bool
-    let daysUntilEvolution: Int?
+    let isBlob: Bool
+    let canProgress: Bool       // canUseEssence for blob, canEvolve for evolved
+    let daysUntilProgress: Int? // daysUntilEssence for blob, daysUntilEvolution for evolved
     let isBlownAway: Bool
-    var onEvolve: () -> Void = {}
+    var onProgress: () -> Void = {}  // opens picker for blob, evolves for evolved
     var onBlowAway: () -> Void = {}
     var onReplay: () -> Void = {}
     var onDelete: () -> Void = {}
@@ -19,11 +20,7 @@ struct PetDetailActions: View {
 
     private var normalActions: some View {
         HStack(spacing: 16) {
-            if canEvolve {
-                evolveButton
-            } else if let days = daysUntilEvolution {
-                evolutionCountdownLabel(days: days)
-            }
+            progressSection
 
             Spacer()
 
@@ -33,32 +30,22 @@ struct PetDetailActions: View {
         .glassCard()
     }
 
-    private func evolutionCountdownLabel(days: Int) -> some View {
-        HStack(spacing: 6) {
-            Image(systemName: "sparkles")
-            Text(days == 1 ? "Evolve Tomorrow" : "Evolve in \(days) days")
+    @ViewBuilder
+    private var progressSection: some View {
+        if canProgress {
+            progressButton
+        } else if let days = daysUntilProgress {
+            countdownLabel(days: days)
+        } else {
+            countdownLabel(days: 1)
         }
-        .font(.subheadline.weight(.medium))
-        .foregroundStyle(.secondary)
     }
 
-    private var blownAwayActions: some View {
-        VStack(spacing: 12) {
-            HStack(spacing: 16) {
-                replayButton
-                Spacer()
-                deleteButton
-            }
-        }
-        .padding()
-        .glassCard()
-    }
-
-    private var evolveButton: some View {
-        Button(action: onEvolve) {
+    private var progressButton: some View {
+        Button(action: onProgress) {
             HStack(spacing: 8) {
-                Image(systemName: "sparkles")
-                Text("Evolve!")
+                Image(systemName: isBlob ? "leaf.fill" : "sparkles")
+                Text(isBlob ? "Use Essence" : "Evolve!")
             }
             .font(.headline)
             .foregroundStyle(.white)
@@ -74,6 +61,33 @@ struct PetDetailActions: View {
             )
         }
         .buttonStyle(.plain)
+    }
+
+    private func countdownLabel(days: Int) -> some View {
+        HStack(spacing: 6) {
+            Image(systemName: isBlob ? "leaf.fill" : "sparkles")
+            Text(countdownText(days: days))
+        }
+        .font(.subheadline.weight(.medium))
+        .foregroundStyle(.secondary)
+    }
+
+    private func countdownText(days: Int) -> String {
+        if isBlob {
+            return days == 1 ? "Ready for Essence Tomorrow" : "Ready for Essence in \(days) days"
+        } else {
+            return days == 1 ? "Evolve Tomorrow" : "Evolve in \(days) days"
+        }
+    }
+
+    private var blownAwayActions: some View {
+        HStack(spacing: 16) {
+            replayButton
+            Spacer()
+            deleteButton
+        }
+        .padding()
+        .glassCard()
     }
 
     private var blowAwayButton: some View {
@@ -124,31 +138,54 @@ struct PetDetailActions: View {
 
 #if DEBUG
 #Preview {
-    VStack(spacing: 20) {
-        PetDetailActions(
-            canEvolve: true,
-            daysUntilEvolution: nil,
-            isBlownAway: false
-        )
+    ScrollView {
+        VStack(spacing: 20) {
+            // Blob - waiting for essence
+            Text("Blob - Day 1").font(.caption)
+            PetDetailActions(
+                isBlob: true,
+                canProgress: false,
+                daysUntilProgress: 1,
+                isBlownAway: false
+            )
 
-        PetDetailActions(
-            canEvolve: false,
-            daysUntilEvolution: 1,
-            isBlownAway: false
-        )
+            // Blob - can use essence
+            Text("Blob - Ready for Essence").font(.caption)
+            PetDetailActions(
+                isBlob: true,
+                canProgress: true,
+                daysUntilProgress: nil,
+                isBlownAway: false
+            )
 
-        PetDetailActions(
-            canEvolve: false,
-            daysUntilEvolution: 3,
-            isBlownAway: false
-        )
+            // Evolved - can evolve
+            Text("Evolved - Can Evolve").font(.caption)
+            PetDetailActions(
+                isBlob: false,
+                canProgress: true,
+                daysUntilProgress: nil,
+                isBlownAway: false
+            )
 
-        PetDetailActions(
-            canEvolve: false,
-            daysUntilEvolution: nil,
-            isBlownAway: true
-        )
+            // Evolved - waiting
+            Text("Evolved - Waiting").font(.caption)
+            PetDetailActions(
+                isBlob: false,
+                canProgress: false,
+                daysUntilProgress: 1,
+                isBlownAway: false
+            )
+
+            // Blown away
+            Text("Blown Away").font(.caption)
+            PetDetailActions(
+                isBlob: false,
+                canProgress: false,
+                daysUntilProgress: nil,
+                isBlownAway: true
+            )
+        }
+        .padding()
     }
-    .padding()
 }
 #endif

@@ -18,31 +18,44 @@ struct EvolutionEvent: Codable, Identifiable, Equatable {
 /// Complete evolution history for a pet.
 struct EvolutionHistory: Codable, Equatable {
     let createdAt: Date
-    let essence: Essence
+    private(set) var essence: Essence?
     private(set) var events: [EvolutionEvent]
     private(set) var blownAt: Date?
 
+    /// True if pet is still a blob (no essence applied yet)
+    var isBlob: Bool {
+        essence == nil
+    }
+
+    /// Current phase: 0 for blob, 1+ for evolved pets
     var currentPhase: Int {
-        events.last?.toPhase ?? 1
+        guard essence != nil else { return 0 }
+        return events.last?.toPhase ?? 1
     }
 
     var maxPhase: Int {
-        essence.maxPhases
+        essence?.maxPhases ?? 0
     }
 
     var canEvolve: Bool {
-        currentPhase < maxPhase
+        guard !isBlob, !isBlown else { return false }
+        return currentPhase < maxPhase
     }
 
     var isBlown: Bool {
         blownAt != nil
     }
 
-    init(createdAt: Date = Date(), essence: Essence, events: [EvolutionEvent] = [], blownAt: Date? = nil) {
+    init(createdAt: Date = Date(), essence: Essence? = nil, events: [EvolutionEvent] = [], blownAt: Date? = nil) {
         self.createdAt = createdAt
         self.essence = essence
         self.events = events
         self.blownAt = blownAt
+    }
+
+    mutating func applyEssence(_ essence: Essence) {
+        guard self.essence == nil else { return }
+        self.essence = essence
     }
 
     mutating func recordEvolution(to phase: Int) {

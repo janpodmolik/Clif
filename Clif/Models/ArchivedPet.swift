@@ -1,6 +1,6 @@
 import Foundation
 
-struct ArchivedPet: Codable, Identifiable, Equatable {
+struct ArchivedPet: Codable, Identifiable, Equatable, PetEvolvable {
     let id: UUID
     let name: String
     let evolutionHistory: EvolutionHistory
@@ -11,10 +11,11 @@ struct ArchivedPet: Codable, Identifiable, Equatable {
     let dailyStats: [DailyUsageStat]
     let appUsage: [AppUsage]
 
-    var isBlown: Bool { evolutionHistory.isBlown }
-    var finalPhase: Int { evolutionHistory.currentPhase }
-    var essence: Essence { evolutionHistory.essence }
-    var phase: EvolutionPhase? { essence.phase(at: finalPhase) }
+    /// Alias for currentPhase - the phase when pet was archived
+    var finalPhase: Int { currentPhase }
+
+    /// The evolution phase data for the final phase
+    var phase: EvolutionPhase? { essence?.phase(at: finalPhase) }
 
     /// Returns last 7 days of stats for chart display, or all if less than 7.
     var weeklyStats: WeeklyUsageStats {
