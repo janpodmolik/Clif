@@ -12,29 +12,6 @@ private enum DragPortalSheetLayout {
     static let dragHandleTouchExtensionAbove: CGFloat = 60
 }
 
-// MARK: - Excluded Drag Zones
-
-private struct ExcludedDragZonesKey: PreferenceKey {
-    static var defaultValue: [CGRect] = []
-    static func reduce(value: inout [CGRect], nextValue: () -> [CGRect]) {
-        value.append(contentsOf: nextValue())
-    }
-}
-
-extension View {
-    /// Marks this view as excluded from sheet dismiss drag gesture
-    func excludeFromSheetDrag() -> some View {
-        self.background(
-            GeometryReader { geo in
-                Color.clear.preference(
-                    key: ExcludedDragZonesKey.self,
-                    value: [geo.frame(in: .named("sheetTray"))]
-                )
-            }
-        )
-    }
-}
-
 private enum DragPortalSheetDismiss {
     static let minDragDistance: CGFloat = 5
     static let dragThreshold: CGFloat = 100
@@ -57,8 +34,6 @@ struct DragPortalSheet<Content: View, Overlay: View>: View {
     @ViewBuilder var overlay: () -> Overlay
 
     @State private var stretchOffset: CGFloat = 0
-    @State private var excludedZones: [CGRect] = []
-    @State private var dragStartLocation: CGPoint?
 
     var body: some View {
         ZStack(alignment: .bottom) {
@@ -86,15 +61,11 @@ struct DragPortalSheet<Content: View, Overlay: View>: View {
                             Color.clear.frame(height: stretchOffset)
                         }
                     }
-                    .coordinateSpace(name: "sheetTray")
                     .background(trayBackground)
                     .contentShape(Rectangle())
                     .gesture(dismissDragGesture)
                     .overlay(alignment: .top) {
                         aboveTrayGestureArea
-                    }
-                    .onPreferenceChange(ExcludedDragZonesKey.self) { zones in
-                        excludedZones = zones
                     }
                     .offset(y: dismissDragOffset)
                     .padding(.horizontal, DragPortalSheetLayout.trayInset)
@@ -133,24 +104,9 @@ struct DragPortalSheet<Content: View, Overlay: View>: View {
             .gesture(dismissDragGesture)
     }
 
-    private func isPointInExcludedZone(_ point: CGPoint) -> Bool {
-        excludedZones.contains { $0.contains(point) }
-    }
-
     private var dismissDragGesture: some Gesture {
-        DragGesture(minimumDistance: DragPortalSheetDismiss.minDragDistance, coordinateSpace: .named("sheetTray"))
+        DragGesture(minimumDistance: DragPortalSheetDismiss.minDragDistance)
             .onChanged { value in
-                // Check if drag started in excluded zone (only on first change)
-                if dragStartLocation == nil {
-                    dragStartLocation = value.startLocation
-                    if isPointInExcludedZone(value.startLocation) {
-                        return
-                    }
-                }
-
-                // Ignore if started in excluded zone
-                guard let startLoc = dragStartLocation, !isPointInExcludedZone(startLoc) else { return }
-
                 let translation = value.translation.height
                 if translation >= 0 {
                     // Dragging down - dismiss behavior
@@ -164,11 +120,6 @@ struct DragPortalSheet<Content: View, Overlay: View>: View {
                 }
             }
             .onEnded { value in
-                defer { dragStartLocation = nil }
-
-                // Ignore if started in excluded zone
-                guard let startLoc = dragStartLocation, !isPointInExcludedZone(startLoc) else { return }
-
                 let translation = value.translation.height
                 let velocity = value.velocity.height
                 let predictedEnd = value.predictedEndTranslation.height
