@@ -63,17 +63,13 @@ struct EssencePickerOverlay: View {
         .animation(.interactiveSpring(response: 0.3, dampingFraction: 0.8), value: coordinator.dismissDragOffset)
     }
 
-    @ViewBuilder
     private var dragHandleArea: some View {
-        VStack(spacing: 0) {
-            Capsule()
-                .fill(Color.secondary.opacity(0.4))
-                .frame(width: Layout.dragHandleWidth, height: Layout.dragHandleHeight)
-        }
-        .frame(height: Layout.dragHandleAreaHeight)
-        .frame(maxWidth: .infinity)
-        .contentShape(Rectangle())
-        .gesture(dismissDragGesture)
+        Capsule()
+            .fill(.secondary.opacity(0.4))
+            .frame(width: Layout.dragHandleWidth, height: Layout.dragHandleHeight)
+            .frame(maxWidth: .infinity, maxHeight: Layout.dragHandleAreaHeight)
+            .contentShape(Rectangle())
+            .gesture(dismissDragGesture)
     }
 
     private var dismissDragGesture: some Gesture {
@@ -105,14 +101,11 @@ struct EssencePickerOverlay: View {
 
     @ViewBuilder
     private var trayBackground: some View {
-        let cornerRadius = DeviceMetrics.sheetCornerRadius
+        let shape = RoundedRectangle(cornerRadius: DeviceMetrics.sheetCornerRadius)
         if #available(iOS 26.0, *) {
-            RoundedRectangle(cornerRadius: cornerRadius)
-                .fill(.clear)
-                .glassEffect(.regular, in: RoundedRectangle(cornerRadius: cornerRadius))
+            Color.clear.glassEffect(.regular, in: shape)
         } else {
-            RoundedRectangle(cornerRadius: cornerRadius)
-                .fill(.ultraThinMaterial)
+            shape.fill(.ultraThinMaterial)
         }
     }
 }
