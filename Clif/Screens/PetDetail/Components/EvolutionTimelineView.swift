@@ -24,7 +24,7 @@ struct EvolutionTimelineView: View {
 
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 0) {
-                    ForEach(1...history.maxPhase, id: \.self) { phase in
+                    ForEach(Array(1...max(1, history.maxPhase)), id: \.self) { phase in
                         HStack(spacing: 0) {
                             milestoneItem(phase: phase)
 

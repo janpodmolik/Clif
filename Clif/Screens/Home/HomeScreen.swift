@@ -11,11 +11,15 @@ struct HomeScreen: View {
     @State private var showPetDetail = false
     @State private var petFrame: CGRect = .zero
 
+    private let homeCardInset: CGFloat = 16
+
     private var pet: ActivePet? { petManager.currentPet }
     private var petDropFrame: CGRect? {
         guard petFrame != .zero else { return nil }
         return petFrame.insetBy(dx: -40, dy: -40)
     }
+
+    private let homeCardCornerRadius: CGFloat = 24
 
     var body: some View {
         GeometryReader { geometry in
@@ -54,9 +58,9 @@ struct HomeScreen: View {
 
                     // Home card
                     homeCard(for: pet)
-                        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 24))
+                        .modifier(HomeCardBackgroundModifier(cornerRadius: homeCardCornerRadius))
                         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
-                        .padding(16)
+                        .padding(homeCardInset)
                 }
             }
         }
@@ -118,6 +122,22 @@ struct HomeScreen: View {
             return mins > 0 ? "\(hours)h \(mins)m" : "\(hours)h"
         }
         return "\(mins)m"
+    }
+}
+
+// MARK: - HomeCardBackgroundModifier
+
+/// Applies background with sheet-style corner radius for visual consistency
+private struct HomeCardBackgroundModifier: ViewModifier {
+    let cornerRadius: CGFloat
+
+    func body(content: Content) -> some View {
+        // Use consistent corner radius across all iOS versions
+        // ConcentricRectangle doesn't work well here because the card is inside safe area
+        content.background(
+            .ultraThinMaterial,
+            in: RoundedRectangle(cornerRadius: cornerRadius)
+        )
     }
 }
 

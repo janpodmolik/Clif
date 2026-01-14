@@ -62,6 +62,7 @@ struct DragPortalSheet<Content: View, Overlay: View>: View {
                         }
                     }
                     .background(trayBackground)
+                    .clipShape(trayClipShape)
                     .contentShape(Rectangle())
                     .gesture(dismissDragGesture)
                     .overlay(alignment: .top) {
@@ -85,7 +86,7 @@ struct DragPortalSheet<Content: View, Overlay: View>: View {
     /// Visual drag handle indicator (no gesture)
     private var dragHandleIndicator: some View {
         Capsule()
-            .fill(.secondary.opacity(0.4))
+            .fill(.secondary.opacity(0.6))
             .frame(width: DragPortalSheetLayout.dragHandleWidth, height: DragPortalSheetLayout.dragHandleHeight)
             .padding(.top, DragPortalSheetLayout.dragHandleTopPadding)
             .padding(.bottom, DragPortalSheetLayout.dragHandleBottomPadding)
@@ -144,13 +145,18 @@ struct DragPortalSheet<Content: View, Overlay: View>: View {
             }
     }
 
+    private var trayClipShape: RoundedRectangle {
+        RoundedRectangle(cornerRadius: DeviceMetrics.concentricCornerRadius(inset: DragPortalSheetLayout.trayInset))
+    }
+
     @ViewBuilder
     private var trayBackground: some View {
-        let shape = RoundedRectangle(cornerRadius: DeviceMetrics.sheetCornerRadius)
         if #available(iOS 26.0, *) {
-            Color.clear.glassEffect(.regular, in: shape)
+            // ConcentricRectangle automatically calculates correct radius based on distance from screen edge
+            Color.clear.glassEffect(.regular, in: ConcentricRectangle(corners: .concentric(minimum: 12), isUniform: true))
         } else {
-            shape.fill(.ultraThinMaterial)
+            // Manual calculation for iOS < 26
+            trayClipShape.fill(.ultraThinMaterial)
         }
     }
 

@@ -53,15 +53,6 @@ struct EssencePicker: View {
     private var topSection: some View {
         VStack(spacing: 16) {
             HStack(spacing: 16) {
-                // Close button
-                Button {
-                    coordinator.dismiss()
-                } label: {
-                    Image(systemName: "xmark.circle.fill")
-                        .font(.title2)
-                        .foregroundStyle(.secondary)
-                }
-
                 // Info section
                 VStack(alignment: .leading, spacing: 4) {
                     if let path = selectedPath {
@@ -150,7 +141,7 @@ struct EssencePicker: View {
 private enum CardStyle {
     static let imageSize: CGFloat = 60
     static let padding: CGFloat = 12
-    static let cornerRadius: CGFloat = 16
+    static let cornerRadius: CGFloat = 32
 
     static let glassTintOpacity: CGFloat = 0.15
     static let fillOpacity: CGFloat = 0.1

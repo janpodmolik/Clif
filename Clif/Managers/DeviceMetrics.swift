@@ -22,14 +22,25 @@ enum DeviceMetrics {
     /// Corner radius for sheet-style overlays (slightly less than display for concentricity).
     /// Subtracts the typical sheet inset (10pt) from device corners.
     static var sheetCornerRadius: CGFloat {
+        concentricCornerRadius(inset: 10)
+    }
+
+    /// Calculates a concentric corner radius for elements inset from the screen edge.
+    ///
+    /// Use this for iOS < 26 to manually achieve the concentricity effect.
+    /// The inner radius is calculated as: outerRadius - inset (clamped to minimum).
+    ///
+    /// - Parameters:
+    ///   - inset: Distance from the screen edge in points
+    ///   - minimum: Minimum corner radius (default: 12pt)
+    /// - Returns: The concentric corner radius for the inner element
+    static func concentricCornerRadius(inset: CGFloat, minimum: CGFloat = 12) -> CGFloat {
         let deviceRadius = displayCornerRadius
         guard deviceRadius > 0 else {
             // Fallback for devices without rounded corners
-            return 20
+            return minimum
         }
-        // Sheet is inset ~10pt from screen edges, so corner radius should be smaller
-        // to maintain concentricity with device corners
-        return max(deviceRadius - 10, 20)
+        return max(deviceRadius - inset, minimum)
     }
 }
 
