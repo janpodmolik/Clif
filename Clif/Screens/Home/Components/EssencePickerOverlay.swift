@@ -13,9 +13,10 @@ struct EssencePickerOverlay: View {
     }
 
     private enum Dismiss {
-        static let minDragDistance: CGFloat = 10
+        static let minDragDistance: CGFloat = 5
         static let dragThreshold: CGFloat = 100
-        static let velocityThreshold: CGFloat = 300
+        static let velocityThreshold: CGFloat = 800  // pt/s - native iOS uses ~800-1000
+        static let predictedThreshold: CGFloat = 200 // predicted overshoot for flick detection
     }
 
     var body: some View {
@@ -82,13 +83,19 @@ struct EssencePickerOverlay: View {
                 coordinator.dismissDragOffset = translation
             }
             .onEnded { value in
-                let currentY = value.translation.height
-                let velocity = value.predictedEndTranslation.height - currentY
+                let translation = value.translation.height
+                let velocity = value.velocity.height
+                let predictedEnd = value.predictedEndTranslation.height
 
-                let draggedPastThreshold = currentY > Dismiss.dragThreshold
-                let fastSwipeDetected = velocity > Dismiss.velocityThreshold
+                // Native iOS sheet dismiss conditions:
+                // 1. Dragged past threshold (user intent clear from distance)
+                // 2. Fast downward flick (velocity-based)
+                // 3. Predicted end would be far enough (momentum carry)
+                let draggedPastThreshold = translation > Dismiss.dragThreshold
+                let fastFlick = velocity > Dismiss.velocityThreshold
+                let momentumDismiss = predictedEnd > Dismiss.predictedThreshold && translation > 20
 
-                if draggedPastThreshold || fastSwipeDetected {
+                if draggedPastThreshold || fastFlick || momentumDismiss {
                     coordinator.dismiss()
                 } else {
                     coordinator.dismissDragOffset = 0
