@@ -30,6 +30,8 @@ struct DragPortalSheet<Content: View, Overlay: View>: View {
     @ViewBuilder var content: () -> Content
     @ViewBuilder var overlay: () -> Overlay
 
+    @State private var stretchOffset: CGFloat = 0
+
     var body: some View {
         ZStack(alignment: .bottom) {
             if isPresented {
@@ -41,17 +43,27 @@ struct DragPortalSheet<Content: View, Overlay: View>: View {
                     }
                     .ignoresSafeArea()
 
-                // Tray with drag handle
-                VStack(spacing: 0) {
-                    dragHandleArea
+                // Tray container - fixed to bottom
+                VStack {
+                    Spacer()
 
-                    content()
-                        .contentShape(Rectangle())
+                    // Tray with drag handle
+                    VStack(spacing: 0) {
+                        dragHandleArea
+
+                        content()
+                            .contentShape(Rectangle())
+
+                        // Stretch space for rubber band effect
+                        if stretchOffset > 0 {
+                            Color.clear.frame(height: stretchOffset)
+                        }
+                    }
+                    .background(trayBackground)
+                    .offset(y: dismissDragOffset)
+                    .padding(.horizontal, DragPortalSheetLayout.trayInset)
+                    .padding(.bottom, DragPortalSheetLayout.trayInset)
                 }
-                .background(trayBackground)
-                .padding(.horizontal, DragPortalSheetLayout.trayInset)
-                .padding(.bottom, DragPortalSheetLayout.trayInset)
-                .offset(y: dismissDragOffset)
                 .transition(.move(edge: .bottom))
             }
 
@@ -75,22 +87,39 @@ struct DragPortalSheet<Content: View, Overlay: View>: View {
     private var dismissDragGesture: some Gesture {
         DragGesture(minimumDistance: DragPortalSheetDismiss.minDragDistance)
             .onChanged { value in
-                let translation = max(0, value.translation.height)
-                dismissDragOffset = translation
+                let translation = value.translation.height
+                if translation >= 0 {
+                    // Dragging down - dismiss behavior
+                    dismissDragOffset = translation
+                    stretchOffset = 0
+                } else {
+                    // Dragging up - rubber band stretch
+                    let resistance: CGFloat = 0.3
+                    stretchOffset = -translation * resistance
+                    dismissDragOffset = 0
+                }
             }
             .onEnded { value in
                 let translation = value.translation.height
                 let velocity = value.velocity.height
                 let predictedEnd = value.predictedEndTranslation.height
 
-                let draggedPastThreshold = translation > DragPortalSheetDismiss.dragThreshold
-                let fastFlick = velocity > DragPortalSheetDismiss.velocityThreshold
-                let momentumDismiss = predictedEnd > DragPortalSheetDismiss.predictedThreshold && translation > 20
+                if translation >= 0 {
+                    // Was dragging down - check for dismiss
+                    let draggedPastThreshold = translation > DragPortalSheetDismiss.dragThreshold
+                    let fastFlick = velocity > DragPortalSheetDismiss.velocityThreshold
+                    let momentumDismiss = predictedEnd > DragPortalSheetDismiss.predictedThreshold && translation > 20
 
-                if draggedPastThreshold || fastFlick || momentumDismiss {
-                    dismiss()
+                    if draggedPastThreshold || fastFlick || momentumDismiss {
+                        dismiss()
+                    } else {
+                        dismissDragOffset = 0
+                    }
                 } else {
-                    dismissDragOffset = 0
+                    // Was dragging up - spring back
+                    withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                        stretchOffset = 0
+                    }
                 }
             }
     }
