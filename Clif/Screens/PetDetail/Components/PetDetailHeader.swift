@@ -6,6 +6,7 @@ struct PetDetailHeader: View {
     let totalDays: Int
     let evolutionPhase: Int
     let purposeLabel: String?
+    var createdAt: Date? = nil
 
     private var moodEmoji: String {
         switch mood {
@@ -16,8 +17,16 @@ struct PetDetailHeader: View {
         }
     }
 
+    private var formattedCreatedAt: String? {
+        guard let createdAt else { return nil }
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "cs_CZ")
+        formatter.setLocalizedDateFormatFromTemplate("d. MMMM yyyy")
+        return formatter.string(from: createdAt)
+    }
+
     var body: some View {
-        HStack(alignment: .center) {
+        HStack(alignment: .top) {
             VStack(alignment: .leading, spacing: 4) {
                 HStack(spacing: 8) {
                     Text(petName)
@@ -31,6 +40,12 @@ struct PetDetailHeader: View {
                     Text(purposeLabel)
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
+                }
+
+                if let formattedCreatedAt {
+                    Text("Od \(formattedCreatedAt)")
+                        .font(.caption)
+                        .foregroundStyle(.tertiary)
                 }
             }
 
@@ -89,15 +104,17 @@ struct PetDetailHeader: View {
             mood: .happy,
             totalDays: 12,
             evolutionPhase: 2,
-            purposeLabel: "Social Media"
+            purposeLabel: "Social Media",
+            createdAt: Calendar.current.date(byAdding: .day, value: -12, to: Date())
         )
 
         PetDetailHeader(
             petName: "Bloom",
             mood: .sad,
-            totalDays: 3,
-            evolutionPhase: 4,
-            purposeLabel: nil
+            totalDays: 1,
+            evolutionPhase: 0,
+            purposeLabel: nil,
+            createdAt: Calendar.current.date(byAdding: .day, value: -3, to: Date())
         )
     }
     .padding()

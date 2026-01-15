@@ -14,15 +14,23 @@ struct PetArchivedDetailScreen: View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 20) {
-                    summaryCard
+                    ArchiveStatusCard(
+                        isBlown: pet.isBlown,
+                        archivedAt: pet.archivedAt
+                    )
 
                     PetDetailHeader(
                         petName: pet.name,
                         mood: mood,
                         totalDays: pet.totalDays,
                         evolutionPhase: pet.finalPhase,
-                        purposeLabel: pet.purpose
+                        purposeLabel: pet.purpose,
+                        createdAt: pet.evolutionHistory.createdAt
                     )
+
+                    if pet.essence != nil {
+                        EssenceInfoCard(evolutionHistory: pet.evolutionHistory)
+                    }
 
                     EvolutionCarousel(
                         pet: pet,
@@ -69,52 +77,6 @@ struct PetArchivedDetailScreen: View {
                 }
             }
         }
-    }
-
-    private var summaryCard: some View {
-        HStack(spacing: 16) {
-            Group {
-                if pet.isBlown {
-                    Image(systemName: "wind")
-                        .font(.title2)
-                        .foregroundStyle(.red)
-                } else if let essence = pet.essence {
-                    Image(essence.assetName)
-                        .resizable()
-                        .scaledToFit()
-                        .padding(8)
-                } else {
-                    Image(Blob.shared.assetName(for: .happy))
-                        .resizable()
-                        .scaledToFit()
-                        .padding(8)
-                }
-            }
-            .frame(width: 44, height: 44)
-            .background(.ultraThinMaterial, in: Circle())
-
-            VStack(alignment: .leading, spacing: 4) {
-                Text(pet.isBlown ? "Odfouknut" : "Plně evolvován")
-                    .font(.headline)
-
-                Text(formatDate(pet.archivedAt))
-                    .font(.subheadline)
-                    .foregroundStyle(.primary)
-            }
-
-            Spacer()
-        }
-        .padding()
-        .background(pet.isBlown ? Color.clear : pet.themeColor.opacity(0.1))
-        .clipShape(RoundedRectangle(cornerRadius: 32))
-        .glassCard()
-    }
-
-    private func formatDate(_ date: Date) -> String {
-        let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "cs_CZ")
-        formatter.setLocalizedDateFormatFromTemplate("d. MMMM yyyy")
-        return formatter.string(from: date)
     }
 
     // MARK: - Limit Stats Card

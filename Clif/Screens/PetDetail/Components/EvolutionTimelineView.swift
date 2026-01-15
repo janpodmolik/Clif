@@ -24,6 +24,11 @@ struct EvolutionTimelineView: View {
 
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 0) {
+                    // Birth milestone
+                    birthMilestone
+                    connectorLine(isUnlocked: true)
+
+                    // Evolution phases
                     ForEach(Array(1...max(1, history.maxPhase)), id: \.self) { phase in
                         HStack(spacing: 0) {
                             milestoneItem(phase: phase)
@@ -92,6 +97,19 @@ struct EvolutionTimelineView: View {
         .foregroundStyle(.red)
     }
 
+    private var birthMilestone: some View {
+        VStack(spacing: 4) {
+            Image(systemName: "play.circle.fill")
+                .font(.system(size: 32))
+                .foregroundStyle(.primary.opacity(0.5))
+
+            Text(shortDateFormatter.string(from: history.createdAt))
+                .font(.caption2)
+                .foregroundStyle(.secondary)
+        }
+        .frame(minWidth: 50)
+    }
+
     private func milestoneItem(phase: Int) -> some View {
         let isUnlocked = phase <= history.currentPhase
         let isCurrent = phase == history.currentPhase
@@ -147,9 +165,9 @@ struct EvolutionTimelineView: View {
         if isCurrent {
             return isBlown ? .red : .green
         } else if isUnlocked {
-            return .primary.opacity(0.6)
+            return .primary.opacity(0.5)
         } else {
-            return Color.secondary.opacity(0.2)
+            return .secondary
         }
     }
 }

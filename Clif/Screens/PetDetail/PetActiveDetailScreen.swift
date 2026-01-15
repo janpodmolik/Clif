@@ -52,8 +52,17 @@ struct PetActiveDetailScreen: View {
                         mood: mood,
                         totalDays: pet.totalDays,
                         evolutionPhase: pet.currentPhase,
-                        purposeLabel: pet.purpose
+                        purposeLabel: pet.purpose,
+                        createdAt: pet.evolutionHistory.createdAt
                     )
+
+                    if pet.isBlob {
+                        NoEssenceCard {
+                            // TODO: Navigate to inventory
+                        }
+                    } else {
+                        EssenceInfoCard(evolutionHistory: pet.evolutionHistory)
+                    }
 
                     EvolutionCarousel(
                         pet: pet,
