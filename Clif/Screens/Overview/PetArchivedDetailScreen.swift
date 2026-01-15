@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct PetHistoryDetailScreen: View {
+struct PetArchivedDetailScreen: View {
     let pet: ArchivedPet
 
     @Environment(\.dismiss) private var dismiss
@@ -25,11 +25,8 @@ struct PetHistoryDetailScreen: View {
                     )
 
                     EvolutionCarousel(
-                        currentPhase: pet.finalPhase,
-                        essence: pet.essence,
-                        mood: mood,
-                        isBlownAway: pet.isBlown,
-                        themeColor: pet.themeColor
+                        pet: pet,
+                        mood: mood
                     )
 
                     EvolutionTimelineView(
@@ -296,11 +293,11 @@ struct AppUsageDetailSheet: View {
 }
 
 #Preview {
-    PetHistoryDetailScreen(pet: .mock(name: "Fern", phase: 4, isBlown: false))
+    PetArchivedDetailScreen(pet: .mock(name: "Fern", phase: 4, isBlown: false))
 }
 
 #Preview("Blown Pet") {
-    PetHistoryDetailScreen(pet: .mock(name: "Sprout", phase: 2, isBlown: true))
+    PetArchivedDetailScreen(pet: .mock(name: "Sprout", phase: 2, isBlown: true))
 }
 
 #Preview("App Usage Sheet") {

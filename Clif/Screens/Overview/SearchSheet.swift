@@ -107,7 +107,7 @@ struct SearchSheet: View {
             filterSheet(for: type)
         }
         .fullScreenCover(item: $selectedPet) { pet in
-            PetHistoryDetailScreen(pet: pet)
+            PetArchivedDetailScreen(pet: pet)
         }
     }
 

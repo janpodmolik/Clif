@@ -1,25 +1,23 @@
 import SwiftUI
 
-struct EvolutionCarousel: View {
-    let currentPhase: Int
-    let essence: Essence?
+struct EvolutionCarousel<Pet: PetEvolvable>: View {
+    let pet: Pet
     let mood: Mood
-    var isBlownAway: Bool = false
-    var themeColor: Color = .green
+    var canUseEssence: Bool = false
 
     @State private var selectedIndex: Int = 0
     @State private var scrollTarget: Int?
     private let cardWidth: CGFloat = 230
     private let cardHeight: CGFloat = 240
 
-    /// True if pet is still a blob (no essence)
-    private var isBlob: Bool { essence == nil }
+    // MARK: - Convenience from PetEvolvable
 
-    /// Evolution path for current essence
-    private var evolutionPath: EvolutionPath? {
-        guard let essence else { return nil }
-        return EvolutionPath.path(for: essence)
-    }
+    private var currentPhase: Int { pet.currentPhase }
+    private var essence: Essence? { pet.essence }
+    private var isBlob: Bool { pet.isBlob }
+    private var isBlownAway: Bool { pet.isBlown }
+    private var themeColor: Color { pet.themeColor }
+    private var evolutionPath: EvolutionPath? { pet.evolutionPath }
 
     /// Total cards = 1 for blob, or 1 (origin) + maxPhase (evolution phases) for evolved
     private var totalCards: Int {
@@ -29,7 +27,7 @@ struct EvolutionCarousel: View {
 
     var body: some View {
         VStack(spacing: 16) {
-            Text(isBlob ? "Awaiting Essence" : "Evolution Path")
+            Text("Evolution Path")
                 .font(.headline)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.horizontal)
@@ -73,53 +71,68 @@ struct EvolutionCarousel: View {
         }
     }
 
+    @ViewBuilder
     private var carousel: some View {
-        GeometryReader { proxy in
-            let horizontalInset = max(0, (proxy.size.width - cardWidth) / 2)
-            ScrollView(.horizontal) {
-                HStack(spacing: 0) {
-                    ForEach(0..<totalCards, id: \.self) { index in
-                        cardView(for: index)
-                            .frame(width: cardWidth, height: cardHeight)
-                            .scrollTransition(.interactive, axis: .horizontal) { content, phase in
-                                content
-                                    .rotation3DEffect(
-                                        .degrees(phase.value * -32),
-                                        axis: (x: 0, y: 1, z: 0),
-                                        perspective: 0.7
-                                    )
-                                    .scaleEffect(1 - abs(phase.value) * 0.18)
-                                    .opacity(1 - abs(phase.value) * 0.35)
-                                    .offset(y: abs(phase.value) * 18)
-                            }
-                            .shadow(
-                                color: .black.opacity(0.12),
-                                radius: 12,
-                                x: 0,
-                                y: 10
-                            )
-                            .id(index)
+        if isBlob {
+            // Single centered card for blob - no scrolling needed
+            cardView(for: 0)
+                .frame(width: cardWidth, height: cardHeight)
+                .shadow(
+                    color: .black.opacity(0.12),
+                    radius: 12,
+                    x: 0,
+                    y: 10
+                )
+                .frame(maxWidth: .infinity)
+                .frame(height: cardHeight + 24)
+        } else {
+            GeometryReader { proxy in
+                let horizontalInset = max(0, (proxy.size.width - cardWidth) / 2)
+                ScrollView(.horizontal) {
+                    HStack(spacing: 0) {
+                        ForEach(0..<totalCards, id: \.self) { index in
+                            cardView(for: index)
+                                .frame(width: cardWidth, height: cardHeight)
+                                .scrollTransition(.interactive, axis: .horizontal) { content, phase in
+                                    content
+                                        .rotation3DEffect(
+                                            .degrees(phase.value * -32),
+                                            axis: (x: 0, y: 1, z: 0),
+                                            perspective: 0.7
+                                        )
+                                        .scaleEffect(1 - abs(phase.value) * 0.18)
+                                        .opacity(1 - abs(phase.value) * 0.35)
+                                        .offset(y: abs(phase.value) * 18)
+                                }
+                                .shadow(
+                                    color: .black.opacity(0.12),
+                                    radius: 12,
+                                    x: 0,
+                                    y: 10
+                                )
+                                .id(index)
+                        }
                     }
+                    .scrollTargetLayout()
                 }
-                .scrollTargetLayout()
+                .scrollIndicators(.hidden)
+                .scrollTargetBehavior(.viewAligned)
+                .scrollPosition(id: $scrollTarget, anchor: .center)
+                .defaultScrollAnchor(.center)
+                .scrollClipDisabled()
+                .padding(.top, 4)
+                .contentMargins(.horizontal, horizontalInset, for: .scrollContent)
+                .frame(height: cardHeight + 24)
             }
-            .scrollIndicators(.hidden)
-            .scrollTargetBehavior(.viewAligned)
-            .scrollPosition(id: $scrollTarget, anchor: .center)
-            .defaultScrollAnchor(.center)
-            .scrollClipDisabled()
-            .padding(.top, 4)
-            .contentMargins(.horizontal, horizontalInset, for: .scrollContent)
             .frame(height: cardHeight + 24)
         }
-        .frame(height: cardHeight + 24)
     }
 
     @ViewBuilder
     private func cardView(for index: Int) -> some View {
         if isBlob {
             // Blob-only card (no essence yet)
-            BlobOnlyCard(mood: mood)
+            BlobOnlyCard(mood: mood, canUseEssence: canUseEssence)
         } else if index == 0, let essence, let path = evolutionPath {
             EvolutionOriginCard(essence: essence, path: path, mood: mood, themeColor: themeColor)
         } else if let path = evolutionPath {
@@ -157,6 +170,7 @@ struct EvolutionCarousel: View {
 
 struct BlobOnlyCard: View {
     let mood: Mood
+    var canUseEssence: Bool = false
 
     var body: some View {
         VStack(spacing: 12) {
@@ -168,13 +182,27 @@ struct BlobOnlyCard: View {
             Text("Blob")
                 .font(.subheadline.weight(.semibold))
 
-            Text("Awaiting essence")
-                .font(.caption)
-                .foregroundStyle(.secondary)
+            statusBadge
         }
         .padding()
         .frame(maxWidth: .infinity)
         .background(cardBackground)
+    }
+
+    @ViewBuilder
+    private var statusBadge: some View {
+        if canUseEssence {
+            Text("Ready for Essence")
+                .font(.caption2.weight(.medium))
+                .foregroundStyle(.white)
+                .padding(.horizontal, 10)
+                .padding(.vertical, 4)
+                .background(Color.green, in: Capsule())
+        } else {
+            Text("Awaiting essence")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+        }
     }
 
     @ViewBuilder
@@ -388,34 +416,33 @@ struct EvolutionPhaseCard: View {
         VStack(spacing: 20) {
             Text("Blob (no essence)").font(.caption)
             EvolutionCarousel(
-                currentPhase: 0,
-                essence: nil,
+                pet: ArchivedPet.mockBlob(),
                 mood: .happy
+            )
+
+            Text("Blob - Ready for Essence").font(.caption)
+            EvolutionCarousel(
+                pet: ArchivedPet.mockBlob(),
+                mood: .happy,
+                canUseEssence: true
             )
 
             Text("With essence - Phase 2").font(.caption)
             EvolutionCarousel(
-                currentPhase: 2,
-                essence: .plant,
-                mood: .happy,
-                themeColor: .green
+                pet: ArchivedPet.mock(phase: 2),
+                mood: .happy
             )
 
             Text("Blown away at Phase 1").font(.caption)
             EvolutionCarousel(
-                currentPhase: 1,
-                essence: .plant,
-                mood: .sad,
-                isBlownAway: true,
-                themeColor: .green
+                pet: ArchivedPet.mock(phase: 1, isBlown: true),
+                mood: .sad
             )
 
             Text("Fully evolved - Phase 4").font(.caption)
             EvolutionCarousel(
-                currentPhase: 4,
-                essence: .plant,
-                mood: .neutral,
-                themeColor: .green
+                pet: ArchivedPet.mock(phase: 4),
+                mood: .neutral
             )
         }
         .padding()

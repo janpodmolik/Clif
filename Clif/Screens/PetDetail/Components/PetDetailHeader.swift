@@ -37,7 +37,9 @@ struct PetDetailHeader: View {
             Spacer()
 
             VStack(alignment: .trailing, spacing: 8) {
-                evolutionBadge
+                if evolutionPhase > 0 {
+                    evolutionBadge
+                }
                 daysBadge
             }
         }

@@ -123,6 +123,25 @@ extension ArchivedPet {
             .mock(name: "Leaf", phase: 1, isBlown: true, daysAgo: 5, totalDays: 2)
         ]
     }
+
+    /// Creates a mock blob (no essence) for preview purposes
+    static func mockBlob(name: String = "Blobby", totalDays: Int = 3) -> ArchivedPet {
+        let petId = UUID()
+        let calendar = Calendar.current
+        let createdAt = calendar.date(byAdding: .day, value: -totalDays, to: Date()) ?? Date()
+
+        return ArchivedPet(
+            id: petId,
+            name: name,
+            evolutionHistory: EvolutionHistory(createdAt: createdAt, essence: nil, events: []),
+            purpose: nil,
+            archivedAt: Date(),
+            totalDays: totalDays,
+            dailyLimitMinutes: 60,
+            dailyStats: [],
+            appUsage: []
+        )
+    }
 }
 
 // MARK: - Archiving from ActivePet

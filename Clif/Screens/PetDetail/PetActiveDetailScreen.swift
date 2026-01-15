@@ -56,23 +56,25 @@ struct PetActiveDetailScreen: View {
                     )
 
                     EvolutionCarousel(
-                        currentPhase: pet.currentPhase,
-                        essence: pet.essence,
+                        pet: pet,
                         mood: mood,
-                        isBlownAway: pet.isBlown,
-                        themeColor: themeColor
+                        canUseEssence: pet.canUseEssence
                     )
 
-                    EvolutionTimelineView(
-                        history: pet.evolutionHistory,
-                        blownAt: pet.evolutionHistory.blownAt,
-                        canEvolve: !pet.isBlob && canProgress,
-                        daysUntilEvolution: pet.isBlob ? nil : daysUntilProgress
-                    )
+                    if !pet.isBlob {
+                        EvolutionTimelineView(
+                            history: pet.evolutionHistory,
+                            blownAt: pet.evolutionHistory.blownAt,
+                            canEvolve: canProgress,
+                            daysUntilEvolution: daysUntilProgress
+                        )
+                    }
 
                     UsageCard(stats: pet.fullStats)
 
-                    TrendMiniChart(stats: pet.fullStats)
+                    if pet.totalDays > 1 {
+                        TrendMiniChart(stats: pet.fullStats)
+                    }
 
                     LimitedAppsBadge(
                         appCount: pet.limitedAppCount,
