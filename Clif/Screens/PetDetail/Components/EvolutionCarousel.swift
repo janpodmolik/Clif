@@ -15,7 +15,6 @@ struct EvolutionCarousel<Pet: PetEvolvable>: View {
     private var currentPhase: Int { pet.currentPhase }
     private var essence: Essence? { pet.essence }
     private var isBlob: Bool { pet.isBlob }
-    private var isBlownAway: Bool { pet.isBlown }
     private var themeColor: Color { pet.themeColor }
     private var evolutionPath: EvolutionPath? { pet.evolutionPath }
 
@@ -47,7 +46,7 @@ struct EvolutionCarousel<Pet: PetEvolvable>: View {
                             .animation(.spring(response: 0.3), value: selectedIndex)
                             .onTapGesture {
                                 withAnimation {
-                                    selectedIndex = index
+                                    scrollTarget = index
                                 }
                             }
                     }
@@ -142,7 +141,6 @@ struct EvolutionCarousel<Pet: PetEvolvable>: View {
                 isLocked: index > currentPhase,
                 evolutionPath: path,
                 mood: mood,
-                isBlownAway: isBlownAway,
                 themeColor: themeColor
             )
         }
@@ -150,11 +148,6 @@ struct EvolutionCarousel<Pet: PetEvolvable>: View {
 
     private func dotColor(for index: Int) -> Color {
         let phase = index // phase number = index (origin is 0, phases are 1+)
-
-        // Current phase when blown away = red
-        if phase == currentPhase && isBlownAway {
-            return .red
-        }
 
         // All unlocked phases (including origin) use themeColor
         if phase <= currentPhase {
@@ -305,7 +298,6 @@ struct EvolutionPhaseCard: View {
     let isLocked: Bool
     let evolutionPath: EvolutionPath
     let mood: Mood
-    var isBlownAway: Bool = false
     var themeColor: Color = .green
 
     var body: some View {
@@ -351,14 +343,7 @@ struct EvolutionPhaseCard: View {
 
     @ViewBuilder
     private var statusBadge: some View {
-        if isBlownAway && isCurrentPhase {
-            Text("Blown")
-                .font(.caption2.weight(.medium))
-                .foregroundStyle(.white)
-                .padding(.horizontal, 10)
-                .padding(.vertical, 4)
-                .background(Color.red, in: Capsule())
-        } else if isCurrentPhase {
+        if isCurrentPhase {
             Text("Current")
                 .font(.caption2.weight(.medium))
                 .foregroundStyle(.white)
@@ -403,10 +388,7 @@ struct EvolutionPhaseCard: View {
     }
 
     private var cardTintColor: Color {
-        if isCurrentPhase && isBlownAway {
-            return .red
-        }
-        return themeColor
+        themeColor
     }
 }
 
