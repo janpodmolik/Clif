@@ -14,18 +14,15 @@ struct PetArchivedDetailScreen: View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 20) {
-                    ArchiveStatusCard(
-                        isBlown: pet.isBlown,
-                        archivedAt: pet.archivedAt
-                    )
-
-                    PetDetailHeader(
+                    ArchivedPetHeaderCard(
                         petName: pet.name,
                         mood: mood,
                         totalDays: pet.totalDays,
                         evolutionPhase: pet.finalPhase,
                         purposeLabel: pet.purpose,
-                        createdAt: pet.evolutionHistory.createdAt
+                        createdAt: pet.evolutionHistory.createdAt,
+                        isBlown: pet.isBlown,
+                        archivedAt: pet.archivedAt
                     )
 
                     if pet.essence != nil {
@@ -34,21 +31,27 @@ struct PetArchivedDetailScreen: View {
 
                     EvolutionCarousel(
                         pet: pet,
-                        mood: mood
+                        mood: mood,
+                        showCurrentBadge: false
                     )
 
                     EvolutionTimelineView(
                         history: pet.evolutionHistory,
-                        blownAt: pet.evolutionHistory.blownAt,
                         canEvolve: false,
-                        daysUntilEvolution: nil
+                        daysUntilEvolution: nil,
+                        showPulse: false
                     )
 
                     UsageCard(stats: pet.fullStats)
 
                     TrendMiniChart(stats: pet.fullStats)
 
-                    limitStatsCard
+                    LimitStatsCard(
+                        dailyLimitMinutes: pet.dailyLimitMinutes,
+                        dailyStats: pet.dailyStats,
+                        totalDays: pet.totalDays,
+                        themeColor: pet.themeColor
+                    )
 
                     LimitedAppsBadge(appCount: pet.appUsage.count) {
                         showAppUsageSheet = true
@@ -79,99 +82,6 @@ struct PetArchivedDetailScreen: View {
         }
     }
 
-    // MARK: - Limit Stats Card
-
-    private var totalMinutesUsed: Int {
-        pet.dailyStats.reduce(0) { $0 + $1.totalMinutes }
-    }
-
-    private var totalLimitMinutes: Int {
-        pet.dailyLimitMinutes * pet.totalDays
-    }
-
-    private var averageDailyMinutes: Int {
-        guard pet.totalDays > 0 else { return 0 }
-        return totalMinutesUsed / pet.totalDays
-    }
-
-    private var usageProgress: Double {
-        guard totalLimitMinutes > 0 else { return 0 }
-        return min(Double(totalMinutesUsed) / Double(totalLimitMinutes), 1.0)
-    }
-
-    private var limitStatsCard: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Text("Tvůj limit")
-                .font(.headline)
-
-            HStack(spacing: 12) {
-                limitStatItem(
-                    title: "Denní limit",
-                    value: formatMinutes(pet.dailyLimitMinutes),
-                    icon: "clock.fill"
-                )
-
-                limitStatItem(
-                    title: "Průměr/den",
-                    value: formatMinutes(averageDailyMinutes),
-                    icon: "chart.bar.fill"
-                )
-
-                limitStatItem(
-                    title: "Aktivních dní",
-                    value: "\(pet.totalDays)",
-                    icon: "calendar"
-                )
-            }
-
-            // Progress bar
-            GeometryReader { geometry in
-                ZStack(alignment: .leading) {
-                    RoundedRectangle(cornerRadius: 4)
-                        .fill(Color.secondary.opacity(0.2))
-
-                    RoundedRectangle(cornerRadius: 4)
-                        .fill(pet.themeColor)
-                        .frame(width: geometry.size.width * usageProgress)
-                }
-            }
-            .frame(height: 8)
-
-            Text("Celkem jsi využil **\(formatMinutes(totalMinutesUsed))** z \(formatMinutes(totalLimitMinutes))")
-                .font(.caption2)
-                .foregroundStyle(.secondary)
-                .frame(maxWidth: .infinity, alignment: .center)
-        }
-        .padding()
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .glassCard()
-    }
-
-    private func limitStatItem(title: String, value: String, icon: String) -> some View {
-        VStack(spacing: 8) {
-            Image(systemName: icon)
-                .font(.title3)
-                .foregroundStyle(pet.themeColor)
-
-            Text(value)
-                .font(.subheadline)
-                .fontWeight(.semibold)
-
-            Text(title)
-                .font(.caption2)
-                .foregroundStyle(.secondary)
-        }
-        .frame(maxWidth: .infinity)
-    }
-
-    private func formatMinutes(_ minutes: Int) -> String {
-        let h = minutes / 60
-        let m = minutes % 60
-        if h > 0 {
-            return m > 0 ? "\(h)h \(m)m" : "\(h)h"
-        }
-        return "\(m)m"
-    }
 }
 
 // MARK: - App Usage Detail Sheet

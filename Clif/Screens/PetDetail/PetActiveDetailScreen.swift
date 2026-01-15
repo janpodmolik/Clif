@@ -73,7 +73,6 @@ struct PetActiveDetailScreen: View {
                     if !pet.isBlob {
                         EvolutionTimelineView(
                             history: pet.evolutionHistory,
-                            blownAt: pet.evolutionHistory.blownAt,
                             canEvolve: canProgress,
                             daysUntilEvolution: daysUntilProgress
                         )
@@ -212,7 +211,7 @@ struct PetActiveDetailScreen: View {
         PetActiveDetailScreenDebug()
     }
 }
-#endif
+
 
 
 #Preview("Full Screen Modal") {
@@ -235,4 +234,4 @@ struct PetActiveDetailScreen: View {
             PetActiveDetailScreen(pet: .mockBlob(name: "Blobby", canUseEssence: true))
         }
 }
-
+#endif

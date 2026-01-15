@@ -2,13 +2,11 @@ import SwiftUI
 
 struct EvolutionTimelineView: View {
     let history: EvolutionHistory
-    var blownAt: Date? = nil
     var canEvolve: Bool = false
     var daysUntilEvolution: Int? = nil
+    var showPulse: Bool = true
 
     @State private var isPulsing = false
-
-    private var isBlown: Bool { blownAt != nil }
 
     private let shortDateFormatter: DateFormatter = {
         let f = DateFormatter()
@@ -43,14 +41,8 @@ struct EvolutionTimelineView: View {
             }
             .contentMargins(.horizontal, 16, for: .scrollContent)
 
-            Group {
-                if let blownAt {
-                    blownAwayLabel(date: blownAt)
-                } else {
-                    evolutionStatusLabel
-                }
-            }
-            .padding(.horizontal)
+            evolutionStatusLabel
+                .padding(.horizontal)
         }
         .padding(.vertical)
         .glassCard()
@@ -85,18 +77,6 @@ struct EvolutionTimelineView: View {
         }
     }
 
-    private func blownAwayLabel(date: Date) -> some View {
-        HStack(spacing: 6) {
-            Image(systemName: "wind")
-            Text("Blown away")
-                .fontWeight(.medium)
-            Text(shortDateFormatter.string(from: date))
-                .foregroundStyle(.secondary)
-        }
-        .font(.caption)
-        .foregroundStyle(.red)
-    }
-
     private var birthMilestone: some View {
         VStack(spacing: 4) {
             Image(systemName: "play.circle.fill")
@@ -122,10 +102,9 @@ struct EvolutionTimelineView: View {
                     .fill(circleColor(isUnlocked: isUnlocked, isCurrent: isCurrent))
                     .frame(width: 32, height: 32)
 
-                if isCurrent {
-                    let pulseColor: Color = isBlown ? .red : .green
+                if isCurrent && showPulse {
                     Circle()
-                        .stroke(pulseColor.opacity(isPulsing ? 0.0 : 0.5), lineWidth: 2)
+                        .stroke(Color.green.opacity(isPulsing ? 0.0 : 0.5), lineWidth: 2)
                         .frame(width: 32, height: 32)
                         .scaleEffect(isPulsing ? 1.5 : 1.0)
                         .animation(
@@ -163,7 +142,7 @@ struct EvolutionTimelineView: View {
 
     private func circleColor(isUnlocked: Bool, isCurrent: Bool) -> Color {
         if isCurrent {
-            return isBlown ? .red : .green
+            return .green
         } else if isUnlocked {
             return .primary.opacity(0.5)
         } else {

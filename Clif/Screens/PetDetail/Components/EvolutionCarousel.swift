@@ -4,6 +4,7 @@ struct EvolutionCarousel<Pet: PetEvolvable>: View {
     let pet: Pet
     let mood: Mood
     var canUseEssence: Bool = false
+    var showCurrentBadge: Bool = true
 
     @State private var selectedIndex: Int = 0
     @State private var scrollTarget: Int?
@@ -141,7 +142,8 @@ struct EvolutionCarousel<Pet: PetEvolvable>: View {
                 isLocked: index > currentPhase,
                 evolutionPath: path,
                 mood: mood,
-                themeColor: themeColor
+                themeColor: themeColor,
+                showCurrentBadge: showCurrentBadge
             )
         }
     }
@@ -299,6 +301,7 @@ struct EvolutionPhaseCard: View {
     let evolutionPath: EvolutionPath
     let mood: Mood
     var themeColor: Color = .green
+    var showCurrentBadge: Bool = true
 
     var body: some View {
         VStack(spacing: 12) {
@@ -343,7 +346,7 @@ struct EvolutionPhaseCard: View {
 
     @ViewBuilder
     private var statusBadge: some View {
-        if isCurrentPhase {
+        if isCurrentPhase && showCurrentBadge {
             Text("Current")
                 .font(.caption2.weight(.medium))
                 .foregroundStyle(.white)
