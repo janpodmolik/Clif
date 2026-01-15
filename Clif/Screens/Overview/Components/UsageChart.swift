@@ -68,6 +68,7 @@ struct UsageChart<Stats: UsageStatsProtocol>: View {
                             .id(index)
                     }
                 }
+                .frame(minWidth: UIScreen.main.bounds.width - 32)
             }
             .contentMargins(.horizontal, 16, for: .scrollContent)
             .frame(height: totalHeight)
@@ -140,7 +141,7 @@ struct UsageChart<Stats: UsageStatsProtocol>: View {
                 dayLabel(for: day.date, isToday: isToday)
             }
         }
-        .frame(maxWidth: scrollable ? barWidth : .infinity)
+        .frame(minWidth: scrollable ? barWidth : nil, maxWidth: .infinity)
     }
 
     private func dayLabel(for date: Date, isToday: Bool) -> some View {

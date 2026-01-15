@@ -198,7 +198,7 @@ struct PetActiveDetailScreen: View {
 }
 
 #if DEBUG
-#Preview {
+#Preview("PetActiveDetailDebug") {
     NavigationStack {
         PetActiveDetailScreenDebug()
     }

@@ -69,6 +69,18 @@ struct PetActiveDetailScreenDebug: View {
         currentPhase < evolutionPath.maxPhases && !isBlownAway
     }
 
+    private var dailyStats: [DailyUsageStat] {
+        let calendar = Calendar.current
+        let today = calendar.startOfDay(for: Date())
+        let petId = UUID()
+
+        return (0..<totalDays).map { dayOffset in
+            let date = calendar.date(byAdding: .day, value: -(totalDays - 1) + dayOffset, to: today)!
+            let minutes = Int.random(in: 20...Int(dailyLimitMinutes + 30))
+            return DailyUsageStat(petId: petId, date: date, totalMinutes: minutes)
+        }
+    }
+
     private var debugPet: ActivePet {
         ActivePet(
             name: petName,
@@ -76,7 +88,8 @@ struct PetActiveDetailScreenDebug: View {
             purpose: purposeLabel.isEmpty ? nil : purposeLabel,
             windLevel: windLevel,
             todayUsedMinutes: Int(todayUsedMinutes),
-            dailyLimitMinutes: Int(dailyLimitMinutes)
+            dailyLimitMinutes: Int(dailyLimitMinutes),
+            dailyStats: dailyStats
         )
     }
 

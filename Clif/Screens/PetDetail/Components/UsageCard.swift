@@ -33,6 +33,7 @@ struct UsageCard: View {
             UsageChart(
                 stats: displayedStats,
                 scrollable: isScrollable,
+                showDateLabel: true,
                 onDayTap: { day in
                     selectedDay = day
                 }
