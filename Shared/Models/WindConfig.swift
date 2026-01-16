@@ -1,51 +1,61 @@
 import Foundation
 
-/// Configuration for wind effect parameters at a specific wind level.
+/// Configuration for wind effect parameters based on usage progress.
 struct WindConfig: Equatable {
     let intensity: CGFloat
     let bendCurve: CGFloat
     let swayAmount: CGFloat
     let rotationAmount: CGFloat
 
-    /// No wind effect - completely still
-    static let none = WindConfig(
-        intensity: 0,
-        bendCurve: 2.0,
-        swayAmount: 0,
-        rotationAmount: 0
-    )
+    // MARK: - Interpolation Bounds
 
-    /// Low wind - gentle breeze
-    static let low = WindConfig(
-        intensity: 0.5,
-        bendCurve: 2.5,
-        swayAmount: 4.9,
-        rotationAmount: 1.0
-    )
+    /// Maximum wind config values (at 100% progress)
+    /// These define the "strong wind" behavior - can be tuned per evolution in the future
+    static let maxIntensity: CGFloat = 2.0
+    static let maxBendCurve: CGFloat = 3.0
+    static let maxSwayAmount: CGFloat = 11.0
+    static let maxRotationAmount: CGFloat = 0.8
 
-    /// Medium wind - moderate movement
-    static let medium = WindConfig(
-        intensity: 1.5,
-        bendCurve: 2.5,
-        swayAmount: 7.5,
-        rotationAmount: 0.8
-    )
+    /// Minimum wind config values (at 0% progress)
+    static let minIntensity: CGFloat = 0
+    static let minBendCurve: CGFloat = 2.0
+    static let minSwayAmount: CGFloat = 0
+    static let minRotationAmount: CGFloat = 1.0
 
-    /// High wind - strong gusts
-    static let high = WindConfig(
-        intensity: 2.0,
-        bendCurve: 3.0,
-        swayAmount: 11.0,
-        rotationAmount: 0.8
-    )
+    // MARK: - Interpolation
 
-    /// Returns default config for given wind level
-    static func `default`(for level: WindLevel) -> WindConfig {
-        switch level {
-        case .none: return .none
-        case .low: return .low
-        case .medium: return .medium
-        case .high: return .high
+    /// Interpolates wind config based on progress (0-1).
+    /// - Parameter progress: Usage progress from 0 (no usage) to 1 (limit reached)
+    /// - Parameter curve: Interpolation curve type
+    /// - Returns: WindConfig with interpolated values (0% = calm, 100% = strong wind)
+    static func interpolated(progress: CGFloat, curve: InterpolationCurve = .easeIn) -> WindConfig {
+        let t = curve.apply(min(max(progress, 0), 1))
+
+        return WindConfig(
+            intensity: lerp(from: minIntensity, to: maxIntensity, t: t),
+            bendCurve: lerp(from: minBendCurve, to: maxBendCurve, t: t),
+            swayAmount: lerp(from: minSwayAmount, to: maxSwayAmount, t: t),
+            rotationAmount: lerp(from: minRotationAmount, to: maxRotationAmount, t: t)
+        )
+    }
+
+    private static func lerp(from a: CGFloat, to b: CGFloat, t: CGFloat) -> CGFloat {
+        a + (b - a) * t
+    }
+}
+
+/// Curve type for wind config interpolation
+enum InterpolationCurve: String, CaseIterable {
+    case linear = "Linear"
+    case easeIn = "Ease In"
+
+    func apply(_ t: CGFloat) -> CGFloat {
+        switch self {
+        case .linear:
+            return t
+        case .easeIn:
+            // Quadratic ease-in: slow start, fast end
+            return t * t
         }
     }
 }

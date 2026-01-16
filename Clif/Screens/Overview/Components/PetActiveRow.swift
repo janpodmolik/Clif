@@ -106,10 +106,10 @@ struct PetActiveRow: View {
 
 #Preview {
     VStack(spacing: 12) {
-        PetActiveRow(pet: .mock(name: "Fern", phase: 2, windLevel: .none, todayUsedMinutes: 10)) {}
-        PetActiveRow(pet: .mock(name: "Ivy", phase: 3, windLevel: .low, todayUsedMinutes: 45)) {}
-        PetActiveRow(pet: .mock(name: "Sage", phase: 2, windLevel: .medium, todayUsedMinutes: 67)) {}
-        PetActiveRow(pet: .mock(name: "Willow", phase: 1, windLevel: .high, todayUsedMinutes: 130, dailyLimitMinutes: 120)) {}
+        PetActiveRow(pet: .mock(name: "Fern", phase: 2, todayUsedMinutes: 0)) {}
+        PetActiveRow(pet: .mock(name: "Ivy", phase: 3, todayUsedMinutes: 45)) {}
+        PetActiveRow(pet: .mock(name: "Sage", phase: 2, todayUsedMinutes: 67)) {}
+        PetActiveRow(pet: .mock(name: "Willow", phase: 1, todayUsedMinutes: 130, dailyLimitMinutes: 120)) {}
     }
     .padding()
 }

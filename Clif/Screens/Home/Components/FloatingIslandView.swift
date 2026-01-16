@@ -5,7 +5,7 @@ struct FloatingIslandView: View {
     let screenHeight: CGFloat
     let screenWidth: CGFloat?
     let pet: any PetDisplayable
-    let windLevel: WindLevel
+    let windProgress: CGFloat
     var windDirection: CGFloat = 1.0
 
     /// Optional shared wind rhythm for synchronized effects with wind lines.
@@ -16,7 +16,7 @@ struct FloatingIslandView: View {
         screenHeight: CGFloat,
         screenWidth: CGFloat? = nil,
         pet: any PetDisplayable,
-        windLevel: WindLevel,
+        windProgress: CGFloat,
         windDirection: CGFloat = 1.0,
         windRhythm: WindRhythm? = nil,
         onPetFrameChange: ((CGRect) -> Void)? = nil
@@ -24,7 +24,7 @@ struct FloatingIslandView: View {
         self.screenHeight = screenHeight
         self.screenWidth = screenWidth
         self.pet = pet
-        self.windLevel = windLevel
+        self.windProgress = windProgress
         self.windDirection = windDirection
         self.windRhythm = windRhythm
         self.onPetFrameChange = onPetFrameChange
@@ -47,8 +47,12 @@ struct FloatingIslandView: View {
     private var petHeight: CGFloat { screenHeight * 0.10 }
     private var petOffset: CGFloat { -petHeight }
 
+    private var windLevel: WindLevel {
+        WindLevel.from(progress: windProgress)
+    }
+
     private var windConfig: WindConfig {
-        pet.windConfig(for: windLevel)
+        WindConfig.interpolated(progress: windProgress, curve: .linear)
     }
 
     private var idleConfig: IdleConfig {
@@ -134,7 +138,7 @@ struct FloatingIslandView: View {
             .padding(.top, petHeight * 0.6)
             .offset(y: petOffset)
             .contentTransition(.opacity)
-            .animation(.easeInOut(duration: 0.5), value: windLevel)
+            .animation(.easeInOut(duration: 0.5), value: windProgress)
             .onAppear {
                 speechBubbleState.startAutoTriggers(mood: currentMood)
             }
@@ -188,7 +192,7 @@ private struct PetFramePreferenceKey: PreferenceKey {
                 screenHeight: geometry.size.height,
                 screenWidth: geometry.size.width,
                 pet: Blob.shared,
-                windLevel: .none
+                windProgress: 0
             )
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
         }
@@ -196,7 +200,7 @@ private struct PetFramePreferenceKey: PreferenceKey {
     }
 }
 
-#Preview("Plant Phase 2 - Medium Wind") {
+#Preview("Plant Phase 2 - 50% Progress") {
     GeometryReader { geometry in
         ZStack {
             Color.blue.opacity(0.3)
@@ -204,7 +208,7 @@ private struct PetFramePreferenceKey: PreferenceKey {
                 screenHeight: geometry.size.height,
                 screenWidth: geometry.size.width,
                 pet: EvolutionPath.plant.phase(at: 2)!,
-                windLevel: .medium
+                windProgress: 0.5
             )
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
         }
@@ -212,7 +216,7 @@ private struct PetFramePreferenceKey: PreferenceKey {
     }
 }
 
-#Preview("Plant Phase 4 - High Wind") {
+#Preview("Plant Phase 4 - 100% Progress") {
     GeometryReader { geometry in
         ZStack {
             Color.blue.opacity(0.3)
@@ -220,7 +224,7 @@ private struct PetFramePreferenceKey: PreferenceKey {
                 screenHeight: geometry.size.height,
                 screenWidth: geometry.size.width,
                 pet: EvolutionPath.plant.phase(at: 4)!,
-                windLevel: .high
+                windProgress: 1.0
             )
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
         }

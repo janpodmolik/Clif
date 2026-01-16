@@ -217,14 +217,14 @@ struct PetActiveDetailScreen: View {
 #Preview("Full Screen Modal") {
     Text("Tap to open")
         .fullScreenCover(isPresented: .constant(true)) {
-            PetActiveDetailScreen(pet: .mock(name: "Fern", phase: 2, windLevel: .medium))
+            PetActiveDetailScreen(pet: .mock(name: "Fern", phase: 2, todayUsedMinutes: 60))
         }
 }
 
 #Preview("Overview Actions") {
     Text("Tap to open")
         .fullScreenCover(isPresented: .constant(true)) {
-            PetActiveDetailScreen(pet: .mock(name: "Ivy", phase: 3, windLevel: .low), showOverviewActions: true)
+            PetActiveDetailScreen(pet: .mock(name: "Ivy", phase: 3, todayUsedMinutes: 30), showOverviewActions: true)
         }
 }
 

@@ -21,7 +21,7 @@ final class PetManager {
         #if DEBUG
         // Add mock pet for development
         if activePets.isEmpty {
-            activePets = [ActivePet.mockBlob(name: "Blob", canUseEssence: true, windLevel: .high)]
+            activePets = [ActivePet.mockBlob(name: "Blob", canUseEssence: true, todayUsedMinutes: 100, dailyLimitMinutes: 120)]
         }
         #endif
     }
@@ -34,7 +34,6 @@ final class PetManager {
             name: name,
             evolutionHistory: EvolutionHistory(),
             purpose: purpose,
-            windLevel: .none,
             todayUsedMinutes: 0,
             dailyLimitMinutes: dailyLimitMinutes
         )

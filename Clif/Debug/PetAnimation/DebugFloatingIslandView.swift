@@ -9,8 +9,8 @@ struct DebugFloatingIslandView: View {
     let pet: any PetDisplayable
     let windLevel: WindLevel
 
-    // Debug overrides (nil = use default config)
-    var debugWindConfig: WindConfig? = nil
+    // Wind config (required - caller decides between custom or interpolated)
+    var windConfig: WindConfig
     var windDirection: CGFloat = 1.0
     var windIntensityScale: CGFloat = 1.0
     var idleIntensityScale: CGFloat = 1.0
@@ -62,12 +62,11 @@ struct DebugFloatingIslandView: View {
     private var petOffset: CGFloat { -petHeight }
 
     private var activeWindConfig: WindConfig {
-        let baseConfig = debugWindConfig ?? pet.windConfig(for: windLevel)
-        return WindConfig(
-            intensity: baseConfig.intensity * windIntensityScale,
-            bendCurve: baseConfig.bendCurve,
-            swayAmount: baseConfig.swayAmount * windIntensityScale,
-            rotationAmount: baseConfig.rotationAmount * windIntensityScale
+        WindConfig(
+            intensity: windConfig.intensity * windIntensityScale,
+            bendCurve: windConfig.bendCurve,
+            swayAmount: windConfig.swayAmount * windIntensityScale,
+            rotationAmount: windConfig.rotationAmount * windIntensityScale
         )
     }
 

@@ -16,10 +16,6 @@ struct EvolutionPhase: Hashable {
         assetName(for: Mood(from: windLevel))
     }
 
-    func windConfig(for level: WindLevel) -> WindConfig {
-        .default(for: level)
-    }
-
     func tapConfig(for type: TapAnimationType) -> TapConfig {
         .default(for: type)
     }

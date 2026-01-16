@@ -32,9 +32,9 @@ struct HomeScreen: View {
                 }
 
                 if let pet {
-                    // Wind lines effect (scales with wind level)
+                    // Wind lines effect (scales with usage progress)
                     WindLinesView(
-                        windLevel: pet.windLevel,
+                        windProgress: pet.windProgress,
                         direction: 1.0,
                         windAreaTop: 0.25,
                         windAreaBottom: 0.50,
@@ -46,7 +46,7 @@ struct HomeScreen: View {
                         screenHeight: geometry.size.height,
                         screenWidth: geometry.size.width,
                         pet: pet.phase ?? Blob.shared,
-                        windLevel: pet.windLevel,
+                        windProgress: pet.windProgress,
                         windDirection: 1.0,
                         windRhythm: windRhythm,
                         onPetFrameChange: { frame in
@@ -78,15 +78,11 @@ struct HomeScreen: View {
     }
 
     private func homeCard(for pet: ActivePet) -> some View {
-        let progress = pet.dailyLimitMinutes > 0
-            ? Double(pet.todayUsedMinutes) / Double(pet.dailyLimitMinutes)
-            : 0
-
-        return HomeCardContentView(
+        HomeCardContentView(
             streakCount: 7, // TODO: get from streak manager
             usedTimeText: formatMinutes(pet.todayUsedMinutes),
             dailyLimitText: formatMinutes(pet.dailyLimitMinutes),
-            progress: progress,
+            progress: Double(pet.windProgress),
             petName: pet.name,
             evolutionStage: pet.currentPhase,
             maxEvolutionStage: pet.evolutionHistory.maxPhase,

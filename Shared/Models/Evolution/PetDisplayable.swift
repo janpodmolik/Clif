@@ -6,7 +6,6 @@ protocol PetDisplayable {
     var idleConfig: IdleConfig { get }
     func assetName(for mood: Mood) -> String
     func assetName(for windLevel: WindLevel) -> String
-    func windConfig(for level: WindLevel) -> WindConfig
     func tapConfig(for type: TapAnimationType) -> TapConfig
 }
 

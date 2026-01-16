@@ -6,7 +6,6 @@ struct PetDebugView: View {
     // Evolution selection
     @State private var selectedEvolutionType: EvolutionTypeOption = .plant
     @State private var plantPhase: Int = 1
-    @State private var windLevel: WindLevel = .medium
     @State private var direction: CGFloat = 1.0
     @State private var showCopiedFeedback: Bool = false
     @State private var windIntensityScale: CGFloat = 1.0
@@ -26,6 +25,10 @@ struct PetDebugView: View {
     @State private var customBendCurve: CGFloat = 2.0
     @State private var customSwayAmount: CGFloat = 0.3
     @State private var customRotationAmount: CGFloat = 0.5
+
+    // Continuous wind (interpolated by progress)
+    @State private var windProgress: CGFloat = 0.5
+    @State private var interpolationCurve: InterpolationCurve = .easeIn
 
     // Idle animation
     @State private var idleEnabled: Bool = true
@@ -121,6 +124,16 @@ struct PetDebugView: View {
         )
     }
 
+    /// Wind config from continuous progress interpolation
+    private var continuousWindConfig: WindConfig {
+        WindConfig.interpolated(progress: windProgress, curve: interpolationCurve)
+    }
+
+    /// Returns the WindLevel zone for current progress (for UI reference)
+    private var windLevel: WindLevel {
+        WindLevel.from(progress: windProgress)
+    }
+
     private var customTapConfig: TapConfig? {
         guard useCustomTapConfig else { return nil }
         return TapConfig(
@@ -138,14 +151,6 @@ struct PetDebugView: View {
             focusStart: idleFocusStart,
             focusEnd: idleFocusEnd
         )
-    }
-
-    private var moodColor: Color {
-        switch Mood(from: windLevel) {
-        case .happy: return .green
-        case .neutral: return .yellow
-        case .sad, .blown: return .red
-        }
     }
 
     /// Current evolution name for export
@@ -177,7 +182,7 @@ struct PetDebugView: View {
                 ZStack {
                     // Wind lines effect (debug colors: blue=wave, green=sCurve, red=loop)
                     WindLinesView(
-                        windLevel: windLinesBurstActive ? .high : windLevel,
+                        windProgress: windLinesBurstActive ? 1.0 : windProgress,
                         direction: direction,
                         debugColors: true,
                         windAreaTop: 0.15,
@@ -193,7 +198,7 @@ struct PetDebugView: View {
                         screenWidth: geometry.size.width,
                         pet: currentPet,
                         windLevel: windLevel,
-                        debugWindConfig: customWindConfig,
+                        windConfig: customWindConfig ?? continuousWindConfig,
                         windDirection: direction,
                         windIntensityScale: windIntensityScale,
                         idleIntensityScale: idleIntensityScale,
@@ -520,7 +525,8 @@ struct PetDebugView: View {
 
     private func resetWindToDefaults() {
         useCustomConfig = false
-        windLevel = .medium
+        windProgress = 0.5
+        interpolationCurve = .easeIn
         direction = 1.0
         windIntensityScale = 1.0
         customIntensity = 0.5
@@ -619,27 +625,56 @@ struct PetDebugView: View {
 
     @ViewBuilder
     private var windControlsContent: some View {
-        // Wind level selector with mood indicator
+        // Progress slider with zone indicator
         VStack(alignment: .leading, spacing: 4) {
             HStack {
-                Text("Wind Level")
+                Text("Progress: \(Int(windProgress * 100))%")
                     .font(.caption)
                     .foregroundStyle(.secondary)
                 Spacer()
-                Text("Mood: \(Mood(from: windLevel).rawValue)")
+                Text("Zone: \(windLevel.displayName)")
                     .font(.caption)
                     .foregroundStyle(.secondary)
                     .padding(.horizontal, 8)
                     .padding(.vertical, 2)
-                    .background(moodColor.opacity(0.2))
+                    .background(windLevel.color.opacity(0.2))
                     .cornerRadius(4)
             }
+            Slider(value: $windProgress, in: 0...1)
+        }
+
+        // Interpolation curve picker
+        VStack(alignment: .leading, spacing: 4) {
+            Text("Interpolation Curve")
+                .font(.caption)
+                .foregroundStyle(.secondary)
             DebugSegmentedPicker(
-                WindLevel.allCases.map { $0 },
-                selection: $windLevel,
-                label: { $0.displayName }
+                InterpolationCurve.allCases.map { $0 },
+                selection: $interpolationCurve,
+                label: { $0.rawValue }
             )
         }
+
+        // Current interpolated values display
+        VStack(alignment: .leading, spacing: 2) {
+            Text("Interpolated Values")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+            HStack {
+                Text("Int: \(continuousWindConfig.intensity, specifier: "%.2f")")
+                Spacer()
+                Text("Bend: \(continuousWindConfig.bendCurve, specifier: "%.1f")")
+                Spacer()
+                Text("Sway: \(continuousWindConfig.swayAmount, specifier: "%.1f")")
+                Spacer()
+                Text("Rot: \(continuousWindConfig.rotationAmount, specifier: "%.1f")")
+            }
+            .font(.caption2.monospacedDigit())
+            .foregroundStyle(.tertiary)
+        }
+        .padding(8)
+        .background(Color.secondary.opacity(0.1))
+        .cornerRadius(6)
 
         // Wind direction
         DebugSegmentedPicker(
@@ -671,7 +706,7 @@ struct PetDebugView: View {
                 .frame(width: 40, alignment: .trailing)
         }
 
-        // Custom wind config toggle
+        // Custom wind config toggle (overrides interpolation)
         Toggle("Custom Wind Config", isOn: $useCustomConfig)
 
         if useCustomConfig {

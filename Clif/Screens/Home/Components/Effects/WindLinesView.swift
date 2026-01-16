@@ -1,9 +1,9 @@
 import SwiftUI
 
-/// Anime-style wind lines effect that scales with WindLevel intensity.
+/// Anime-style wind lines effect that scales with wind progress intensity.
 /// Uses "head + trail" approach - the head follows a trajectory and leaves a fading trail behind.
 struct WindLinesView: View {
-    let windLevel: WindLevel
+    let windProgress: CGFloat
     var direction: CGFloat = 1.0  // 1.0 = left→right, -1.0 = right→left
     var debugColors: Bool = false  // When true, show different colors per trajectory type
 
@@ -19,6 +19,11 @@ struct WindLinesView: View {
     /// Optional shared wind rhythm for synchronized gusts with pet animation.
     /// When provided, spawn rate and speed vary with gust intensity.
     var windRhythm: WindRhythm?
+
+    /// Computed WindLevel zone for display purposes
+    private var windLevel: WindLevel {
+        WindLevel.from(progress: windProgress)
+    }
 
     @Environment(\.colorScheme) private var colorScheme
     @State private var activeLines: [WindLine] = []
@@ -47,11 +52,11 @@ struct WindLinesView: View {
     }
 
     private var config: WindLinesConfig {
-        overrideConfig ?? WindLinesConfig(for: windLevel)
+        overrideConfig ?? WindLinesConfig.interpolated(progress: windProgress)
     }
 
     private var gustConfig: WindGustConfig {
-        WindGustConfig(for: windLevel)
+        WindGustConfig.interpolated(progress: windProgress)
     }
 
     var body: some View {
@@ -503,32 +508,33 @@ struct WindLinesConfig {
     let spawnChance: Double
     let durationRange: ClosedRange<Double>
 
-    init(for windLevel: WindLevel) {
-        switch windLevel {
-        case .none:
-            maxLines = 0
-            minSpawnInterval = 999
-            spawnChance = 0
-            durationRange = 1...1
-
-        case .low:
-            maxLines = 3
-            minSpawnInterval = 0.6
-            spawnChance = 0.04
-            durationRange = 2.5...3.5
-
-        case .medium:
-            maxLines = 5
-            minSpawnInterval = 0.4
-            spawnChance = 0.06
-            durationRange = 2.0...3.0
-
-        case .high:
-            maxLines = 7
-            minSpawnInterval = 0.25
-            spawnChance = 0.10
-            durationRange = 1.5...2.5
+    /// Interpolates wind lines config based on progress (0-1).
+    /// - Parameter progress: Usage progress from 0 (no usage) to 1 (limit reached)
+    static func interpolated(progress: CGFloat) -> WindLinesConfig {
+        guard progress > 0 else {
+            return WindLinesConfig(
+                maxLines: 0,
+                minSpawnInterval: 999,
+                spawnChance: 0,
+                durationRange: 1...1
+            )
         }
+
+        let t = Double(min(max(progress, 0), 1))
+
+        // Interpolate between low and high values
+        let maxLines = Int(lerp(from: 3, to: 7, t: t))
+        let minSpawnInterval = lerp(from: 0.6, to: 0.25, t: t)
+        let spawnChance = lerp(from: 0.04, to: 0.10, t: t)
+        let durationMin = lerp(from: 2.5, to: 1.5, t: t)
+        let durationMax = lerp(from: 3.5, to: 2.5, t: t)
+
+        return WindLinesConfig(
+            maxLines: maxLines,
+            minSpawnInterval: minSpawnInterval,
+            spawnChance: spawnChance,
+            durationRange: durationMin...durationMax
+        )
     }
 
     /// Intense burst for blow away effect - many fast wind lines
@@ -539,11 +545,15 @@ struct WindLinesConfig {
         durationRange: 0.4...0.8
     )
 
-    private init(maxLines: Int, minSpawnInterval: Double, spawnChance: Double, durationRange: ClosedRange<Double>) {
+    init(maxLines: Int, minSpawnInterval: Double, spawnChance: Double, durationRange: ClosedRange<Double>) {
         self.maxLines = maxLines
         self.minSpawnInterval = minSpawnInterval
         self.spawnChance = spawnChance
         self.durationRange = durationRange
+    }
+
+    private static func lerp(from a: Double, to b: Double, t: Double) -> Double {
+        a + (b - a) * t
     }
 }
 
@@ -561,32 +571,33 @@ struct WindGustConfig {
     /// Gust intensity threshold above which burst spawning triggers
     let burstThreshold: Double
 
-    init(for windLevel: WindLevel) {
-        switch windLevel {
-        case .none:
-            baseSpawnChance = 0
-            peakSpawnChance = 0
-            peakSpeedMultiplier = 1.0
-            burstThreshold = 2.0 // Never triggers
-
-        case .low:
-            baseSpawnChance = 0.01
-            peakSpawnChance = 0.10
-            peakSpeedMultiplier = 1.3
-            burstThreshold = 0.9
-
-        case .medium:
-            baseSpawnChance = 0.015
-            peakSpawnChance = 0.18
-            peakSpeedMultiplier = 1.5
-            burstThreshold = 0.85
-
-        case .high:
-            baseSpawnChance = 0.02
-            peakSpawnChance = 0.30
-            peakSpeedMultiplier = 1.8
-            burstThreshold = 0.75
+    /// Interpolates gust config based on progress (0-1).
+    /// - Parameter progress: Usage progress from 0 (no usage) to 1 (limit reached)
+    static func interpolated(progress: CGFloat) -> WindGustConfig {
+        guard progress > 0 else {
+            return WindGustConfig(
+                baseSpawnChance: 0,
+                peakSpawnChance: 0,
+                peakSpeedMultiplier: 1.0,
+                burstThreshold: 2.0
+            )
         }
+
+        let t = Double(min(max(progress, 0), 1))
+
+        return WindGustConfig(
+            baseSpawnChance: lerp(from: 0.01, to: 0.02, t: t),
+            peakSpawnChance: lerp(from: 0.10, to: 0.30, t: t),
+            peakSpeedMultiplier: lerp(from: 1.3, to: 1.8, t: t),
+            burstThreshold: lerp(from: 0.9, to: 0.75, t: t)
+        )
+    }
+
+    init(baseSpawnChance: Double, peakSpawnChance: Double, peakSpeedMultiplier: Double, burstThreshold: Double) {
+        self.baseSpawnChance = baseSpawnChance
+        self.peakSpawnChance = peakSpawnChance
+        self.peakSpeedMultiplier = peakSpeedMultiplier
+        self.burstThreshold = burstThreshold
     }
 
     /// Calculate effective spawn chance based on current gust intensity.
@@ -600,28 +611,32 @@ struct WindGustConfig {
         let t = Double(gustIntensity)
         return 1.0 + (peakSpeedMultiplier - 1.0) * t
     }
+
+    private static func lerp(from a: Double, to b: Double, t: Double) -> Double {
+        a + (b - a) * t
+    }
 }
 
 // MARK: - Previews
 
-#Preview("Wind Lines - Low") {
+#Preview("Wind Lines - 25%") {
     ZStack {
         Color.gray.opacity(0.2)
-        WindLinesView(windLevel: .low, windAreaTop: 0.25, windAreaBottom: 0.50)
+        WindLinesView(windProgress: 0.25, windAreaTop: 0.25, windAreaBottom: 0.50)
     }
 }
 
-#Preview("Wind Lines - High") {
+#Preview("Wind Lines - 100%") {
     ZStack {
         Color.gray.opacity(0.2)
-        WindLinesView(windLevel: .high, windAreaTop: 0.25, windAreaBottom: 0.50)
+        WindLinesView(windProgress: 1.0, windAreaTop: 0.25, windAreaBottom: 0.50)
     }
 }
 
 #Preview("Wind Lines - Dark") {
     ZStack {
         Color.black
-        WindLinesView(windLevel: .medium, windAreaTop: 0.25, windAreaBottom: 0.50)
+        WindLinesView(windProgress: 0.5, windAreaTop: 0.25, windAreaBottom: 0.50)
     }
     .preferredColorScheme(.dark)
 }
@@ -629,6 +644,6 @@ struct WindGustConfig {
 #Preview("Wind Lines - Debug Colors") {
     ZStack {
         Color.gray.opacity(0.2)
-        WindLinesView(windLevel: .high, debugColors: true, windAreaTop: 0.25, windAreaBottom: 0.50)
+        WindLinesView(windProgress: 1.0, debugColors: true, windAreaTop: 0.25, windAreaBottom: 0.50)
     }
 }

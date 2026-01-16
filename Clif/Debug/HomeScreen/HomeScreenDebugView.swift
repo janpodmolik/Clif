@@ -13,7 +13,6 @@ struct HomeScreenDebugView: View {
 
     @State private var selectedEvolutionType: EvolutionTypeOption = .blob
     @State private var plantPhase: Int = 1
-    @State private var windLevel: WindLevel = .none
 
     // MARK: - Card State
 
@@ -84,6 +83,15 @@ struct HomeScreenDebugView: View {
         }
     }
 
+    private var windProgress: CGFloat {
+        guard limitMinutes > 0 else { return 0 }
+        return CGFloat(usedMinutes / limitMinutes)
+    }
+
+    private var windLevel: WindLevel {
+        WindLevel.from(progress: windProgress)
+    }
+
     private var currentMood: Mood {
         if isBlownAway { return .blown }
         return Mood(from: windLevel)
@@ -118,7 +126,6 @@ struct HomeScreenDebugView: View {
                 events: []
             ),
             purpose: purposeLabel,
-            windLevel: windLevel,
             todayUsedMinutes: Int(usedMinutes),
             dailyLimitMinutes: Int(limitMinutes)
         )
@@ -139,7 +146,7 @@ struct HomeScreenDebugView: View {
 
                     // Wind lines
                     WindLinesView(
-                        windLevel: windLevel,
+                        windProgress: windProgress,
                         direction: 1.0,
                         windAreaTop: 0.25,
                         windAreaBottom: 0.50,
@@ -151,7 +158,7 @@ struct HomeScreenDebugView: View {
                         screenHeight: geometry.size.height,
                         screenWidth: geometry.size.width,
                         pet: currentPet,
-                        windLevel: windLevel,
+                        windProgress: windProgress,
                         windDirection: 1.0,
                         windRhythm: windRhythm
                     )
@@ -343,12 +350,22 @@ struct HomeScreenDebugView: View {
                 }
             }
 
-            // Wind level
+            // Wind level (computed from used/limit)
             VStack(alignment: .leading, spacing: 4) {
                 HStack {
-                    Text("Wind Level")
+                    Text("Wind")
                         .foregroundStyle(.secondary)
                     Spacer()
+                    Text("\(Int(windProgress * 100))%")
+                        .font(.system(.caption, design: .monospaced))
+                        .foregroundStyle(.secondary)
+                    Text(windLevel.displayName)
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(windLevel.color)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 2)
+                        .background(windLevel.color.opacity(0.2))
+                        .cornerRadius(4)
                     Text("Mood: \(currentMood.rawValue)")
                         .font(.caption)
                         .foregroundStyle(.secondary)
@@ -357,11 +374,6 @@ struct HomeScreenDebugView: View {
                         .background(moodColor.opacity(0.2))
                         .cornerRadius(4)
                 }
-                DebugSegmentedPicker(
-                    WindLevel.allCases.map { $0 },
-                    selection: $windLevel,
-                    label: { $0.displayName }
-                )
             }
         }
     }
@@ -531,9 +543,8 @@ struct HomeScreenDebugView: View {
             petName = "Blob"
             purposeLabel = "Social Media"
             streakCount = 7
-            usedMinutes = 32
+            usedMinutes = 0  // 0% = none zone
             limitMinutes = 120
-            windLevel = .none
             showEvolveButton = true
             isBlownAway = false
         }
@@ -546,9 +557,8 @@ struct HomeScreenDebugView: View {
             petName = "Sprout"
             purposeLabel = "Gaming"
             streakCount = 14
-            usedMinutes = 60
+            usedMinutes = 60  // ~33% = low zone
             limitMinutes = 180
-            windLevel = .low
             showEvolveButton = false
             daysUntilEvolution = 3
             isBlownAway = false
@@ -562,9 +572,8 @@ struct HomeScreenDebugView: View {
             petName = "Elder Oak"
             purposeLabel = "Work Apps"
             streakCount = 30
-            usedMinutes = 45
+            usedMinutes = 100  // ~55% = medium zone
             limitMinutes = 180
-            windLevel = .medium
             showEvolveButton = false
             isBlownAway = false
         }
@@ -577,9 +586,8 @@ struct HomeScreenDebugView: View {
             petName = "Willow"
             purposeLabel = "Streaming"
             streakCount = 5
-            usedMinutes = 170
+            usedMinutes = 160  // ~89% = high zone
             limitMinutes = 180
-            windLevel = .high
             showEvolveButton = false
             isBlownAway = false
         }
@@ -592,9 +600,8 @@ struct HomeScreenDebugView: View {
             petName = "Willow"
             purposeLabel = "Social Media"
             streakCount = 0
-            usedMinutes = 230
+            usedMinutes = 230  // >100% = high zone
             limitMinutes = 180
-            windLevel = .high
             showEvolveButton = false
             isBlownAway = true
         }
@@ -606,9 +613,8 @@ struct HomeScreenDebugView: View {
             petName = "Blob"
             purposeLabel = ""
             streakCount = 0
-            usedMinutes = 0
+            usedMinutes = 0  // 0% = none zone
             limitMinutes = 180
-            windLevel = .none
             showEvolveButton = false
             daysUntilEvolution = 7
             isBlownAway = false

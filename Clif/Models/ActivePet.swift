@@ -8,9 +8,21 @@ final class ActivePet: Identifiable, PetEvolvable {
     let name: String
     private(set) var evolutionHistory: EvolutionHistory
     let purpose: String?
-    var windLevel: WindLevel
     var todayUsedMinutes: Int
     let dailyLimitMinutes: Int
+
+    /// Usage progress (0-1) for wind animations, clamped to 1.0 max.
+    /// Values above 1.0 indicate over-limit usage but wind maxes out at 100%.
+    var windProgress: CGFloat {
+        guard dailyLimitMinutes > 0 else { return 0 }
+        let raw = CGFloat(todayUsedMinutes) / CGFloat(dailyLimitMinutes)
+        return min(raw, 1.0)
+    }
+
+    /// Wind level zone computed from usage progress
+    var windLevel: WindLevel {
+        WindLevel.from(progress: windProgress)
+    }
     var dailyStats: [DailyUsageStat]
     var appUsage: [AppUsage]
     var applicationTokens: Set<ApplicationToken>
@@ -91,7 +103,6 @@ final class ActivePet: Identifiable, PetEvolvable {
         name: String,
         evolutionHistory: EvolutionHistory,
         purpose: String?,
-        windLevel: WindLevel,
         todayUsedMinutes: Int,
         dailyLimitMinutes: Int,
         dailyStats: [DailyUsageStat] = [],
@@ -103,7 +114,6 @@ final class ActivePet: Identifiable, PetEvolvable {
         self.name = name
         self.evolutionHistory = evolutionHistory
         self.purpose = purpose
-        self.windLevel = windLevel
         self.todayUsedMinutes = todayUsedMinutes
         self.dailyLimitMinutes = dailyLimitMinutes
         self.dailyStats = dailyStats
@@ -120,7 +130,6 @@ extension ActivePet {
         name: String = "Fern",
         phase: Int = 2,
         essence: Essence? = .plant,
-        windLevel: WindLevel = .medium,
         todayUsedMinutes: Int = 45,
         dailyLimitMinutes: Int = 120,
         totalDays: Int = 14
@@ -156,7 +165,6 @@ extension ActivePet {
                 events: events
             ),
             purpose: "Social Media",
-            windLevel: windLevel,
             todayUsedMinutes: todayUsedMinutes,
             dailyLimitMinutes: dailyLimitMinutes,
             dailyStats: dailyStats,
@@ -168,22 +176,24 @@ extension ActivePet {
     static func mockBlob(
         name: String = "Blobby",
         canUseEssence: Bool = false,
-        windLevel: WindLevel = .low
+        todayUsedMinutes: Int = 15,
+        dailyLimitMinutes: Int = 120
     ) -> ActivePet {
         let totalDays = canUseEssence ? 2 : 0
         return mock(
             name: name,
             phase: 0,
             essence: nil,
-            windLevel: windLevel,
+            todayUsedMinutes: todayUsedMinutes,
+            dailyLimitMinutes: dailyLimitMinutes,
             totalDays: totalDays
         )
     }
 
     static func mockList() -> [ActivePet] {
         [
-            .mock(name: "Fern", phase: 2, windLevel: .low, todayUsedMinutes: 25, dailyLimitMinutes: 120),
-            .mock(name: "Ivy", phase: 3, windLevel: .medium, todayUsedMinutes: 67, dailyLimitMinutes: 90)
+            .mock(name: "Fern", phase: 2, todayUsedMinutes: 25, dailyLimitMinutes: 120),
+            .mock(name: "Ivy", phase: 3, todayUsedMinutes: 67, dailyLimitMinutes: 90)
         ]
     }
 }

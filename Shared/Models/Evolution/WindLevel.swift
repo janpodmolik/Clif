@@ -42,4 +42,34 @@ enum WindLevel: Int, CaseIterable {
         case .high: return .red
         }
     }
+
+    /// Returns the wind level zone for a given usage progress (0-1).
+    /// - Parameter progress: Usage progress from 0 (no usage) to 1 (limit reached)
+    /// - Returns: WindLevel zone for UI display and mood determination
+    ///
+    /// Zone thresholds:
+    /// - none: <5% (essentially no usage)
+    /// - low: 5% to <50%
+    /// - medium: 50% to <75%
+    /// - high: 75%+
+    static func from(progress: CGFloat) -> WindLevel {
+        switch progress {
+        case ..<0.05: return .none
+        case ..<0.50: return .low
+        case ..<0.75: return .medium
+        default: return .high
+        }
+    }
+
+    /// Representative progress value for this wind level.
+    /// Use this when you need to convert a discrete WindLevel back to a progress value
+    /// (e.g., for debug pickers that select WindLevel but need to pass progress to animations).
+    var representativeProgress: CGFloat {
+        switch self {
+        case .none: return 0
+        case .low: return 0.25
+        case .medium: return 0.60
+        case .high: return 0.90
+        }
+    }
 }

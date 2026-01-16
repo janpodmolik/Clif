@@ -12,10 +12,6 @@ struct PetActiveDetailScreenDebug: View {
     @State private var currentPhase: Int = 2
     @State private var totalDays: Int = 12
 
-    // MARK: - Weather State
-
-    @State private var windLevel: WindLevel = .medium
-
     // MARK: - Screen Time State
 
     @State private var todayUsedMinutes: Double = 83
@@ -37,6 +33,14 @@ struct PetActiveDetailScreenDebug: View {
     @State private var showSheet: Bool = false
 
     // MARK: - Computed Properties
+
+    private var windProgress: CGFloat {
+        dailyLimitMinutes > 0 ? CGFloat(todayUsedMinutes / dailyLimitMinutes) : 0
+    }
+
+    private var windLevel: WindLevel {
+        WindLevel.from(progress: windProgress)
+    }
 
     private var mood: Mood {
         Mood(from: windLevel)
@@ -86,7 +90,6 @@ struct PetActiveDetailScreenDebug: View {
             name: petName,
             evolutionHistory: evolutionHistory,
             purpose: purposeLabel.isEmpty ? nil : purposeLabel,
-            windLevel: windLevel,
             todayUsedMinutes: Int(todayUsedMinutes),
             dailyLimitMinutes: Int(dailyLimitMinutes),
             dailyStats: dailyStats
@@ -280,13 +283,22 @@ struct PetActiveDetailScreenDebug: View {
             isExpanded: $isWeatherSectionExpanded
         ) {
             VStack(spacing: 12) {
-                Picker("Wind Level", selection: $windLevel) {
-                    Text("None").tag(WindLevel.none)
-                    Text("Low").tag(WindLevel.low)
-                    Text("Medium").tag(WindLevel.medium)
-                    Text("High").tag(WindLevel.high)
+                HStack {
+                    Text("Wind Level")
+                        .foregroundStyle(.secondary)
+                    Spacer()
+                    Text(windLevel.displayName)
+                        .foregroundStyle(windLevel.color)
+                        .font(.system(.body, weight: .semibold))
                 }
-                .pickerStyle(.segmented)
+
+                HStack {
+                    Text("Wind Progress")
+                        .foregroundStyle(.secondary)
+                    Spacer()
+                    Text("\(Int(windProgress * 100))%")
+                        .font(.system(.body, design: .monospaced))
+                }
 
                 HStack {
                     Text("Pet Mood")
@@ -297,6 +309,10 @@ struct PetActiveDetailScreenDebug: View {
                     Text(mood.rawValue.capitalized)
                         .foregroundStyle(.secondary)
                 }
+
+                Text("Wind level is computed from Screen Time progress")
+                    .font(.caption)
+                    .foregroundStyle(.tertiary)
             }
         }
     }
@@ -388,8 +404,7 @@ struct PetActiveDetailScreenDebug: View {
             purposeLabel = "Social Media"
             currentPhase = 2
             totalDays = 12
-            windLevel = .medium
-            todayUsedMinutes = 83
+            todayUsedMinutes = 100  // ~55% = medium zone
             dailyLimitMinutes = 180
             isBlownAway = false
         }
@@ -401,8 +416,7 @@ struct PetActiveDetailScreenDebug: View {
             purposeLabel = "Gaming"
             currentPhase = 2
             totalDays = 7
-            windLevel = .low
-            todayUsedMinutes = 60
+            todayUsedMinutes = 60  // ~33% = low zone
             dailyLimitMinutes = 180
             isBlownAway = false
         }
@@ -414,8 +428,7 @@ struct PetActiveDetailScreenDebug: View {
             purposeLabel = "Work Apps"
             currentPhase = 4
             totalDays = 30
-            windLevel = .none
-            todayUsedMinutes = 45
+            todayUsedMinutes = 0  // 0% = none zone
             dailyLimitMinutes = 180
             isBlownAway = false
         }
@@ -427,8 +440,7 @@ struct PetActiveDetailScreenDebug: View {
             purposeLabel = ""
             currentPhase = 1
             totalDays = 0
-            windLevel = .none
-            todayUsedMinutes = 0
+            todayUsedMinutes = 0  // 0% = none zone
             dailyLimitMinutes = 180
             isBlownAway = false
         }
@@ -440,8 +452,7 @@ struct PetActiveDetailScreenDebug: View {
             purposeLabel = "Streaming"
             currentPhase = 3
             totalDays = 5
-            windLevel = .high
-            todayUsedMinutes = 170
+            todayUsedMinutes = 160  // ~89% = high zone
             dailyLimitMinutes = 180
             isBlownAway = false
         }
@@ -453,8 +464,7 @@ struct PetActiveDetailScreenDebug: View {
             purposeLabel = "Social Media"
             currentPhase = 3
             totalDays = 0
-            windLevel = .high
-            todayUsedMinutes = 230
+            todayUsedMinutes = 230  // >100% = high zone
             dailyLimitMinutes = 180
             isBlownAway = true
         }
