@@ -3,7 +3,7 @@ import Foundation
 import ManagedSettings
 
 @Observable
-final class DailyPet: Identifiable, PetEvolvable {
+final class DailyPet: Identifiable, PetPresentable {
     let id: UUID
     let name: String
     private(set) var evolutionHistory: EvolutionHistory
@@ -19,10 +19,6 @@ final class DailyPet: Identifiable, PetEvolvable {
         return min(raw, 1.0)
     }
 
-    /// Wind level zone computed from usage progress
-    var windLevel: WindLevel {
-        WindLevel.from(progress: windProgress)
-    }
     var dailyStats: [DailyUsageStat]
     var appUsage: [AppUsage]
     var applicationTokens: Set<ApplicationToken>

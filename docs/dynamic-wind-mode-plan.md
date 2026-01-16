@@ -676,8 +676,9 @@ extension SharedDefaults {
 - [x] Přejmenovat `ActivePet` → `DailyPet`
 - [x] Přejmenovat `ArchivedPet` → `ArchivedDailyPet`
 - [x] Aktualizovat všechny reference v codebase
-- [ ] Vytvořit `PetPresentable` protokol
-- [ ] Přidat `PetPresentable` conformance na oba modely
+- [x] Vytvořit `PetPresentable` protokol (dědí z `PetEvolvable`, přidává `id`, `name`, `purpose`, `windProgress`)
+- [x] Přidat `PetPresentable` conformance na `DailyPet`
+- [x] `ArchivedDailyPet` zůstává `PetEvolvable` (archived pety nemají aktivní wind)
 
 ### Fáze 2: Dynamic modely
 - [ ] Vytvořit `DynamicPet` model (konformuje PetEvolvable, PetPresentable)
