@@ -23,6 +23,7 @@ struct PetDebugView: View {
     @State private var windProgress: CGFloat = 0.5
     @State private var windBounds: WindConfigBounds = .default
     @State private var isBoundsExpanded: Bool = false
+    @State private var peakMode: Bool = false
 
     // Idle animation
     @State private var idleEnabled: Bool = true
@@ -187,6 +188,7 @@ struct PetDebugView: View {
                         windIntensityScale: windIntensityScale,
                         idleIntensityScale: idleIntensityScale,
                         windRhythm: debugWindRhythm,
+                        peakMode: peakMode,
                         debugTapType: selectedTapType,
                         debugTapConfig: customTapConfig,
                         debugIdleConfig: currentIdleConfig,
@@ -513,6 +515,7 @@ struct PetDebugView: View {
         isBoundsExpanded = false
         direction = 1.0
         windIntensityScale = 1.0
+        peakMode = false
     }
 
     private func resetTapToDefaults() {
@@ -607,13 +610,6 @@ struct PetDebugView: View {
     private var windControlsContent: some View {
         // Progress slider with zone indicator
         VStack(alignment: .leading, spacing: 4) {
-            // Wind direction
-            DebugSegmentedPicker(
-                [-1.0, 1.0],
-                selection: $direction,
-                label: { $0 < 0 ? "\u{2190} Left" : "\u{2192} Right" }
-            )
-
             HStack {
                 Text("Progress: \(Int(windProgress * 100))%")
                     .font(.caption)
@@ -629,6 +625,11 @@ struct PetDebugView: View {
             }
             Slider(value: $windProgress, in: 0...1)
         }
+
+        // Peak mode toggle - shows maximum deflection for current settings
+        Toggle("Peak Mode", isOn: $peakMode)
+            .font(.caption)
+            .tint(.orange)
 
         // Gust intensity indicator (from shared rhythm)
         HStack {

@@ -31,7 +31,8 @@ float2 calculateWindOffset(
     float intensity,
     float direction,
     float bendCurve,
-    float swayAmount
+    float swayAmount,
+    bool peakMode
 ) {
     if (intensity == 0.0) {
         return float2(0.0, 0.0);
@@ -46,8 +47,14 @@ float2 calculateWindOffset(
     // Pet bends IN the wind direction (wind pushes it)
     // Forward swing (with wind): 100% amplitude
     // Back swing (against wind): 50% amplitude
-    float rawWave = organicWave(time);
-    float wave = rawWave < 0.0 ? rawWave : rawWave * 0.4;
+    // In peak mode: use constant -1.0 for maximum deflection
+    float wave;
+    if (peakMode) {
+        wave = -1.0;
+    } else {
+        float rawWave = organicWave(time);
+        wave = rawWave < 0.0 ? rawWave : rawWave * 0.4;
+    }
 
     // Base offset scaled by intensity and direction
     float maxOffset = size.x * 0.15 * intensity * direction;
@@ -407,6 +414,7 @@ float glowFractalNoise(float2 p, float time) {
 /// - tapIntensity, tapDecayRate, tapFrequency: Tap animation params
 /// - idleEnabled, idleAmplitude, idleFrequency: Breathing params
 /// - idleFocusStart, idleFocusEnd: Breathing focus zone
+/// - peakMode: Debug mode - freeze at maximum wind deflection
 /// - size: View size
 [[ stitchable ]] float2 petDistortion(
     float2 position,
@@ -428,13 +436,16 @@ float glowFractalNoise(float2 p, float time) {
     float idleFrequency,
     float idleFocusStart,
     float idleFocusEnd,
+    // Debug
+    float peakMode,
     // Size
     float2 size
 ) {
     // Calculate each effect
     float2 windOffset = calculateWindOffset(
         position, size, time,
-        windIntensity, windDirection, bendCurve, swayAmount
+        windIntensity, windDirection, bendCurve, swayAmount,
+        peakMode > 0.5
     );
 
     float2 tapOffset = calculateTapOffset(

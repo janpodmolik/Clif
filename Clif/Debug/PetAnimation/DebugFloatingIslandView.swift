@@ -18,6 +18,9 @@ struct DebugFloatingIslandView: View {
     /// Optional shared wind rhythm for synchronized effects with wind lines.
     var windRhythm: WindRhythm?
 
+    // Debug peak mode - freeze animation at maximum wind deflection
+    var peakMode: Bool = false
+
     // Debug tap overrides
     var debugTapType: TapAnimationType = .none
     var debugTapConfig: TapConfig? = nil
@@ -163,6 +166,7 @@ struct DebugFloatingIslandView: View {
                         tapType: activeTapType,
                         tapConfig: activeTapConfig,
                         idleConfig: activeIdleConfig,
+                        peakMode: peakMode,
                         screenWidth: screenWidth,
                         windRhythm: windRhythm,
                         onTransformUpdate: { transform in

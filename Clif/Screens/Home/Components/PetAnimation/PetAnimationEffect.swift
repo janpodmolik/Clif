@@ -37,6 +37,9 @@ struct PetAnimationEffect: ViewModifier {
     let idleConfig: IdleConfig
     let idlePhaseOffset: TimeInterval
 
+    // Debug parameters
+    let peakMode: Bool
+
     // Screen width for calculating max sample offset (pet can fly to screen edge)
     let screenWidth: CGFloat?
 
@@ -72,6 +75,7 @@ struct PetAnimationEffect: ViewModifier {
         time: Float,
         relativeTapTime: Float,
         idle: IdleConfig,
+        peakMode: Bool,
         size: CGSize
     ) -> Shader {
         ShaderLibrary.petDistortion(
@@ -93,6 +97,8 @@ struct PetAnimationEffect: ViewModifier {
             .float(Float(idle.frequency)),
             .float(Float(idle.focusStart)),
             .float(Float(idle.focusEnd)),
+            // Debug
+            .float(peakMode ? 1.0 : 0.0),
             // Size
             .float2(size)
         )
@@ -109,8 +115,11 @@ struct PetAnimationEffect: ViewModifier {
             // Pet bends IN the wind direction (wind pushes it)
             // Forward swing (with wind): 100% amplitude
             // Back swing (against wind): 50% amplitude
+            // In peak mode: use constant -1.0 for maximum deflection
             let wave: Double = {
-                if let rhythm = windRhythm {
+                if peakMode {
+                    return -1.0
+                } else if let rhythm = windRhythm {
                     // Use shared rhythm for synchronized effects with wind lines
                     return Double(rhythm.rawWave)
                 } else {
@@ -137,8 +146,9 @@ struct PetAnimationEffect: ViewModifier {
             // Calculate max sample offset
             let maxOffset: CGFloat = (screenWidth ?? 400) * 0.5
 
-            // Capture callback before entering Sendable closure
+            // Capture callback and peakMode before entering Sendable closure
             let transformCallback = onTransformUpdate
+            let isPeakMode = peakMode
 
             content
                 .visualEffect { view, proxy in
@@ -146,6 +156,7 @@ struct PetAnimationEffect: ViewModifier {
                         time: Float(time),
                         relativeTapTime: relativeTapTime,
                         idle: idle,
+                        peakMode: isPeakMode,
                         size: proxy.size
                     )
 
@@ -197,6 +208,7 @@ extension View {
     ///   - tapConfig: Configuration for tap animation parameters
     ///   - idleConfig: Configuration for idle breathing animation
     ///   - idlePhaseOffset: Time offset to desynchronize breathing between multiple pets (0 = no offset)
+    ///   - peakMode: Debug mode - freeze animation at maximum wind deflection
     ///   - screenWidth: Screen width for max sample offset (allows pet to fly to screen edge)
     ///   - windRhythm: Optional shared rhythm for synchronized wind effects with wind lines
     ///   - onTransformUpdate: Callback providing current rotation and sway values for overlays
@@ -211,6 +223,7 @@ extension View {
         tapConfig: TapConfig = .none,
         idleConfig: IdleConfig = .default,
         idlePhaseOffset: TimeInterval = 0,
+        peakMode: Bool = false,
         screenWidth: CGFloat? = nil,
         windRhythm: WindRhythm? = nil,
         onTransformUpdate: ((PetAnimationTransform) -> Void)? = nil
@@ -226,6 +239,7 @@ extension View {
             tapConfig: tapConfig,
             idleConfig: idleConfig,
             idlePhaseOffset: idlePhaseOffset,
+            peakMode: peakMode,
             screenWidth: screenWidth,
             windRhythm: windRhythm,
             onTransformUpdate: onTransformUpdate
