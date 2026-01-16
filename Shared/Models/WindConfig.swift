@@ -54,7 +54,7 @@ struct WindConfigBounds: Equatable {
 
     static let `default` = WindConfigBounds(
         intensity: WindParamBounds(min: 0, max: 3.0, exponent: 1.0),
-        bendCurve: WindParamBounds(min: 1.0, max: 3.5, exponent: 1.0),
+        bendCurve: WindParamBounds(min: 1.0, max: 3, exponent: 1.0),
         swayAmount: WindParamBounds(min: 2.5, max: 9.0, exponent: 0.9),
         rotationAmount: WindParamBounds(min: 1.5, max: 0.5, exponent: 0.2)
     )

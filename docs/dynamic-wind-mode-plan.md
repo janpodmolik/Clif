@@ -1,5 +1,15 @@
 # Dynamic Wind Mode - Implementační plán
 
+> **Poslední aktualizace:** Leden 2026
+>
+> **Změny z diskuze:**
+> - Přejmenování modelů: `ActivePet` → `DailyLimitPet`, `ArchivedPet` → `ArchivedDailyLimitPet`
+> - Nové modely: `DynamicWindPet`, `ArchivedDynamicWindPet`
+> - Wind systém sjednocen na `windProgress: CGFloat` (0-1) pro oba módy
+> - `WindConfig` je pro animace (interpoluje plynule), `DynamicWindConfig` je pro herní mechaniku
+> - `WindLevel.init(fromPoints:)` NENÍ potřeba - používáme `WindLevel.from(progress:)`
+> - `PetDisplayable` existuje pro animace, nový `PetPresentable` pro UI data
+
 ## Shrnutí konceptu
 
 Nový režim screen time managementu, kde vítr **dynamicky roste i klesá** na základě chování uživatele, na rozdíl od současného Daily Limit módu kde vítr pouze roste.
@@ -205,77 +215,99 @@ Dva režimy vyžadují **separátní modely** pro Active i Archived pety, propoj
 
 ```
 Současný stav:
-├── ActivePet (Daily Limit)
+├── ActivePet
 └── ArchivedPet
 
 Nový stav:
-├── ActivePet (Daily Limit) - beze změny
-├── DynamicPet (Dynamic Wind) - nový model
-├── ArchivedPet (Daily Limit) - beze změny
-├── ArchivedDynamicPet (Dynamic Wind) - nový model
+├── DailyLimitPet (přejmenovaný ActivePet)
+├── DynamicWindPet (nový model)
+├── ArchivedDailyLimitPet (přejmenovaný ArchivedPet)
+├── ArchivedDynamicWindPet (nový model)
 └── Protokoly:
-    ├── PetEvolvable (evoluce) - oba active konformují
-    ├── PetDisplayable (UI zobrazení) - všechny 4 modely konformují
-    └── ArchivedPetDisplayable (archived UI) - oba archived konformují
+    ├── PetEvolvable (evoluce) - oba active konformují (existující)
+    ├── PetDisplayable (animace) - pro FloatingIslandView (existující, upravený)
+    └── PetPresentable (UI data) - nový protokol pro sdílené UI
 ```
 
 ### Protokoly
 
 ```swift
 // Existující - pro evoluci (jen active pets)
+// Soubor: Clif/Models/PetEvolvable.swift
 protocol PetEvolvable {
     var evolutionHistory: EvolutionHistory { get }
-    var isBlob: Bool { get }
-    var canEvolve: Bool { get }
-    func applyEssence(_ essence: Essence)
-    func evolve()
+    // Extension poskytuje: essence, currentPhase, isBlob, canEvolve, isBlown,
+    // evolutionPath, phase, themeColor, displayScale, assetName(for:)
 }
 
-// Nový - pro UI zobrazení (všechny pet typy)
+// Existující - pro animace ve FloatingIslandView
+// Soubor: Shared/Models/Evolution/PetDisplayable.swift
+// Konformuje: EvolutionPhase, Blob
 protocol PetDisplayable {
+    var displayScale: CGFloat { get }
+    var idleConfig: IdleConfig { get }
+    func assetName(for mood: Mood) -> String
+    func assetName(for windLevel: WindLevel) -> String
+    func tapConfig(for type: TapAnimationType) -> TapConfig
+}
+
+// NOVÝ - pro sdílené UI komponenty (všechny pet typy)
+// Soubor: Shared/Models/PetPresentable.swift
+protocol PetPresentable {
     var id: UUID { get }
     var name: String { get }
     var purpose: String? { get }
-    var windLevel: WindLevel { get }  // Computed - oba módy vrátí WindLevel
-    var mood: Mood { get }
-    var isBlown: Bool { get }
-    var currentPhase: Int { get }
-    var essence: Essence? { get }
-}
-
-// Nový - pro archived pets UI
-protocol ArchivedPetDisplayable: PetDisplayable {
-    var archivedAt: Date { get }
-    var totalDays: Int { get }
+    var evolutionHistory: EvolutionHistory { get }
+    var windProgress: CGFloat { get }  // 0-1, jednotné rozhraní pro animace
+    var windLevel: WindLevel { get }   // Computed z windProgress
+    var mood: Mood { get }             // Computed z windLevel
 }
 ```
 
-### ActivePet (Daily Limit) - BEZE ZMĚNY
+### DailyLimitPet (přejmenovaný ActivePet)
 
 ```swift
-// Současný model zůstává
+// Soubor: Clif/Models/DailyLimitPet.swift
 @Observable
-final class ActivePet: Identifiable, PetEvolvable, PetDisplayable {
+final class DailyLimitPet: Identifiable, PetEvolvable, PetPresentable {
     let id: UUID
     let name: String
-    var evolutionHistory: EvolutionHistory
+    private(set) var evolutionHistory: EvolutionHistory
     let purpose: String?
-    var windLevel: WindLevel  // Enum: none/low/medium/high
     var todayUsedMinutes: Int
     let dailyLimitMinutes: Int
     var dailyStats: [DailyUsageStat]
+    var appUsage: [AppUsage]
+    var applicationTokens: Set<ApplicationToken>
+    var categoryTokens: Set<ActivityCategoryToken>
+
+    // PetPresentable conformance
+    var windProgress: CGFloat {
+        guard dailyLimitMinutes > 0 else { return 0 }
+        let raw = CGFloat(todayUsedMinutes) / CGFloat(dailyLimitMinutes)
+        return min(raw, 1.0)  // Clamp na 1.0, hodnoty nad = over-limit
+    }
+
+    var windLevel: WindLevel {
+        WindLevel.from(progress: windProgress)
+    }
+
+    var mood: Mood {
+        Mood(from: windLevel)
+    }
     // ... zbytek beze změny
 }
 ```
 
-### DynamicPet (Dynamic Wind) - NOVÝ MODEL
+### DynamicWindPet - NOVÝ MODEL
 
 ```swift
+// Soubor: Clif/Models/DynamicWindPet.swift
 @Observable
-final class DynamicPet: Identifiable, PetEvolvable, PetDisplayable {
+final class DynamicWindPet: Identifiable, PetEvolvable, PetPresentable {
     let id: UUID
     let name: String
-    var evolutionHistory: EvolutionHistory
+    private(set) var evolutionHistory: EvolutionHistory
     let purpose: String?
 
     // Dynamic Wind specifické
@@ -284,17 +316,23 @@ final class DynamicPet: Identifiable, PetEvolvable, PetDisplayable {
     var breakHistory: [BreakRecord]
     var config: DynamicWindConfig
 
-    // PetDisplayable conformance
+    // Sdílené s DailyLimitPet
+    var dailyStats: [DailyUsageStat]
+    var appUsage: [AppUsage]
+    var applicationTokens: Set<ApplicationToken>
+    var categoryTokens: Set<ActivityCategoryToken>
+
+    // PetPresentable conformance
+    var windProgress: CGFloat {
+        CGFloat(windPoints) / 100.0  // windPoints 0-100 → progress 0-1
+    }
+
     var windLevel: WindLevel {
-        WindLevel(fromPoints: windPoints)
+        WindLevel.from(progress: windProgress)
     }
 
     var mood: Mood {
-        windLevel.mood
-    }
-
-    var isBlown: Bool {
-        evolutionHistory.isBlown
+        Mood(from: windLevel)
     }
 }
 
@@ -346,33 +384,41 @@ struct BreakRecord: Codable {
 }
 ```
 
-### ArchivedPet (Daily Limit) - BEZE ZMĚNY
+### ArchivedDailyLimitPet (přejmenovaný ArchivedPet)
 
 ```swift
-// Současný model zůstává
-struct ArchivedPet: Identifiable, Codable, ArchivedPetDisplayable {
+// Soubor: Clif/Models/ArchivedDailyLimitPet.swift
+struct ArchivedDailyLimitPet: Codable, Identifiable, Equatable, PetEvolvable {
     let id: UUID
     let name: String
     let evolutionHistory: EvolutionHistory
     let purpose: String?
-    let isBlown: Bool
     let archivedAt: Date
+    let totalDays: Int
+    let dailyLimitMinutes: Int
     let dailyStats: [DailyUsageStat]
-    let streak: Int
-    // ...
+    let appUsage: [AppUsage]
+
+    // Archiving initializer
+    init(archiving pet: DailyLimitPet, archivedAt: Date = Date()) { ... }
 }
 ```
 
-### ArchivedDynamicPet (Dynamic Wind) - NOVÝ MODEL
+### ArchivedDynamicWindPet - NOVÝ MODEL
 
 ```swift
-struct ArchivedDynamicPet: Identifiable, Codable, ArchivedPetDisplayable {
+// Soubor: Clif/Models/ArchivedDynamicWindPet.swift
+struct ArchivedDynamicWindPet: Codable, Identifiable, Equatable, PetEvolvable {
     let id: UUID
     let name: String
     let evolutionHistory: EvolutionHistory
     let purpose: String?
-    let isBlown: Bool
     let archivedAt: Date
+    let totalDays: Int
+
+    // Sdílené s ArchivedDailyLimitPet
+    let dailyStats: [DailyUsageStat]
+    let appUsage: [AppUsage]
 
     // Dynamic Wind specifické statistiky
     let breakHistory: [BreakRecord]
@@ -380,21 +426,18 @@ struct ArchivedDynamicPet: Identifiable, Codable, ArchivedPetDisplayable {
     let totalBreakMinutes: Int  // Celkový čas v odpočinku
     let completedBreaksCount: Int  // Počet dokončených závazných odpočinků
 
-    // ArchivedPetDisplayable
-    var totalDays: Int {
-        Calendar.current.dateComponents([.day], from: evolutionHistory.createdAt, to: archivedAt).day ?? 0
-    }
-
-    var windLevel: WindLevel { .none }  // Archived = no wind
-    var mood: Mood { isBlown ? .sad : .happy }
+    // Archiving initializer
+    init(archiving pet: DynamicWindPet, archivedAt: Date = Date()) { ... }
 }
 ```
 
 ### DynamicWindConfig
 
 ```swift
+// Soubor: Shared/Models/DynamicWindConfig.swift
+// Herní mechanika - NE animační parametry (ty řeší WindConfig)
 struct DynamicWindConfig: Codable {
-    var increaseRate: WindRate = .normal
+    var riseRate: WindRate = .normal  // body/min při používání appek
     var freeBreakDecreaseRate: Double = 0.3  // wind points/min
     var committedBreakDecreaseRate: Double = 0.6  // wind points/min
     var hardcoreBreakDecreaseRate: Double = 1.0  // wind points/min
@@ -420,42 +463,82 @@ struct DynamicWindConfig: Codable {
 }
 ```
 
-### WindLevel rozšíření
+### WindConfig (existující - pro animace)
 
 ```swift
-// Současný enum - zachovat
-enum WindLevel: Int, CaseIterable {
-    case none, low, medium, high
+// Soubor: Shared/Models/WindConfig.swift
+// Animační parametry - interpoluje plynule na základě progress (0-1)
+struct WindConfig: Equatable {
+    let intensity: CGFloat
+    let bendCurve: CGFloat
+    let swayAmount: CGFloat
+    let rotationAmount: CGFloat
+
+    static func interpolated(
+        progress: CGFloat,
+        bounds: WindConfigBounds = .default
+    ) -> WindConfig
 }
 
-// Nový initializer pro Dynamic mode
-extension WindLevel {
-    init(fromPoints points: Int) {
-        switch points {
-        case 0..<26: self = .none
-        case 26..<51: self = .low
-        case 51..<76: self = .medium
-        default: self = .high
+// WindConfigBounds definuje min/max hodnoty a exponenty pro každý parametr
+```
+
+### WindLevel (aktualizovaný)
+
+```swift
+// Soubor: Shared/Models/Evolution/WindLevel.swift
+enum WindLevel: Int, CaseIterable {
+    case none = 0
+    case low = 1
+    case medium = 2
+    case high = 3
+
+    // Již implementováno - jednotné rozhraní pro oba módy
+    static func from(progress: CGFloat) -> WindLevel {
+        switch progress {
+        case ..<0.05: return .none
+        case ..<0.50: return .low
+        case ..<0.75: return .medium
+        default: return .high
         }
     }
+
+    var representativeProgress: CGFloat {
+        switch self {
+        case .none: return 0
+        case .low: return 0.25
+        case .medium: return 0.60
+        case .high: return 0.90
+        }
+    }
+
+    // + displayName, icon, label, color
 }
 ```
+
+**Poznámka:** `WindLevel.init(fromPoints:)` z původního plánu NENÍ potřeba.
+Oba módy používají `windProgress: CGFloat` (0-1) a `WindLevel.from(progress:)`.
 
 ---
 
 ## Views architektura
 
-### Sdílené komponenty (používají PetDisplayable)
+### Sdílené komponenty
 
 ```
-Shared/
-├── FloatingIslandView - animace ostrova a peta
-├── PetAnimationView - pet sprite/animace
-├── EvolutionCarousel - výběr evoluce
-├── MoodIndicator - zobrazení nálady
-├── WeatherCard - počasí/vítr indikátor (částečně)
-└── PetAvatarView - malý avatar peta
+FloatingIslandView - přijímá:
+├── pet: any PetDisplayable (EvolutionPhase nebo Blob)
+├── windProgress: CGFloat (0-1)
+├── windDirection: CGFloat
+└── windRhythm: WindRhythm?
+
+Interně počítá:
+├── windLevel = WindLevel.from(progress: windProgress)
+├── windConfig = WindConfig.interpolated(progress: windProgress)
+└── currentMood = Mood(from: windLevel)
 ```
+
+**Klíčové:** `FloatingIslandView` nepotřebuje vědět o pet módu - dostane pouze `windProgress` a `PetDisplayable` pro assety/animace.
 
 ### Daily Limit specifické
 
@@ -589,16 +672,16 @@ extension SharedDefaults {
 
 ## Migration path
 
-### Fáze 1: Protokoly a základní modely
-- [ ] Vytvořit `PetDisplayable` protokol
-- [ ] Vytvořit `ArchivedPetDisplayable` protokol
-- [ ] Upravit `ActivePet` aby konformoval `PetDisplayable`
-- [ ] Upravit `ArchivedPet` aby konformoval `ArchivedPetDisplayable`
-- [ ] Přidat `WindLevel.init(fromPoints:)` extension
+### Fáze 1: Přejmenování existujících modelů
+- [ ] Přejmenovat `ActivePet` → `DailyLimitPet`
+- [ ] Přejmenovat `ArchivedPet` → `ArchivedDailyLimitPet`
+- [ ] Aktualizovat všechny reference v codebase (16+ souborů)
+- [ ] Vytvořit `PetPresentable` protokol
+- [ ] Přidat `PetPresentable` conformance na oba přejmenované modely
 
-### Fáze 2: Dynamic modely
-- [ ] Vytvořit `DynamicPet` model (konformuje PetEvolvable, PetDisplayable)
-- [ ] Vytvořit `ArchivedDynamicPet` model
+### Fáze 2: Dynamic Wind modely
+- [ ] Vytvořit `DynamicWindPet` model (konformuje PetEvolvable, PetPresentable)
+- [ ] Vytvořit `ArchivedDynamicWindPet` model
 - [ ] Vytvořit `ActiveBreak` struct
 - [ ] Vytvořit `BreakRecord` struct
 - [ ] Vytvořit `DynamicWindConfig` struct
@@ -621,9 +704,9 @@ extension SharedDefaults {
 - [ ] Blow away trigger pro Dynamic mode (wind >= 100)
 
 ### Fáze 6: UI - Sdílené komponenty
-- [ ] Refaktor FloatingIslandView na PetDisplayable
-- [ ] Refaktor dalších sdílených views na protokoly
-- [ ] Zajistit že existující Daily Limit UI funguje
+- [ ] FloatingIslandView již používá windProgress - ověřit kompatibilitu
+- [ ] Refaktor dalších views aby používaly PetPresentable kde dává smysl
+- [ ] Zajistit že existující Daily Limit UI funguje s přejmenovanými modely
 
 ### Fáze 7: UI - Dynamic Wind screens
 - [ ] `DynamicWindHomeScreen`
