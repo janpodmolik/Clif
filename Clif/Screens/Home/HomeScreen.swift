@@ -13,7 +13,7 @@ struct HomeScreen: View {
 
     private let homeCardInset: CGFloat = 16
 
-    private var pet: ActivePet? { petManager.currentPet }
+    private var pet: DailyPet? { petManager.currentPet }
     private var petDropFrame: CGRect? {
         guard petFrame != .zero else { return nil }
         return petFrame.insetBy(dx: -40, dy: -40)
@@ -77,7 +77,7 @@ struct HomeScreen: View {
         }
     }
 
-    private func homeCard(for pet: ActivePet) -> some View {
+    private func homeCard(for pet: DailyPet) -> some View {
         HomeCardContentView(
             streakCount: 7, // TODO: get from streak manager
             usedTimeText: formatMinutes(pet.todayUsedMinutes),

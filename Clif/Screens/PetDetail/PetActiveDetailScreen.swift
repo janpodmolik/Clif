@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct PetActiveDetailScreen: View {
-    let pet: ActivePet
+    let pet: DailyPet
 
     // MARK: - Context
     var showOverviewActions: Bool = false

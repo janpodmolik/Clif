@@ -85,8 +85,8 @@ struct PetActiveDetailScreenDebug: View {
         }
     }
 
-    private var debugPet: ActivePet {
-        ActivePet(
+    private var debugPet: DailyPet {
+        DailyPet(
             name: petName,
             evolutionHistory: evolutionHistory,
             purpose: purposeLabel.isEmpty ? nil : purposeLabel,

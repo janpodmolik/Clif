@@ -25,8 +25,8 @@ struct PetHistoryRowDebugView: View {
 
     // MARK: - Computed Properties
 
-    private var currentPet: ArchivedPet {
-        ArchivedPet.mock(
+    private var currentPet: ArchivedDailyPet {
+        ArchivedDailyPet.mock(
             name: petName,
             phase: phase,
             isBlown: isBlown,

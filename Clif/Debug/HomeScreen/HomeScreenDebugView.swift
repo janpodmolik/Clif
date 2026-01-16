@@ -117,8 +117,8 @@ struct HomeScreenDebugView: View {
         }
     }
 
-    private var debugPet: ActivePet {
-        ActivePet(
+    private var debugPet: DailyPet {
+        DailyPet(
             name: petName,
             evolutionHistory: EvolutionHistory(
                 createdAt: Calendar.current.date(byAdding: .day, value: -streakCount, to: Date())!,

@@ -3,7 +3,7 @@ import Foundation
 import ManagedSettings
 
 @Observable
-final class ActivePet: Identifiable, PetEvolvable {
+final class DailyPet: Identifiable, PetEvolvable {
     let id: UUID
     let name: String
     private(set) var evolutionHistory: EvolutionHistory
@@ -125,7 +125,7 @@ final class ActivePet: Identifiable, PetEvolvable {
 
 // MARK: - Mock Data
 
-extension ActivePet {
+extension DailyPet {
     static func mock(
         name: String = "Fern",
         phase: Int = 2,
@@ -133,7 +133,7 @@ extension ActivePet {
         todayUsedMinutes: Int = 45,
         dailyLimitMinutes: Int = 120,
         totalDays: Int = 14
-    ) -> ActivePet {
+    ) -> DailyPet {
         let petId = UUID()
         let calendar = Calendar.current
         let createdAt = calendar.date(byAdding: .day, value: -totalDays, to: Date()) ?? Date()
@@ -156,7 +156,7 @@ extension ActivePet {
             return DailyUsageStat(petId: petId, date: date, totalMinutes: minutes)
         }
 
-        return ActivePet(
+        return DailyPet(
             id: petId,
             name: name,
             evolutionHistory: EvolutionHistory(
@@ -178,7 +178,7 @@ extension ActivePet {
         canUseEssence: Bool = false,
         todayUsedMinutes: Int = 15,
         dailyLimitMinutes: Int = 120
-    ) -> ActivePet {
+    ) -> DailyPet {
         let totalDays = canUseEssence ? 2 : 0
         return mock(
             name: name,
@@ -190,7 +190,7 @@ extension ActivePet {
         )
     }
 
-    static func mockList() -> [ActivePet] {
+    static func mockList() -> [DailyPet] {
         [
             .mock(name: "Fern", phase: 2, todayUsedMinutes: 25, dailyLimitMinutes: 120),
             .mock(name: "Ivy", phase: 3, todayUsedMinutes: 67, dailyLimitMinutes: 90)

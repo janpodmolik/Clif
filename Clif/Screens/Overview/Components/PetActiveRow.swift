@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct PetActiveRow: View {
-    let pet: ActivePet
+    let pet: DailyPet
     let onTap: () -> Void
 
     private var mood: Mood {

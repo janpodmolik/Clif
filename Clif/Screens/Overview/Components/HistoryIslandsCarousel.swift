@@ -3,8 +3,8 @@ import SwiftUI
 struct HistoryIslandsCarousel: View {
     @Environment(\.colorScheme) private var colorScheme
 
-    let pets: [ArchivedPet]
-    let onSelect: (ArchivedPet) -> Void
+    let pets: [ArchivedDailyPet]
+    let onSelect: (ArchivedDailyPet) -> Void
 
     private let islandSpacing: CGFloat = 50
     private let carouselHeight: CGFloat = 220
@@ -70,7 +70,7 @@ struct HistoryIslandsCarousel: View {
 #Preview {
     VStack {
         HistoryIslandsCarousel(
-            pets: ArchivedPet.mockList().filter { !$0.isBlown },
+            pets: ArchivedDailyPet.mockList().filter { !$0.isBlown },
             onSelect: { _ in }
         )
 

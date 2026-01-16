@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct HistoryIslandView: View {
-    let pet: ArchivedPet
+    let pet: ArchivedDailyPet
     let height: CGFloat
     let onTap: () -> Void
 

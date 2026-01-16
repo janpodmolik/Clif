@@ -1,6 +1,6 @@
 import Foundation
 
-struct ArchivedPet: Codable, Identifiable, Equatable, PetEvolvable {
+struct ArchivedDailyPet: Codable, Identifiable, Equatable, PetEvolvable {
     let id: UUID
     let name: String
     let evolutionHistory: EvolutionHistory
@@ -50,7 +50,7 @@ struct ArchivedPet: Codable, Identifiable, Equatable, PetEvolvable {
 
 // MARK: - Mock Data
 
-extension ArchivedPet {
+extension ArchivedDailyPet {
     static func mock(
         name: String = "Fern",
         phase: Int = 4,
@@ -58,7 +58,7 @@ extension ArchivedPet {
         daysAgo: Int = 14,
         totalDays: Int = 12,
         dailyLimitMinutes: Int = 60
-    ) -> ArchivedPet {
+    ) -> ArchivedDailyPet {
         let petId = UUID()
         let calendar = Calendar.current
         let createdAt = calendar.date(byAdding: .day, value: -daysAgo, to: Date()) ?? Date()
@@ -93,7 +93,7 @@ extension ArchivedPet {
         // Generate app usage with daily breakdown
         let appUsage = AppUsage.mockList(days: totalDays, petId: petId)
 
-        return ArchivedPet(
+        return ArchivedDailyPet(
             id: petId,
             name: name,
             evolutionHistory: EvolutionHistory(
@@ -111,7 +111,7 @@ extension ArchivedPet {
         )
     }
 
-    static func mockList() -> [ArchivedPet] {
+    static func mockList() -> [ArchivedDailyPet] {
         [
             .mock(name: "Fern", phase: 4, isBlown: false, daysAgo: 28, totalDays: 21),
             .mock(name: "Ivy", phase: 4, isBlown: false, daysAgo: 45, totalDays: 18),
@@ -125,12 +125,12 @@ extension ArchivedPet {
     }
 
     /// Creates a mock blob (no essence) for preview purposes
-    static func mockBlob(name: String = "Blobby", totalDays: Int = 3) -> ArchivedPet {
+    static func mockBlob(name: String = "Blobby", totalDays: Int = 3) -> ArchivedDailyPet {
         let petId = UUID()
         let calendar = Calendar.current
         let createdAt = calendar.date(byAdding: .day, value: -totalDays, to: Date()) ?? Date()
 
-        return ArchivedPet(
+        return ArchivedDailyPet(
             id: petId,
             name: name,
             evolutionHistory: EvolutionHistory(createdAt: createdAt, essence: nil, events: []),
@@ -144,11 +144,11 @@ extension ArchivedPet {
     }
 }
 
-// MARK: - Archiving from ActivePet
+// MARK: - Archiving from DailyPet
 
-extension ArchivedPet {
+extension ArchivedDailyPet {
     /// Creates an archived pet from an active pet.
-    init(archiving pet: ActivePet, archivedAt: Date = Date()) {
+    init(archiving pet: DailyPet, archivedAt: Date = Date()) {
         self.init(
             id: pet.id,
             name: pet.name,

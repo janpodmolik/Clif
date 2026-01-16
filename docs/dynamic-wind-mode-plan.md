@@ -3,8 +3,8 @@
 > **Poslední aktualizace:** Leden 2026
 >
 > **Změny z diskuze:**
-> - Přejmenování modelů: `ActivePet` → `DailyLimitPet`, `ArchivedPet` → `ArchivedDailyLimitPet`
-> - Nové modely: `DynamicWindPet`, `ArchivedDynamicWindPet`
+> - Přejmenování modelů: `ActivePet` → `DailyPet`, `ArchivedPet` → `ArchivedDailyPet` ✅ HOTOVO
+> - Nové modely: `DynamicPet`, `ArchivedDynamicPet`
 > - Wind systém sjednocen na `windProgress: CGFloat` (0-1) pro oba módy
 > - `WindConfig` je pro animace (interpoluje plynule), `DynamicWindConfig` je pro herní mechaniku
 > - `WindLevel.init(fromPoints:)` NENÍ potřeba - používáme `WindLevel.from(progress:)`
@@ -214,18 +214,18 @@ Denní reset:            [Žádný / Částečný / Na polovinu]
 Dva režimy vyžadují **separátní modely** pro Active i Archived pety, propojené protokoly pro sdílené UI komponenty.
 
 ```
-Současný stav:
-├── ActivePet
-└── ArchivedPet
+Současný stav (po rename):
+├── DailyPet (dříve ActivePet) ✅
+└── ArchivedDailyPet (dříve ArchivedPet) ✅
 
-Nový stav:
-├── DailyLimitPet (přejmenovaný ActivePet)
-├── DynamicWindPet (nový model)
-├── ArchivedDailyLimitPet (přejmenovaný ArchivedPet)
-├── ArchivedDynamicWindPet (nový model)
+Cílový stav:
+├── DailyPet ✅
+├── DynamicPet (nový model)
+├── ArchivedDailyPet ✅
+├── ArchivedDynamicPet (nový model)
 └── Protokoly:
     ├── PetEvolvable (evoluce) - oba active konformují (existující)
-    ├── PetDisplayable (animace) - pro FloatingIslandView (existující, upravený)
+    ├── PetDisplayable (animace) - pro FloatingIslandView (existující)
     └── PetPresentable (UI data) - nový protokol pro sdílené UI
 ```
 
@@ -264,12 +264,12 @@ protocol PetPresentable {
 }
 ```
 
-### DailyLimitPet (přejmenovaný ActivePet)
+### DailyPet ✅ (implementováno)
 
 ```swift
-// Soubor: Clif/Models/DailyLimitPet.swift
+// Soubor: Clif/Models/DailyPet.swift
 @Observable
-final class DailyLimitPet: Identifiable, PetEvolvable, PetPresentable {
+final class DailyPet: Identifiable, PetEvolvable {  // TODO: přidat PetPresentable
     let id: UUID
     let name: String
     private(set) var evolutionHistory: EvolutionHistory
@@ -299,12 +299,12 @@ final class DailyLimitPet: Identifiable, PetEvolvable, PetPresentable {
 }
 ```
 
-### DynamicWindPet - NOVÝ MODEL
+### DynamicPet - NOVÝ MODEL
 
 ```swift
-// Soubor: Clif/Models/DynamicWindPet.swift
+// Soubor: Clif/Models/DynamicPet.swift
 @Observable
-final class DynamicWindPet: Identifiable, PetEvolvable, PetPresentable {
+final class DynamicPet: Identifiable, PetEvolvable, PetPresentable {
     let id: UUID
     let name: String
     private(set) var evolutionHistory: EvolutionHistory
@@ -384,11 +384,11 @@ struct BreakRecord: Codable {
 }
 ```
 
-### ArchivedDailyLimitPet (přejmenovaný ArchivedPet)
+### ArchivedDailyPet ✅ (implementováno)
 
 ```swift
-// Soubor: Clif/Models/ArchivedDailyLimitPet.swift
-struct ArchivedDailyLimitPet: Codable, Identifiable, Equatable, PetEvolvable {
+// Soubor: Clif/Models/ArchivedDailyPet.swift
+struct ArchivedDailyPet: Codable, Identifiable, Equatable, PetEvolvable {
     let id: UUID
     let name: String
     let evolutionHistory: EvolutionHistory
@@ -400,15 +400,15 @@ struct ArchivedDailyLimitPet: Codable, Identifiable, Equatable, PetEvolvable {
     let appUsage: [AppUsage]
 
     // Archiving initializer
-    init(archiving pet: DailyLimitPet, archivedAt: Date = Date()) { ... }
+    init(archiving pet: DailyPet, archivedAt: Date = Date()) { ... }
 }
 ```
 
-### ArchivedDynamicWindPet - NOVÝ MODEL
+### ArchivedDynamicPet - NOVÝ MODEL
 
 ```swift
-// Soubor: Clif/Models/ArchivedDynamicWindPet.swift
-struct ArchivedDynamicWindPet: Codable, Identifiable, Equatable, PetEvolvable {
+// Soubor: Clif/Models/ArchivedDynamicPet.swift
+struct ArchivedDynamicPet: Codable, Identifiable, Equatable, PetEvolvable {
     let id: UUID
     let name: String
     let evolutionHistory: EvolutionHistory
@@ -427,7 +427,7 @@ struct ArchivedDynamicWindPet: Codable, Identifiable, Equatable, PetEvolvable {
     let completedBreaksCount: Int  // Počet dokončených závazných odpočinků
 
     // Archiving initializer
-    init(archiving pet: DynamicWindPet, archivedAt: Date = Date()) { ... }
+    init(archiving pet: DynamicPet, archivedAt: Date = Date()) { ... }
 }
 ```
 
@@ -672,22 +672,22 @@ extension SharedDefaults {
 
 ## Migration path
 
-### Fáze 1: Přejmenování existujících modelů
-- [ ] Přejmenovat `ActivePet` → `DailyLimitPet`
-- [ ] Přejmenovat `ArchivedPet` → `ArchivedDailyLimitPet`
-- [ ] Aktualizovat všechny reference v codebase (16+ souborů)
+### Fáze 1: Přejmenování existujících modelů ✅ HOTOVO
+- [x] Přejmenovat `ActivePet` → `DailyPet`
+- [x] Přejmenovat `ArchivedPet` → `ArchivedDailyPet`
+- [x] Aktualizovat všechny reference v codebase
 - [ ] Vytvořit `PetPresentable` protokol
-- [ ] Přidat `PetPresentable` conformance na oba přejmenované modely
+- [ ] Přidat `PetPresentable` conformance na oba modely
 
-### Fáze 2: Dynamic Wind modely
-- [ ] Vytvořit `DynamicWindPet` model (konformuje PetEvolvable, PetPresentable)
-- [ ] Vytvořit `ArchivedDynamicWindPet` model
+### Fáze 2: Dynamic modely
+- [ ] Vytvořit `DynamicPet` model (konformuje PetEvolvable, PetPresentable)
+- [ ] Vytvořit `ArchivedDynamicPet` model
 - [ ] Vytvořit `ActiveBreak` struct
 - [ ] Vytvořit `BreakRecord` struct
 - [ ] Vytvořit `DynamicWindConfig` struct
 
 ### Fáze 3: Manager a persistence
-- [ ] Vytvořit `DynamicPetManager` (nebo rozšířit PetManager)
+- [ ] Rozšířit `PetManager` o podporu Dynamic petů
 - [ ] Rozšířit SharedDefaults pro Dynamic Wind data
 - [ ] Persistence pro DynamicPet a ArchivedDynamicPet
 

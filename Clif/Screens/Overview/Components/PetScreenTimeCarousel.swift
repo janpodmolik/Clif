@@ -3,11 +3,11 @@ import ManagedSettings
 import SwiftUI
 
 struct PetScreenTimeCarousel: View {
-    let activePets: [ActivePet]
+    let activePets: [DailyPet]
     let fallbackStats: WeeklyUsageStats
     var applicationTokens: Set<ApplicationToken> = []
     var categoryTokens: Set<ActivityCategoryToken> = []
-    var onPetTap: (ActivePet) -> Void
+    var onPetTap: (DailyPet) -> Void
 
     @State private var selectedIndex: Int = 0
     @State private var scrollTarget: UUID?
@@ -85,7 +85,7 @@ struct PetScreenTimeCarousel: View {
 
 #Preview("Multiple Pets") {
     PetScreenTimeCarousel(
-        activePets: ActivePet.mockList(),
+        activePets: DailyPet.mockList(),
         fallbackStats: .mock(),
         onPetTap: { _ in }
     )

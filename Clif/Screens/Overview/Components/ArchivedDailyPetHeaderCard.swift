@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct ArchivedPetHeaderCard: View {
+struct ArchivedDailyPetHeaderCard: View {
     let petName: String
     let mood: Mood
     let totalDays: Int
@@ -144,7 +144,7 @@ struct ArchivedPetHeaderCard: View {
 
 #if DEBUG
 #Preview("Fully Evolved") {
-    ArchivedPetHeaderCard(
+    ArchivedDailyPetHeaderCard(
         petName: "Fern",
         mood: .happy,
         totalDays: 12,
@@ -158,7 +158,7 @@ struct ArchivedPetHeaderCard: View {
 }
 
 #Preview("Blown") {
-    ArchivedPetHeaderCard(
+    ArchivedDailyPetHeaderCard(
         petName: "Sprout",
         mood: .blown,
         totalDays: 5,

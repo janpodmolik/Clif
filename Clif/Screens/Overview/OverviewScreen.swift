@@ -2,8 +2,8 @@ import FamilyControls
 import SwiftUI
 
 struct OverviewScreen: View {
-    @State private var selectedPet: ArchivedPet?
-    @State private var selectedActivePet: ActivePet?
+    @State private var selectedPet: ArchivedDailyPet?
+    @State private var selectedDailyPet: DailyPet?
     @State private var historyViewMode: HistoryViewMode = .list
 
     @ObservedObject private var screenTimeManager = ScreenTimeManager.shared
@@ -14,10 +14,10 @@ struct OverviewScreen: View {
 
     // Mock data for now - stored in @State to prevent regeneration on view updates
     @State private var weeklyStats = WeeklyUsageStats.mock()
-    @State private var archivedPets = ArchivedPet.mockList()
-    @State private var activePets = ActivePet.mockList()
+    @State private var archivedPets = ArchivedDailyPet.mockList()
+    @State private var activePets = DailyPet.mockList()
 
-    private var completedPets: [ArchivedPet] {
+    private var completedPets: [ArchivedDailyPet] {
         archivedPets.filter { !$0.isBlown }
     }
 
@@ -33,7 +33,7 @@ struct OverviewScreen: View {
                     applicationTokens: screenTimeManager.activitySelection.applicationTokens,
                     categoryTokens: screenTimeManager.activitySelection.categoryTokens,
                     onPetTap: { pet in
-                        selectedActivePet = pet
+                        selectedDailyPet = pet
                     }
                 )
 
@@ -55,12 +55,12 @@ struct OverviewScreen: View {
         .fullScreenCover(item: $selectedPet) { pet in
             PetArchivedDetailScreen(pet: pet)
         }
-        .fullScreenCover(item: $selectedActivePet) { pet in
+        .fullScreenCover(item: $selectedDailyPet) { pet in
             PetActiveDetailScreen(
                 pet: pet,
                 showOverviewActions: true,
                 onShowOnHomepage: {
-                    selectedActivePet = nil
+                    selectedDailyPet = nil
                     if let url = URL(string: "clif://pet/\(pet.id.uuidString)") {
                         UIApplication.shared.open(url)
                     }
@@ -97,7 +97,7 @@ struct OverviewScreen: View {
                 LazyVStack(spacing: 12) {
                     ForEach(activePets) { pet in
                         PetActiveRow(pet: pet) {
-                            selectedActivePet = pet
+                            selectedDailyPet = pet
                         }
                     }
                 }

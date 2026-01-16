@@ -4,7 +4,7 @@ struct SearchSheet: View {
     @Environment(\.dismiss) private var dismiss
 
     @State private var filter = PetSearchFilter()
-    @State private var selectedPet: ArchivedPet?
+    @State private var selectedPet: ArchivedDailyPet?
     @State private var activeFilterSheet: FilterType?
 
     private enum FilterType: Identifiable {
@@ -16,9 +16,9 @@ struct SearchSheet: View {
         var id: Self { self }
     }
 
-    private let archivedPets = ArchivedPet.mockList()
+    private let archivedPets = ArchivedDailyPet.mockList()
 
-    private var filteredPets: [ArchivedPet] {
+    private var filteredPets: [ArchivedDailyPet] {
         archivedPets.filter { pet in
             // Text search (name + purpose)
             if !filter.searchText.isEmpty {

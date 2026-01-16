@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct PetHistoryGridItem: View {
-    let pet: ArchivedPet
+    let pet: ArchivedDailyPet
     let onTap: () -> Void
 
     private var mood: Mood {

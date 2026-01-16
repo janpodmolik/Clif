@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct PetHistoryRow: View {
-    let pet: ArchivedPet
+    let pet: ArchivedDailyPet
     let onTap: () -> Void
 
     private static let relativeDateFormatter: RelativeDateTimeFormatter = {

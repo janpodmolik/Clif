@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct PetScreenTimeCard: View {
-    let pet: ActivePet
+    let pet: DailyPet
     var onTap: () -> Void
     var onDetailTap: () -> Void = {}
 

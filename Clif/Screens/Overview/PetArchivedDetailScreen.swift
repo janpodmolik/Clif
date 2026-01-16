@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct PetArchivedDetailScreen: View {
-    let pet: ArchivedPet
+    let pet: ArchivedDailyPet
 
     @Environment(\.dismiss) private var dismiss
     @State private var showAppUsageSheet = false
@@ -14,7 +14,7 @@ struct PetArchivedDetailScreen: View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 20) {
-                    ArchivedPetHeaderCard(
+                    ArchivedDailyPetHeaderCard(
                         petName: pet.name,
                         mood: mood,
                         totalDays: pet.totalDays,
