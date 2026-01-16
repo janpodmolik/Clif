@@ -15,6 +15,20 @@ final class WindRhythm {
     /// This makes wind lines arrive before pet reacts to the gust.
     static let windLookAhead: TimeInterval = 0.6
 
+    /// Gust frequency range: interpolates from min (progress=0) to max (progress=1).
+    private static let gustFrequencyMin: CGFloat = 1.0
+    private static let gustFrequencyMax: CGFloat = 1.5
+
+    /// Current wind progress (0-1). Higher progress = faster gusts.
+    var windProgress: CGFloat = 0 {
+        didSet {
+            gustFrequency = Self.gustFrequencyMin + (Self.gustFrequencyMax - Self.gustFrequencyMin) * windProgress
+        }
+    }
+
+    /// Computed frequency multiplier based on wind progress.
+    private(set) var gustFrequency: CGFloat = gustFrequencyMin
+
     // MARK: - Published State
 
     /// Current gust intensity (0 = calm, 1 = peak gust).
@@ -70,8 +84,10 @@ final class WindRhythm {
 
     /// Compute wave value at a specific time.
     /// Wave formula: three overlapping sine waves for organic feel.
+    /// Frequency is scaled by `gustFrequency` (derived from wind progress).
     private func computeWave(at time: CFTimeInterval) -> CGFloat {
-        let rawValue = sin(time * 1.5) * 0.6 + sin(time * 2.3) * 0.3 + sin(time * 0.7) * 0.1
+        let f = gustFrequency
+        let rawValue = sin(time * 1.5 * f) * 0.6 + sin(time * 2.3 * f) * 0.3 + sin(time * 0.7 * f) * 0.1
         // Asymmetric: full amplitude forward (negative), 40% back swing (positive)
         return rawValue < 0 ? rawValue : rawValue * 0.4
     }

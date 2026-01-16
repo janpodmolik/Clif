@@ -150,10 +150,13 @@ struct PetAnimationEffect: ViewModifier {
             let transformCallback = onTransformUpdate
             let isPeakMode = peakMode
 
+            // Scale time for shader to match gustFrequency (so bend/sway syncs with rotation)
+            let shaderTime = time * (windRhythm?.gustFrequency ?? 1.0)
+
             content
                 .visualEffect { view, proxy in
                     let shader = createShader(
-                        time: Float(time),
+                        time: Float(shaderTime),
                         relativeTapTime: relativeTapTime,
                         idle: idle,
                         peakMode: isPeakMode,

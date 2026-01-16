@@ -516,6 +516,7 @@ struct PetDebugView: View {
         direction = 1.0
         windIntensityScale = 1.0
         peakMode = false
+        debugWindRhythm.windProgress = 0.5
     }
 
     private func resetTapToDefaults() {
@@ -624,6 +625,9 @@ struct PetDebugView: View {
                     .cornerRadius(4)
             }
             Slider(value: $windProgress, in: 0...1)
+                .onChange(of: windProgress) { _, newValue in
+                    debugWindRhythm.windProgress = newValue
+                }
         }
 
         // Peak mode toggle - shows maximum deflection for current settings
