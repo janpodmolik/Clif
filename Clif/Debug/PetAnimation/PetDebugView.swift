@@ -19,16 +19,10 @@ struct PetDebugView: View {
     @State private var isWindExpanded: Bool = true
     @State private var isTapExpanded: Bool = false
 
-    // Custom wind override mode
-    @State private var useCustomConfig: Bool = false
-    @State private var customIntensity: CGFloat = 0.5
-    @State private var customBendCurve: CGFloat = 2.0
-    @State private var customSwayAmount: CGFloat = 0.3
-    @State private var customRotationAmount: CGFloat = 0.5
-
     // Continuous wind (interpolated by progress)
     @State private var windProgress: CGFloat = 0.5
-    @State private var interpolationCurve: InterpolationCurve = .easeIn
+    @State private var windBounds: WindConfigBounds = .default
+    @State private var isBoundsExpanded: Bool = false
 
     // Idle animation
     @State private var idleEnabled: Bool = true
@@ -114,19 +108,9 @@ struct PetDebugView: View {
         }
     }
 
-    private var customWindConfig: WindConfig? {
-        guard useCustomConfig else { return nil }
-        return WindConfig(
-            intensity: customIntensity,
-            bendCurve: customBendCurve,
-            swayAmount: customSwayAmount,
-            rotationAmount: customRotationAmount
-        )
-    }
-
     /// Wind config from continuous progress interpolation
     private var continuousWindConfig: WindConfig {
-        WindConfig.interpolated(progress: windProgress, curve: interpolationCurve)
+        WindConfig.interpolated(progress: windProgress, bounds: windBounds)
     }
 
     /// Returns the WindLevel zone for current progress (for UI reference)
@@ -198,7 +182,7 @@ struct PetDebugView: View {
                         screenWidth: geometry.size.width,
                         pet: currentPet,
                         windLevel: windLevel,
-                        windConfig: customWindConfig ?? continuousWindConfig,
+                        windConfig: continuousWindConfig,
                         windDirection: direction,
                         windIntensityScale: windIntensityScale,
                         idleIntensityScale: idleIntensityScale,
@@ -524,15 +508,11 @@ struct PetDebugView: View {
     }
 
     private func resetWindToDefaults() {
-        useCustomConfig = false
         windProgress = 0.5
-        interpolationCurve = .easeIn
+        windBounds = .default
+        isBoundsExpanded = false
         direction = 1.0
         windIntensityScale = 1.0
-        customIntensity = 0.5
-        customBendCurve = 2.0
-        customSwayAmount = 0.3
-        customRotationAmount = 0.5
     }
 
     private func resetTapToDefaults() {
@@ -627,6 +607,13 @@ struct PetDebugView: View {
     private var windControlsContent: some View {
         // Progress slider with zone indicator
         VStack(alignment: .leading, spacing: 4) {
+            // Wind direction
+            DebugSegmentedPicker(
+                [-1.0, 1.0],
+                selection: $direction,
+                label: { $0 < 0 ? "\u{2190} Left" : "\u{2192} Right" }
+            )
+
             HStack {
                 Text("Progress: \(Int(windProgress * 100))%")
                     .font(.caption)
@@ -642,46 +629,6 @@ struct PetDebugView: View {
             }
             Slider(value: $windProgress, in: 0...1)
         }
-
-        // Interpolation curve picker
-        VStack(alignment: .leading, spacing: 4) {
-            Text("Interpolation Curve")
-                .font(.caption)
-                .foregroundStyle(.secondary)
-            DebugSegmentedPicker(
-                InterpolationCurve.allCases.map { $0 },
-                selection: $interpolationCurve,
-                label: { $0.rawValue }
-            )
-        }
-
-        // Current interpolated values display
-        VStack(alignment: .leading, spacing: 2) {
-            Text("Interpolated Values")
-                .font(.caption)
-                .foregroundStyle(.secondary)
-            HStack {
-                Text("Int: \(continuousWindConfig.intensity, specifier: "%.2f")")
-                Spacer()
-                Text("Bend: \(continuousWindConfig.bendCurve, specifier: "%.1f")")
-                Spacer()
-                Text("Sway: \(continuousWindConfig.swayAmount, specifier: "%.1f")")
-                Spacer()
-                Text("Rot: \(continuousWindConfig.rotationAmount, specifier: "%.1f")")
-            }
-            .font(.caption2.monospacedDigit())
-            .foregroundStyle(.tertiary)
-        }
-        .padding(8)
-        .background(Color.secondary.opacity(0.1))
-        .cornerRadius(6)
-
-        // Wind direction
-        DebugSegmentedPicker(
-            [-1.0, 1.0],
-            selection: $direction,
-            label: { $0 < 0 ? "\u{2190} Left" : "\u{2192} Right" }
-        )
 
         // Gust intensity indicator (from shared rhythm)
         HStack {
@@ -706,38 +653,147 @@ struct PetDebugView: View {
                 .frame(width: 40, alignment: .trailing)
         }
 
-        // Custom wind config toggle (overrides interpolation)
-        Toggle("Custom Wind Config", isOn: $useCustomConfig)
-
-        if useCustomConfig {
-            customWindControls
+        // Current interpolated values display
+        VStack(alignment: .leading, spacing: 2) {
+            Text("Interpolated Values")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+            HStack {
+                Text("Int: \(continuousWindConfig.intensity, specifier: "%.2f")")
+                Spacer()
+                Text("Bend: \(continuousWindConfig.bendCurve, specifier: "%.1f")")
+                Spacer()
+                Text("Sway: \(continuousWindConfig.swayAmount, specifier: "%.1f")")
+                Spacer()
+                Text("Rot: \(continuousWindConfig.rotationAmount, specifier: "%.1f")")
+            }
+            .font(.caption2.monospacedDigit())
+            .foregroundStyle(.tertiary)
         }
+        .padding(8)
+        .background(Color.secondary.opacity(0.1))
+        .cornerRadius(6)
+
+        // Bounds tuning (expandable)
+        DisclosureGroup("Tune Bounds", isExpanded: $isBoundsExpanded) {
+            windBoundsControls
+        }
+        .font(.caption)
     }
 
     @ViewBuilder
-    private var customWindControls: some View {
-        HStack {
-            Text("Intensity: \(customIntensity, specifier: "%.2f")")
-                .frame(width: 120, alignment: .leading)
-            Slider(value: $customIntensity, in: 0...2)
-        }
+    private var windBoundsControls: some View {
+        VStack(spacing: 12) {
+            // Intensity bounds
+            paramBoundsRow(
+                label: "Intensity",
+                bounds: $windBounds.intensity,
+                minRange: 0...2,
+                maxRange: 0...3,
+                expRange: 0.2...3.0
+            )
 
-        HStack {
-            Text("Bend: \(customBendCurve, specifier: "%.1f")")
-                .frame(width: 120, alignment: .leading)
-            Slider(value: $customBendCurve, in: 0.5...4.0)
-        }
+            // Bend curve bounds
+            paramBoundsRow(
+                label: "Bend",
+                bounds: $windBounds.bendCurve,
+                minRange: 1...3,
+                maxRange: 2...4,
+                expRange: 0.2...3.0
+            )
 
-        HStack {
-            Text("Sway: \(customSwayAmount, specifier: "%.1f")")
-                .frame(width: 120, alignment: .leading)
-            Slider(value: $customSwayAmount, in: 0...15)
-        }
+            // Sway amount bounds
+            paramBoundsRow(
+                label: "Sway",
+                bounds: $windBounds.swayAmount,
+                minRange: 0...5,
+                maxRange: 5...15,
+                expRange: 0.2...3.0
+            )
 
-        HStack {
-            Text("Rotation: \(customRotationAmount, specifier: "%.1f")")
-                .frame(width: 120, alignment: .leading)
-            Slider(value: $customRotationAmount, in: 0...2)
+            // Rotation amount bounds
+            paramBoundsRow(
+                label: "Rotation",
+                bounds: $windBounds.rotationAmount,
+                minRange: 0...2,
+                maxRange: 0...2,
+                expRange: 0.2...3.0
+            )
+        }
+        .padding(.top, 8)
+    }
+
+    @ViewBuilder
+    private func paramBoundsRow(
+        label: String,
+        bounds: Binding<WindParamBounds>,
+        minRange: ClosedRange<CGFloat>,
+        maxRange: ClosedRange<CGFloat>,
+        expRange: ClosedRange<CGFloat>
+    ) -> some View {
+        VStack(alignment: .leading, spacing: 4) {
+            HStack {
+                Text(label)
+                    .font(.caption.weight(.medium))
+                Spacer()
+                Text("exp: \(bounds.wrappedValue.exponent, specifier: "%.1f")")
+                    .font(.caption2.monospacedDigit())
+                    .foregroundStyle(.orange)
+            }
+
+            HStack(spacing: 8) {
+                // Min value
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Min")
+                        .font(.caption2)
+                        .foregroundStyle(.tertiary)
+                    HStack {
+                        Slider(value: bounds.min, in: minRange)
+                        Text("\(bounds.wrappedValue.min, specifier: "%.1f")")
+                            .font(.caption2.monospacedDigit())
+                            .frame(width: 28)
+                    }
+                }
+
+                // Max value
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Max")
+                        .font(.caption2)
+                        .foregroundStyle(.tertiary)
+                    HStack {
+                        Slider(value: bounds.max, in: maxRange)
+                        Text("\(bounds.wrappedValue.max, specifier: "%.1f")")
+                            .font(.caption2.monospacedDigit())
+                            .frame(width: 28)
+                    }
+                }
+            }
+
+            // Exponent slider
+            HStack {
+                Text("Exp")
+                    .font(.caption2)
+                    .foregroundStyle(.tertiary)
+                    .frame(width: 24, alignment: .leading)
+                Slider(value: bounds.exponent, in: expRange)
+                Text(exponentDescription(bounds.wrappedValue.exponent))
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+                    .frame(width: 60, alignment: .trailing)
+            }
+        }
+        .padding(8)
+        .background(Color.secondary.opacity(0.05))
+        .cornerRadius(6)
+    }
+
+    private func exponentDescription(_ exp: CGFloat) -> String {
+        if exp < 0.9 {
+            return "faster"
+        } else if exp > 1.1 {
+            return "slower"
+        } else {
+            return "linear"
         }
     }
 
@@ -1194,12 +1250,7 @@ struct PetDebugView: View {
             ? customTapConfig!
             : currentPet.tapConfig(for: .bounce)
 
-        let windConfig = customWindConfig ?? WindConfig(
-            intensity: 0.5,
-            bendCurve: 2.0,
-            swayAmount: 0.3,
-            rotationAmount: 0.5
-        )
+        let windConfig = continuousWindConfig
 
         let export = """
         === Evolution Config Export ===

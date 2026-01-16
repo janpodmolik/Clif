@@ -7,35 +7,25 @@ struct WindConfig: Equatable {
     let swayAmount: CGFloat
     let rotationAmount: CGFloat
 
-    // MARK: - Interpolation Bounds
-
-    /// Maximum wind config values (at 100% progress)
-    /// These define the "strong wind" behavior - can be tuned per evolution in the future
-    static let maxIntensity: CGFloat = 2.0
-    static let maxBendCurve: CGFloat = 3.0
-    static let maxSwayAmount: CGFloat = 11.0
-    static let maxRotationAmount: CGFloat = 0.8
-
-    /// Minimum wind config values (at 0% progress)
-    static let minIntensity: CGFloat = 0
-    static let minBendCurve: CGFloat = 2.0
-    static let minSwayAmount: CGFloat = 0
-    static let minRotationAmount: CGFloat = 1.0
-
     // MARK: - Interpolation
 
     /// Interpolates wind config based on progress (0-1).
     /// - Parameter progress: Usage progress from 0 (no usage) to 1 (limit reached)
     /// - Parameter curve: Interpolation curve type
+    /// - Parameter bounds: Min/max bounds and per-parameter exponents
     /// - Returns: WindConfig with interpolated values (0% = calm, 100% = strong wind)
-    static func interpolated(progress: CGFloat, curve: InterpolationCurve = .easeIn) -> WindConfig {
-        let t = curve.apply(min(max(progress, 0), 1))
+    static func interpolated(
+        progress: CGFloat,
+        curve: InterpolationCurve = .linear,
+        bounds: WindConfigBounds = .default
+    ) -> WindConfig {
+        let baseCurve = curve.apply(min(max(progress, 0), 1))
 
         return WindConfig(
-            intensity: lerp(from: minIntensity, to: maxIntensity, t: t),
-            bendCurve: lerp(from: minBendCurve, to: maxBendCurve, t: t),
-            swayAmount: lerp(from: minSwayAmount, to: maxSwayAmount, t: t),
-            rotationAmount: lerp(from: minRotationAmount, to: maxRotationAmount, t: t)
+            intensity: bounds.intensity.interpolate(t: baseCurve),
+            bendCurve: bounds.bendCurve.interpolate(t: baseCurve),
+            swayAmount: bounds.swayAmount.interpolate(t: baseCurve),
+            rotationAmount: bounds.rotationAmount.interpolate(t: baseCurve)
         )
     }
 
@@ -44,18 +34,43 @@ struct WindConfig: Equatable {
     }
 }
 
+/// Bounds for a single wind parameter with min, max, and per-parameter exponent.
+struct WindParamBounds: Equatable {
+    var min: CGFloat
+    var max: CGFloat
+    /// Per-parameter exponent applied after base curve. 1.0 = no change, >1 = slower start, <1 = faster start
+    var exponent: CGFloat
+
+    func interpolate(t: CGFloat) -> CGFloat {
+        let adjusted = pow(t, exponent)
+        return min + (max - min) * adjusted
+    }
+
+    static func == (lhs: WindParamBounds, rhs: WindParamBounds) -> Bool {
+        lhs.min == rhs.min && lhs.max == rhs.max && lhs.exponent == rhs.exponent
+    }
+}
+
+/// Collection of bounds for all wind config parameters.
+struct WindConfigBounds: Equatable {
+    var intensity: WindParamBounds
+    var bendCurve: WindParamBounds
+    var swayAmount: WindParamBounds
+    var rotationAmount: WindParamBounds
+
+    static let `default` = WindConfigBounds(
+        intensity: WindParamBounds(min: 0, max: 2.0, exponent: 1.0),
+        bendCurve: WindParamBounds(min: 2.0, max: 3.0, exponent: 1.0),
+        swayAmount: WindParamBounds(min: 0, max: 11.0, exponent: 1.0),
+        rotationAmount: WindParamBounds(min: 1.0, max: 0.8, exponent: 1.0)
+    )
+}
+
 /// Curve type for wind config interpolation
 enum InterpolationCurve: String, CaseIterable {
     case linear = "Linear"
-    case easeIn = "Ease In"
 
     func apply(_ t: CGFloat) -> CGFloat {
-        switch self {
-        case .linear:
-            return t
-        case .easeIn:
-            // Quadratic ease-in: slow start, fast end
-            return t * t
-        }
+        t
     }
 }
