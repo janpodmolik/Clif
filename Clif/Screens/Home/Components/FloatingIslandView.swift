@@ -52,7 +52,7 @@ struct FloatingIslandView: View {
     }
 
     private var windConfig: WindConfig {
-        WindConfig.interpolated(progress: windProgress, curve: .linear)
+        WindConfig.interpolated(progress: windProgress)
     }
 
     private var idleConfig: IdleConfig {

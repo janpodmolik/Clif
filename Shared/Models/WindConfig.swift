@@ -11,26 +11,20 @@ struct WindConfig: Equatable {
 
     /// Interpolates wind config based on progress (0-1).
     /// - Parameter progress: Usage progress from 0 (no usage) to 1 (limit reached)
-    /// - Parameter curve: Interpolation curve type
     /// - Parameter bounds: Min/max bounds and per-parameter exponents
     /// - Returns: WindConfig with interpolated values (0% = calm, 100% = strong wind)
     static func interpolated(
         progress: CGFloat,
-        curve: InterpolationCurve = .linear,
         bounds: WindConfigBounds = .default
     ) -> WindConfig {
-        let baseCurve = curve.apply(min(max(progress, 0), 1))
+        let t = min(max(progress, 0), 1)
 
         return WindConfig(
-            intensity: bounds.intensity.interpolate(t: baseCurve),
-            bendCurve: bounds.bendCurve.interpolate(t: baseCurve),
-            swayAmount: bounds.swayAmount.interpolate(t: baseCurve),
-            rotationAmount: bounds.rotationAmount.interpolate(t: baseCurve)
+            intensity: bounds.intensity.interpolate(t: t),
+            bendCurve: bounds.bendCurve.interpolate(t: t),
+            swayAmount: bounds.swayAmount.interpolate(t: t),
+            rotationAmount: bounds.rotationAmount.interpolate(t: t)
         )
-    }
-
-    private static func lerp(from a: CGFloat, to b: CGFloat, t: CGFloat) -> CGFloat {
-        a + (b - a) * t
     }
 }
 
@@ -66,11 +60,3 @@ struct WindConfigBounds: Equatable {
     )
 }
 
-/// Curve type for wind config interpolation
-enum InterpolationCurve: String, CaseIterable {
-    case linear = "Linear"
-
-    func apply(_ t: CGFloat) -> CGFloat {
-        t
-    }
-}
