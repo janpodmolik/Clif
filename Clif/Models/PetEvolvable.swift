@@ -26,6 +26,39 @@ extension PetEvolvable {
         evolutionPath?.phase(at: currentPhase)
     }
 
+    // MARK: - Evolution Timing
+
+    /// Days since pet was created.
+    var daysSinceCreation: Int {
+        Calendar.current.dateComponents(
+            [.day],
+            from: evolutionHistory.createdAt,
+            to: Date()
+        ).day ?? 0
+    }
+
+    /// True if blob can use essence (at least 1 day old).
+    var canUseEssence: Bool {
+        guard isBlob else { return false }
+        return daysSinceCreation >= 1
+    }
+
+    /// Days until essence can be used (for blob pets).
+    var daysUntilEssence: Int? {
+        guard isBlob, !canUseEssence else { return nil }
+        let remaining = 1 - daysSinceCreation
+        return remaining > 0 ? remaining : nil
+    }
+
+    /// Days until next evolution (1 day per phase).
+    var daysUntilEvolution: Int? {
+        guard !evolutionHistory.canEvolve else { return nil }
+        guard !isBlob else { return nil }
+        let nextEvolutionDay = evolutionHistory.currentPhase
+        let remaining = nextEvolutionDay - daysSinceCreation
+        return remaining > 0 ? remaining : nil
+    }
+
     // MARK: - Display Properties
 
     /// Theme color for the pet. Falls back to `.secondary` for blobs.

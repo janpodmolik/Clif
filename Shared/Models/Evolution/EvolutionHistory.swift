@@ -90,3 +90,36 @@ struct EvolutionHistory: Codable, Equatable {
         return events.first { $0.toPhase == phase }?.date
     }
 }
+
+// MARK: - Mock Data
+
+extension EvolutionHistory {
+    /// Creates mock evolution history for preview/testing.
+    static func mock(
+        phase: Int = 2,
+        essence: Essence? = .plant,
+        totalDays: Int = 14,
+        isBlown: Bool = false
+    ) -> EvolutionHistory {
+        let calendar = Calendar.current
+        let createdAt = calendar.date(byAdding: .day, value: -totalDays, to: Date()) ?? Date()
+
+        var events: [EvolutionEvent] = []
+        if essence != nil, phase > 1 {
+            for p in 2...phase {
+                let offset = p - totalDays
+                let date = calendar.date(byAdding: .day, value: offset, to: Date()) ?? Date()
+                events.append(EvolutionEvent(fromPhase: p - 1, toPhase: p, date: date))
+            }
+        }
+
+        let blownAt: Date? = isBlown ? Date() : nil
+
+        return EvolutionHistory(
+            createdAt: createdAt,
+            essence: essence,
+            events: events,
+            blownAt: blownAt
+        )
+    }
+}

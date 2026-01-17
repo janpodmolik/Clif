@@ -22,6 +22,25 @@ struct DailyUsageStat: Codable, Identifiable, Equatable {
     }
 }
 
+// MARK: - Mock Data
+
+extension DailyUsageStat {
+    /// Creates mock daily stats for testing.
+    static func mockList(
+        petId: UUID,
+        days: Int,
+        minutesRange: ClosedRange<Int> = 5...60
+    ) -> [DailyUsageStat] {
+        let calendar = Calendar.current
+        let today = calendar.startOfDay(for: Date())
+        return (0..<days).map { dayOffset in
+            let date = calendar.date(byAdding: .day, value: -(days - 1) + dayOffset, to: today)!
+            let minutes = Int.random(in: minutesRange)
+            return DailyUsageStat(petId: petId, date: date, totalMinutes: minutes)
+        }
+    }
+}
+
 /// Weekly stats container for chart display.
 struct WeeklyUsageStats: Codable, Equatable, UsageStatsProtocol {
     let days: [DailyUsageStat]

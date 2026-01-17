@@ -81,12 +81,50 @@ Nový režim kde vítr **dynamicky roste i klesá** na základě chování uživ
 
 ## Implementační fáze
 
-1. **Modely** - DynamicPet, ArchivedDynamicPet, ActiveBreak, DynamicWindConfig
-2. **Manager** - rozšířit PetManager o Dynamic podporu, persistence
-3. **Break mechanika** - start/end/fail, shield aktivace, penalizace
-4. **DeviceActivityMonitor** - threshold → windPoints, blow away trigger
-5. **UI** - home screen, break flow, detail screen
-6. **Settings** - mode selector, Dynamic konfigurace
+1. **Modely** - DynamicPet, ArchivedDynamicPet, ActiveBreak, DynamicWindConfig ✅
+2. **DTO vrstva** - oddělení persistence od modelů
+3. **Manager** - rozšířit PetManager o Dynamic podporu, persistence
+4. **Break mechanika** - start/end/fail, shield aktivace, penalizace
+5. **DeviceActivityMonitor** - threshold → windPoints, blow away trigger
+6. **UI** - home screen, break flow, detail screen
+7. **Settings** - mode selector, Dynamic konfigurace
+
+## DTO Architektura
+
+**Umístění:** `Clif/DTOs/`
+
+**Naming:** `{Model}DTO` (např. `DailyPetDTO`, `DynamicPetDTO`)
+
+**Struktura:**
+```
+Clif/DTOs/
+  DailyPetDTO.swift
+  DynamicPetDTO.swift
+  ArchivedDailyPetDTO.swift
+  ArchivedDynamicPetDTO.swift
+  EvolutionHistoryDTO.swift
+  ActiveBreakDTO.swift
+  CompletedBreakDTO.swift
+```
+
+**Konverze:** Na DTO (`DTO(from: model)` init), na Model extension
+```swift
+// DTO → Model
+extension DailyPet {
+    convenience init(from dto: DailyPetDTO) { ... }
+}
+
+// Model → DTO
+extension DailyPetDTO {
+    init(from pet: DailyPet) { ... }
+}
+```
+
+**Výhody:**
+- Čisté Codable structs bez computed properties
+- Persistence nezávislá na UI modelech
+- Snadnější migrace dat
+- Validace při konverzi
 
 ## Rozhodnutí
 

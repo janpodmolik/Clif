@@ -72,4 +72,24 @@ enum WindLevel: Int, CaseIterable {
         case .high: return 0.90
         }
     }
+
+    // MARK: - Dynamic Wind Mode
+
+    /// Returns the wind level zone for Dynamic Wind mode based on wind points (0-100).
+    /// Uses different thresholds than Daily mode for more granular feedback.
+    ///
+    /// Zone thresholds:
+    /// - none: 0-25 points
+    /// - low: 26-50 points
+    /// - medium: 51-75 points
+    /// - high: 76-99 points
+    /// - (100 = blow away, not represented here)
+    static func from(windPoints: Double) -> WindLevel {
+        switch windPoints {
+        case ..<26: return .none
+        case ..<51: return .low
+        case ..<76: return .medium
+        default: return .high
+        }
+    }
 }
