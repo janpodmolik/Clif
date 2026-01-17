@@ -254,5 +254,6 @@ struct ContentView: View {
 
 #Preview {
     ContentView()
-        .environment(PetManager.mock(withDailyPets: false))
+        .environment(PetManager.mock())
+        .environment(ArchivedPetManager.mock())
 }

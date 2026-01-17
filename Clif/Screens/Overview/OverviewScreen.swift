@@ -2,8 +2,11 @@ import FamilyControls
 import SwiftUI
 
 struct OverviewScreen: View {
-    @State private var selectedPet: ArchivedDailyPet?
-    @State private var selectedDailyPet: DailyPet?
+    @Environment(PetManager.self) private var petManager
+    @Environment(ArchivedPetManager.self) private var archivedPetManager
+
+    @State private var selectedActivePet: ActivePet?
+    @State private var selectedArchivedDetail: ArchivedPetDetail?
     @State private var historyViewMode: HistoryViewMode = .list
 
     @ObservedObject private var screenTimeManager = ScreenTimeManager.shared
@@ -12,13 +15,18 @@ struct OverviewScreen: View {
         case list, grid
     }
 
-    // Mock data for now - stored in @State to prevent regeneration on view updates
     @State private var weeklyStats = WeeklyUsageStats.mock()
-    @State private var archivedPets = ArchivedDailyPet.mockList()
-    @State private var activePets = DailyPet.mockList()
 
-    private var completedPets: [ArchivedDailyPet] {
-        archivedPets.filter { !$0.isBlown }
+    private var completedPets: [ArchivedPetSummary] {
+        archivedPetManager.completedPets
+    }
+
+    private var allSummaries: [ArchivedPetSummary] {
+        archivedPetManager.summaries
+    }
+
+    private var activePets: [ActivePet] {
+        petManager.activePets
     }
 
     var body: some View {
@@ -28,17 +36,19 @@ struct OverviewScreen: View {
                     .padding(.horizontal, 20)
 
                 PetScreenTimeCarousel(
-                    activePets: activePets,
+                    activePets: activePets.compactMap(\.asDaily),
                     fallbackStats: weeklyStats,
                     applicationTokens: screenTimeManager.activitySelection.applicationTokens,
                     categoryTokens: screenTimeManager.activitySelection.categoryTokens,
                     onPetTap: { pet in
-                        selectedDailyPet = pet
+                        selectedActivePet = .daily(pet)
                     }
                 )
 
-                HistoryIslandsCarousel(pets: completedPets) { pet in
-                    selectedPet = pet
+                HistoryIslandsCarousel(pets: completedPets) { summary in
+                    Task {
+                        selectedArchivedDetail = await archivedPetManager.loadDetail(for: summary)
+                    }
                 }
                 .padding(.horizontal, 20)
 
@@ -52,20 +62,29 @@ struct OverviewScreen: View {
             .padding(.bottom, 110)
         }
         .background(OverviewBackground())
-        .fullScreenCover(item: $selectedPet) { pet in
-            PetArchivedDetailScreen(pet: pet)
+        .onAppear {
+            archivedPetManager.loadSummariesIfNeeded()
         }
-        .fullScreenCover(item: $selectedDailyPet) { pet in
-            PetActiveDetailScreen(
-                pet: pet,
-                showOverviewActions: true,
-                onShowOnHomepage: {
-                    selectedDailyPet = nil
-                    if let url = URL(string: "clif://pet/\(pet.id.uuidString)") {
-                        UIApplication.shared.open(url)
+        .fullScreenCover(item: $selectedActivePet) { pet in
+            if let daily = pet.asDaily {
+                PetActiveDetailScreen(
+                    pet: daily,
+                    showOverviewActions: true,
+                    onShowOnHomepage: {
+                        selectedActivePet = nil
+                        if let url = URL(string: "clif://pet/\(pet.id.uuidString)") {
+                            UIApplication.shared.open(url)
+                        }
                     }
-                }
-            )
+                )
+            }
+            // TODO: Add PetActiveDetailScreen for DynamicPet
+        }
+        .fullScreenCover(item: $selectedArchivedDetail) { detail in
+            if case .daily(let pet) = detail {
+                PetArchivedDetailScreen(pet: pet)
+            }
+            // TODO: Add PetArchivedDetailScreen for DynamicPet
         }
     }
 
@@ -96,9 +115,12 @@ struct OverviewScreen: View {
             } else {
                 LazyVStack(spacing: 12) {
                     ForEach(activePets) { pet in
-                        PetActiveRow(pet: pet) {
-                            selectedDailyPet = pet
+                        if let daily = pet.asDaily {
+                            ActivePetRow(pet: daily) {
+                                selectedActivePet = pet
+                            }
                         }
+                        // TODO: Add row for DynamicPet
                     }
                 }
             }
@@ -141,29 +163,33 @@ struct OverviewScreen: View {
                 }
                 .buttonStyle(.plain)
 
-                Text("\(archivedPets.count)")
+                Text("\(allSummaries.count)")
                     .font(.caption)
                     .padding(.horizontal, 8)
                     .padding(.vertical, 4)
                     .background(.ultraThinMaterial, in: Capsule())
             }
 
-            if archivedPets.isEmpty {
+            if allSummaries.isEmpty {
                 emptyHistoryState
             } else {
                 if historyViewMode == .list {
                     LazyVStack(spacing: 12) {
-                        ForEach(archivedPets) { pet in
-                            PetHistoryRow(pet: pet) {
-                                selectedPet = pet
+                        ForEach(allSummaries) { summary in
+                            ArchivedPetRow(pet: summary) {
+                                Task {
+                                    selectedArchivedDetail = await archivedPetManager.loadDetail(for: summary)
+                                }
                             }
                         }
                     }
                 } else {
                     LazyVGrid(columns: [GridItem(.flexible(), spacing: 12), GridItem(.flexible(), spacing: 12)], spacing: 12) {
-                        ForEach(archivedPets) { pet in
-                            PetHistoryGridItem(pet: pet) {
-                                selectedPet = pet
+                        ForEach(allSummaries) { summary in
+                            ArchivedPetGridItem(pet: summary) {
+                                Task {
+                                    selectedArchivedDetail = await archivedPetManager.loadDetail(for: summary)
+                                }
                             }
                         }
                     }
@@ -214,4 +240,6 @@ private struct OverviewBackground: View {
 
 #Preview {
     OverviewScreen()
+        .environment(PetManager.mock())
+        .environment(ArchivedPetManager.mock())
 }

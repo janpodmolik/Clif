@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct HistoryIslandView: View {
-    let pet: ArchivedDailyPet
+    let pet: ArchivedPetSummary
     let height: CGFloat
     let onTap: () -> Void
 
@@ -110,7 +110,7 @@ struct HistoryIslandView: View {
         .padding(.horizontal, 10)
         .padding(.vertical, 6)
         .background(.ultraThickMaterial, in: RoundedRectangle(cornerRadius: 8))
-    } 
+    }
 
     // MARK: - Random Movement
 

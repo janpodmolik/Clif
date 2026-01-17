@@ -95,4 +95,12 @@ extension ActivePet {
         case .dynamic(let pet): pet.assetName(for: mood)
         }
     }
+
+    /// Marks pet as blown away.
+    func blowAway() {
+        switch self {
+        case .daily(let pet): pet.blowAway()
+        case .dynamic(let pet): pet.blowAway()
+        }
+    }
 }

@@ -2,9 +2,10 @@ import SwiftUI
 
 struct SearchSheet: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(ArchivedPetManager.self) private var archivedPetManager
 
     @State private var filter = PetSearchFilter()
-    @State private var selectedPet: ArchivedDailyPet?
+    @State private var selectedArchivedDetail: ArchivedPetDetail?
     @State private var activeFilterSheet: FilterType?
 
     private enum FilterType: Identifiable {
@@ -16,9 +17,11 @@ struct SearchSheet: View {
         var id: Self { self }
     }
 
-    private let archivedPets = ArchivedDailyPet.mockList()
+    private var archivedPets: [ArchivedPetSummary] {
+        archivedPetManager.summaries
+    }
 
-    private var filteredPets: [ArchivedDailyPet] {
+    private var filteredPets: [ArchivedPetSummary] {
         archivedPets.filter { pet in
             // Text search (name + purpose)
             if !filter.searchText.isEmpty {
@@ -106,8 +109,11 @@ struct SearchSheet: View {
         .sheet(item: $activeFilterSheet) { type in
             filterSheet(for: type)
         }
-        .fullScreenCover(item: $selectedPet) { pet in
-            PetArchivedDetailScreen(pet: pet)
+        .fullScreenCover(item: $selectedArchivedDetail) { detail in
+            if case .daily(let pet) = detail {
+                PetArchivedDetailScreen(pet: pet)
+            }
+            // TODO: Add PetArchivedDetailScreen for DynamicPet
         }
     }
 
@@ -162,9 +168,11 @@ struct SearchSheet: View {
                 }
                 .padding(.horizontal, 4)
 
-                ForEach(filteredPets) { pet in
-                    PetHistoryRow(pet: pet) {
-                        selectedPet = pet
+                ForEach(filteredPets) { summary in
+                    ArchivedPetRow(pet: summary) {
+                        Task {
+                            selectedArchivedDetail = await archivedPetManager.loadDetail(for: summary)
+                        }
                     }
                 }
             }
@@ -260,4 +268,5 @@ private struct FilterPill: View {
 
 #Preview {
     SearchSheet()
+        .environment(ArchivedPetManager.mock())
 }

@@ -25,12 +25,11 @@ struct PetHistoryRowDebugView: View {
 
     // MARK: - Computed Properties
 
-    private var currentPet: ArchivedDailyPet {
-        ArchivedDailyPet.mock(
+    private var currentPet: ArchivedPetSummary {
+        ArchivedPetSummary.mock(
             name: petName,
             phase: phase,
             isBlown: isBlown,
-            daysAgo: daysAgo,
             totalDays: totalDays
         )
     }
@@ -77,7 +76,7 @@ struct PetHistoryRowDebugView: View {
             .ignoresSafeArea()
 
             VStack(spacing: 16) {
-                PetHistoryRow(pet: currentPet) {
+                ArchivedPetRow(pet: currentPet) {
                     print("Row tapped: \(currentPet.name)")
                 }
                 .padding(.horizontal, 20)

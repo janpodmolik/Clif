@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct PetActiveRow: View {
+struct ActivePetRow: View {
     let pet: DailyPet
     let onTap: () -> Void
 
@@ -106,10 +106,10 @@ struct PetActiveRow: View {
 
 #Preview {
     VStack(spacing: 12) {
-        PetActiveRow(pet: .mock(name: "Fern", phase: 2, todayUsedMinutes: 0)) {}
-        PetActiveRow(pet: .mock(name: "Ivy", phase: 3, todayUsedMinutes: 45)) {}
-        PetActiveRow(pet: .mock(name: "Sage", phase: 2, todayUsedMinutes: 67)) {}
-        PetActiveRow(pet: .mock(name: "Willow", phase: 1, todayUsedMinutes: 130, dailyLimitMinutes: 120)) {}
+        ActivePetRow(pet: .mock(name: "Fern", phase: 2, todayUsedMinutes: 0)) {}
+        ActivePetRow(pet: .mock(name: "Ivy", phase: 3, todayUsedMinutes: 45)) {}
+        ActivePetRow(pet: .mock(name: "Sage", phase: 2, todayUsedMinutes: 67)) {}
+        ActivePetRow(pet: .mock(name: "Willow", phase: 1, todayUsedMinutes: 130, dailyLimitMinutes: 120)) {}
     }
     .padding()
 }

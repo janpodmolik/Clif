@@ -1,7 +1,7 @@
 import SwiftUI
 
-struct PetHistoryGridItem: View {
-    let pet: ArchivedDailyPet
+struct ArchivedPetGridItem: View {
+    let pet: ArchivedPetSummary
     let onTap: () -> Void
 
     private var mood: Mood {
@@ -79,10 +79,10 @@ struct PetHistoryGridItem: View {
 
 #Preview {
     LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
-        PetHistoryGridItem(pet: .mock(name: "Fern", phase: 4, isBlown: false)) {}
-        PetHistoryGridItem(pet: .mock(name: "Sprout", phase: 2, isBlown: true)) {}
-        PetHistoryGridItem(pet: .mock(name: "Moss", phase: 3, isBlown: false)) {}
-        PetHistoryGridItem(pet: .mock(name: "Willow", phase: 1, isBlown: false)) {}
+        ArchivedPetGridItem(pet: .mock(name: "Fern", phase: 4, isBlown: false)) {}
+        ArchivedPetGridItem(pet: .mock(name: "Sprout", phase: 2, isBlown: true)) {}
+        ArchivedPetGridItem(pet: .mock(name: "Moss", phase: 3, isBlown: false)) {}
+        ArchivedPetGridItem(pet: .mock(name: "Willow", phase: 1, isBlown: false)) {}
     }
     .padding()
 }

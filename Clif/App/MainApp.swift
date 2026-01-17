@@ -8,6 +8,7 @@ struct MainApp: App {
     var appDelegate
 
     @State private var petManager = PetManager()
+    @State private var archivedPetManager = ArchivedPetManager()
 
     init() {
         print("🟢 MainApp init")
@@ -20,6 +21,7 @@ struct MainApp: App {
         WindowGroup {
             ContentView()
                 .environment(petManager)
+                .environment(archivedPetManager)
                 .onAppear { print("🟢 ContentView appeared") }
                 .withDeepLinkHandling()
 //                .withDebugOverlay()
