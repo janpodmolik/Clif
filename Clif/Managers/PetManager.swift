@@ -2,34 +2,66 @@ import Foundation
 
 @Observable
 final class PetManager {
-    private(set) var activePets: [DailyPet] = []
-    private(set) var archivedPets: [ArchivedDailyPet] = []
+    // MARK: - Private Storage
 
-    /// Currently selected pet for display (first in carousel)
-    var currentPet: DailyPet? {
+    private var dailyPets: [DailyPet] = []
+    private var dynamicPets: [DynamicPet] = []
+    private var archivedDailyPets: [ArchivedDailyPet] = []
+    private var archivedDynamicPets: [ArchivedDynamicPet] = []
+
+    // MARK: - Public API
+
+    /// All active pets as unified list, sorted by creation date (newest first).
+    var activePets: [ActivePet] {
+        let daily = dailyPets.map { ActivePet.daily($0) }
+        let dynamic = dynamicPets.map { ActivePet.dynamic($0) }
+        return (daily + dynamic).sorted { $0.createdAt > $1.createdAt }
+    }
+
+    /// Currently selected pet for display (first in list).
+    var currentPet: ActivePet? {
         activePets.first
     }
 
-    /// Archived pets that weren't blown (for Hall of Fame)
-    var completedPets: [ArchivedDailyPet] {
-        archivedPets.filter { !$0.isBlown }
+    /// Current daily pet (for backwards compatibility with existing UI).
+    /// TODO: Migrate UI to use ActivePet and remove this.
+    var currentDailyPet: DailyPet? {
+        dailyPets.first
     }
 
+    /// All archived pets that weren't blown (for Hall of Fame).
+    var completedPets: [ArchivedDailyPet] {
+        archivedDailyPets.filter { !$0.isBlown }
+    }
+
+    /// All archived daily pets.
+    var allArchivedDailyPets: [ArchivedDailyPet] {
+        archivedDailyPets
+    }
+
+    /// All archived dynamic pets.
+    var allArchivedDynamicPets: [ArchivedDynamicPet] {
+        archivedDynamicPets
+    }
+
+    // MARK: - Init
+
     init() {
-        loadArchivedDailyPets()
+        loadActivePets()
+        loadArchivedPets()
 
         #if DEBUG
-        // Add mock pet for development
-        if activePets.isEmpty {
-            activePets = [DailyPet.mockBlob(name: "Blob", canUseEssence: true, todayUsedMinutes: 100, dailyLimitMinutes: 120)]
+        if dailyPets.isEmpty && dynamicPets.isEmpty {
+            dailyPets = [DailyPet.mockBlob(name: "Blob", canUseEssence: true, todayUsedMinutes: 100, dailyLimitMinutes: 120)]
         }
         #endif
     }
 
-    // MARK: - Active Pet Lifecycle
+    // MARK: - Create
 
-    /// Creates a new active pet (starts as blob)
-    func createPet(name: String, purpose: String?, dailyLimitMinutes: Int) -> DailyPet {
+    /// Creates a new Daily pet (starts as blob).
+    @discardableResult
+    func createDaily(name: String, purpose: String?, dailyLimitMinutes: Int) -> DailyPet {
         let pet = DailyPet(
             name: name,
             evolutionHistory: EvolutionHistory(),
@@ -37,61 +69,210 @@ final class PetManager {
             todayUsedMinutes: 0,
             dailyLimitMinutes: dailyLimitMinutes
         )
-        activePets.append(pet)
+        dailyPets.append(pet)
+        saveActivePets()
         return pet
     }
 
-    /// Archives an active pet (moves to archived list)
-    func archive(_ pet: DailyPet) {
-        guard let index = activePets.firstIndex(where: { $0.id == pet.id }) else { return }
-        let archived = ArchivedDailyPet(archiving: pet)
-        archivedPets.insert(archived, at: 0)
-        activePets.remove(at: index)
-        saveArchivedDailyPets()
+    /// Creates a new Dynamic pet (starts as blob).
+    @discardableResult
+    func createDynamic(name: String, purpose: String?, config: DynamicWindConfig = .default) -> DynamicPet {
+        let pet = DynamicPet(
+            name: name,
+            evolutionHistory: EvolutionHistory(),
+            purpose: purpose,
+            config: config
+        )
+        dynamicPets.append(pet)
+        saveActivePets()
+        return pet
     }
 
-    /// Blows away a pet and archives it
-    func blowAway(_ pet: DailyPet) {
-        pet.blowAway()
-        archive(pet)
+    // MARK: - Lookup
+
+    /// Finds an active pet by ID.
+    func pet(by id: UUID) -> ActivePet? {
+        if let daily = dailyPets.first(where: { $0.id == id }) {
+            return .daily(daily)
+        }
+        if let dynamic = dynamicPets.first(where: { $0.id == id }) {
+            return .dynamic(dynamic)
+        }
+        return nil
     }
 
-    /// Removes an active pet without archiving
-    func delete(_ pet: DailyPet) {
-        activePets.removeAll { $0.id == pet.id }
+    /// Finds a daily pet by ID.
+    func dailyPet(by id: UUID) -> DailyPet? {
+        dailyPets.first { $0.id == id }
     }
 
-    // MARK: - Archived Pet Management
-
-    func deleteArchived(_ pet: ArchivedDailyPet) {
-        archivedPets.removeAll { $0.id == pet.id }
-        saveArchivedDailyPets()
+    /// Finds a dynamic pet by ID.
+    func dynamicPet(by id: UUID) -> DynamicPet? {
+        dynamicPets.first { $0.id == id }
     }
 
-    // MARK: - Persistence (Archived only for now)
+    // MARK: - Archive
 
-    private func loadArchivedDailyPets() {
-        guard let data = SharedDefaults.data(forKey: DefaultsKeys.archivedPets) else { return }
-        archivedPets = (try? JSONDecoder().decode([ArchivedDailyPet].self, from: data)) ?? []
+    /// Archives an active pet (moves to archived list).
+    func archive(id: UUID) {
+        if let index = dailyPets.firstIndex(where: { $0.id == id }) {
+            let pet = dailyPets[index]
+            let archived = ArchivedDailyPet(archiving: pet)
+            archivedDailyPets.insert(archived, at: 0)
+            dailyPets.remove(at: index)
+            saveActivePets()
+            saveArchivedPets()
+            return
+        }
+
+        if let index = dynamicPets.firstIndex(where: { $0.id == id }) {
+            let pet = dynamicPets[index]
+            let archived = ArchivedDynamicPet(archiving: pet)
+            archivedDynamicPets.insert(archived, at: 0)
+            dynamicPets.remove(at: index)
+            saveActivePets()
+            saveArchivedPets()
+        }
     }
 
-    private func saveArchivedDailyPets() {
-        let data = try? JSONEncoder().encode(archivedPets)
-        SharedDefaults.setData(data, forKey: DefaultsKeys.archivedPets)
+    /// Blows away a pet and archives it.
+    func blowAway(id: UUID) {
+        if let pet = dailyPets.first(where: { $0.id == id }) {
+            pet.blowAway()
+            archive(id: id)
+            return
+        }
+
+        if let pet = dynamicPets.first(where: { $0.id == id }) {
+            pet.blowAway()
+            archive(id: id)
+        }
+    }
+
+    // MARK: - Delete
+
+    /// Removes an active pet without archiving.
+    func delete(id: UUID) {
+        if dailyPets.contains(where: { $0.id == id }) {
+            dailyPets.removeAll { $0.id == id }
+            saveActivePets()
+            return
+        }
+
+        if dynamicPets.contains(where: { $0.id == id }) {
+            dynamicPets.removeAll { $0.id == id }
+            saveActivePets()
+        }
+    }
+
+    /// Removes an archived pet.
+    func deleteArchived(id: UUID) {
+        if archivedDailyPets.contains(where: { $0.id == id }) {
+            archivedDailyPets.removeAll { $0.id == id }
+            saveArchivedPets()
+            return
+        }
+
+        if archivedDynamicPets.contains(where: { $0.id == id }) {
+            archivedDynamicPets.removeAll { $0.id == id }
+            saveArchivedPets()
+        }
+    }
+
+    // MARK: - Save Trigger
+
+    /// Call after mutating a pet to persist changes.
+    func savePets() {
+        saveActivePets()
+    }
+}
+
+// MARK: - Persistence (Active → SharedDefaults)
+
+private extension PetManager {
+    func loadActivePets() {
+        if let data = SharedDefaults.data(forKey: DefaultsKeys.activeDailyPets),
+           let dtos = try? JSONDecoder().decode([DailyPetDTO].self, from: data) {
+            dailyPets = dtos.map { DailyPet(from: $0) }
+        }
+
+        if let data = SharedDefaults.data(forKey: DefaultsKeys.activeDynamicPets),
+           let dtos = try? JSONDecoder().decode([DynamicPetDTO].self, from: data) {
+            dynamicPets = dtos.map { DynamicPet(from: $0) }
+        }
+    }
+
+    func saveActivePets() {
+        let dailyDTOs = dailyPets.map { DailyPetDTO(from: $0) }
+        if let data = try? JSONEncoder().encode(dailyDTOs) {
+            SharedDefaults.setData(data, forKey: DefaultsKeys.activeDailyPets)
+        }
+
+        let dynamicDTOs = dynamicPets.map { DynamicPetDTO(from: $0) }
+        if let data = try? JSONEncoder().encode(dynamicDTOs) {
+            SharedDefaults.setData(data, forKey: DefaultsKeys.activeDynamicPets)
+        }
+    }
+}
+
+// MARK: - Persistence (Archived → FileManager)
+
+private extension PetManager {
+    static let archivedDailyPetsURL: URL = {
+        let documents = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+        return documents.appendingPathComponent("archived_daily_pets.json")
+    }()
+
+    static let archivedDynamicPetsURL: URL = {
+        let documents = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+        return documents.appendingPathComponent("archived_dynamic_pets.json")
+    }()
+
+    func loadArchivedPets() {
+        // Load archived daily pets
+        if let data = try? Data(contentsOf: Self.archivedDailyPetsURL),
+           let pets = try? JSONDecoder().decode([ArchivedDailyPet].self, from: data) {
+            archivedDailyPets = pets
+        } else if let legacyData = SharedDefaults.data(forKey: DefaultsKeys.archivedPets),
+                  let pets = try? JSONDecoder().decode([ArchivedDailyPet].self, from: legacyData) {
+            // Migration from legacy SharedDefaults
+            archivedDailyPets = pets
+            saveArchivedPets()
+            SharedDefaults.removeObject(forKey: DefaultsKeys.archivedPets)
+        }
+
+        // Load archived dynamic pets
+        if let data = try? Data(contentsOf: Self.archivedDynamicPetsURL),
+           let pets = try? JSONDecoder().decode([ArchivedDynamicPet].self, from: data) {
+            archivedDynamicPets = pets
+        }
+    }
+
+    func saveArchivedPets() {
+        if let data = try? JSONEncoder().encode(archivedDailyPets) {
+            try? data.write(to: Self.archivedDailyPetsURL)
+        }
+
+        if let data = try? JSONEncoder().encode(archivedDynamicPets) {
+            try? data.write(to: Self.archivedDynamicPetsURL)
+        }
     }
 }
 
 // MARK: - Mock Data
 
 extension PetManager {
-    static func mock(withDailyPets: Bool = true, withArchivedDailyPets: Bool = true) -> PetManager {
+    static func mock(
+        withDailyPets: Bool = true,
+        withDynamicPets: Bool = false,
+        withArchivedDailyPets: Bool = true,
+        withArchivedDynamicPets: Bool = false
+    ) -> PetManager {
         let manager = PetManager()
-        if withDailyPets {
-            manager.activePets = DailyPet.mockList()
-        }
-        if withArchivedDailyPets {
-            manager.archivedPets = ArchivedDailyPet.mockList()
-        }
+        manager.dailyPets = withDailyPets ? DailyPet.mockList() : []
+        manager.dynamicPets = withDynamicPets ? [.mock(), .mockWithBreak()] : []
+        manager.archivedDailyPets = withArchivedDailyPets ? ArchivedDailyPet.mockList() : []
+        manager.archivedDynamicPets = withArchivedDynamicPets ? ArchivedDynamicPet.mockList() : []
         return manager
     }
 }

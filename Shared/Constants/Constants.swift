@@ -44,5 +44,12 @@ enum DefaultsKeys {
     static let lastMonitorUpdate = "lastMonitorUpdate"
     static let notification90Sent = "notification90Sent"
     static let notificationLastMinuteSent = "notificationLastMinuteSent"
+
+    // MARK: - Pet Persistence (Active in SharedDefaults for extension access)
+
+    static let activeDailyPets = "activeDailyPets"
+    static let activeDynamicPets = "activeDynamicPets"
+
+    // Legacy key - now using separate keys above
     static let archivedPets = "archivedPets"
 }

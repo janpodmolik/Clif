@@ -82,7 +82,7 @@ Nový režim kde vítr **dynamicky roste i klesá** na základě chování uživ
 ## Implementační fáze
 
 1. **Modely** - DynamicPet, ArchivedDynamicPet, ActiveBreak, DynamicWindConfig ✅
-2. **Manager** - rozšířit PetManager o Dynamic podporu, persistence
+2. **Manager** - rozšířit PetManager o Dynamic podporu, persistence ✅
 3. **Break mechanika** - start/end/fail, shield aktivace, penalizace
 4. **DeviceActivityMonitor** - threshold → windPoints, blow away trigger
 5. **UI** - home screen, break flow, detail screen
@@ -91,51 +91,104 @@ Nový režim kde vítr **dynamicky roste i klesá** na základě chování uživ
 
 ## Manager architektura
 
-**Jeden PetManager pro oba typy petů (zatím).**
+**Jeden PetManager pro oba typy petů.**
 
-**Properties:**
+### Principy
+
+1. **Mutace na petovi** - `blowAway()`, `evolve()`, `startBreak()`, `endBreak()` jsou metody na pet modelu
+2. **Collection operace na Manageru** - `archive()`, `delete()`, `create*()` jsou metody manageru
+3. **`ActivePet` enum** - type-safe wrapper pro UI routing (switch → správný View)
+4. **Univerzální metody** - `archive(id:)` místo `archiveDaily(id:)` + `archiveDynamic(id:)`
+
+### ActivePet enum
+
 ```swift
-var dailyPets: [DailyPet]
-var dynamicPets: [DynamicPet]
-var archivedDailyPets: [ArchivedDailyPet]
-var archivedDynamicPets: [ArchivedDynamicPet]
-
-var allActivePets: [ActivePet]  // computed, mixed list pro UI
-```
-
-**Type-safe pet lookup:**
-```swift
-enum ActivePet {
+enum ActivePet: Identifiable {
     case daily(DailyPet)
     case dynamic(DynamicPet)
 
-    var id: UUID { ... }
-    var presentable: any PetPresentable { ... }
+    var id: UUID {
+        switch self {
+        case .daily(let pet): pet.id
+        case .dynamic(let pet): pet.id
+        }
+    }
+
+    var name: String { ... }
+    var windProgress: CGFloat { ... }
+    var mood: Mood { ... }
+
+    // Pro UI routing
+    var isDaily: Bool { ... }
+    var isDynamic: Bool { ... }
+
+    // Přímý přístup když potřebuješ konkrétní typ
+    var asDaily: DailyPet? { ... }
+    var asDynamic: DynamicPet? { ... }
 }
 ```
 
-**Metody:**
-- `createDaily(...)`, `createDynamic(...)`
-- `archiveDaily(id:)`, `archiveDynamic(id:)`
-- `blowAwayDaily(id:)`, `blowAwayDynamic(id:)`
-- `pet(by id:) -> ActivePet?`
+### Properties
 
-**Persistence:**
-- FileManager + JSON (ne UserDefaults - příliš komplexní modely)
-- Aktivní peti se ukládají lokálně i na BE
-- Archived peti stejně
+```swift
+// Interní storage (private)
+private var dailyPets: [DailyPet] = []
+private var dynamicPets: [DynamicPet] = []
+private var archivedDailyPets: [ArchivedDailyPet] = []
+private var archivedDynamicPets: [ArchivedDynamicPet] = []
 
-**Řazení:**
-- Default podle `createdAt`
-- Uživatel si může přizpůsobit
+// Public API
+var activePets: [ActivePet]  // computed, merged + sorted by createdAt
+var currentPet: ActivePet?   // activePets.first
 
-**Důležité:**
+var archivedPets: [any ArchivedPet]  // computed, merged (potřebuje ArchivedPet protokol)
+```
+
+### Metody
+
+**Create (type-specific):**
+```swift
+func createDaily(name:purpose:dailyLimitMinutes:) -> DailyPet
+func createDynamic(name:purpose:config:) -> DynamicPet
+```
+
+**Universal operations:**
+```swift
+func archive(id: UUID)      // Rozliší typ interně
+func delete(id: UUID)       // Smaže aktivního peta
+func deleteArchived(id: UUID)  // Smaže archivovaného
+func pet(by id: UUID) -> ActivePet?
+```
+
+### Persistence
+
+**Active peti → SharedDefaults (App Group)**
+- Malý dataset (1-3 peti)
+- Extensions (DeviceActivityMonitor) potřebují přístup
+- JSON encoded
+
+**Archived peti → FileManager**
+- Potenciálně velký dataset
+- Nepotřebují extensions přístup
+- Připraveno pro DTO vrstvu
+
+**Klíče:**
+```swift
+DefaultsKeys.activeDailyPets
+DefaultsKeys.activeDynamicPets
+// Archived v ~/Documents/archived_daily_pets.json atd.
+```
+
+### Řazení
+
+- Default podle `createdAt` (newest first)
+- Uživatel si může přizpůsobit (budoucí feature)
+
+### Důležité
+
 - Mode je per-pet property, nelze měnit po vytvoření
 - Pet je vytvořen jako Daily NEBO Dynamic
-
-**Budoucí refaktoring:**
-- Možné oddělení `ArchivedPetRepository` pro archived pety
-- Jiná persistence strategie, Supabase-ready
+- Mutace peta automaticky triggeruje uložení (observation)
 
 ## DTO Architektura
 

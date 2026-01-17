@@ -13,7 +13,7 @@ struct HomeScreen: View {
 
     private let homeCardInset: CGFloat = 16
 
-    private var pet: DailyPet? { petManager.currentPet }
+    private var pet: DailyPet? { petManager.currentDailyPet }
     private var petDropFrame: CGRect? {
         guard petFrame != .zero else { return nil }
         return petFrame.insetBy(dx: -40, dy: -40)

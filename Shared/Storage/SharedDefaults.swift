@@ -124,4 +124,8 @@ struct SharedDefaults {
             defaults?.removeObject(forKey: key)
         }
     }
+
+    static func removeObject(forKey key: String) {
+        defaults?.removeObject(forKey: key)
+    }
 }
