@@ -82,12 +82,60 @@ Nový režim kde vítr **dynamicky roste i klesá** na základě chování uživ
 ## Implementační fáze
 
 1. **Modely** - DynamicPet, ArchivedDynamicPet, ActiveBreak, DynamicWindConfig ✅
-2. **DTO vrstva** - oddělení persistence od modelů
-3. **Manager** - rozšířit PetManager o Dynamic podporu, persistence
-4. **Break mechanika** - start/end/fail, shield aktivace, penalizace
-5. **DeviceActivityMonitor** - threshold → windPoints, blow away trigger
-6. **UI** - home screen, break flow, detail screen
-7. **Settings** - mode selector, Dynamic konfigurace
+2. **Manager** - rozšířit PetManager o Dynamic podporu, persistence
+3. **Break mechanika** - start/end/fail, shield aktivace, penalizace
+4. **DeviceActivityMonitor** - threshold → windPoints, blow away trigger
+5. **UI** - home screen, break flow, detail screen
+6. **Settings** - mode selector, Dynamic konfigurace
+7. **DTO vrstva** - oddělení persistence od modelů (při Supabase integraci)
+
+## Manager architektura
+
+**Jeden PetManager pro oba typy petů (zatím).**
+
+**Properties:**
+```swift
+var dailyPets: [DailyPet]
+var dynamicPets: [DynamicPet]
+var archivedDailyPets: [ArchivedDailyPet]
+var archivedDynamicPets: [ArchivedDynamicPet]
+
+var allActivePets: [ActivePet]  // computed, mixed list pro UI
+```
+
+**Type-safe pet lookup:**
+```swift
+enum ActivePet {
+    case daily(DailyPet)
+    case dynamic(DynamicPet)
+
+    var id: UUID { ... }
+    var presentable: any PetPresentable { ... }
+}
+```
+
+**Metody:**
+- `createDaily(...)`, `createDynamic(...)`
+- `archiveDaily(id:)`, `archiveDynamic(id:)`
+- `blowAwayDaily(id:)`, `blowAwayDynamic(id:)`
+- `pet(by id:) -> ActivePet?`
+
+**Persistence:**
+- FileManager + JSON (ne UserDefaults - příliš komplexní modely)
+- Aktivní peti se ukládají lokálně i na BE
+- Archived peti stejně
+
+**Řazení:**
+- Default podle `createdAt`
+- Uživatel si může přizpůsobit
+
+**Důležité:**
+- Mode je per-pet property, nelze měnit po vytvoření
+- Pet je vytvořen jako Daily NEBO Dynamic
+
+**Budoucí refaktoring:**
+- Možné oddělení `ArchivedPetRepository` pro archived pety
+- Jiná persistence strategie, Supabase-ready
 
 ## DTO Architektura
 
