@@ -56,6 +56,7 @@ struct ProgressBarView: View {
         ProgressBarView(progress: 0.27)
         ProgressBarView(progress: 0.55)
         ProgressBarView(progress: 0.85)
+        ProgressBarView(progress: 0.60, isPulsing: true)
     }
     .padding()
     .background(Color.blue.opacity(0.1))

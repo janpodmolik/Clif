@@ -18,7 +18,15 @@ struct HomeCardView: View {
     let showDetailButton: Bool
     var onAction: (HomeCardAction) -> Void = { _ in }
 
-    @State private var isBreathingIn = false
+    // Pulsing for "Calming the wind..." text (when on break)
+    @State private var isBreakPulsing = false
+
+    // Pulsing for "Calm the Wind" button (when wind > 80% and NOT on break)
+    @State private var isButtonPulsing = false
+
+    private var shouldButtonPulse: Bool {
+        pet.windProgress > 0.8 && !pet.isOnBreak
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -36,6 +44,20 @@ struct HomeCardView: View {
         }
         .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
+        .onAppear {
+            if pet.isOnBreak {
+                isBreakPulsing = true
+            }
+            if shouldButtonPulse {
+                isButtonPulsing = true
+            }
+        }
+        .onChange(of: pet.isOnBreak) { _, newValue in
+            isBreakPulsing = newValue
+        }
+        .onChange(of: shouldButtonPulse) { _, newValue in
+            isButtonPulsing = newValue
+        }
     }
 
     // MARK: - Header Row (Pet Name + Mood + Detail)
@@ -60,8 +82,8 @@ struct HomeCardView: View {
 
     private var moodEmoji: String {
         switch pet.mood {
-        case .happy: "😌"
-        case .neutral: "😐"
+        case .happy: "😄"
+        case .neutral: "🙂"
         case .sad: "😞"
         case .blown: "😵"
         }
@@ -152,12 +174,11 @@ struct HomeCardView: View {
                 Text("Calming the wind...")
                     .font(.system(size: 14, weight: .medium))
                     .foregroundStyle(.cyan)
-                    .opacity(isBreathingIn ? 1.0 : 0.4)
+                    .opacity(isBreakPulsing ? 1.0 : 0.4)
                     .animation(
                         .easeInOut(duration: 1.0).repeatForever(autoreverses: true),
-                        value: isBreathingIn
+                        value: isBreakPulsing
                     )
-                    .onAppear { isBreathingIn = true }
             }
         }
     }
@@ -212,16 +233,10 @@ struct HomeCardView: View {
     // MARK: - Blown Away Content
 
     private var blownAwayContent: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("This Uuumi couldn't withstand the strong winds and was blown away.")
-                .font(.system(size: 14, weight: .medium))
-                .foregroundStyle(.red)
-
-            HStack(spacing: 12) {
-                replayButton
-                Spacer()
-                deleteButton
-            }
+        HStack(spacing: 12) {
+            replayButton
+            Spacer()
+            deleteButton
         }
     }
 
@@ -230,10 +245,9 @@ struct HomeCardView: View {
     @ViewBuilder
     private func breakButton(for pet: DynamicPet) -> some View {
         let isOnBreak = pet.activeBreak != nil
-        let shouldPulse = pet.windProgress > 0.5 && !isOnBreak
 
         Button { onAction(.startBreak) } label: {
-            Text(isOnBreak ? "Release Wind" : "Calm the Wind")
+            Text(isOnBreak ? "Release the Wind" : "Calm the Wind")
                 .font(.system(size: 14, weight: .semibold))
                 .foregroundStyle(isOnBreak ? .cyan : .white)
                 .padding(.horizontal, 16)
@@ -251,12 +265,13 @@ struct HomeCardView: View {
                         .clipShape(Capsule())
                     }
                 }
-                .opacity(shouldPulse ? (isBreathingIn ? 1.0 : 0.7) : 1.0)
+                .opacity(shouldButtonPulse ? (isButtonPulsing ? 1.0 : 0.7) : 1.0)
+                .scaleEffect(shouldButtonPulse ? (isButtonPulsing ? 1.05 : 1.0) : 1.0)
         }
         .buttonStyle(.plain)
         .animation(
-            shouldPulse ? .easeInOut(duration: 1.2).repeatForever(autoreverses: true) : .default,
-            value: isBreathingIn
+            shouldButtonPulse ? .easeInOut(duration: 1.0).repeatForever(autoreverses: true) : .default,
+            value: isButtonPulsing
         )
     }
 
@@ -367,7 +382,7 @@ struct HomeCardView: View {
 
 #Preview("Dynamic Pet - High Wind") {
     HomeCardView(
-        pet: .dynamic(.mock(windPoints: 65)),
+        pet: .dynamic(.mock(windPoints: 85)),
         streakCount: 3,
         showDetailButton: true
     )
