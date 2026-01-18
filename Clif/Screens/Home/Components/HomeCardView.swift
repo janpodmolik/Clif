@@ -1,37 +1,23 @@
 import SwiftUI
 
-struct HomeCardContentView: View {
-    // MARK: - Screen Time Properties
+// MARK: - HomeCardAction
+
+enum HomeCardAction {
+    case detail
+    case evolve
+    case takeBreak
+    case blowAway
+    case replay
+    case delete
+}
+
+// MARK: - HomeCardView
+
+struct HomeCardView: View {
+    let pet: ActivePet
     let streakCount: Int
-    let usedTimeText: String
-    let dailyLimitText: String
-    let progress: Double
-
-    // MARK: - Pet Identity Properties
-    let petName: String
-    let evolutionStage: Int
-    let maxEvolutionStage: Int
-    let mood: Mood
-    let purposeLabel: String?
-
-    // MARK: - Button State
-    let isEvolutionAvailable: Bool
-    let daysUntilEvolution: Int?
-    let isSaveEnabled: Bool
     let showDetailButton: Bool
-    let isBlownAway: Bool
-
-    // MARK: - Actions
-    var onDetailTapped: () -> Void = {}
-    var onEvolveTapped: () -> Void = {}
-    var onSavePetTapped: () -> Void = {}
-    var onBlowAwayTapped: () -> Void = {}
-    var onReplayTapped: () -> Void = {}
-    var onDeleteTapped: () -> Void = {}
-
-    // MARK: - Computed
-
-    private var isBlob: Bool { evolutionStage == 0 }
+    var onAction: (HomeCardAction) -> Void = { _ in }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -39,12 +25,12 @@ struct HomeCardContentView: View {
             VStack(alignment: .leading, spacing: 12) {
                 headerRow
                 infoRow
-                timeRow
+                statsRow
             }
             .contentShape(Rectangle())
-            .onTapGesture(perform: onDetailTapped)
+            .onTapGesture { onAction(.detail) }
 
-            ProgressBarView(progress: progress)
+            ProgressBarView(progress: Double(pet.windProgress))
             buttonsRow
         }
         .padding(16)
@@ -56,7 +42,7 @@ struct HomeCardContentView: View {
     private var headerRow: some View {
         HStack {
             HStack(spacing: 8) {
-                Text(petName)
+                Text(pet.name)
                     .font(.system(size: 20, weight: .semibold))
 
                 Text(moodEmoji)
@@ -72,16 +58,16 @@ struct HomeCardContentView: View {
     }
 
     private var moodEmoji: String {
-        switch mood {
-        case .happy: return "😌"
-        case .neutral: return "😐"
-        case .sad: return "😞"
-        case .blown: return "😵"
+        switch pet.mood {
+        case .happy: "😌"
+        case .neutral: "😐"
+        case .sad: "😞"
+        case .blown: "😵"
         }
     }
 
     private var detailButton: some View {
-        Button(action: onDetailTapped) {
+        Button { onAction(.detail) } label: {
             Image(systemName: "ellipsis")
                 .font(.system(size: 30))
                 .foregroundStyle(.primary)
@@ -93,30 +79,21 @@ struct HomeCardContentView: View {
 
     private var infoRow: some View {
         HStack(spacing: 8) {
-            if let purposeLabel, !purposeLabel.isEmpty {
-                Text(purposeLabel)
+            if let purpose = pet.purpose, !purpose.isEmpty {
+                Text(purpose)
                     .font(.system(size: 14, weight: .medium))
                     .foregroundStyle(.secondary)
             }
 
             Spacer()
 
-            if !isBlob {
-                Text("🧬 \(evolutionStage)")
+            if !pet.isBlob {
+                Text("🧬 \(pet.currentPhase)")
                     .font(.system(size: 14, weight: .semibold))
             }
 
             streakBadge
         }
-    }
-
-    private var evolutionBadge: some View {
-        HStack(spacing: 4) {
-            Image(systemName: "calendar")
-                .foregroundStyle(.secondary)
-            Text("\(streakCount)")
-        }
-        .font(.system(size: 14, weight: .semibold))
     }
 
     private var streakBadge: some View {
@@ -128,11 +105,21 @@ struct HomeCardContentView: View {
         .font(.system(size: 14, weight: .semibold))
     }
 
-    // MARK: - Time Row
+    // MARK: - Stats Row (Mode-Specific)
 
-    private var timeRow: some View {
+    @ViewBuilder
+    private var statsRow: some View {
+        switch pet {
+        case .daily(let dailyPet):
+            dailyStatsRow(dailyPet)
+        case .dynamic(let dynamicPet):
+            dynamicStatsRow(dynamicPet)
+        }
+    }
+
+    private func dailyStatsRow(_ pet: DailyPet) -> some View {
         HStack(alignment: .firstTextBaseline) {
-            Text(usedTimeText)
+            Text(formatMinutes(pet.todayUsedMinutes))
                 .font(.system(size: 28, weight: .bold))
                 .tracking(-0.5)
 
@@ -140,23 +127,64 @@ struct HomeCardContentView: View {
                 .font(.system(size: 20, weight: .medium))
                 .foregroundStyle(.secondary)
 
-            Text(dailyLimitText)
+            Text(formatMinutes(pet.dailyLimitMinutes))
                 .font(.system(size: 20, weight: .medium))
                 .foregroundStyle(.secondary)
 
             Spacer()
 
-            Text("\(Int(progress * 100))%")
+            Text("\(Int(pet.windProgress * 100))%")
                 .font(.system(size: 20, weight: .semibold))
-                .foregroundStyle(progress > 1.0 ? .red : .primary)
+                .foregroundStyle(pet.windProgress > 1.0 ? .red : .primary)
         }
+    }
+
+    private func dynamicStatsRow(_ pet: DynamicPet) -> some View {
+        HStack(alignment: .firstTextBaseline) {
+            Text("\(Int(pet.windPoints))")
+                .font(.system(size: 28, weight: .bold))
+                .tracking(-0.5)
+
+            Text("wind")
+                .font(.system(size: 20, weight: .medium))
+                .foregroundStyle(.secondary)
+
+            Spacer()
+
+            if pet.activeBreak != nil {
+                activeBreakBadge(pet)
+            } else if pet.windPoints > 50 {
+                takeBreakButton
+            }
+        }
+    }
+
+    private func activeBreakBadge(_ pet: DynamicPet) -> some View {
+        HStack(spacing: 6) {
+            Image(systemName: "pause.circle.fill")
+            Text("On Break")
+        }
+        .font(.system(size: 14, weight: .semibold))
+        .foregroundStyle(.green)
+    }
+
+    private var takeBreakButton: some View {
+        Button { onAction(.takeBreak) } label: {
+            HStack(spacing: 6) {
+                Image(systemName: "leaf.fill")
+                Text("Take Break")
+            }
+            .font(.system(size: 14, weight: .semibold))
+            .foregroundStyle(.green)
+        }
+        .buttonStyle(.plain)
     }
 
     // MARK: - Buttons Row
 
     @ViewBuilder
     private var buttonsRow: some View {
-        if isBlownAway {
+        if pet.isBlown {
             blownAwayContent
         } else {
             normalButtonsRow
@@ -165,9 +193,9 @@ struct HomeCardContentView: View {
 
     private var normalButtonsRow: some View {
         HStack(spacing: 12) {
-            if isEvolutionAvailable {
+            if pet.isEvolutionAvailable {
                 evolveButton
-            } else if let days = daysUntilEvolution {
+            } else if let days = pet.daysUntilNextMilestone {
                 evolutionCountdownLabel(days: days)
             }
 
@@ -177,9 +205,11 @@ struct HomeCardContentView: View {
         }
     }
 
+    // MARK: - Evolution Helpers
+
     private func evolutionCountdownLabel(days: Int) -> some View {
         HStack(spacing: 6) {
-            Image(systemName: isBlob ? "leaf.fill" : "sparkles")
+            Image(systemName: pet.isBlob ? "leaf.fill" : "sparkles")
             Text(countdownText(days: days))
         }
         .font(.system(size: 14, weight: .medium))
@@ -187,12 +217,14 @@ struct HomeCardContentView: View {
     }
 
     private func countdownText(days: Int) -> String {
-        if isBlob {
+        if pet.isBlob {
             return days == 1 ? "Ready for Essence Tomorrow" : "Ready for Essence in \(days) days"
         } else {
             return days == 1 ? "Evolve Tomorrow" : "Evolve in \(days) days"
         }
     }
+
+    // MARK: - Blown Away Content
 
     private var blownAwayContent: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -202,19 +234,19 @@ struct HomeCardContentView: View {
 
             HStack(spacing: 12) {
                 replayButton
-
                 Spacer()
-
                 deleteButton
             }
         }
     }
 
+    // MARK: - Buttons
+
     private var evolveButton: some View {
-        Button(action: onEvolveTapped) {
+        Button { onAction(.evolve) } label: {
             HStack(spacing: 6) {
-                Image(systemName: isBlob ? "leaf.fill" : "sparkles")
-                Text(isBlob ? "Use Essence" : "Evolve!")
+                Image(systemName: pet.isBlob ? "leaf.fill" : "sparkles")
+                Text(pet.isBlob ? "Use Essence" : "Evolve!")
             }
             .font(.system(size: 14, weight: .semibold))
             .foregroundStyle(.white)
@@ -233,7 +265,7 @@ struct HomeCardContentView: View {
     }
 
     private var blowAwayButton: some View {
-        Button(action: onBlowAwayTapped) {
+        Button { onAction(.blowAway) } label: {
             HStack(spacing: 6) {
                 Image(systemName: "wind")
                 Text("Blow Away")
@@ -251,7 +283,7 @@ struct HomeCardContentView: View {
     }
 
     private var replayButton: some View {
-        Button(action: onReplayTapped) {
+        Button { onAction(.replay) } label: {
             HStack(spacing: 6) {
                 Image(systemName: "memories")
                 Text("Replay")
@@ -269,7 +301,7 @@ struct HomeCardContentView: View {
     }
 
     private var deleteButton: some View {
-        Button(action: onDeleteTapped) {
+        Button { onAction(.delete) } label: {
             HStack(spacing: 6) {
                 Image(systemName: "trash")
                 Text("Delete")
@@ -285,14 +317,49 @@ struct HomeCardContentView: View {
         }
         .buttonStyle(.plain)
     }
+
+    // MARK: - Helpers
+
+    private func formatMinutes(_ minutes: Int) -> String {
+        let hours = minutes / 60
+        let mins = minutes % 60
+        if hours > 0 {
+            return mins > 0 ? "\(hours)h \(mins)m" : "\(hours)h"
+        }
+        return "\(mins)m"
+    }
 }
 
 // MARK: - Preview
 
 #if DEBUG
-#Preview {
-    NavigationStack {
-        HomeCardDebugView()
-    }
+#Preview("Daily Pet") {
+    HomeCardView(
+        pet: .daily(.mock()),
+        streakCount: 7,
+        showDetailButton: true
+    )
+    .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 24))
+    .padding()
+}
+
+#Preview("Dynamic Pet") {
+    HomeCardView(
+        pet: .dynamic(.mock()),
+        streakCount: 12,
+        showDetailButton: true
+    )
+    .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 24))
+    .padding()
+}
+
+#Preview("Dynamic Pet - On Break") {
+    HomeCardView(
+        pet: .dynamic(.mockWithBreak()),
+        streakCount: 5,
+        showDetailButton: true
+    )
+    .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 24))
+    .padding()
 }
 #endif

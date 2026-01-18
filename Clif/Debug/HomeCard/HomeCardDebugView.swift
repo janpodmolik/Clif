@@ -4,6 +4,15 @@ import SwiftUI
 struct HomeCardDebugView: View {
     @Environment(\.dismiss) private var dismiss
 
+    // MARK: - Mode Selection
+
+    @State private var selectedMode: PetMode = .daily
+
+    enum PetMode: String, CaseIterable {
+        case daily = "Daily"
+        case dynamic = "Dynamic"
+    }
+
     // MARK: - Pet Identity State
 
     @State private var petName: String = "Blob"
@@ -11,11 +20,16 @@ struct HomeCardDebugView: View {
     @State private var evolutionStage: Int = 0
     private let maxEvolutionStage = 4
 
-    // MARK: - Screen Time State
+    // MARK: - Screen Time State (Daily)
 
     @State private var usedMinutes: Double = 83
     @State private var limitMinutes: Double = 180
     @State private var streakCount: Int = 12
+
+    // MARK: - Wind State (Dynamic)
+
+    @State private var windPoints: Double = 45
+    @State private var isOnBreak: Bool = false
 
     // MARK: - Button Visibility State
 
@@ -34,8 +48,13 @@ struct HomeCardDebugView: View {
     // MARK: - Computed Properties
 
     private var progress: Double {
-        guard limitMinutes > 0 else { return 0 }
-        return usedMinutes / limitMinutes
+        switch selectedMode {
+        case .daily:
+            guard limitMinutes > 0 else { return 0 }
+            return usedMinutes / limitMinutes
+        case .dynamic:
+            return windPoints / 100.0
+        }
     }
 
     private var currentMood: Mood {
@@ -96,6 +115,36 @@ struct HomeCardDebugView: View {
 
     // MARK: - Preview Section
 
+    private var mockPet: ActivePet {
+        switch selectedMode {
+        case .daily:
+            let dailyPet = DailyPet(
+                name: petName,
+                evolutionHistory: .mock(phase: evolutionStage, totalDays: evolutionStage > 0 ? evolutionStage : 0),
+                purpose: purposeLabel.isEmpty ? nil : purposeLabel,
+                todayUsedMinutes: Int(usedMinutes),
+                dailyLimitMinutes: Int(limitMinutes)
+            )
+            if isBlownAway {
+                dailyPet.blowAway()
+            }
+            return .daily(dailyPet)
+
+        case .dynamic:
+            let dynamicPet = DynamicPet(
+                name: petName,
+                evolutionHistory: .mock(phase: evolutionStage, totalDays: evolutionStage > 0 ? evolutionStage : 0),
+                purpose: purposeLabel.isEmpty ? nil : purposeLabel,
+                windPoints: windPoints,
+                activeBreak: isOnBreak ? .mock(type: .committed, minutesAgo: 5, durationMinutes: 30) : nil
+            )
+            if isBlownAway {
+                dynamicPet.blowAway()
+            }
+            return .dynamic(dynamicPet)
+        }
+    }
+
     private var previewSection: some View {
         ZStack {
             // Simulated background
@@ -106,27 +155,11 @@ struct HomeCardDebugView: View {
             )
             .ignoresSafeArea()
 
-            HomeCardContentView(
+            HomeCardView(
+                pet: mockPet,
                 streakCount: streakCount,
-                usedTimeText: usedTimeText,
-                dailyLimitText: dailyLimitText,
-                progress: progress,
-                petName: petName,
-                evolutionStage: evolutionStage,
-                maxEvolutionStage: maxEvolutionStage,
-                mood: currentMood,
-                purposeLabel: purposeLabel.isEmpty ? nil : purposeLabel,
-                isEvolutionAvailable: showEvolveButton,
-                daysUntilEvolution: showEvolveButton ? nil : daysUntilEvolution,
-                isSaveEnabled: isSaveEnabled,
                 showDetailButton: showDetailButton,
-                isBlownAway: isBlownAway,
-                onDetailTapped: { print("Detail tapped") },
-                onEvolveTapped: { print("Evolve tapped") },
-                onSavePetTapped: { print("Finish tapped") },
-                onBlowAwayTapped: { print("Blow Away tapped") },
-                onReplayTapped: { print("Replay tapped") },
-                onDeleteTapped: { print("Delete tapped") }
+                onAction: { print("\($0) tapped") }
             )
             .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 28))
             .padding(20)
@@ -139,8 +172,13 @@ struct HomeCardDebugView: View {
     private var controlsPanel: some View {
         ScrollView {
             VStack(spacing: 16) {
+                modeSelectionSection
                 petIdentitySection
-                screenTimeSection
+                if selectedMode == .daily {
+                    screenTimeSection
+                } else {
+                    windSection
+                }
                 buttonsSection
                 presetsSection
             }
@@ -148,6 +186,22 @@ struct HomeCardDebugView: View {
         }
         .frame(height: 380)
         .background(Color(.systemGroupedBackground))
+    }
+
+    // MARK: - Mode Selection Section
+
+    private var modeSelectionSection: some View {
+        VStack(spacing: 0) {
+            Picker("Mode", selection: $selectedMode) {
+                ForEach(PetMode.allCases, id: \.self) { mode in
+                    Text(mode.rawValue).tag(mode)
+                }
+            }
+            .pickerStyle(.segmented)
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
+        .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 12))
     }
 
     // MARK: - Pet Identity Section
@@ -280,6 +334,72 @@ struct HomeCardDebugView: View {
         }
     }
 
+    // MARK: - Wind Section (Dynamic Mode)
+
+    private var windSection: some View {
+        collapsibleSection(
+            title: "Wind Points",
+            systemImage: "wind",
+            isExpanded: $isTimeSectionExpanded
+        ) {
+            VStack(spacing: 16) {
+                // Wind points slider
+                VStack(alignment: .leading, spacing: 4) {
+                    HStack {
+                        Text("Wind")
+                            .foregroundStyle(.secondary)
+                        Spacer()
+                        Text("\(Int(windPoints))")
+                            .font(.system(.body, design: .monospaced, weight: .semibold))
+                            .foregroundStyle(progressColor)
+                    }
+                    Slider(value: $windPoints, in: 0...100, step: 1)
+                }
+
+                // Progress display
+                HStack {
+                    Text("Progress")
+                        .foregroundStyle(.secondary)
+                    Spacer()
+                    Text("\(Int(progress * 100))%")
+                        .font(.system(.body, design: .monospaced, weight: .semibold))
+                        .foregroundStyle(progressColor)
+                }
+
+                // Break toggle
+                Toggle("On Break", isOn: $isOnBreak)
+
+                // Streak stepper
+                HStack {
+                    Text("Streak")
+                        .foregroundStyle(.secondary)
+                    Spacer()
+                    HStack(spacing: 12) {
+                        Button {
+                            if streakCount > 0 { streakCount -= 1 }
+                        } label: {
+                            Image(systemName: "minus.circle.fill")
+                                .font(.title2)
+                                .foregroundStyle(.secondary)
+                        }
+
+                        Text("\(streakCount)")
+                            .font(.system(.body, design: .monospaced, weight: .semibold))
+                            .frame(width: 40)
+
+                        Button {
+                            streakCount += 1
+                        } label: {
+                            Image(systemName: "plus.circle.fill")
+                                .font(.title2)
+                                .foregroundStyle(.blue)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     // MARK: - Buttons Section
 
     private var buttonsSection: some View {
@@ -345,16 +465,31 @@ struct HomeCardDebugView: View {
             systemImage: "sparkles.rectangle.stack",
             isExpanded: $isPresetsSectionExpanded
         ) {
-            LazyVGrid(columns: [
-                GridItem(.flexible()),
-                GridItem(.flexible())
-            ], spacing: 8) {
-                presetButton("Normal", color: .blue) { applyNormalPreset() }
-                presetButton("Evolve Ready", color: .green) { applyEvolveReadyPreset() }
-                presetButton("Max Evolution", color: .purple) { applyMaxEvolutionPreset() }
-                presetButton("New Pet", color: .mint) { applyNewPetPreset() }
-                presetButton("Critical", color: .orange) { applyCriticalPreset() }
-                presetButton("Blown Away", color: .red) { applyBlownAwayPreset() }
+            VStack(spacing: 8) {
+                LazyVGrid(columns: [
+                    GridItem(.flexible()),
+                    GridItem(.flexible())
+                ], spacing: 8) {
+                    presetButton("Normal", color: .blue) { applyNormalPreset() }
+                    presetButton("Evolve Ready", color: .green) { applyEvolveReadyPreset() }
+                    presetButton("Max Evolution", color: .purple) { applyMaxEvolutionPreset() }
+                    presetButton("New Pet", color: .mint) { applyNewPetPreset() }
+                    presetButton("Critical", color: .orange) { applyCriticalPreset() }
+                    presetButton("Blown Away", color: .red) { applyBlownAwayPreset() }
+                }
+
+                if selectedMode == .dynamic {
+                    Divider()
+                        .padding(.vertical, 4)
+
+                    LazyVGrid(columns: [
+                        GridItem(.flexible()),
+                        GridItem(.flexible())
+                    ], spacing: 8) {
+                        presetButton("On Break", color: .green) { applyOnBreakPreset() }
+                        presetButton("High Wind", color: .orange) { applyHighWindPreset() }
+                    }
+                }
             }
         }
     }
@@ -379,12 +514,18 @@ struct HomeCardDebugView: View {
             petName = "Blob"
             purposeLabel = "Social Media"
             evolutionStage = 0
-            usedMinutes = 45
-            limitMinutes = 180
             streakCount = 7
             showEvolveButton = true
             showDetailButton = true
             isBlownAway = false
+
+            if selectedMode == .daily {
+                usedMinutes = 45
+                limitMinutes = 180
+            } else {
+                windPoints = 25
+                isOnBreak = false
+            }
         }
     }
 
@@ -393,12 +534,18 @@ struct HomeCardDebugView: View {
             petName = "Blob"
             purposeLabel = "Gaming"
             evolutionStage = 0
-            usedMinutes = 30
-            limitMinutes = 180
             streakCount = 7
             showEvolveButton = true
             showDetailButton = true
             isBlownAway = false
+
+            if selectedMode == .daily {
+                usedMinutes = 30
+                limitMinutes = 180
+            } else {
+                windPoints = 20
+                isOnBreak = false
+            }
         }
     }
 
@@ -407,12 +554,18 @@ struct HomeCardDebugView: View {
             petName = "Elder Oak"
             purposeLabel = "Work Apps"
             evolutionStage = 4
-            usedMinutes = 45
-            limitMinutes = 180
             streakCount = 30
             showEvolveButton = false
             showDetailButton = true
             isBlownAway = false
+
+            if selectedMode == .daily {
+                usedMinutes = 45
+                limitMinutes = 180
+            } else {
+                windPoints = 30
+                isOnBreak = false
+            }
         }
     }
 
@@ -421,13 +574,19 @@ struct HomeCardDebugView: View {
             petName = "Blob"
             purposeLabel = ""
             evolutionStage = 0
-            usedMinutes = 0
-            limitMinutes = 180
             streakCount = 0
             showEvolveButton = false
             daysUntilEvolution = 7
             showDetailButton = true
             isBlownAway = false
+
+            if selectedMode == .daily {
+                usedMinutes = 0
+                limitMinutes = 180
+            } else {
+                windPoints = 0
+                isOnBreak = false
+            }
         }
     }
 
@@ -436,12 +595,18 @@ struct HomeCardDebugView: View {
             petName = "Willow"
             purposeLabel = "Streaming"
             evolutionStage = 3
-            usedMinutes = 170
-            limitMinutes = 180
             streakCount = 5
             showEvolveButton = false
             showDetailButton = true
             isBlownAway = false
+
+            if selectedMode == .daily {
+                usedMinutes = 170
+                limitMinutes = 180
+            } else {
+                windPoints = 85
+                isOnBreak = false
+            }
         }
     }
 
@@ -450,12 +615,48 @@ struct HomeCardDebugView: View {
             petName = "Willow"
             purposeLabel = "Social Media"
             evolutionStage = 3
-            usedMinutes = 230
-            limitMinutes = 180
             streakCount = 0
             showEvolveButton = false
             showDetailButton = true
             isBlownAway = true
+
+            if selectedMode == .daily {
+                usedMinutes = 230
+                limitMinutes = 180
+            } else {
+                windPoints = 100
+                isOnBreak = false
+            }
+        }
+    }
+
+    // MARK: - Dynamic-Only Presets
+
+    private func applyOnBreakPreset() {
+        withAnimation(.easeInOut(duration: 0.2)) {
+            petName = "Fern"
+            purposeLabel = "Social Media"
+            evolutionStage = 2
+            windPoints = 65
+            isOnBreak = true
+            streakCount = 12
+            showEvolveButton = false
+            showDetailButton = true
+            isBlownAway = false
+        }
+    }
+
+    private func applyHighWindPreset() {
+        withAnimation(.easeInOut(duration: 0.2)) {
+            petName = "Sprout"
+            purposeLabel = "Gaming"
+            evolutionStage = 1
+            windPoints = 75
+            isOnBreak = false
+            streakCount = 3
+            showEvolveButton = false
+            showDetailButton = true
+            isBlownAway = false
         }
     }
 

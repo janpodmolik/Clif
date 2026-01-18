@@ -23,7 +23,7 @@ struct EvolutionHistory: Codable, Equatable {
     private(set) var blownAt: Date?
 
     /// True if pet is still a blob (no essence applied yet)
-    var isBlob: Bool {
+var isBlob: Bool {
         essence == nil
     }
 

@@ -36,7 +36,10 @@ struct OverviewScreen: View {
                     .padding(.horizontal, 20)
 
                 PetScreenTimeCarousel(
-                    activePets: activePets.compactMap(\.asDaily),
+                    activePets: activePets.compactMap { pet in
+                        if case .daily(let daily) = pet { return daily }
+                        return nil
+                    },
                     fallbackStats: weeklyStats,
                     applicationTokens: screenTimeManager.activitySelection.applicationTokens,
                     categoryTokens: screenTimeManager.activitySelection.categoryTokens,
@@ -66,7 +69,8 @@ struct OverviewScreen: View {
             archivedPetManager.loadSummariesIfNeeded()
         }
         .fullScreenCover(item: $selectedActivePet) { pet in
-            if let daily = pet.asDaily {
+            switch pet {
+            case .daily(let daily):
                 PetActiveDetailScreen(
                     pet: daily,
                     showOverviewActions: true,
@@ -77,8 +81,10 @@ struct OverviewScreen: View {
                         }
                     }
                 )
+            case .dynamic:
+                // TODO: Add PetActiveDetailScreen for DynamicPet
+                Text("Dynamic Pet Detail - Coming Soon")
             }
-            // TODO: Add PetActiveDetailScreen for DynamicPet
         }
         .fullScreenCover(item: $selectedArchivedDetail) { detail in
             if case .daily(let pet) = detail {
@@ -115,12 +121,15 @@ struct OverviewScreen: View {
             } else {
                 LazyVStack(spacing: 12) {
                     ForEach(activePets) { pet in
-                        if let daily = pet.asDaily {
+                        switch pet {
+                        case .daily(let daily):
                             ActivePetRow(pet: daily) {
                                 selectedActivePet = pet
                             }
+                        case .dynamic:
+                            // TODO: Add row for DynamicPet
+                            EmptyView()
                         }
-                        // TODO: Add row for DynamicPet
                     }
                 }
             }

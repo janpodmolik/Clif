@@ -118,7 +118,7 @@ struct HomeScreenDebugView: View {
     }
 
     private var debugPet: DailyPet {
-        DailyPet(
+        let pet = DailyPet(
             name: petName,
             evolutionHistory: EvolutionHistory(
                 createdAt: Calendar.current.date(byAdding: .day, value: -streakCount, to: Date())!,
@@ -129,6 +129,14 @@ struct HomeScreenDebugView: View {
             todayUsedMinutes: Int(usedMinutes),
             dailyLimitMinutes: Int(limitMinutes)
         )
+        if isBlownAway {
+            pet.blowAway()
+        }
+        return pet
+    }
+
+    private var debugActivePet: ActivePet {
+        .daily(debugPet)
     }
 
     // MARK: - Body
@@ -166,26 +174,17 @@ struct HomeScreenDebugView: View {
                     .ignoresSafeArea(.container, edges: .bottom)
 
                     // Home card
-                    HomeCardContentView(
+                    HomeCardView(
+                        pet: debugActivePet,
                         streakCount: streakCount,
-                        usedTimeText: usedTimeText,
-                        dailyLimitText: dailyLimitText,
-                        progress: progress,
-                        petName: petName,
-                        evolutionStage: evolutionStage,
-                        maxEvolutionStage: 4,
-                        mood: currentMood,
-                        purposeLabel: purposeLabel.isEmpty ? nil : purposeLabel,
-                        isEvolutionAvailable: showEvolveButton,
-                        daysUntilEvolution: showEvolveButton ? nil : daysUntilEvolution,
-                        isSaveEnabled: evolutionStage >= 2,
                         showDetailButton: true,
-                        isBlownAway: isBlownAway,
-                        onDetailTapped: { showPetDetail = true },
-                        onEvolveTapped: { print("Evolve tapped") },
-                        onBlowAwayTapped: { print("Blow Away tapped") },
-                        onReplayTapped: { print("Replay tapped") },
-                        onDeleteTapped: { print("Delete tapped") }
+                        onAction: { action in
+                            if action == .detail {
+                                showPetDetail = true
+                            } else {
+                                print("\(action) tapped")
+                            }
+                        }
                     )
                     .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 24))
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)

@@ -60,28 +60,48 @@ enum ActivePet: Identifiable {
 
     var createdAt: Date { evolutionHistory.createdAt }
 
-    // MARK: - Type Checks
-
-    var isDaily: Bool {
-        if case .daily = self { return true }
-        return false
+    /// Current evolution phase, if pet has essence and is at phase 1+.
+    var phase: EvolutionPhase? {
+        switch self {
+        case .daily(let pet): pet.phase
+        case .dynamic(let pet): pet.phase
+        }
     }
 
-    var isDynamic: Bool {
-        if case .dynamic = self { return true }
-        return false
+    // MARK: - Evolution Timing (delegated from PetEvolvable)
+
+    /// True if blob can use essence (at least 1 day old).
+    var canUseEssence: Bool {
+        switch self {
+        case .daily(let pet): pet.canUseEssence
+        case .dynamic(let pet): pet.canUseEssence
+        }
     }
 
-    // MARK: - Type Access
-
-    var asDaily: DailyPet? {
-        if case .daily(let pet) = self { return pet }
-        return nil
+    /// Days until essence can be used (for blob pets).
+    var daysUntilEssence: Int? {
+        switch self {
+        case .daily(let pet): pet.daysUntilEssence
+        case .dynamic(let pet): pet.daysUntilEssence
+        }
     }
 
-    var asDynamic: DynamicPet? {
-        if case .dynamic(let pet) = self { return pet }
-        return nil
+    /// Days until next evolution.
+    var daysUntilEvolution: Int? {
+        switch self {
+        case .daily(let pet): pet.daysUntilEvolution
+        case .dynamic(let pet): pet.daysUntilEvolution
+        }
+    }
+
+    /// True if evolution/essence button should be shown.
+    var isEvolutionAvailable: Bool {
+        isBlob ? canUseEssence : canEvolve
+    }
+
+    /// Days until next milestone (evolution or essence), if not yet available.
+    var daysUntilNextMilestone: Int? {
+        isBlob ? daysUntilEssence : daysUntilEvolution
     }
 }
 
@@ -101,6 +121,22 @@ extension ActivePet {
         switch self {
         case .daily(let pet): pet.blowAway()
         case .dynamic(let pet): pet.blowAway()
+        }
+    }
+
+    /// Applies essence to a blob pet.
+    func applyEssence(_ essence: Essence) {
+        switch self {
+        case .daily(let pet): pet.applyEssence(essence)
+        case .dynamic(let pet): pet.applyEssence(essence)
+        }
+    }
+
+    /// Evolves the pet to the next phase.
+    func evolve() {
+        switch self {
+        case .daily(let pet): pet.evolve()
+        case .dynamic(let pet): pet.evolve()
         }
     }
 }

@@ -18,12 +18,6 @@ final class PetManager {
         activePets.first
     }
 
-    /// Current daily pet (for backwards compatibility with existing UI).
-    /// TODO: Migrate UI to use ActivePet and remove this.
-    var currentDailyPet: DailyPet? {
-        pets.compactMap(\.asDaily).first
-    }
-
     // MARK: - Init
 
     init() {
@@ -65,23 +59,6 @@ final class PetManager {
         pets.append(.dynamic(pet))
         saveActivePets()
         return pet
-    }
-
-    // MARK: - Lookup
-
-    /// Finds an active pet by ID.
-    func pet(by id: UUID) -> ActivePet? {
-        pets.first { $0.id == id }
-    }
-
-    /// Finds a daily pet by ID.
-    func dailyPet(by id: UUID) -> DailyPet? {
-        pets.first { $0.id == id }?.asDaily
-    }
-
-    /// Finds a dynamic pet by ID.
-    func dynamicPet(by id: UUID) -> DynamicPet? {
-        pets.first { $0.id == id }?.asDynamic
     }
 
     // MARK: - Archive
@@ -137,12 +114,22 @@ private extension PetManager {
     }
 
     func saveActivePets() {
-        let dailyDTOs = pets.compactMap(\.asDaily).map { DailyPetDTO(from: $0) }
+        var dailyPets: [DailyPet] = []
+        var dynamicPets: [DynamicPet] = []
+
+        for pet in pets {
+            switch pet {
+            case .daily(let daily): dailyPets.append(daily)
+            case .dynamic(let dynamic): dynamicPets.append(dynamic)
+            }
+        }
+
+        let dailyDTOs = dailyPets.map { DailyPetDTO(from: $0) }
         if let data = try? JSONEncoder().encode(dailyDTOs) {
             SharedDefaults.setData(data, forKey: DefaultsKeys.activeDailyPets)
         }
 
-        let dynamicDTOs = pets.compactMap(\.asDynamic).map { DynamicPetDTO(from: $0) }
+        let dynamicDTOs = dynamicPets.map { DynamicPetDTO(from: $0) }
         if let data = try? JSONEncoder().encode(dynamicDTOs) {
             SharedDefaults.setData(data, forKey: DefaultsKeys.activeDynamicPets)
         }
