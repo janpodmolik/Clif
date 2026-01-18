@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct StatCardView<S: StatType>: View {
+struct DailyStatusCard<S: StatType>: View {
     let stat: S
     var onTap: (() -> Void)?
 
@@ -84,16 +84,16 @@ struct CircularProgressView: View {
 #if DEBUG
 #Preview {
     VStack(spacing: 16) {
-        StatCardView(stat: ScreenTimeStat(usedMinutes: 45, limitMinutes: 120))
+        DailyStatusCard(stat: ScreenTimeStat(usedMinutes: 45, limitMinutes: 120))
 
-        StatCardView(stat: ScreenTimeStat(usedMinutes: 90, limitMinutes: 120))
+        DailyStatusCard(stat: ScreenTimeStat(usedMinutes: 90, limitMinutes: 120))
 
-        StatCardView(
+        DailyStatusCard(
             stat: ScreenTimeStat(usedMinutes: 150, limitMinutes: 120),
             onTap: {}
         )
 
-        StatCardView(stat: StepsStat(steps: 7500, goal: 10000))
+        DailyStatusCard(stat: StepsStat(steps: 7500, goal: 10000))
     }
     .padding()
 }

@@ -37,9 +37,9 @@ enum BreakType: String, Codable, CaseIterable {
     /// Icon for UI display.
     var icon: String {
         switch self {
-        case .free: return "leaf"
-        case .committed: return "hand.raised"
-        case .hardcore: return "flame"
+        case .free: return "peacesign"
+        case .committed: return "exclamationmark.triangle"
+        case .hardcore: return "nosign"
         }
     }
 }

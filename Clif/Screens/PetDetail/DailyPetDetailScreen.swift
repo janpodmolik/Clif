@@ -36,7 +36,7 @@ struct DailyPetDetailScreen: View {
                 VStack(spacing: 20) {
                     WeatherCard(windLevel: pet.windLevel, isBlownAway: pet.isBlown)
 
-                    StatCardView(
+                    DailyStatusCard(
                         stat: ScreenTimeStat(
                             usedMinutes: pet.todayUsedMinutes,
                             limitMinutes: pet.dailyLimitMinutes
