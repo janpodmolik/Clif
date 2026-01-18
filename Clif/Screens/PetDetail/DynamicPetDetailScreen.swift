@@ -7,11 +7,7 @@ struct DynamicPetDetailScreen: View {
     var showOverviewActions: Bool = false
 
     // MARK: - Actions
-    var onBlowAway: () -> Void = {}
-    var onReplay: () -> Void = {}
-    var onDelete: () -> Void = {}
-    var onLimitedApps: () -> Void = {}
-    var onShowOnHomepage: () -> Void = {}
+    var onAction: (DynamicPetDetailAction) -> Void = { _ in }
 
     @Environment(\.dismiss) private var dismiss
     @State private var showEssencePicker = false
@@ -89,7 +85,7 @@ struct DynamicPetDetailScreen: View {
 
                     LimitedAppsBadge(
                         appCount: pet.limitedAppCount,
-                        onTap: onLimitedApps
+                        onTap: { onAction(.limitedApps) }
                     )
 
                     if showOverviewActions {
@@ -101,9 +97,9 @@ struct DynamicPetDetailScreen: View {
                             daysUntilProgress: daysUntilProgress,
                             isBlownAway: pet.isBlown,
                             onProgress: pet.isBlob ? { showEssencePicker = true } : { pet.evolve() },
-                            onBlowAway: onBlowAway,
-                            onReplay: onReplay,
-                            onDelete: onDelete
+                            onBlowAway: { onAction(.blowAway) },
+                            onReplay: { onAction(.replay) },
+                            onDelete: { onAction(.delete) }
                         )
                     }
                 }
@@ -163,7 +159,7 @@ struct DynamicPetDetailScreen: View {
 
     private var breakButtonPlaceholder: some View {
         Button {
-            // TODO: Show break sheet
+            onAction(.startBreak)
         } label: {
             HStack {
                 Image(systemName: "pause.circle.fill")
@@ -261,7 +257,7 @@ struct DynamicPetDetailScreen: View {
 
     private var overviewNormalActions: some View {
         HStack(spacing: 16) {
-            Button(action: onDelete) {
+            Button { onAction(.delete) } label: {
                 HStack(spacing: 6) {
                     Image(systemName: "trash")
                     Text("Smazat")
@@ -276,7 +272,7 @@ struct DynamicPetDetailScreen: View {
 
             Spacer()
 
-            Button(action: onShowOnHomepage) {
+            Button { onAction(.showOnHomepage) } label: {
                 HStack(spacing: 6) {
                     Image(systemName: "house.fill")
                     Text("Zobrazit")
@@ -295,7 +291,7 @@ struct DynamicPetDetailScreen: View {
 
     private var overviewBlownAwayActions: some View {
         HStack(spacing: 16) {
-            Button(action: onReplay) {
+            Button { onAction(.replay) } label: {
                 HStack(spacing: 6) {
                     Image(systemName: "memories")
                     Text("Replay")
@@ -310,7 +306,7 @@ struct DynamicPetDetailScreen: View {
 
             Spacer()
 
-            Button(action: onDelete) {
+            Button { onAction(.delete) } label: {
                 HStack(spacing: 6) {
                     Image(systemName: "trash")
                     Text("Smazat")

@@ -129,10 +129,9 @@ struct DailyPetDetailScreenDebug: View {
         .fullScreenCover(isPresented: $showSheet) {
             DailyPetDetailScreen(
                 pet: debugPet,
-                onBlowAway: { print("Blow Away tapped") },
-                onReplay: { print("Replay tapped") },
-                onDelete: { print("Delete tapped") },
-                onLimitedApps: { print("Limited apps tapped") }
+                onAction: { action in
+                    print("Action tapped: \(action)")
+                }
             )
         }
     }

@@ -74,23 +74,13 @@ struct OverviewScreen: View {
                 DailyPetDetailScreen(
                     pet: daily,
                     showOverviewActions: true,
-                    onShowOnHomepage: {
-                        selectedActivePet = nil
-                        if let url = URL(string: "clif://pet/\(pet.id.uuidString)") {
-                            UIApplication.shared.open(url)
-                        }
-                    }
+                    onAction: { handleDailyAction($0, for: pet) }
                 )
             case .dynamic(let dynamic):
                 DynamicPetDetailScreen(
                     pet: dynamic,
                     showOverviewActions: true,
-                    onShowOnHomepage: {
-                        selectedActivePet = nil
-                        if let url = URL(string: "clif://pet/\(pet.id.uuidString)") {
-                            UIApplication.shared.open(url)
-                        }
-                    }
+                    onAction: { handleDynamicAction($0, for: pet) }
                 )
             }
         }
@@ -229,6 +219,32 @@ struct OverviewScreen: View {
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 32)
+    }
+
+    // MARK: - Actions
+
+    private func handleDailyAction(_ action: DailyPetDetailAction, for pet: ActivePet) {
+        switch action {
+        case .showOnHomepage:
+            selectedActivePet = nil
+            if let url = URL(string: "clif://pet/\(pet.id.uuidString)") {
+                UIApplication.shared.open(url)
+            }
+        case .blowAway, .replay, .delete, .limitedApps, .progress:
+            break // TODO: Implement remaining actions
+        }
+    }
+
+    private func handleDynamicAction(_ action: DynamicPetDetailAction, for pet: ActivePet) {
+        switch action {
+        case .showOnHomepage:
+            selectedActivePet = nil
+            if let url = URL(string: "clif://pet/\(pet.id.uuidString)") {
+                UIApplication.shared.open(url)
+            }
+        case .blowAway, .replay, .delete, .limitedApps, .progress, .startBreak, .endBreak:
+            break // TODO: Implement remaining actions
+        }
     }
 }
 
