@@ -328,7 +328,7 @@ struct DebugView: View {
     // MARK: - Pet Detail Debug
 
     private var petDetailSection: some View {
-        NavigationLink(destination: PetActiveDetailScreenDebug()) {
+        NavigationLink(destination: DailyPetDetailScreenDebug()) {
             HStack {
                 Image(systemName: "info.circle")
                 Text("Pet Detail Debug")

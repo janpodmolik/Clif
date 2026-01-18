@@ -71,7 +71,7 @@ struct OverviewScreen: View {
         .fullScreenCover(item: $selectedActivePet) { pet in
             switch pet {
             case .daily(let daily):
-                PetActiveDetailScreen(
+                DailyPetDetailScreen(
                     pet: daily,
                     showOverviewActions: true,
                     onShowOnHomepage: {
@@ -81,9 +81,17 @@ struct OverviewScreen: View {
                         }
                     }
                 )
-            case .dynamic:
-                // TODO: Add PetActiveDetailScreen for DynamicPet
-                Text("Dynamic Pet Detail - Coming Soon")
+            case .dynamic(let dynamic):
+                DynamicPetDetailScreen(
+                    pet: dynamic,
+                    showOverviewActions: true,
+                    onShowOnHomepage: {
+                        selectedActivePet = nil
+                        if let url = URL(string: "clif://pet/\(pet.id.uuidString)") {
+                            UIApplication.shared.open(url)
+                        }
+                    }
+                )
             }
         }
         .fullScreenCover(item: $selectedArchivedDetail) { detail in

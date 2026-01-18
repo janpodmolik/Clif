@@ -151,10 +151,9 @@ struct HomeScreen: View {
     private func petDetailScreen(for pet: ActivePet) -> some View {
         switch pet {
         case .daily(let dailyPet):
-            PetActiveDetailScreen(pet: dailyPet)
-        case .dynamic:
-            // TODO: Create DynamicPetDetailScreen
-            Text("Dynamic Pet Detail - Coming Soon")
+            DailyPetDetailScreen(pet: dailyPet)
+        case .dynamic(let dynamicPet):
+            DynamicPetDetailScreen(pet: dynamicPet)
         }
     }
 

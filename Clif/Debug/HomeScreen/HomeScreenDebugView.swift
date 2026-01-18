@@ -202,7 +202,7 @@ struct HomeScreenDebugView: View {
             .navigationBarTitleDisplayMode(.inline)
         }
         .fullScreenCover(isPresented: $showPetDetail) {
-            PetActiveDetailScreen(pet: debugPet)
+            DailyPetDetailScreen(pet: debugPet)
         }
         .onAppear {
             windRhythm.start()

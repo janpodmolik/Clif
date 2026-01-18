@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct PetActiveDetailScreen: View {
+struct DailyPetDetailScreen: View {
     let pet: DailyPet
 
     // MARK: - Context
@@ -206,32 +206,30 @@ struct PetActiveDetailScreen: View {
 }
 
 #if DEBUG
-#Preview("PetActiveDetailDebug") {
+#Preview("DailyPetDetailDebug") {
     NavigationStack {
-        PetActiveDetailScreenDebug()
+        DailyPetDetailScreenDebug()
     }
 }
-
-
 
 #Preview("Full Screen Modal") {
     Text("Tap to open")
         .fullScreenCover(isPresented: .constant(true)) {
-            PetActiveDetailScreen(pet: .mock(name: "Fern", phase: 2, todayUsedMinutes: 60))
+            DailyPetDetailScreen(pet: .mock(name: "Fern", phase: 2, todayUsedMinutes: 60))
         }
 }
 
 #Preview("Overview Actions") {
     Text("Tap to open")
         .fullScreenCover(isPresented: .constant(true)) {
-            PetActiveDetailScreen(pet: .mock(name: "Ivy", phase: 3, todayUsedMinutes: 30), showOverviewActions: true)
+            DailyPetDetailScreen(pet: .mock(name: "Ivy", phase: 3, todayUsedMinutes: 30), showOverviewActions: true)
         }
 }
 
 #Preview("Blob - Ready for Essence") {
     Text("Tap to open")
         .fullScreenCover(isPresented: .constant(true)) {
-            PetActiveDetailScreen(pet: .mockBlob(name: "Blobby", canUseEssence: true))
+            DailyPetDetailScreen(pet: .mockBlob(name: "Blobby", canUseEssence: true))
         }
 }
 #endif
