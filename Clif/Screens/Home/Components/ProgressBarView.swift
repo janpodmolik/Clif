@@ -4,10 +4,15 @@ struct ProgressBarView: View {
     let progress: Double
     var isPulsing: Bool = false
 
+    @State private var pulsePhase = false
+
     private let trackHeight: CGFloat = 6
 
     private var progressColor: Color {
-        progress < 0.8 ? .green : .red
+        if isPulsing {
+            return .cyan
+        }
+        return progress < 0.8 ? .green : .red
     }
 
     var body: some View {
@@ -20,17 +25,29 @@ struct ProgressBarView: View {
                 RoundedRectangle(cornerRadius: 3)
                     .fill(progressColor)
                     .frame(width: geometry.size.width * min(progress, 1.0), height: trackHeight)
-                    .opacity(isPulsing ? 0.5 : 1.0)
+                    .opacity(isPulsing ? (pulsePhase ? 1.0 : 0.4) : 1.0)
                     .animation(
                         isPulsing
-                            ? .easeInOut(duration: 1.5).repeatForever(autoreverses: true)
+                            ? .easeInOut(duration: 1.0).repeatForever(autoreverses: true)
                             : .default,
-                        value: isPulsing
+                        value: pulsePhase
                     )
             }
         }
         .frame(height: trackHeight)
         .animation(.easeInOut(duration: 0.3), value: progress)
+        .onChange(of: isPulsing) { _, newValue in
+            if newValue {
+                pulsePhase = true
+            } else {
+                pulsePhase = false
+            }
+        }
+        .onAppear {
+            if isPulsing {
+                pulsePhase = true
+            }
+        }
     }
 }
 

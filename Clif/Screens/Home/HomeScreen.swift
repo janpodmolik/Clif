@@ -10,6 +10,7 @@ struct HomeScreen: View {
     @State private var windRhythm = WindRhythm()
     @State private var selectedPetId: UUID?
     @State private var showPetDetail = false
+    @State private var showBreakSheet = false
     @State private var petFrame: CGRect = .zero
 
     private let homeCardInset: CGFloat = 16
@@ -45,6 +46,11 @@ struct HomeScreen: View {
             if let pet = currentPet {
                 petDetailScreen(for: pet)
             }
+        }
+        .sheet(isPresented: $showBreakSheet) {
+            // TODO: Replace with BreakSheet
+            Text("Break Sheet - Coming Soon")
+                .presentationDetents([.medium])
         }
         .onAppear {
             windRhythm.start()
@@ -134,6 +140,8 @@ struct HomeScreen: View {
             handleEvolve(pet)
         case .replay, .delete:
             break // TODO: Handle archived pet actions
+        case .startBreak:
+            handleBreak(pet)
         }
     }
 
@@ -162,6 +170,9 @@ struct HomeScreen: View {
         }
     }
 
+    private func handleBreak(_ pet: ActivePet) {
+        showBreakSheet = true
+    }
 }
 
 // MARK: - HomeCardBackgroundModifier

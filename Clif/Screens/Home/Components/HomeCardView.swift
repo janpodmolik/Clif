@@ -7,6 +7,7 @@ enum HomeCardAction {
     case evolve
     case replay
     case delete
+    case startBreak
 }
 
 // MARK: - HomeCardView
@@ -150,10 +151,10 @@ struct HomeCardView: View {
             if pet.activeBreak != nil {
                 Text("Calming the wind...")
                     .font(.system(size: 14, weight: .medium))
-                    .foregroundStyle(.green)
-                    .opacity(isBreathingIn ? 1.0 : 0.5)
+                    .foregroundStyle(.cyan)
+                    .opacity(isBreathingIn ? 1.0 : 0.4)
                     .animation(
-                        .easeInOut(duration: 1.5).repeatForever(autoreverses: true),
+                        .easeInOut(duration: 1.0).repeatForever(autoreverses: true),
                         value: isBreathingIn
                     )
                     .onAppear { isBreathingIn = true }
@@ -174,10 +175,18 @@ struct HomeCardView: View {
 
     @ViewBuilder
     private var normalButtonsRow: some View {
-        if pet.isEvolutionAvailable {
-            evolveButton
-        } else if let days = pet.daysUntilNextMilestone {
-            evolutionCountdownLabel(days: days)
+        HStack {
+            if pet.isEvolutionAvailable {
+                evolveButton
+            } else if let days = pet.daysUntilNextMilestone {
+                evolutionCountdownLabel(days: days)
+            }
+
+            Spacer()
+
+            if case .dynamic(let dynamicPet) = pet {
+                breakButton(for: dynamicPet)
+            }
         }
     }
 
@@ -214,6 +223,41 @@ struct HomeCardView: View {
                 deleteButton
             }
         }
+    }
+
+    // MARK: - Break Button
+
+    @ViewBuilder
+    private func breakButton(for pet: DynamicPet) -> some View {
+        let isOnBreak = pet.activeBreak != nil
+        let shouldPulse = pet.windProgress > 0.5 && !isOnBreak
+
+        Button { onAction(.startBreak) } label: {
+            Text(isOnBreak ? "Release Wind" : "Calm the Wind")
+                .font(.system(size: 14, weight: .semibold))
+                .foregroundStyle(isOnBreak ? .cyan : .white)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 8)
+                .background {
+                    if isOnBreak {
+                        Capsule()
+                            .fill(Color.cyan.opacity(0.15))
+                    } else {
+                        LinearGradient(
+                            colors: [.cyan, .blue],
+                            startPoint: .leading,
+                            endPoint: .trailing
+                        )
+                        .clipShape(Capsule())
+                    }
+                }
+                .opacity(shouldPulse ? (isBreathingIn ? 1.0 : 0.7) : 1.0)
+        }
+        .buttonStyle(.plain)
+        .animation(
+            shouldPulse ? .easeInOut(duration: 1.2).repeatForever(autoreverses: true) : .default,
+            value: isBreathingIn
+        )
     }
 
     // MARK: - Buttons
@@ -315,6 +359,16 @@ struct HomeCardView: View {
     HomeCardView(
         pet: .dynamic(.mockWithBreak()),
         streakCount: 5,
+        showDetailButton: true
+    )
+    .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 24))
+    .padding()
+}
+
+#Preview("Dynamic Pet - High Wind") {
+    HomeCardView(
+        pet: .dynamic(.mock(windPoints: 65)),
+        streakCount: 3,
         showDetailButton: true
     )
     .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 24))
