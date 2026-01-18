@@ -132,12 +132,6 @@ struct HomeScreen: View {
             showPetDetail = true
         case .evolve:
             handleEvolve(pet)
-        case .takeBreak:
-            handleBreak(pet)
-        case .blowAway:
-            #if DEBUG
-            NotificationCenter.default.post(name: .showMockSheet, object: nil)
-            #endif
         case .replay, .delete:
             break // TODO: Handle archived pet actions
         }
@@ -168,10 +162,6 @@ struct HomeScreen: View {
         }
     }
 
-    private func handleBreak(_ pet: ActivePet) {
-        guard case .dynamic = pet else { return }
-        // TODO: Show break sheet
-    }
 }
 
 // MARK: - HomeCardBackgroundModifier

@@ -50,13 +50,13 @@ enum WindLevel: Int, CaseIterable {
     /// Zone thresholds:
     /// - none: <5% (essentially no usage)
     /// - low: 5% to <50%
-    /// - medium: 50% to <75%
-    /// - high: 75%+
+    /// - medium: 50% to <80%
+    /// - high: 80%+
     static func from(progress: CGFloat) -> WindLevel {
         switch progress {
         case ..<0.05: return .none
         case ..<0.50: return .low
-        case ..<0.75: return .medium
+        case ..<0.80: return .medium
         default: return .high
         }
     }

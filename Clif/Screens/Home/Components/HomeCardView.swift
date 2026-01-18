@@ -5,8 +5,6 @@ import SwiftUI
 enum HomeCardAction {
     case detail
     case evolve
-    case takeBreak
-    case blowAway
     case replay
     case delete
 }
@@ -19,6 +17,8 @@ struct HomeCardView: View {
     let showDetailButton: Bool
     var onAction: (HomeCardAction) -> Void = { _ in }
 
+    @State private var isBreathingIn = false
+
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             // Tappable area above progress bar
@@ -30,7 +30,7 @@ struct HomeCardView: View {
             .contentShape(Rectangle())
             .onTapGesture { onAction(.detail) }
 
-            ProgressBarView(progress: Double(pet.windProgress))
+            ProgressBarView(progress: Double(pet.windProgress), isPulsing: pet.isOnBreak)
             buttonsRow
         }
         .padding(16)
@@ -141,43 +141,24 @@ struct HomeCardView: View {
 
     private func dynamicStatsRow(_ pet: DynamicPet) -> some View {
         HStack(alignment: .firstTextBaseline) {
-            Text("\(Int(pet.windPoints))")
+            Text("\(Int(pet.windProgress * 100))%")
                 .font(.system(size: 28, weight: .bold))
-                .tracking(-0.5)
-
-            Text("wind")
-                .font(.system(size: 20, weight: .medium))
-                .foregroundStyle(.secondary)
+                .foregroundStyle(pet.windProgress >= 1.0 ? .red : .primary)
 
             Spacer()
 
             if pet.activeBreak != nil {
-                activeBreakBadge(pet)
-            } else if pet.windPoints > 50 {
-                takeBreakButton
+                Text("Calming the wind...")
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundStyle(.green)
+                    .opacity(isBreathingIn ? 1.0 : 0.5)
+                    .animation(
+                        .easeInOut(duration: 1.5).repeatForever(autoreverses: true),
+                        value: isBreathingIn
+                    )
+                    .onAppear { isBreathingIn = true }
             }
         }
-    }
-
-    private func activeBreakBadge(_ pet: DynamicPet) -> some View {
-        HStack(spacing: 6) {
-            Image(systemName: "pause.circle.fill")
-            Text("On Break")
-        }
-        .font(.system(size: 14, weight: .semibold))
-        .foregroundStyle(.green)
-    }
-
-    private var takeBreakButton: some View {
-        Button { onAction(.takeBreak) } label: {
-            HStack(spacing: 6) {
-                Image(systemName: "leaf.fill")
-                Text("Take Break")
-            }
-            .font(.system(size: 14, weight: .semibold))
-            .foregroundStyle(.green)
-        }
-        .buttonStyle(.plain)
     }
 
     // MARK: - Buttons Row
@@ -191,17 +172,12 @@ struct HomeCardView: View {
         }
     }
 
+    @ViewBuilder
     private var normalButtonsRow: some View {
-        HStack(spacing: 12) {
-            if pet.isEvolutionAvailable {
-                evolveButton
-            } else if let days = pet.daysUntilNextMilestone {
-                evolutionCountdownLabel(days: days)
-            }
-
-            Spacer()
-
-            blowAwayButton
+        if pet.isEvolutionAvailable {
+            evolveButton
+        } else if let days = pet.daysUntilNextMilestone {
+            evolutionCountdownLabel(days: days)
         }
     }
 
@@ -258,24 +234,6 @@ struct HomeCardView: View {
                     startPoint: .leading,
                     endPoint: .trailing
                 ),
-                in: Capsule()
-            )
-        }
-        .buttonStyle(.plain)
-    }
-
-    private var blowAwayButton: some View {
-        Button { onAction(.blowAway) } label: {
-            HStack(spacing: 6) {
-                Image(systemName: "wind")
-                Text("Blow Away")
-            }
-            .font(.system(size: 14, weight: .medium))
-            .foregroundStyle(.red)
-            .padding(.horizontal, 14)
-            .padding(.vertical, 8)
-            .background(
-                Color.red.opacity(0.15),
                 in: Capsule()
             )
         }

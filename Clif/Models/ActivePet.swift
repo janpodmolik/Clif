@@ -58,6 +58,13 @@ enum ActivePet: Identifiable {
     var canEvolve: Bool { evolutionHistory.canEvolve }
     var isBlown: Bool { evolutionHistory.isBlown }
 
+    var isOnBreak: Bool {
+        switch self {
+        case .daily: false
+        case .dynamic(let pet): pet.activeBreak != nil
+        }
+    }
+
     var createdAt: Date { evolutionHistory.createdAt }
 
     /// Current evolution phase, if pet has essence and is at phase 1+.
