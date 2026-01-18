@@ -30,6 +30,13 @@ struct DynamicPetDetailScreen: View {
         pet.isBlob ? pet.daysUntilEssence : pet.daysUntilEvolution
     }
 
+    /// Minutes remaining until wind reaches 100% (blow away)
+    private var timeToBlowAway: Double? {
+        guard pet.config.riseRate > 0 else { return nil }
+        let remaining = (100 - pet.windPoints) / pet.config.riseRate
+        return remaining > 0 ? remaining : nil
+    }
+
     var body: some View {
         NavigationStack {
             ScrollView {
@@ -38,17 +45,12 @@ struct DynamicPetDetailScreen: View {
                         windProgress: pet.windProgress,
                         windLevel: pet.windLevel,
                         isBlownAway: pet.isBlown,
-                        isOnBreak: pet.activeBreak != nil,
-                        onStartBreak: { onAction(.startBreak) }
+                        activeBreak: pet.activeBreak,
+                        currentWindPoints: pet.windPoints,
+                        timeToBlowAway: timeToBlowAway,
+                        onStartBreak: { onAction(.startBreak) },
+                        onEndBreak: { onAction(.endBreak) }
                     )
-
-                    if let activeBreak = pet.activeBreak {
-                        BreakStatusCard(
-                            activeBreak: activeBreak,
-                            currentWindPoints: pet.windPoints,
-                            onEndBreak: { onAction(.endBreak) }
-                        )
-                    }
                 }
                 .padding()
             }

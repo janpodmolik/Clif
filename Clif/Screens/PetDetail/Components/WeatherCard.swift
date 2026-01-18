@@ -178,23 +178,37 @@ struct WindIntensityBars: View {
 
     private func startBarAnimation() {
         isAnimating = true
-        animateNextStep()
+        animateDecrease()
     }
 
-    private func animateNextStep() {
+    private func animateDecrease() {
+        guard isAnimating, isOnBreak, baseBarCount > 0 else { return }
+
+        // Decrease by 1
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+            guard isAnimating, isOnBreak else { return }
+
+            withAnimation(.easeInOut(duration: 0.4)) {
+                animatedBarCount = baseBarCount - 1
+            }
+
+            // Return to base after short delay
+            animateIncrease()
+        }
+    }
+
+    private func animateIncrease() {
         guard isAnimating, isOnBreak else { return }
 
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
             guard isAnimating, isOnBreak else { return }
 
-            withAnimation(.easeInOut(duration: 0.5)) {
-                if animatedBarCount > 0 {
-                    animatedBarCount -= 1
-                } else {
-                    animatedBarCount = baseBarCount
-                }
+            withAnimation(.easeInOut(duration: 0.4)) {
+                animatedBarCount = baseBarCount
             }
-            animateNextStep()
+
+            // Start cycle again
+            animateDecrease()
         }
     }
 }
