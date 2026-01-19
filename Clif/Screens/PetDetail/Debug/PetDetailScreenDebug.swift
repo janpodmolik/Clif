@@ -149,15 +149,12 @@ struct PetDetailScreenDebug: View {
     }
 
     private var dailyStats: [DailyUsageStat] {
-        let calendar = Calendar.current
-        let today = calendar.startOfDay(for: Date())
-        let petId = UUID()
-
-        return (0..<totalDays).map { dayOffset in
-            let date = calendar.date(byAdding: .day, value: -(totalDays - 1) + dayOffset, to: today)!
-            let minutes = Int.random(in: 20...Int(dailyLimitMinutes + 30))
-            return DailyUsageStat(petId: petId, date: date, totalMinutes: minutes)
-        }
+        DailyUsageStat.mockList(
+            petId: UUID(),
+            days: totalDays,
+            dailyLimitMinutes: Int(dailyLimitMinutes),
+            wasBlown: isBlownAway
+        )
     }
 
     private var debugDailyPet: DailyPet {

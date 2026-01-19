@@ -13,12 +13,15 @@ struct DailyUsageStat: Codable, Identifiable, Equatable {
     let petId: UUID
     let date: Date
     let totalMinutes: Int
+    /// Whether limit was exceeded this day (wind reached 100 for dynamic, minutes > limit for daily).
+    let wasOverLimit: Bool
 
-    init(id: UUID = UUID(), petId: UUID, date: Date, totalMinutes: Int) {
+    init(id: UUID = UUID(), petId: UUID, date: Date, totalMinutes: Int, wasOverLimit: Bool = false) {
         self.id = id
         self.petId = petId
         self.date = date
         self.totalMinutes = totalMinutes
+        self.wasOverLimit = wasOverLimit
     }
 }
 
@@ -26,17 +29,46 @@ struct DailyUsageStat: Codable, Identifiable, Equatable {
 
 extension DailyUsageStat {
     /// Creates mock daily stats for testing.
+    /// - Parameters:
+    ///   - minMinutes: Minimum minutes per day (default 20).
+    ///   - dailyLimitMinutes: Daily limit (Daily mode). If nil, uses Dynamic mode.
+    ///   - wasBlown: If true, last day exceeded limit and pet was blown away.
+    ///
+    /// Logic: All days except last must be under limit (otherwise pet would already be blown).
+    /// Last day can exceed limit only if wasBlown is true.
     static func mockList(
         petId: UUID,
         days: Int,
-        minutesRange: ClosedRange<Int> = 5...60
+        minMinutes: Int = 20,
+        dailyLimitMinutes: Int? = nil,
+        wasBlown: Bool = false
     ) -> [DailyUsageStat] {
         let calendar = Calendar.current
         let today = calendar.startOfDay(for: Date())
         return (0..<days).map { dayOffset in
             let date = calendar.date(byAdding: .day, value: -(days - 1) + dayOffset, to: today)!
-            let minutes = Int.random(in: minutesRange)
-            return DailyUsageStat(petId: petId, date: date, totalMinutes: minutes)
+            let isLastDay = dayOffset == days - 1
+
+            let minutes: Int
+            let wasOverLimit: Bool
+
+            if let limit = dailyLimitMinutes {
+                // Daily mode: all days except last must be under limit
+                if isLastDay && wasBlown {
+                    // Last day, blown - exceed limit
+                    minutes = Int.random(in: (limit + 1)...(limit + 60))
+                    wasOverLimit = true
+                } else {
+                    // Normal day - random between min and limit
+                    minutes = Int.random(in: minMinutes...(limit - 1))
+                    wasOverLimit = false
+                }
+            } else {
+                // Dynamic mode: random minutes, only last day can be over limit
+                minutes = Int.random(in: minMinutes...120)
+                wasOverLimit = wasBlown && isLastDay
+            }
+            return DailyUsageStat(petId: petId, date: date, totalMinutes: minutes, wasOverLimit: wasOverLimit)
         }
     }
 }
@@ -90,7 +122,7 @@ struct WeeklyUsageStats: Codable, Equatable, UsageStatsProtocol {
 
     /// Days over limit count.
     var daysOverLimit: Int {
-        days.filter { $0.totalMinutes > dailyLimitMinutes }.count
+        days.filter(\.wasOverLimit).count
     }
 
     /// Empty stats
@@ -98,16 +130,15 @@ struct WeeklyUsageStats: Codable, Equatable, UsageStatsProtocol {
         WeeklyUsageStats(days: [], dailyLimitMinutes: dailyLimitMinutes)
     }
 
-    /// Creates mock data for preview/debug purposes
+    /// Creates mock data for preview/debug purposes.
+    /// All days are under limit (pet still alive).
     static func mock(dailyLimitMinutes: Int = 60) -> WeeklyUsageStats {
-        let calendar = Calendar.current
-        let today = Date()
         let mockPetId = UUID()
-        let days = (0..<7).map { dayOffset -> DailyUsageStat in
-            let date = calendar.date(byAdding: .day, value: -6 + dayOffset, to: today)!
-            let minutes = Int.random(in: 30...180)
-            return DailyUsageStat(petId: mockPetId, date: date, totalMinutes: minutes)
-        }
+        let days = DailyUsageStat.mockList(
+            petId: mockPetId,
+            days: 7,
+            dailyLimitMinutes: dailyLimitMinutes
+        )
         // Mock previous week total (slightly higher to show improvement)
         let currentTotal = days.reduce(0) { $0 + $1.totalMinutes }
         let previousWeekTotal = Int(Double(currentTotal) * 1.15)

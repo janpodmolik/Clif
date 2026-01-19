@@ -26,8 +26,18 @@ struct UsageChart<Stats: UsageStatsProtocol>: View {
         return formatter
     }
 
+    private var isDynamicMode: Bool {
+        stats.dailyLimitMinutes == .max
+    }
+
     private var chartMax: Int {
-        max(stats.maxMinutes, stats.dailyLimitMinutes, 1)
+        if isDynamicMode {
+            // Dynamic mode: use maxMinutes + 15% padding (no fixed limit)
+            return max(Int(Double(stats.maxMinutes) * 1.15), 1)
+        } else {
+            // Daily mode: use limit as max (full bar = limit reached)
+            return max(stats.dailyLimitMinutes, 1)
+        }
     }
 
     private var totalHeight: CGFloat {
@@ -98,7 +108,7 @@ struct UsageChart<Stats: UsageStatsProtocol>: View {
             ? CGFloat(day.totalMinutes) / CGFloat(chartMax)
             : 0
         let isToday = Calendar.current.isDateInToday(day.date)
-        let isOverLimit = day.totalMinutes > stats.dailyLimitMinutes
+        let isOverLimit = day.wasOverLimit
 
         return VStack(spacing: 4) {
             Text(formatMinutesShort(day.totalMinutes))

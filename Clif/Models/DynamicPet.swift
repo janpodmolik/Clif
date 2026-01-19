@@ -31,6 +31,11 @@ final class DynamicPet: Identifiable, PetPresentable, PetWithTokens {
     /// Break history for current session.
     var breakHistory: [CompletedBreak]
 
+    /// Full usage stats for history display. Dynamic mode has no fixed daily limit.
+    var fullStats: FullUsageStats {
+        FullUsageStats(days: dailyStats, dailyLimitMinutes: .max)
+    }
+
     // MARK: - Wind (Dynamic mode uses 0-100 points)
 
     /// Wind progress for UI (0-1), clamped.

@@ -99,7 +99,7 @@ extension DailyPet {
         let dailyStats = DailyUsageStat.mockList(
             petId: petId,
             days: totalDays,
-            minutesRange: 20...(dailyLimitMinutes + 20)
+            dailyLimitMinutes: dailyLimitMinutes
         )
 
         return DailyPet(

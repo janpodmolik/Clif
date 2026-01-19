@@ -49,11 +49,11 @@ struct FullUsageStats: Codable, Equatable, UsageStatsProtocol {
     }
 
     var daysOverLimit: Int {
-        days.filter { $0.totalMinutes > dailyLimitMinutes }.count
+        days.filter(\.wasOverLimit).count
     }
 
     var daysUnderLimit: Int {
-        days.filter { $0.totalMinutes <= dailyLimitMinutes }.count
+        days.filter { !$0.wasOverLimit }.count
     }
 
     /// Compliance rate (0-1), percentage of days under limit.
@@ -107,19 +107,14 @@ struct FullUsageStats: Codable, Equatable, UsageStatsProtocol {
     }
 
     /// Creates mock data for preview/debug purposes.
+    /// All days are under limit (pet still alive).
     static func mock(days: Int = 14, dailyLimitMinutes: Int = 60) -> FullUsageStats {
-        let calendar = Calendar.current
-        let today = Date()
         let mockPetId = UUID()
-        let dailyStats = (0..<days).map { dayOffset -> DailyUsageStat in
-            let date = calendar.date(byAdding: .day, value: -(days - 1) + dayOffset, to: today)!
-            // Mix of under and over limit days, with slight improvement trend
-            let baseMinutes = Int.random(in: 20...(dailyLimitMinutes + 20))
-            // Earlier days slightly higher to show improving trend
-            let trendAdjustment = dayOffset < days / 2 ? Int.random(in: 5...15) : 0
-            let minutes = max(5, baseMinutes + trendAdjustment)
-            return DailyUsageStat(petId: mockPetId, date: date, totalMinutes: minutes)
-        }
+        let dailyStats = DailyUsageStat.mockList(
+            petId: mockPetId,
+            days: days,
+            dailyLimitMinutes: dailyLimitMinutes
+        )
         return FullUsageStats(days: dailyStats, dailyLimitMinutes: dailyLimitMinutes)
     }
 }

@@ -82,6 +82,10 @@ struct DynamicPetDetailScreen: View {
                             daysUntilEvolution: daysUntilProgress
                         )
                     }
+
+                    if !pet.dailyStats.isEmpty {
+                        UsageCard(stats: pet.fullStats)
+                    }
                 }
                 .padding()
             }
