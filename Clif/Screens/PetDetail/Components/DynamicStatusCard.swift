@@ -49,7 +49,8 @@ struct DynamicStatusCard: View {
         WeatherCardContent(
             windLevel: windLevel,
             isBlownAway: isBlownAway,
-            isOnBreak: isOnBreak
+            isOnBreak: isOnBreak,
+            windProgress: windProgress
         )
         .padding()
     }
@@ -257,6 +258,7 @@ struct WeatherCardContent: View {
     let windLevel: WindLevel
     var isBlownAway: Bool = false
     var isOnBreak: Bool = false
+    var windProgress: CGFloat = 0
 
     @State private var showAlternateIcon = false
 
@@ -277,7 +279,7 @@ struct WeatherCardContent: View {
 
     private var windIcon: String {
         if isBlownAway {
-            return "cloud.bolt.fill"
+            return "tornado"
         }
         if isOnBreak && showAlternateIcon {
             return "arrow.down"
@@ -330,7 +332,7 @@ struct WeatherCardContent: View {
 
             Spacer()
 
-            WindIntensityBars(level: windLevel, isBlownAway: isBlownAway, isOnBreak: isOnBreak)
+            WindIntensityBars(level: windLevel, isBlownAway: isBlownAway, isOnBreak: isOnBreak, progress: windProgress)
         }
         .onAppear {
             if isOnBreak {
@@ -348,18 +350,35 @@ struct WeatherCardContent: View {
 
     @ViewBuilder
     private var iconView: some View {
-        if isOnBreak || isBlownAway {
-            // Static icon with smooth replacement for break/blown states
+        if isBlownAway {
+            Image(systemName: windIcon)
+                .font(.system(size: 36))
+                .foregroundStyle(windColor)
+                .symbolEffect(.wiggle, options: .repeating.speed(1.2), isActive: true)
+        } else if isOnBreak {
             Image(systemName: windIcon)
                 .font(.system(size: 36))
                 .foregroundStyle(windColor)
                 .contentTransition(.symbolEffect(.replace))
-        } else {
-            // Animated icon for normal wind states
+        } else if windLevel == .none {
             Image(systemName: windIcon)
                 .font(.system(size: 36))
                 .foregroundStyle(windColor)
-                .symbolEffect(.variableColor.iterative, options: .repeating, value: windLevel)
+                .symbolEffect(.breathe, options: .repeating, isActive: true)
+        } else {
+            Image(systemName: windIcon)
+                .font(.system(size: 36))
+                .foregroundStyle(windColor)
+                .symbolEffect(.wiggle, options: .repeating.speed(wiggleSpeed), isActive: true)
+        }
+    }
+
+    private var wiggleSpeed: Double {
+        switch windLevel {
+        case .none: return 0.3
+        case .low: return 0.4
+        case .medium: return 0.7
+        case .high: return 1.0
         }
     }
 

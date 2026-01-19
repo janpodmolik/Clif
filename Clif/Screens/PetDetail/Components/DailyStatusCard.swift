@@ -23,7 +23,8 @@ struct DailyStatusCard: View {
         WeatherCardContent(
             windLevel: windLevel,
             isBlownAway: isBlownAway,
-            isOnBreak: false
+            isOnBreak: false,
+            windProgress: stat.progress ?? 0
         )
         .padding()
     }

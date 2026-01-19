@@ -21,7 +21,7 @@ enum WindLevel: Int, CaseIterable {
         case .none: return "sun.max.fill"
         case .low: return "wind"
         case .medium: return "wind"
-        case .high: return "tornado"
+        case .high: return "wind"
         }
     }
 

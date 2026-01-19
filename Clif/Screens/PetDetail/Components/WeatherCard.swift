@@ -24,7 +24,7 @@ struct WeatherCard: View {
 
     private var windIcon: String {
         if isBlownAway {
-            return "cloud.bolt.fill"
+            return "tornado"
         }
         if isOnBreak && showAlternateIcon {
             return "arrow.down"
@@ -116,9 +116,11 @@ struct WindIntensityBars: View {
     let level: WindLevel
     var isBlownAway: Bool = false
     var isOnBreak: Bool = false
+    var progress: CGFloat = 0
 
     @State private var animatedBarCount: Int = 0
     @State private var isAnimating = false
+    @State private var pulsePhase = false
 
     private var baseBarCount: Int {
         if isBlownAway {
@@ -128,7 +130,7 @@ struct WindIntensityBars: View {
         case .none: return 0
         case .low: return 1
         case .medium: return 2
-        case .high: return 4
+        case .high: return 3
         }
     }
 
@@ -147,22 +149,61 @@ struct WindIntensityBars: View {
         }
     }
 
+
     private var displayBarCount: Int {
         isOnBreak ? animatedBarCount : baseBarCount
+    }
+
+    private var nextBarIndex: Int? {
+        guard !isOnBreak, !isBlownAway else { return nil }
+        let next = baseBarCount
+        return next < 4 ? next : nil
+    }
+
+    private var progressToNextLevel: CGFloat {
+        let thresholds: [CGFloat] = [0.05, 0.50, 0.80, 1.0]
+        guard baseBarCount < 4 else { return 0 }
+        let currentThreshold = baseBarCount == 0 ? 0 : thresholds[baseBarCount - 1]
+        let nextThreshold = thresholds[baseBarCount]
+        let range = nextThreshold - currentThreshold
+        guard range > 0 else { return 0 }
+        return (progress - currentThreshold) / range
+    }
+
+    private var shouldPulse: Bool {
+        progressToNextLevel > 0.1 && !isOnBreak && !isBlownAway && nextBarIndex != nil
+    }
+
+    private func barFillColor(index: Int, isNextBar: Bool, isFilled: Bool) -> Color {
+        if isFilled {
+            return barColor
+        }
+        if isNextBar && shouldPulse {
+            let intensity = pulsePhase ? progressToNextLevel : 0
+            return barColor.opacity(intensity * 0.7)
+        }
+        return Color.secondary.opacity(0.3)
     }
 
     var body: some View {
         HStack(alignment: .bottom, spacing: 4) {
             ForEach(0..<4, id: \.self) { index in
+                let isNextBar = index == nextBarIndex
+                let isFilled = index < displayBarCount
+
                 RoundedRectangle(cornerRadius: 2)
-                    .fill(index < displayBarCount ? barColor : Color.secondary.opacity(0.3))
+                    .fill(barFillColor(index: index, isNextBar: isNextBar, isFilled: isFilled))
                     .frame(width: 6, height: CGFloat(10 + index * 6))
             }
         }
+        .animation(.easeInOut(duration: 1.0), value: pulsePhase)
         .onAppear {
             animatedBarCount = baseBarCount
             if isOnBreak {
                 startBarAnimation()
+            }
+            if shouldPulse {
+                startPulseAnimation()
             }
         }
         .onChange(of: isOnBreak) { _, newValue in
@@ -172,6 +213,27 @@ struct WindIntensityBars: View {
             } else {
                 isAnimating = false
                 animatedBarCount = baseBarCount
+            }
+        }
+        .onChange(of: shouldPulse) { _, newValue in
+            if newValue {
+                startPulseAnimation()
+            }
+        }
+    }
+
+    private func startPulseAnimation() {
+        guard shouldPulse else { return }
+        withAnimation(.easeInOut(duration: 0.8)) {
+            pulsePhase = true
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
+            guard shouldPulse else { return }
+            withAnimation(.easeInOut(duration: 0.8)) {
+                pulsePhase = false
+            }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
+                startPulseAnimation()
             }
         }
     }
@@ -184,7 +246,6 @@ struct WindIntensityBars: View {
     private func animateDecrease() {
         guard isAnimating, isOnBreak, baseBarCount > 0 else { return }
 
-        // Decrease by 1
         DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
             guard isAnimating, isOnBreak else { return }
 
@@ -192,7 +253,6 @@ struct WindIntensityBars: View {
                 animatedBarCount = baseBarCount - 1
             }
 
-            // Return to base after short delay
             animateIncrease()
         }
     }
@@ -207,7 +267,6 @@ struct WindIntensityBars: View {
                 animatedBarCount = baseBarCount
             }
 
-            // Start cycle again
             animateDecrease()
         }
     }
