@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct PetArchivedDetailScreen: View {
+struct DailyPetArchivedDetailScreen: View {
     let pet: ArchivedDailyPet
 
     @Environment(\.dismiss) private var dismiss
@@ -168,11 +168,11 @@ struct AppUsageDetailSheet: View {
 }
 
 #Preview {
-    PetArchivedDetailScreen(pet: .mock(name: "Fern", phase: 4, isBlown: false))
+    DailyPetArchivedDetailScreen(pet: .mock(name: "Fern", phase: 4, isBlown: false))
 }
 
 #Preview("Blown Pet") {
-    PetArchivedDetailScreen(pet: .mock(name: "Sprout", phase: 2, isBlown: true))
+    DailyPetArchivedDetailScreen(pet: .mock(name: "Sprout", phase: 2, isBlown: true))
 }
 
 #Preview("App Usage Sheet") {

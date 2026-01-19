@@ -85,10 +85,12 @@ struct OverviewScreen: View {
             }
         }
         .fullScreenCover(item: $selectedArchivedDetail) { detail in
-            if case .daily(let pet) = detail {
-                PetArchivedDetailScreen(pet: pet)
+            switch detail {
+            case .daily(let pet):
+                DailyPetArchivedDetailScreen(pet: pet)
+            case .dynamic(let pet):
+                DynamicPetArchivedDetailScreen(pet: pet)
             }
-            // TODO: Add PetArchivedDetailScreen for DynamicPet
         }
     }
 
