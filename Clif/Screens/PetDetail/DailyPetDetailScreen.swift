@@ -34,13 +34,13 @@ struct DailyPetDetailScreen: View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 20) {
-                    WeatherCard(windLevel: pet.windLevel, isBlownAway: pet.isBlown)
-
                     DailyStatusCard(
+                        windLevel: pet.windLevel,
                         stat: ScreenTimeStat(
                             usedMinutes: pet.todayUsedMinutes,
                             limitMinutes: pet.dailyLimitMinutes
-                        )
+                        ),
+                        isBlownAway: pet.isBlown
                     )
 
                     PetDetailHeader(
