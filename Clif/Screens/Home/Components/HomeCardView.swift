@@ -281,39 +281,15 @@ struct HomeCardView: View {
     }
 
     private var replayButton: some View {
-        Button { onAction(.replay) } label: {
-            HStack(spacing: 6) {
-                Image(systemName: "memories")
-                Text("Replay")
-            }
-            .font(.system(size: 14, weight: .medium))
-            .foregroundStyle(.blue)
-            .padding(.horizontal, 14)
-            .padding(.vertical, 8)
-            .background(
-                Color.blue.opacity(0.15),
-                in: Capsule()
-            )
+        ActionButton(icon: "memories", label: "Replay", color: .blue) {
+            onAction(.replay)
         }
-        .buttonStyle(.plain)
     }
 
     private var deleteButton: some View {
-        Button { onAction(.delete) } label: {
-            HStack(spacing: 6) {
-                Image(systemName: "trash")
-                Text("Delete")
-            }
-            .font(.system(size: 14, weight: .medium))
-            .foregroundStyle(.red)
-            .padding(.horizontal, 14)
-            .padding(.vertical, 8)
-            .background(
-                Color.red.opacity(0.15),
-                in: Capsule()
-            )
+        ActionButton(icon: "trash", label: "Delete", color: .red) {
+            onAction(.delete)
         }
-        .buttonStyle(.plain)
     }
 
     // MARK: - Helpers

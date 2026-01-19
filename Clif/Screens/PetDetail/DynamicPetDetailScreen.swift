@@ -98,24 +98,35 @@ struct DynamicPetDetailScreen: View {
                     )
 
                     if showOverviewActions {
-                        OverviewActionsCard(
+                        ArchivedPetActionsCard(
                             isBlownAway: pet.isBlown,
-                            themeColor: themeColor,
-                            onDelete: { onAction(.delete) },
-                            onShowOnHomepage: { onAction(.showOnHomepage) },
-                            onReplay: { onAction(.replay) }
-                        )
+                            themeColor: themeColor
+                        ) { action in
+                            switch action {
+                            case .delete: onAction(.delete)
+                            case .showOnHomepage: onAction(.showOnHomepage)
+                            case .replay: onAction(.replay)
+                            }
+                        }
                     } else {
-                        PetDetailActions(
+                        ActivePetActionsCard(
                             isBlob: pet.isBlob,
                             canProgress: canProgress,
                             daysUntilProgress: daysUntilProgress,
-                            isBlownAway: pet.isBlown,
-                            onProgress: pet.isBlob ? { showEssencePicker = true } : { pet.evolve() },
-                            onBlowAway: { onAction(.blowAway) },
-                            onReplay: { onAction(.replay) },
-                            onDelete: { onAction(.delete) }
-                        )
+                            isBlownAway: pet.isBlown
+                        ) { action in
+                            switch action {
+                            case .progress:
+                                if pet.isBlob {
+                                    showEssencePicker = true
+                                } else {
+                                    pet.evolve()
+                                }
+                            case .blowAway: onAction(.blowAway)
+                            case .replay: onAction(.replay)
+                            case .delete: onAction(.delete)
+                            }
+                        }
                     }
                 }
                 .padding()
