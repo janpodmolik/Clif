@@ -13,15 +13,25 @@ extension PetWithStats {
     var totalDays: Int { dailyStats.count }
 }
 
-/// Protocol for active pets that also track app tokens for shielding.
+/// Protocol for active pets that also track limited apps for shielding.
 protocol PetWithTokens: PetWithStats {
-    var applicationTokens: Set<ApplicationToken> { get }
-    var categoryTokens: Set<ActivityCategoryToken> { get }
+    var limitedApps: [LimitedApp] { get }
+    var limitedCategories: [LimitedCategory] { get }
 }
 
 extension PetWithTokens {
+    /// Application tokens extracted from limited apps.
+    var applicationTokens: Set<ApplicationToken> {
+        Set(limitedApps.compactMap(\.applicationToken))
+    }
+
+    /// Category tokens extracted from limited categories.
+    var categoryTokens: Set<ActivityCategoryToken> {
+        Set(limitedCategories.compactMap(\.categoryToken))
+    }
+
     /// Count of limited apps and categories.
     var limitedAppCount: Int {
-        applicationTokens.count + categoryTokens.count
+        limitedApps.count + limitedCategories.count
     }
 }

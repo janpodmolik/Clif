@@ -80,13 +80,20 @@ struct DailyPetDetailScreen: View {
                         TrendMiniChart(stats: pet.fullStats)
                     }
 
-                    LimitedAppsBadge(
-                        appCount: pet.limitedAppCount,
+                    LimitedAppsButton(
+                        apps: pet.limitedApps,
+                        categories: pet.limitedCategories,
                         onTap: { onAction(.limitedApps) }
                     )
 
                     if showOverviewActions {
-                        overviewActions
+                        OverviewActionsCard(
+                            isBlownAway: pet.isBlown,
+                            themeColor: themeColor,
+                            onDelete: { onAction(.delete) },
+                            onShowOnHomepage: { onAction(.showOnHomepage) },
+                            onReplay: { onAction(.replay) }
+                        )
                     } else {
                         PetDetailActions(
                             isBlob: pet.isBlob,
@@ -123,82 +130,6 @@ struct DailyPetDetailScreen: View {
         }
     }
 
-    @ViewBuilder
-    private var overviewActions: some View {
-        if pet.isBlown {
-            overviewBlownAwayActions
-        } else {
-            overviewNormalActions
-        }
-    }
-
-    private var overviewNormalActions: some View {
-        HStack(spacing: 16) {
-            Button { onAction(.delete) } label: {
-                HStack(spacing: 6) {
-                    Image(systemName: "trash")
-                    Text("Smazat")
-                }
-                .font(.subheadline.weight(.medium))
-                .foregroundStyle(.red)
-                .padding(.horizontal, 16)
-                .padding(.vertical, 10)
-                .background(Color.red.opacity(0.15), in: Capsule())
-            }
-            .buttonStyle(.plain)
-
-            Spacer()
-
-            Button { onAction(.showOnHomepage) } label: {
-                HStack(spacing: 6) {
-                    Image(systemName: "house.fill")
-                    Text("Zobrazit")
-                }
-                .font(.subheadline.weight(.medium))
-                .foregroundStyle(themeColor)
-                .padding(.horizontal, 16)
-                .padding(.vertical, 10)
-                .background(themeColor.opacity(0.15), in: Capsule())
-            }
-            .buttonStyle(.plain)
-        }
-        .padding()
-        .glassCard()
-    }
-
-    private var overviewBlownAwayActions: some View {
-        HStack(spacing: 16) {
-            Button { onAction(.replay) } label: {
-                HStack(spacing: 6) {
-                    Image(systemName: "memories")
-                    Text("Replay")
-                }
-                .font(.subheadline.weight(.medium))
-                .foregroundStyle(.blue)
-                .padding(.horizontal, 16)
-                .padding(.vertical, 10)
-                .background(Color.blue.opacity(0.15), in: Capsule())
-            }
-            .buttonStyle(.plain)
-
-            Spacer()
-
-            Button { onAction(.delete) } label: {
-                HStack(spacing: 6) {
-                    Image(systemName: "trash")
-                    Text("Smazat")
-                }
-                .font(.subheadline.weight(.medium))
-                .foregroundStyle(.red)
-                .padding(.horizontal, 16)
-                .padding(.vertical, 10)
-                .background(Color.red.opacity(0.15), in: Capsule())
-            }
-            .buttonStyle(.plain)
-        }
-        .padding()
-        .glassCard()
-    }
 }
 
 #if DEBUG

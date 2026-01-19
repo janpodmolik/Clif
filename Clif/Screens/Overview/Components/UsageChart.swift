@@ -121,15 +121,16 @@ struct UsageChart<Stats: UsageStatsProtocol>: View {
                     .fill(Color.primary.opacity(0.08))
                     .frame(height: barHeight)
 
+                let clampedHeight = min(barHeight, max(8, barHeight * normalized))
                 RoundedRectangle(cornerRadius: 6)
                     .fill(barGradient(isOverLimit: isOverLimit))
-                    .frame(height: max(8, barHeight * normalized))
+                    .frame(height: clampedHeight)
                     .overlay {
                         if isToday {
                             let pulseColor: Color = isOverLimit ? .red : themeColor
                             RoundedRectangle(cornerRadius: 6)
                                 .stroke(pulseColor.opacity(isPulsing ? 0.0 : 0.6), lineWidth: 2)
-                                .frame(height: max(8, barHeight * normalized))
+                                .frame(height: clampedHeight)
                                 .scaleEffect(isPulsing ? 1.15 : 1.0)
                                 .animation(
                                     .easeOut(duration: 1.5).repeatForever(autoreverses: false),
@@ -139,6 +140,7 @@ struct UsageChart<Stats: UsageStatsProtocol>: View {
                     }
             }
             .frame(height: barHeight)
+            .clipShape(RoundedRectangle(cornerRadius: 6))
 
             if showDateLabel {
                 VStack(spacing: 0) {

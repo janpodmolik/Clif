@@ -86,6 +86,37 @@ struct DynamicPetDetailScreen: View {
                     if !pet.dailyStats.isEmpty {
                         UsageCard(stats: pet.fullStats)
                     }
+
+                    if pet.totalDays > 1 {
+                        TrendMiniChart(stats: pet.fullStats)
+                    }
+
+                    LimitedAppsButton(
+                        apps: pet.limitedApps,
+                        categories: pet.limitedCategories,
+                        onTap: { onAction(.limitedApps) }
+                    )
+
+                    if showOverviewActions {
+                        OverviewActionsCard(
+                            isBlownAway: pet.isBlown,
+                            themeColor: themeColor,
+                            onDelete: { onAction(.delete) },
+                            onShowOnHomepage: { onAction(.showOnHomepage) },
+                            onReplay: { onAction(.replay) }
+                        )
+                    } else {
+                        PetDetailActions(
+                            isBlob: pet.isBlob,
+                            canProgress: canProgress,
+                            daysUntilProgress: daysUntilProgress,
+                            isBlownAway: pet.isBlown,
+                            onProgress: pet.isBlob ? { showEssencePicker = true } : { pet.evolve() },
+                            onBlowAway: { onAction(.blowAway) },
+                            onReplay: { onAction(.replay) },
+                            onDelete: { onAction(.delete) }
+                        )
+                    }
                 }
                 .padding()
             }
@@ -109,6 +140,7 @@ struct DynamicPetDetailScreen: View {
             }
         }
     }
+
 }
 
 #if DEBUG
@@ -130,6 +162,13 @@ struct DynamicPetDetailScreen: View {
     Text("Tap to open")
         .fullScreenCover(isPresented: .constant(true)) {
             DynamicPetDetailScreen(pet: .mockBlob(name: "Blobby", canUseEssence: true))
+        }
+}
+
+#Preview("Overview Actions") {
+    Text("Tap to open")
+        .fullScreenCover(isPresented: .constant(true)) {
+            DynamicPetDetailScreen(pet: .mock(name: "Ivy", phase: 3, windPoints: 30), showOverviewActions: true)
         }
 }
 #endif

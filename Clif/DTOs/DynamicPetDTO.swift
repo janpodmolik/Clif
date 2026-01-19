@@ -1,6 +1,4 @@
-import FamilyControls
 import Foundation
-import ManagedSettings
 
 /// Codable DTO for DynamicPet persistence.
 struct DynamicPetDTO: Codable {
@@ -14,8 +12,8 @@ struct DynamicPetDTO: Codable {
     let config: DynamicWindConfig
     let dailyStats: [DailyUsageStat]
     let appUsage: [AppUsage]
-    let applicationTokens: Set<ApplicationToken>
-    let categoryTokens: Set<ActivityCategoryToken>
+    let limitedApps: [LimitedApp]
+    let limitedCategories: [LimitedCategory]
     let breakHistory: [CompletedBreak]
 
     init(from pet: DynamicPet) {
@@ -29,8 +27,8 @@ struct DynamicPetDTO: Codable {
         self.config = pet.config
         self.dailyStats = pet.dailyStats
         self.appUsage = pet.appUsage
-        self.applicationTokens = pet.applicationTokens
-        self.categoryTokens = pet.categoryTokens
+        self.limitedApps = pet.limitedApps
+        self.limitedCategories = pet.limitedCategories
         self.breakHistory = pet.breakHistory
     }
 }
@@ -48,8 +46,8 @@ extension DynamicPet {
             config: dto.config,
             dailyStats: dto.dailyStats,
             appUsage: dto.appUsage,
-            applicationTokens: dto.applicationTokens,
-            categoryTokens: dto.categoryTokens,
+            limitedApps: dto.limitedApps,
+            limitedCategories: dto.limitedCategories,
             breakHistory: dto.breakHistory
         )
     }

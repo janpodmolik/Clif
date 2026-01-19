@@ -53,7 +53,10 @@ struct PetArchivedDetailScreen: View {
                         themeColor: pet.themeColor
                     )
 
-                    LimitedAppsBadge(appCount: pet.appUsage.count) {
+                    LimitedAppsButton(
+                        apps: pet.limitedApps,
+                        categories: pet.limitedCategories
+                    ) {
                         showAppUsageSheet = true
                     }
                 }

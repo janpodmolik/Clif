@@ -12,6 +12,8 @@ struct ArchivedDailyPet: Codable, Identifiable, Equatable, PetWithStats {
 
     let dailyStats: [DailyUsageStat]
     let appUsage: [AppUsage]
+    let limitedApps: [LimitedApp]
+    let limitedCategories: [LimitedCategory]
 
     /// Alias for currentPhase - the phase when pet was archived
     var finalPhase: Int { currentPhase }
@@ -35,7 +37,9 @@ struct ArchivedDailyPet: Codable, Identifiable, Equatable, PetWithStats {
         archivedAt: Date = Date(),
         dailyLimitMinutes: Int = 60,
         dailyStats: [DailyUsageStat] = [],
-        appUsage: [AppUsage] = []
+        appUsage: [AppUsage] = [],
+        limitedApps: [LimitedApp] = [],
+        limitedCategories: [LimitedCategory] = []
     ) {
         self.id = id
         self.name = name
@@ -45,6 +49,8 @@ struct ArchivedDailyPet: Codable, Identifiable, Equatable, PetWithStats {
         self.dailyLimitMinutes = dailyLimitMinutes
         self.dailyStats = dailyStats
         self.appUsage = appUsage
+        self.limitedApps = limitedApps
+        self.limitedCategories = limitedCategories
     }
 }
 
@@ -84,7 +90,9 @@ extension ArchivedDailyPet {
             archivedAt: archivedAt,
             dailyLimitMinutes: dailyLimitMinutes,
             dailyStats: dailyStats,
-            appUsage: AppUsage.mockList(days: totalDays, petId: petId)
+            appUsage: AppUsage.mockList(days: totalDays, petId: petId),
+            limitedApps: LimitedApp.mockList(),
+            limitedCategories: LimitedCategory.mockList()
         )
     }
 
@@ -131,7 +139,9 @@ extension ArchivedDailyPet {
             archivedAt: archivedAt,
             dailyLimitMinutes: pet.dailyLimitMinutes,
             dailyStats: pet.dailyStats,
-            appUsage: pet.appUsage
+            appUsage: pet.appUsage,
+            limitedApps: pet.limitedApps,
+            limitedCategories: pet.limitedCategories
         )
     }
 }

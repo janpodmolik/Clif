@@ -25,8 +25,8 @@ final class DynamicPet: Identifiable, PetPresentable, PetWithTokens {
 
     var dailyStats: [DailyUsageStat]
     var appUsage: [AppUsage]
-    var applicationTokens: Set<ApplicationToken>
-    var categoryTokens: Set<ActivityCategoryToken>
+    var limitedApps: [LimitedApp]
+    var limitedCategories: [LimitedCategory]
 
     /// Break history for current session.
     var breakHistory: [CompletedBreak]
@@ -166,8 +166,8 @@ final class DynamicPet: Identifiable, PetPresentable, PetWithTokens {
         config: DynamicWindConfig = .default,
         dailyStats: [DailyUsageStat] = [],
         appUsage: [AppUsage] = [],
-        applicationTokens: Set<ApplicationToken> = [],
-        categoryTokens: Set<ActivityCategoryToken> = [],
+        limitedApps: [LimitedApp] = [],
+        limitedCategories: [LimitedCategory] = [],
         breakHistory: [CompletedBreak] = []
     ) {
         self.id = id
@@ -180,8 +180,8 @@ final class DynamicPet: Identifiable, PetPresentable, PetWithTokens {
         self.config = config
         self.dailyStats = dailyStats
         self.appUsage = appUsage
-        self.applicationTokens = applicationTokens
-        self.categoryTokens = categoryTokens
+        self.limitedApps = limitedApps
+        self.limitedCategories = limitedCategories
         self.breakHistory = breakHistory
     }
 }
@@ -240,7 +240,9 @@ extension DynamicPet {
             purpose: "Social Media",
             windPoints: windPoints,
             dailyStats: DailyUsageStat.mockList(petId: petId, days: totalDays),
-            appUsage: AppUsage.mockList(days: totalDays, petId: petId)
+            appUsage: AppUsage.mockList(days: totalDays, petId: petId),
+            limitedApps: LimitedApp.mockList(),
+            limitedCategories: LimitedCategory.mockList()
         )
     }
 

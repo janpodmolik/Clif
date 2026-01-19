@@ -13,8 +13,8 @@ final class DailyPet: Identifiable, PetPresentable, PetWithTokens {
 
     var dailyStats: [DailyUsageStat]
     var appUsage: [AppUsage]
-    var applicationTokens: Set<ApplicationToken>
-    var categoryTokens: Set<ActivityCategoryToken>
+    var limitedApps: [LimitedApp]
+    var limitedCategories: [LimitedCategory]
 
     // MARK: - Wind (Daily mode uses usage/limit ratio)
 
@@ -68,8 +68,8 @@ final class DailyPet: Identifiable, PetPresentable, PetWithTokens {
         dailyLimitMinutes: Int,
         dailyStats: [DailyUsageStat] = [],
         appUsage: [AppUsage] = [],
-        applicationTokens: Set<ApplicationToken> = [],
-        categoryTokens: Set<ActivityCategoryToken> = []
+        limitedApps: [LimitedApp] = [],
+        limitedCategories: [LimitedCategory] = []
     ) {
         self.id = id
         self.name = name
@@ -79,8 +79,8 @@ final class DailyPet: Identifiable, PetPresentable, PetWithTokens {
         self.dailyLimitMinutes = dailyLimitMinutes
         self.dailyStats = dailyStats
         self.appUsage = appUsage
-        self.applicationTokens = applicationTokens
-        self.categoryTokens = categoryTokens
+        self.limitedApps = limitedApps
+        self.limitedCategories = limitedCategories
     }
 }
 
@@ -110,7 +110,9 @@ extension DailyPet {
             todayUsedMinutes: todayUsedMinutes,
             dailyLimitMinutes: dailyLimitMinutes,
             dailyStats: dailyStats,
-            appUsage: AppUsage.mockList(days: totalDays, petId: petId)
+            appUsage: AppUsage.mockList(days: totalDays, petId: petId),
+            limitedApps: LimitedApp.mockList(),
+            limitedCategories: LimitedCategory.mockList()
         )
     }
 

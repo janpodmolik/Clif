@@ -59,8 +59,9 @@ extension DailyUsageStat {
                     minutes = Int.random(in: (limit + 1)...(limit + 60))
                     wasOverLimit = true
                 } else {
-                    // Normal day - random between min and limit
-                    minutes = Int.random(in: minMinutes...(limit - 1))
+                    // Normal day - random between min and (limit - 1), clamped to valid range
+                    let upperBound = max(minMinutes, limit - 1)
+                    minutes = Int.random(in: minMinutes...upperBound)
                     wasOverLimit = false
                 }
             } else {

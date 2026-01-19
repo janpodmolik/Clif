@@ -1,6 +1,4 @@
-import FamilyControls
 import Foundation
-import ManagedSettings
 
 /// Codable DTO for DailyPet persistence.
 struct DailyPetDTO: Codable {
@@ -12,8 +10,8 @@ struct DailyPetDTO: Codable {
     let dailyLimitMinutes: Int
     let dailyStats: [DailyUsageStat]
     let appUsage: [AppUsage]
-    let applicationTokens: Set<ApplicationToken>
-    let categoryTokens: Set<ActivityCategoryToken>
+    let limitedApps: [LimitedApp]
+    let limitedCategories: [LimitedCategory]
 
     init(from pet: DailyPet) {
         self.id = pet.id
@@ -24,8 +22,8 @@ struct DailyPetDTO: Codable {
         self.dailyLimitMinutes = pet.dailyLimitMinutes
         self.dailyStats = pet.dailyStats
         self.appUsage = pet.appUsage
-        self.applicationTokens = pet.applicationTokens
-        self.categoryTokens = pet.categoryTokens
+        self.limitedApps = pet.limitedApps
+        self.limitedCategories = pet.limitedCategories
     }
 }
 
@@ -40,8 +38,8 @@ extension DailyPet {
             dailyLimitMinutes: dto.dailyLimitMinutes,
             dailyStats: dto.dailyStats,
             appUsage: dto.appUsage,
-            applicationTokens: dto.applicationTokens,
-            categoryTokens: dto.categoryTokens
+            limitedApps: dto.limitedApps,
+            limitedCategories: dto.limitedCategories
         )
     }
 }
