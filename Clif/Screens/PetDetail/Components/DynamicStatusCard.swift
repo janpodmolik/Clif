@@ -102,22 +102,12 @@ struct DynamicStatusCard: View {
 
     private var calmWindButton: some View {
         Button(action: onStartBreak) {
-            HStack(spacing: 8) {
-                Image(systemName: "pause.circle.fill")
-                Text("Calm the Wind")
-            }
-            .font(.system(size: 15, weight: .semibold))
-            .foregroundStyle(.white)
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 12)
-            .background(
-                LinearGradient(
-                    colors: [.cyan, .blue],
-                    startPoint: .leading,
-                    endPoint: .trailing
-                ),
-                in: Capsule()
-            )
+            Text("Calm the Wind")
+                .font(.system(size: 15, weight: .semibold))
+                .foregroundStyle(.white)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 12)
+                .background(Color.cyan.opacity(0.7), in: Capsule())
         }
         .buttonStyle(.plain)
         .pulsingEffect(isActive: shouldPulse)
@@ -221,15 +211,12 @@ struct DynamicStatusCard: View {
 
     private var releaseWindButton: some View {
         Button(action: onEndBreak) {
-            HStack(spacing: 8) {
-                Image(systemName: "wind")
-                Text("Release the Wind")
-            }
-            .font(.system(size: 15, weight: .semibold))
-            .foregroundStyle(.cyan)
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 12)
-            .background(Color.cyan.opacity(0.15), in: Capsule())
+            Text("Release the Wind")
+                .font(.system(size: 15, weight: .semibold))
+                .foregroundStyle(.cyan)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 12)
+                .background(Color.cyan.opacity(0.15), in: Capsule())
         }
         .buttonStyle(.plain)
     }

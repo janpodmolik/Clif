@@ -249,22 +249,10 @@ struct HomeCardView: View {
         Button { onAction(.startBreak) } label: {
             Text(isOnBreak ? "Release the Wind" : "Calm the Wind")
                 .font(.system(size: 14, weight: .semibold))
-                .foregroundStyle(isOnBreak ? .cyan : .white)
+                .foregroundStyle(.cyan)
                 .padding(.horizontal, 16)
                 .padding(.vertical, 8)
-                .background {
-                    if isOnBreak {
-                        Capsule()
-                            .fill(Color.cyan.opacity(0.15))
-                    } else {
-                        LinearGradient(
-                            colors: [.cyan, .blue],
-                            startPoint: .leading,
-                            endPoint: .trailing
-                        )
-                        .clipShape(Capsule())
-                    }
-                }
+                .background(Color.cyan.opacity(isOnBreak ? 0.15 : 0.2), in: Capsule())
                 .opacity(shouldButtonPulse ? (isButtonPulsing ? 1.0 : 0.7) : 1.0)
                 .scaleEffect(shouldButtonPulse ? (isButtonPulsing ? 1.05 : 1.0) : 1.0)
         }
@@ -287,14 +275,7 @@ struct HomeCardView: View {
             .foregroundStyle(.white)
             .padding(.horizontal, 16)
             .padding(.vertical, 8)
-            .background(
-                LinearGradient(
-                    colors: [.green, .mint],
-                    startPoint: .leading,
-                    endPoint: .trailing
-                ),
-                in: Capsule()
-            )
+            .background(.green, in: Capsule())
         }
         .buttonStyle(.plain)
     }

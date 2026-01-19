@@ -51,14 +51,7 @@ struct PetDetailActions: View {
             .foregroundStyle(.white)
             .padding(.horizontal, 24)
             .padding(.vertical, 12)
-            .background(
-                LinearGradient(
-                    colors: [.green, .mint],
-                    startPoint: .leading,
-                    endPoint: .trailing
-                ),
-                in: Capsule()
-            )
+            .background(.green, in: Capsule())
         }
         .buttonStyle(.plain)
     }
