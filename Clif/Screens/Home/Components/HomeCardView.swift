@@ -68,7 +68,7 @@ struct HomeCardView: View {
                 Text(pet.name)
                     .font(.system(size: 20, weight: .semibold))
 
-                Text(moodEmoji)
+                Text(pet.mood.emoji)
                     .font(.system(size: 18))
             }
 
@@ -77,15 +77,6 @@ struct HomeCardView: View {
             if showDetailButton {
                 detailButton
             }
-        }
-    }
-
-    private var moodEmoji: String {
-        switch pet.mood {
-        case .happy: "😄"
-        case .neutral: "🙂"
-        case .sad: "😞"
-        case .blown: "😵"
         }
     }
 

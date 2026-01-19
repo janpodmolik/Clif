@@ -8,15 +8,6 @@ struct PetDetailHeader: View {
     let purposeLabel: String?
     var createdAt: Date? = nil
 
-    private var moodEmoji: String {
-        switch mood {
-        case .happy: return "😌"
-        case .neutral: return "😐"
-        case .sad: return "😞"
-        case .blown: return "😵"
-        }
-    }
-
     private var formattedCreatedAt: String? {
         guard let createdAt else { return nil }
         let formatter = DateFormatter()
@@ -32,7 +23,7 @@ struct PetDetailHeader: View {
                     Text(petName)
                         .font(.title.weight(.bold))
 
-                    Text(moodEmoji)
+                    Text(mood.emoji)
                         .font(.title2)
                 }
 

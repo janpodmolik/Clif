@@ -9,8 +9,15 @@ struct DynamicPetArchivedDetailScreen: View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 20) {
-                    Text("TODO: Implement")
-                        .foregroundStyle(.secondary)
+                    ArchivedPetHeaderCard(
+                        petName: pet.name,
+                        totalDays: pet.totalDays,
+                        evolutionPhase: pet.finalPhase,
+                        purposeLabel: pet.purpose,
+                        createdAt: pet.evolutionHistory.createdAt,
+                        isBlown: pet.isBlown,
+                        archivedAt: pet.archivedAt
+                    )
                 }
                 .padding()
             }
@@ -31,6 +38,10 @@ struct DynamicPetArchivedDetailScreen: View {
     }
 }
 
-#Preview {
+#Preview("Blown") {
     DynamicPetArchivedDetailScreen(pet: .mock(name: "Storm", phase: 3, isBlown: true))
+}
+
+#Preview("Fully Evolved") {
+    DynamicPetArchivedDetailScreen(pet: .mock(name: "Breeze", phase: 4, isBlown: false, totalDays: 14))
 }

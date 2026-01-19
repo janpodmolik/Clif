@@ -14,9 +14,8 @@ struct DailyPetArchivedDetailScreen: View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 20) {
-                    ArchivedDailyPetHeaderCard(
+                    ArchivedPetHeaderCard(
                         petName: pet.name,
-                        mood: mood,
                         totalDays: pet.totalDays,
                         evolutionPhase: pet.finalPhase,
                         purposeLabel: pet.purpose,

@@ -436,7 +436,7 @@ struct PetDetailScreenDebug: View {
                     Text("Pet Mood")
                         .foregroundStyle(.secondary)
                     Spacer()
-                    Text(moodEmoji(for: mood))
+                    Text(mood.emoji)
                         .font(.title2)
                     Text(mood.rawValue.capitalized)
                         .foregroundStyle(.secondary)
@@ -500,7 +500,7 @@ struct PetDetailScreenDebug: View {
                     Text("Pet Mood")
                         .foregroundStyle(.secondary)
                     Spacer()
-                    Text(moodEmoji(for: mood))
+                    Text(mood.emoji)
                         .font(.title2)
                     Text(mood.rawValue.capitalized)
                         .foregroundStyle(.secondary)
@@ -836,15 +836,6 @@ struct PetDetailScreenDebug: View {
             return mins > 0 ? "\(hours)h \(mins)m" : "\(hours)h"
         }
         return "\(mins)m"
-    }
-
-    private func moodEmoji(for mood: Mood) -> String {
-        switch mood {
-        case .happy: return "😊"
-        case .neutral: return "😐"
-        case .sad: return "😢"
-        case .blown: return "😵"
-        }
     }
 
     private func progressColor(for progress: Double) -> Color {

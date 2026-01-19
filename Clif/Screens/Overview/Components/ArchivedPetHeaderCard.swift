@@ -1,23 +1,13 @@
 import SwiftUI
 
-struct ArchivedDailyPetHeaderCard: View {
+struct ArchivedPetHeaderCard: View {
     let petName: String
-    let mood: Mood
     let totalDays: Int
     let evolutionPhase: Int
     let purposeLabel: String?
     let createdAt: Date
     let isBlown: Bool
     let archivedAt: Date
-
-    private var moodEmoji: String {
-        switch mood {
-        case .happy: return "😌"
-        case .neutral: return "😐"
-        case .sad: return "😞"
-        case .blown: return "😵"
-        }
-    }
 
     private var statusText: String {
         isBlown ? "Odfouknut" : "Plně evolvován"
@@ -67,13 +57,8 @@ struct ArchivedDailyPetHeaderCard: View {
             // Pet header section
             HStack(alignment: .top) {
                 VStack(alignment: .leading, spacing: 4) {
-                    HStack(spacing: 8) {
-                        Text(petName)
-                            .font(.title.weight(.bold))
-
-                        Text(moodEmoji)
-                            .font(.title2)
-                    }
+                    Text(petName)
+                        .font(.title.weight(.bold))
 
                     if let purposeLabel, !purposeLabel.isEmpty {
                         Text(purposeLabel)
@@ -144,9 +129,8 @@ struct ArchivedDailyPetHeaderCard: View {
 
 #if DEBUG
 #Preview("Fully Evolved") {
-    ArchivedDailyPetHeaderCard(
+    ArchivedPetHeaderCard(
         petName: "Fern",
-        mood: .happy,
         totalDays: 12,
         evolutionPhase: 4,
         purposeLabel: "Social Media",
@@ -158,9 +142,8 @@ struct ArchivedDailyPetHeaderCard: View {
 }
 
 #Preview("Blown") {
-    ArchivedDailyPetHeaderCard(
+    ArchivedPetHeaderCard(
         petName: "Sprout",
-        mood: .blown,
         totalDays: 5,
         evolutionPhase: 2,
         purposeLabel: "Gaming",

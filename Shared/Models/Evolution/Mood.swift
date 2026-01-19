@@ -21,4 +21,13 @@ enum Mood: String, CaseIterable {
     var forAsset: Mood {
         self == .blown ? .sad : self
     }
+
+    var emoji: String {
+        switch self {
+        case .happy: "😊"
+        case .neutral: "🙂"
+        case .sad: "😞"
+        case .blown: "😵"
+        }
+    }
 }
