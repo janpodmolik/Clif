@@ -159,31 +159,10 @@ struct DynamicStatusCard: View {
         }
     }
 
-    @State private var isPulsing = false
-
     private func breakInfoRow(_ activeBreak: ActiveBreak) -> some View {
         HStack {
             // Left side: countdown or elapsed time
-            VStack(alignment: .leading, spacing: 2) {
-                if let remaining = activeBreak.remainingSeconds {
-                    Text(formatTime(remaining))
-                        .font(.system(.title, design: .monospaced, weight: .bold))
-                        .foregroundStyle(.cyan)
-                    Text("remaining")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                } else {
-                    Text(formatTime(activeBreak.elapsedMinutes * 60))
-                        .font(.system(.title, design: .monospaced, weight: .bold))
-                        .foregroundStyle(.cyan)
-                    Text("elapsed")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
-            }
-            .opacity(isPulsing ? 1.0 : 0.6)
-            .animation(.easeInOut(duration: 1.0).repeatForever(autoreverses: true), value: isPulsing)
-            .onAppear { isPulsing = true }
+            BreakCountdownLabel(activeBreak: activeBreak, formatTime: formatTime)
 
             Spacer()
 
@@ -392,6 +371,50 @@ struct WeatherCardContent: View {
                 timer.invalidate()
             }
         }
+    }
+}
+
+// MARK: - Break Countdown Label
+
+private struct BreakCountdownLabel: View {
+    let activeBreak: ActiveBreak
+    let formatTime: (TimeInterval) -> String
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            if let remaining = activeBreak.remainingSeconds {
+                Text(formatTime(remaining))
+                    .font(.system(.title, design: .monospaced, weight: .bold))
+                    .foregroundStyle(.cyan)
+                    .contentTransition(.identity)
+                Text("remaining")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            } else {
+                Text(formatTime(activeBreak.elapsedMinutes * 60))
+                    .font(.system(.title, design: .monospaced, weight: .bold))
+                    .foregroundStyle(.cyan)
+                    .contentTransition(.identity)
+                Text("elapsed")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .modifier(PulsingOpacityModifier())
+    }
+}
+
+private struct PulsingOpacityModifier: ViewModifier {
+    @State private var isHighOpacity = true
+
+    func body(content: Content) -> some View {
+        content
+            .opacity(isHighOpacity ? 1.0 : 0.6)
+            .onAppear {
+                withAnimation(.easeInOut(duration: 1.0).repeatForever(autoreverses: true)) {
+                    isHighOpacity = false
+                }
+            }
     }
 }
 
