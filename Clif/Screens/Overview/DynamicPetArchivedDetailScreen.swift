@@ -5,6 +5,10 @@ struct DynamicPetArchivedDetailScreen: View {
 
     @Environment(\.dismiss) private var dismiss
 
+    private var mood: Mood {
+        pet.isBlown ? .blown : .happy
+    }
+
     var body: some View {
         NavigationStack {
             ScrollView {
@@ -17,6 +21,30 @@ struct DynamicPetArchivedDetailScreen: View {
                         createdAt: pet.evolutionHistory.createdAt,
                         isBlown: pet.isBlown,
                         archivedAt: pet.archivedAt
+                    )
+
+                    EssenceInfoCard(evolutionHistory: pet.evolutionHistory)
+
+                    EvolutionCarousel(
+                        pet: pet,
+                        mood: mood,
+                        showCurrentBadge: false
+                    )
+
+                    EvolutionTimelineView(
+                        history: pet.evolutionHistory,
+                        canEvolve: false,
+                        daysUntilEvolution: nil,
+                        showPulse: false
+                    )
+
+                    UsageCard(stats: pet.fullStats)
+
+                    TrendMiniChart(stats: pet.fullStats)
+
+                    LimitedAppsButton(
+                        apps: pet.limitedApps,
+                        categories: pet.limitedCategories
                     )
                 }
                 .padding()

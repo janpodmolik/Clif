@@ -12,6 +12,8 @@ struct ArchivedDynamicPet: Codable, Identifiable, Equatable, PetWithStats {
 
     let dailyStats: [DailyUsageStat]
     let appUsage: [AppUsage]
+    let limitedApps: [LimitedApp]
+    let limitedCategories: [LimitedCategory]
 
     // MARK: - Dynamic-specific
 
@@ -45,6 +47,11 @@ struct ArchivedDynamicPet: Codable, Identifiable, Equatable, PetWithStats {
         breakHistory.filter(\.wasViolated).count
     }
 
+    /// Full usage stats for history display. Dynamic mode has no fixed daily limit.
+    var fullStats: FullUsageStats {
+        FullUsageStats(days: dailyStats, dailyLimitMinutes: .max)
+    }
+
     // MARK: - Init
 
     init(
@@ -55,6 +62,8 @@ struct ArchivedDynamicPet: Codable, Identifiable, Equatable, PetWithStats {
         archivedAt: Date = Date(),
         dailyStats: [DailyUsageStat] = [],
         appUsage: [AppUsage] = [],
+        limitedApps: [LimitedApp] = [],
+        limitedCategories: [LimitedCategory] = [],
         breakHistory: [CompletedBreak] = [],
         peakWindPoints: Double = 0,
         totalBreakMinutes: Double = 0,
@@ -68,6 +77,8 @@ struct ArchivedDynamicPet: Codable, Identifiable, Equatable, PetWithStats {
         self.archivedAt = archivedAt
         self.dailyStats = dailyStats
         self.appUsage = appUsage
+        self.limitedApps = limitedApps
+        self.limitedCategories = limitedCategories
         self.breakHistory = breakHistory
         self.peakWindPoints = peakWindPoints
         self.totalBreakMinutes = totalBreakMinutes
@@ -89,6 +100,8 @@ extension ArchivedDynamicPet {
             archivedAt: archivedAt,
             dailyStats: pet.dailyStats,
             appUsage: pet.appUsage,
+            limitedApps: pet.limitedApps,
+            limitedCategories: pet.limitedCategories,
             breakHistory: pet.breakHistory,
             peakWindPoints: pet.peakWindPoints,
             totalBreakMinutes: pet.totalBreakMinutes,
@@ -133,6 +146,8 @@ extension ArchivedDynamicPet {
             archivedAt: archivedAt,
             dailyStats: DailyUsageStat.mockList(petId: petId, days: totalDays),
             appUsage: AppUsage.mockList(days: totalDays, petId: petId),
+            limitedApps: LimitedApp.mockList(),
+            limitedCategories: LimitedCategory.mockList(),
             breakHistory: breakHistory,
             peakWindPoints: 95,
             totalBreakMinutes: 90,
