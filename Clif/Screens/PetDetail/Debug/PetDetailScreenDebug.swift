@@ -24,6 +24,7 @@ struct PetDetailScreenDebug: View {
 
     @State private var petName: String = "Fern"
     @State private var purposeLabel: String = "Social Media"
+    @State private var isBlob: Bool = false
     @State private var essence: Essence = .plant
     @State private var currentPhase: Int = 2
     @State private var totalDays: Int = 12
@@ -105,7 +106,24 @@ struct PetDetailScreenDebug: View {
         isBlownAway ? .blown : Mood(from: currentWindLevel)
     }
 
+    private var effectiveEssence: Essence? {
+        isBlob ? nil : essence
+    }
+
+    private var effectivePhase: Int {
+        isBlob ? 0 : currentPhase
+    }
+
     private var evolutionHistory: EvolutionHistory {
+        if isBlob {
+            return EvolutionHistory(
+                createdAt: Calendar.current.date(byAdding: .day, value: -totalDays, to: Date())!,
+                essence: nil,
+                events: [],
+                blownAt: isBlownAway ? Date() : nil
+            )
+        }
+
         let events: [EvolutionEvent] = currentPhase > 1
             ? (2...currentPhase).map { phase in
                 let daysAgo = (currentPhase - phase + 1) * 3
@@ -125,8 +143,9 @@ struct PetDetailScreenDebug: View {
         )
     }
 
-    private var evolutionPath: EvolutionPath {
-        EvolutionPath.path(for: essence)
+    private var evolutionPath: EvolutionPath? {
+        guard let essence = effectiveEssence else { return nil }
+        return EvolutionPath.path(for: essence)
     }
 
     private var dailyStats: [DailyUsageStat] {
@@ -235,7 +254,12 @@ struct PetDetailScreenDebug: View {
                         .font(.title2.weight(.bold))
 
                     HStack(spacing: 16) {
-                        Label("Phase \(currentPhase)/\(evolutionPath.maxPhases)", systemImage: "sparkles")
+                        if let path = evolutionPath {
+                            Label("Phase \(currentPhase)/\(path.maxPhases)", systemImage: "sparkles")
+                        } else {
+                            Label("Blob", systemImage: "circle.fill")
+                                .foregroundStyle(.gray)
+                        }
                         Label("\(totalDays) days", systemImage: "calendar")
                             .foregroundStyle(.secondary)
                     }
@@ -337,16 +361,20 @@ struct PetDetailScreenDebug: View {
                         .multilineTextAlignment(.trailing)
                 }
 
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("Evolution Phase")
-                        .foregroundStyle(.secondary)
+                Toggle("Blob (no essence)", isOn: $isBlob)
 
-                    Picker("Phase", selection: $currentPhase) {
-                        ForEach(1...evolutionPath.maxPhases, id: \.self) { phase in
-                            Text("\(phase)").tag(phase)
+                if !isBlob, let path = evolutionPath {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Evolution Phase")
+                            .foregroundStyle(.secondary)
+
+                        Picker("Phase", selection: $currentPhase) {
+                            ForEach(1...path.maxPhases, id: \.self) { phase in
+                                Text("\(phase)").tag(phase)
+                            }
                         }
+                        .pickerStyle(.segmented)
                     }
-                    .pickerStyle(.segmented)
                 }
 
                 HStack {
@@ -607,15 +635,15 @@ struct PetDetailScreenDebug: View {
                     presetButton("Normal", color: .blue) { applyDailyNormalPreset() }
                     presetButton("Evolve Ready", color: .green) { applyDailyEvolveReadyPreset() }
                     presetButton("Max Evolution", color: .purple) { applyDailyMaxEvolutionPreset() }
-                    presetButton("New Pet", color: .mint) { applyDailyNewPetPreset() }
+                    presetButton("Blob", color: .gray) { applyDailyBlobPreset() }
                     presetButton("Critical", color: .orange) { applyDailyCriticalPreset() }
                     presetButton("Blown Away", color: .red) { applyDailyBlownAwayPreset() }
                 } else {
                     presetButton("Calm", color: .green) { applyDynamicCalmPreset() }
                     presetButton("Rising Wind", color: .yellow) { applyDynamicRisingPreset() }
+                    presetButton("Blob", color: .gray) { applyDynamicBlobPreset() }
                     presetButton("On Break", color: .blue) { applyDynamicBreakPreset() }
                     presetButton("Critical", color: .orange) { applyDynamicCriticalPreset() }
-                    presetButton("Hardcore Break", color: .purple) { applyDynamicHardcorePreset() }
                     presetButton("Blown Away", color: .red) { applyDynamicBlownAwayPreset() }
                 }
             }
@@ -641,6 +669,7 @@ struct PetDetailScreenDebug: View {
         withAnimation(.easeInOut(duration: 0.2)) {
             petName = "Fern"
             purposeLabel = "Social Media"
+            isBlob = false
             currentPhase = 2
             totalDays = 12
             todayUsedMinutes = 100
@@ -653,6 +682,7 @@ struct PetDetailScreenDebug: View {
         withAnimation(.easeInOut(duration: 0.2)) {
             petName = "Sprout"
             purposeLabel = "Gaming"
+            isBlob = false
             currentPhase = 2
             totalDays = 7
             todayUsedMinutes = 60
@@ -665,6 +695,7 @@ struct PetDetailScreenDebug: View {
         withAnimation(.easeInOut(duration: 0.2)) {
             petName = "Elder Oak"
             purposeLabel = "Work Apps"
+            isBlob = false
             currentPhase = 4
             totalDays = 30
             todayUsedMinutes = 0
@@ -673,13 +704,13 @@ struct PetDetailScreenDebug: View {
         }
     }
 
-    private func applyDailyNewPetPreset() {
+    private func applyDailyBlobPreset() {
         withAnimation(.easeInOut(duration: 0.2)) {
-            petName = "Seedling"
-            purposeLabel = ""
-            currentPhase = 1
-            totalDays = 0
-            todayUsedMinutes = 0
+            petName = "Blobby"
+            purposeLabel = "Social Media"
+            isBlob = true
+            totalDays = 1
+            todayUsedMinutes = 40
             dailyLimitMinutes = 180
             isBlownAway = false
         }
@@ -689,6 +720,7 @@ struct PetDetailScreenDebug: View {
         withAnimation(.easeInOut(duration: 0.2)) {
             petName = "Willow"
             purposeLabel = "Streaming"
+            isBlob = false
             currentPhase = 3
             totalDays = 5
             todayUsedMinutes = 160
@@ -701,6 +733,7 @@ struct PetDetailScreenDebug: View {
         withAnimation(.easeInOut(duration: 0.2)) {
             petName = "Willow"
             purposeLabel = "Social Media"
+            isBlob = false
             currentPhase = 3
             totalDays = 0
             todayUsedMinutes = 230
@@ -715,6 +748,7 @@ struct PetDetailScreenDebug: View {
         withAnimation(.easeInOut(duration: 0.2)) {
             petName = "Fern"
             purposeLabel = "Social Media"
+            isBlob = false
             currentPhase = 2
             totalDays = 14
             windPoints = 15
@@ -728,9 +762,23 @@ struct PetDetailScreenDebug: View {
         withAnimation(.easeInOut(duration: 0.2)) {
             petName = "Fern"
             purposeLabel = "Gaming"
+            isBlob = false
             currentPhase = 2
             totalDays = 10
             windPoints = 55
+            riseRate = 10
+            hasActiveBreak = false
+            isBlownAway = false
+        }
+    }
+
+    private func applyDynamicBlobPreset() {
+        withAnimation(.easeInOut(duration: 0.2)) {
+            petName = "Blobby"
+            purposeLabel = "Social Media"
+            isBlob = true
+            totalDays = 1
+            windPoints = 25
             riseRate = 10
             hasActiveBreak = false
             isBlownAway = false
@@ -741,6 +789,7 @@ struct PetDetailScreenDebug: View {
         withAnimation(.easeInOut(duration: 0.2)) {
             petName = "Sprout"
             purposeLabel = "Social Media"
+            isBlob = false
             currentPhase = 2
             totalDays = 8
             windPoints = 65
@@ -757,6 +806,7 @@ struct PetDetailScreenDebug: View {
         withAnimation(.easeInOut(duration: 0.2)) {
             petName = "Willow"
             purposeLabel = "Streaming"
+            isBlob = false
             currentPhase = 3
             totalDays = 5
             windPoints = 85
@@ -766,26 +816,11 @@ struct PetDetailScreenDebug: View {
         }
     }
 
-    private func applyDynamicHardcorePreset() {
-        withAnimation(.easeInOut(duration: 0.2)) {
-            petName = "Brave"
-            purposeLabel = "All Apps"
-            currentPhase = 3
-            totalDays = 20
-            windPoints = 70
-            riseRate = 10
-            hasActiveBreak = true
-            breakType = .hardcore
-            breakMinutesAgo = 5
-            breakDurationMinutes = 60
-            isBlownAway = false
-        }
-    }
-
     private func applyDynamicBlownAwayPreset() {
         withAnimation(.easeInOut(duration: 0.2)) {
             petName = "Willow"
             purposeLabel = "Social Media"
+            isBlob = false
             currentPhase = 3
             totalDays = 0
             windPoints = 100
