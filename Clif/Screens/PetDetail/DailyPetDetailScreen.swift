@@ -202,9 +202,9 @@ struct DailyPetDetailScreen: View {
 }
 
 #if DEBUG
-#Preview("DailyPetDetailDebug") {
+#Preview("PetDetailDebug") {
     NavigationStack {
-        DailyPetDetailScreenDebug()
+        PetDetailScreenDebug()
     }
 }
 
