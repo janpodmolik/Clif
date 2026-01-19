@@ -1,6 +1,6 @@
 import Foundation
 
-struct ArchivedDailyPet: Codable, Identifiable, Equatable, PetWithStats {
+struct ArchivedDailyPet: Codable, Identifiable, Equatable, PetWithSources {
     let id: UUID
     let name: String
     let evolutionHistory: EvolutionHistory
@@ -8,12 +8,10 @@ struct ArchivedDailyPet: Codable, Identifiable, Equatable, PetWithStats {
     let archivedAt: Date
     let dailyLimitMinutes: Int
 
-    // MARK: - PetWithStats
+    // MARK: - PetWithSources
 
     let dailyStats: [DailyUsageStat]
-    let appUsage: [AppUsage]
-    let limitedApps: [LimitedApp]
-    let limitedCategories: [LimitedCategory]
+    let limitedSources: [LimitedSource]
 
     /// Alias for currentPhase - the phase when pet was archived
     var finalPhase: Int { currentPhase }
@@ -37,9 +35,7 @@ struct ArchivedDailyPet: Codable, Identifiable, Equatable, PetWithStats {
         archivedAt: Date = Date(),
         dailyLimitMinutes: Int = 60,
         dailyStats: [DailyUsageStat] = [],
-        appUsage: [AppUsage] = [],
-        limitedApps: [LimitedApp] = [],
-        limitedCategories: [LimitedCategory] = []
+        limitedSources: [LimitedSource] = []
     ) {
         self.id = id
         self.name = name
@@ -48,9 +44,7 @@ struct ArchivedDailyPet: Codable, Identifiable, Equatable, PetWithStats {
         self.archivedAt = archivedAt
         self.dailyLimitMinutes = dailyLimitMinutes
         self.dailyStats = dailyStats
-        self.appUsage = appUsage
-        self.limitedApps = limitedApps
-        self.limitedCategories = limitedCategories
+        self.limitedSources = limitedSources
     }
 }
 
@@ -90,9 +84,7 @@ extension ArchivedDailyPet {
             archivedAt: archivedAt,
             dailyLimitMinutes: dailyLimitMinutes,
             dailyStats: dailyStats,
-            appUsage: AppUsage.mockList(days: totalDays, petId: petId),
-            limitedApps: LimitedApp.mockList(),
-            limitedCategories: LimitedCategory.mockList()
+            limitedSources: LimitedSource.mockList(days: totalDays)
         )
     }
 
@@ -121,7 +113,7 @@ extension ArchivedDailyPet {
             archivedAt: Date(),
             dailyLimitMinutes: 60,
             dailyStats: [],
-            appUsage: []
+            limitedSources: []
         )
     }
 }
@@ -139,9 +131,7 @@ extension ArchivedDailyPet {
             archivedAt: archivedAt,
             dailyLimitMinutes: pet.dailyLimitMinutes,
             dailyStats: pet.dailyStats,
-            appUsage: pet.appUsage,
-            limitedApps: pet.limitedApps,
-            limitedCategories: pet.limitedCategories
+            limitedSources: pet.limitedSources
         )
     }
 }

@@ -11,9 +11,7 @@ struct DynamicPetDTO: Codable {
     let activeBreak: ActiveBreak?
     let config: DynamicWindConfig
     let dailyStats: [DailyUsageStat]
-    let appUsage: [AppUsage]
-    let limitedApps: [LimitedApp]
-    let limitedCategories: [LimitedCategory]
+    let limitedSources: [LimitedSource]
     let breakHistory: [CompletedBreak]
 
     init(from pet: DynamicPet) {
@@ -26,9 +24,7 @@ struct DynamicPetDTO: Codable {
         self.activeBreak = pet.activeBreak
         self.config = pet.config
         self.dailyStats = pet.dailyStats
-        self.appUsage = pet.appUsage
-        self.limitedApps = pet.limitedApps
-        self.limitedCategories = pet.limitedCategories
+        self.limitedSources = pet.limitedSources
         self.breakHistory = pet.breakHistory
     }
 }
@@ -45,9 +41,7 @@ extension DynamicPet {
             activeBreak: dto.activeBreak,
             config: dto.config,
             dailyStats: dto.dailyStats,
-            appUsage: dto.appUsage,
-            limitedApps: dto.limitedApps,
-            limitedCategories: dto.limitedCategories,
+            limitedSources: dto.limitedSources,
             breakHistory: dto.breakHistory
         )
     }

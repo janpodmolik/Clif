@@ -2,36 +2,85 @@ import FamilyControls
 import Foundation
 import ManagedSettings
 
-/// Protocol for pets that track usage statistics.
-protocol PetWithStats: PetEvolvable {
+/// Protocol for pets that track usage statistics with limited sources.
+protocol PetWithSources: PetEvolvable {
     var dailyStats: [DailyUsageStat] { get }
-    var appUsage: [AppUsage] { get }
+    var limitedSources: [LimitedSource] { get }
 }
 
-extension PetWithStats {
+extension PetWithSources {
     /// Total days tracked.
     var totalDays: Int { dailyStats.count }
-}
 
-/// Protocol for active pets that also track limited apps for shielding.
-protocol PetWithTokens: PetWithStats {
-    var limitedApps: [LimitedApp] { get }
-    var limitedCategories: [LimitedCategory] { get }
-}
+    // MARK: - Filtered Access
 
-extension PetWithTokens {
-    /// Application tokens extracted from limited apps.
+    /// All app sources.
+    var appSources: [AppSource] {
+        limitedSources.compactMap {
+            if case .app(let source) = $0 { return source }
+            return nil
+        }
+    }
+
+    /// All category sources.
+    var categorySources: [CategorySource] {
+        limitedSources.compactMap {
+            if case .category(let source) = $0 { return source }
+            return nil
+        }
+    }
+
+    /// All website sources.
+    var websiteSources: [WebsiteSource] {
+        limitedSources.compactMap {
+            if case .website(let source) = $0 { return source }
+            return nil
+        }
+    }
+
+    // MARK: - Token Sets (for shielding)
+
+    /// Application tokens extracted from app sources.
     var applicationTokens: Set<ApplicationToken> {
-        Set(limitedApps.compactMap(\.applicationToken))
+        Set(appSources.compactMap(\.applicationToken))
     }
 
-    /// Category tokens extracted from limited categories.
+    /// Category tokens extracted from category sources.
     var categoryTokens: Set<ActivityCategoryToken> {
-        Set(limitedCategories.compactMap(\.categoryToken))
+        Set(categorySources.compactMap(\.categoryToken))
     }
 
-    /// Count of limited apps and categories.
+    /// Web domain tokens extracted from website sources.
+    var webDomainTokens: Set<WebDomainToken> {
+        Set(websiteSources.compactMap(\.webDomainToken))
+    }
+
+    // MARK: - Counts
+
+    /// Count of limited apps.
     var limitedAppCount: Int {
-        limitedApps.count + limitedCategories.count
+        appSources.count
+    }
+
+    /// Count of limited categories.
+    var limitedCategoryCount: Int {
+        categorySources.count
+    }
+
+    /// Count of limited websites.
+    var limitedWebsiteCount: Int {
+        websiteSources.count
+    }
+
+    /// Total count of all limited sources.
+    var totalLimitedCount: Int {
+        limitedSources.count
+    }
+
+    // MARK: - Usage Data
+
+    /// All sources sorted by total minutes descending.
+    var usageBreakdown: [LimitedSource] {
+        limitedSources.sorted { $0.totalMinutes > $1.totalMinutes }
     }
 }

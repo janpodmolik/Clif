@@ -25,7 +25,7 @@ struct PetScreenTimeCard: View {
             headerSection
 
             if !pet.applicationTokens.isEmpty || !pet.categoryTokens.isEmpty {
-                LimitedAppsPreview(
+                LimitedSourcesPreview(
                     applicationTokens: pet.applicationTokens,
                     categoryTokens: pet.categoryTokens
                 )

@@ -53,8 +53,7 @@ struct DailyPetArchivedDetailScreen: View {
                     )
 
                     LimitedAppsButton(
-                        apps: pet.limitedApps,
-                        categories: pet.limitedCategories
+                        sources: pet.limitedSources
                     ) {
                         showAppUsageSheet = true
                     }
@@ -63,7 +62,7 @@ struct DailyPetArchivedDetailScreen: View {
             }
             .sheet(isPresented: $showAppUsageSheet) {
                 AppUsageDetailSheet(
-                    appUsage: pet.appUsage,
+                    sources: pet.limitedSources,
                     dailyLimitMinutes: pet.dailyLimitMinutes,
                     totalDays: pet.totalDays
                 )
@@ -89,14 +88,14 @@ struct DailyPetArchivedDetailScreen: View {
 // MARK: - App Usage Detail Sheet
 
 struct AppUsageDetailSheet: View {
-    let appUsage: [AppUsage]
+    let sources: [LimitedSource]
     let dailyLimitMinutes: Int
     let totalDays: Int
 
     @Environment(\.dismiss) private var dismiss
 
     private var totalMinutes: Int {
-        appUsage.reduce(0) { $0 + $1.totalMinutes }
+        sources.reduce(0) { $0 + $1.totalMinutes }
     }
 
     var body: some View {
@@ -125,14 +124,14 @@ struct AppUsageDetailSheet: View {
                     }
                 }
 
-                Section("Limitované aplikace") {
-                    ForEach(appUsage) { app in
+                Section("Limitované zdroje") {
+                    ForEach(sources) { source in
                         HStack {
-                            Text(app.displayName)
+                            Text(source.displayName)
 
                             Spacer()
 
-                            Text(formatMinutes(app.totalMinutes))
+                            Text(formatMinutes(source.totalMinutes))
                                 .foregroundStyle(.secondary)
                         }
                     }
@@ -176,7 +175,7 @@ struct AppUsageDetailSheet: View {
 
 #Preview("App Usage Sheet") {
     AppUsageDetailSheet(
-        appUsage: AppUsage.mockList(days: 14),
+        sources: LimitedSource.mockList(days: 14),
         dailyLimitMinutes: 60,
         totalDays: 14
     )

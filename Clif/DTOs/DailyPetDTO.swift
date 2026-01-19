@@ -9,9 +9,7 @@ struct DailyPetDTO: Codable {
     let todayUsedMinutes: Int
     let dailyLimitMinutes: Int
     let dailyStats: [DailyUsageStat]
-    let appUsage: [AppUsage]
-    let limitedApps: [LimitedApp]
-    let limitedCategories: [LimitedCategory]
+    let limitedSources: [LimitedSource]
 
     init(from pet: DailyPet) {
         self.id = pet.id
@@ -21,9 +19,7 @@ struct DailyPetDTO: Codable {
         self.todayUsedMinutes = pet.todayUsedMinutes
         self.dailyLimitMinutes = pet.dailyLimitMinutes
         self.dailyStats = pet.dailyStats
-        self.appUsage = pet.appUsage
-        self.limitedApps = pet.limitedApps
-        self.limitedCategories = pet.limitedCategories
+        self.limitedSources = pet.limitedSources
     }
 }
 
@@ -37,9 +33,7 @@ extension DailyPet {
             todayUsedMinutes: dto.todayUsedMinutes,
             dailyLimitMinutes: dto.dailyLimitMinutes,
             dailyStats: dto.dailyStats,
-            appUsage: dto.appUsage,
-            limitedApps: dto.limitedApps,
-            limitedCategories: dto.limitedCategories
+            limitedSources: dto.limitedSources
         )
     }
 }

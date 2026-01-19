@@ -16,7 +16,7 @@ struct FallbackScreenTimeCard: View {
             totalTimeSection
 
             if !applicationTokens.isEmpty || !categoryTokens.isEmpty {
-                LimitedAppsPreview(
+                LimitedSourcesPreview(
                     applicationTokens: applicationTokens,
                     categoryTokens: categoryTokens
                 )

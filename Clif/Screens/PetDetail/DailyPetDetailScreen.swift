@@ -81,8 +81,7 @@ struct DailyPetDetailScreen: View {
                     }
 
                     LimitedAppsButton(
-                        apps: pet.limitedApps,
-                        categories: pet.limitedCategories,
+                        sources: pet.limitedSources,
                         onTap: { onAction(.limitedApps) }
                     )
 

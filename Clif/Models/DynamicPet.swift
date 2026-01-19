@@ -3,7 +3,7 @@ import Foundation
 import ManagedSettings
 
 @Observable
-final class DynamicPet: Identifiable, PetPresentable, PetWithTokens {
+final class DynamicPet: Identifiable, PetPresentable, PetWithSources {
     let id: UUID
     let name: String
     private(set) var evolutionHistory: EvolutionHistory
@@ -21,12 +21,10 @@ final class DynamicPet: Identifiable, PetPresentable, PetWithTokens {
     /// Configuration for wind rise/fall behavior.
     let config: DynamicWindConfig
 
-    // MARK: - PetWithStats
+    // MARK: - PetWithSources
 
     var dailyStats: [DailyUsageStat]
-    var appUsage: [AppUsage]
-    var limitedApps: [LimitedApp]
-    var limitedCategories: [LimitedCategory]
+    var limitedSources: [LimitedSource]
 
     /// Break history for current session.
     var breakHistory: [CompletedBreak]
@@ -165,9 +163,7 @@ final class DynamicPet: Identifiable, PetPresentable, PetWithTokens {
         activeBreak: ActiveBreak? = nil,
         config: DynamicWindConfig = .default,
         dailyStats: [DailyUsageStat] = [],
-        appUsage: [AppUsage] = [],
-        limitedApps: [LimitedApp] = [],
-        limitedCategories: [LimitedCategory] = [],
+        limitedSources: [LimitedSource] = [],
         breakHistory: [CompletedBreak] = []
     ) {
         self.id = id
@@ -179,9 +175,7 @@ final class DynamicPet: Identifiable, PetPresentable, PetWithTokens {
         self.activeBreak = activeBreak
         self.config = config
         self.dailyStats = dailyStats
-        self.appUsage = appUsage
-        self.limitedApps = limitedApps
-        self.limitedCategories = limitedCategories
+        self.limitedSources = limitedSources
         self.breakHistory = breakHistory
     }
 }
@@ -240,9 +234,7 @@ extension DynamicPet {
             purpose: "Social Media",
             windPoints: windPoints,
             dailyStats: DailyUsageStat.mockList(petId: petId, days: totalDays),
-            appUsage: AppUsage.mockList(days: totalDays, petId: petId),
-            limitedApps: LimitedApp.mockList(),
-            limitedCategories: LimitedCategory.mockList()
+            limitedSources: LimitedSource.mockList(days: totalDays)
         )
     }
 

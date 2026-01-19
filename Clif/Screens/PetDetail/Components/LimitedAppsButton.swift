@@ -3,32 +3,63 @@ import ManagedSettings
 import SwiftUI
 
 struct LimitedAppsButton: View {
-    let apps: [LimitedApp]
-    let categories: [LimitedCategory]
+    let sources: [LimitedSource]
     var onTap: (() -> Void)?
 
+    private var appSources: [AppSource] {
+        sources.compactMap {
+            if case .app(let source) = $0 { return source }
+            return nil
+        }
+    }
+
+    private var categorySources: [CategorySource] {
+        sources.compactMap {
+            if case .category(let source) = $0 { return source }
+            return nil
+        }
+    }
+
+    private var websiteSources: [WebsiteSource] {
+        sources.compactMap {
+            if case .website(let source) = $0 { return source }
+            return nil
+        }
+    }
+
     private var applicationTokens: Set<ApplicationToken> {
-        Set(apps.compactMap(\.applicationToken))
+        Set(appSources.compactMap(\.applicationToken))
     }
 
     private var categoryTokens: Set<ActivityCategoryToken> {
-        Set(categories.compactMap(\.categoryToken))
+        Set(categorySources.compactMap(\.categoryToken))
+    }
+
+    private var webDomainTokens: Set<WebDomainToken> {
+        Set(websiteSources.compactMap(\.webDomainToken))
     }
 
     private var hasValidTokens: Bool {
-        !applicationTokens.isEmpty || !categoryTokens.isEmpty
+        !applicationTokens.isEmpty || !categoryTokens.isEmpty || !webDomainTokens.isEmpty
     }
 
     private var subtitleText: String {
         var parts: [String] = []
 
-        if !apps.isEmpty {
-            parts.append("\(apps.count) \(apps.count == 1 ? "app" : "apps")")
+        let appCount = appSources.count
+        if appCount > 0 {
+            parts.append("\(appCount) \(appCount == 1 ? "app" : "apps")")
         }
-        if !categories.isEmpty {
-            parts.append("\(categories.count) \(categories.count == 1 ? "category" : "categories")")
+
+        let categoryCount = categorySources.count
+        if categoryCount > 0 {
+            parts.append("\(categoryCount) \(categoryCount == 1 ? "category" : "categories")")
         }
-        // TODO: Add webDomains when available
+
+        let websiteCount = websiteSources.count
+        if websiteCount > 0 {
+            parts.append("\(websiteCount) \(websiteCount == 1 ? "website" : "websites")")
+        }
 
         return parts.joined(separator: " · ")
     }
@@ -50,9 +81,10 @@ struct LimitedAppsButton: View {
                 Spacer()
 
                 if hasValidTokens {
-                    LimitedAppsPreview(
+                    LimitedSourcesPreview(
                         applicationTokens: applicationTokens,
-                        categoryTokens: categoryTokens
+                        categoryTokens: categoryTokens,
+                        webDomainTokens: webDomainTokens
                     )
                 }
 
@@ -74,8 +106,7 @@ struct LimitedAppsButton: View {
 #Preview("With tokens (mock)") {
     VStack(spacing: 16) {
         LimitedAppsButton(
-            apps: LimitedApp.mockList(),
-            categories: LimitedCategory.mockList(),
+            sources: LimitedSource.mockList(),
             onTap: {}
         )
     }
@@ -85,13 +116,11 @@ struct LimitedAppsButton: View {
 #Preview("Without tokens (archived)") {
     VStack(spacing: 16) {
         LimitedAppsButton(
-            apps: LimitedApp.mockList(),
-            categories: LimitedCategory.mockList(),
+            sources: LimitedSource.mockList(),
             onTap: {}
         )
         LimitedAppsButton(
-            apps: LimitedApp.mockList(),
-            categories: []
+            sources: LimitedSource.mockList().filter { $0.kind == .app }
         )
     }
     .padding()

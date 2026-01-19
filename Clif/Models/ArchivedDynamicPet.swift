@@ -1,19 +1,17 @@
 import Foundation
 
 /// Archived version of a DynamicPet for history/graveyard.
-struct ArchivedDynamicPet: Codable, Identifiable, Equatable, PetWithStats {
+struct ArchivedDynamicPet: Codable, Identifiable, Equatable, PetWithSources {
     let id: UUID
     let name: String
     let evolutionHistory: EvolutionHistory
     let purpose: String?
     let archivedAt: Date
 
-    // MARK: - PetWithStats
+    // MARK: - PetWithSources
 
     let dailyStats: [DailyUsageStat]
-    let appUsage: [AppUsage]
-    let limitedApps: [LimitedApp]
-    let limitedCategories: [LimitedCategory]
+    let limitedSources: [LimitedSource]
 
     // MARK: - Dynamic-specific
 
@@ -61,9 +59,7 @@ struct ArchivedDynamicPet: Codable, Identifiable, Equatable, PetWithStats {
         purpose: String?,
         archivedAt: Date = Date(),
         dailyStats: [DailyUsageStat] = [],
-        appUsage: [AppUsage] = [],
-        limitedApps: [LimitedApp] = [],
-        limitedCategories: [LimitedCategory] = [],
+        limitedSources: [LimitedSource] = [],
         breakHistory: [CompletedBreak] = [],
         peakWindPoints: Double = 0,
         totalBreakMinutes: Double = 0,
@@ -76,9 +72,7 @@ struct ArchivedDynamicPet: Codable, Identifiable, Equatable, PetWithStats {
         self.purpose = purpose
         self.archivedAt = archivedAt
         self.dailyStats = dailyStats
-        self.appUsage = appUsage
-        self.limitedApps = limitedApps
-        self.limitedCategories = limitedCategories
+        self.limitedSources = limitedSources
         self.breakHistory = breakHistory
         self.peakWindPoints = peakWindPoints
         self.totalBreakMinutes = totalBreakMinutes
@@ -99,9 +93,7 @@ extension ArchivedDynamicPet {
             purpose: pet.purpose,
             archivedAt: archivedAt,
             dailyStats: pet.dailyStats,
-            appUsage: pet.appUsage,
-            limitedApps: pet.limitedApps,
-            limitedCategories: pet.limitedCategories,
+            limitedSources: pet.limitedSources,
             breakHistory: pet.breakHistory,
             peakWindPoints: pet.peakWindPoints,
             totalBreakMinutes: pet.totalBreakMinutes,
@@ -145,9 +137,7 @@ extension ArchivedDynamicPet {
             purpose: "Social Media",
             archivedAt: archivedAt,
             dailyStats: DailyUsageStat.mockList(petId: petId, days: totalDays),
-            appUsage: AppUsage.mockList(days: totalDays, petId: petId),
-            limitedApps: LimitedApp.mockList(),
-            limitedCategories: LimitedCategory.mockList(),
+            limitedSources: LimitedSource.mockList(days: totalDays),
             breakHistory: breakHistory,
             peakWindPoints: 95,
             totalBreakMinutes: 90,

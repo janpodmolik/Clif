@@ -3,7 +3,7 @@ import Foundation
 import ManagedSettings
 
 @Observable
-final class DailyPet: Identifiable, PetPresentable, PetWithTokens {
+final class DailyPet: Identifiable, PetPresentable, PetWithSources {
     let id: UUID
     let name: String
     private(set) var evolutionHistory: EvolutionHistory
@@ -12,9 +12,7 @@ final class DailyPet: Identifiable, PetPresentable, PetWithTokens {
     let dailyLimitMinutes: Int
 
     var dailyStats: [DailyUsageStat]
-    var appUsage: [AppUsage]
-    var limitedApps: [LimitedApp]
-    var limitedCategories: [LimitedCategory]
+    var limitedSources: [LimitedSource]
 
     // MARK: - Wind (Daily mode uses usage/limit ratio)
 
@@ -67,9 +65,7 @@ final class DailyPet: Identifiable, PetPresentable, PetWithTokens {
         todayUsedMinutes: Int,
         dailyLimitMinutes: Int,
         dailyStats: [DailyUsageStat] = [],
-        appUsage: [AppUsage] = [],
-        limitedApps: [LimitedApp] = [],
-        limitedCategories: [LimitedCategory] = []
+        limitedSources: [LimitedSource] = []
     ) {
         self.id = id
         self.name = name
@@ -78,9 +74,7 @@ final class DailyPet: Identifiable, PetPresentable, PetWithTokens {
         self.todayUsedMinutes = todayUsedMinutes
         self.dailyLimitMinutes = dailyLimitMinutes
         self.dailyStats = dailyStats
-        self.appUsage = appUsage
-        self.limitedApps = limitedApps
-        self.limitedCategories = limitedCategories
+        self.limitedSources = limitedSources
     }
 }
 
@@ -110,9 +104,7 @@ extension DailyPet {
             todayUsedMinutes: todayUsedMinutes,
             dailyLimitMinutes: dailyLimitMinutes,
             dailyStats: dailyStats,
-            appUsage: AppUsage.mockList(days: totalDays, petId: petId),
-            limitedApps: LimitedApp.mockList(),
-            limitedCategories: LimitedCategory.mockList()
+            limitedSources: LimitedSource.mockList(days: totalDays)
         )
     }
 

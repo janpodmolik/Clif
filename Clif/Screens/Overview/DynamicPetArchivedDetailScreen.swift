@@ -43,8 +43,7 @@ struct DynamicPetArchivedDetailScreen: View {
                     TrendMiniChart(stats: pet.fullStats)
 
                     LimitedAppsButton(
-                        apps: pet.limitedApps,
-                        categories: pet.limitedCategories
+                        sources: pet.limitedSources
                     )
                 }
                 .padding()
