@@ -60,6 +60,28 @@ struct DynamicPetDetailScreen: View {
                         purposeLabel: pet.purpose,
                         createdAt: pet.evolutionHistory.createdAt
                     )
+
+                    if pet.isBlob {
+                        NoEssenceCard {
+                            // TODO: Navigate to inventory
+                        }
+                    } else {
+                        EssenceInfoCard(evolutionHistory: pet.evolutionHistory)
+                    }
+
+                    EvolutionCarousel(
+                        pet: pet,
+                        mood: mood,
+                        canUseEssence: pet.canUseEssence
+                    )
+
+                    if !pet.isBlob {
+                        EvolutionTimelineView(
+                            history: pet.evolutionHistory,
+                            canEvolve: canProgress,
+                            daysUntilEvolution: daysUntilProgress
+                        )
+                    }
                 }
                 .padding()
             }
@@ -97,6 +119,13 @@ struct DynamicPetDetailScreen: View {
     Text("Tap to open")
         .fullScreenCover(isPresented: .constant(true)) {
             DynamicPetDetailScreen(pet: .mockWithBreak())
+        }
+}
+
+#Preview("Blob - Ready for Essence") {
+    Text("Tap to open")
+        .fullScreenCover(isPresented: .constant(true)) {
+            DynamicPetDetailScreen(pet: .mockBlob(name: "Blobby", canUseEssence: true))
         }
 }
 #endif
