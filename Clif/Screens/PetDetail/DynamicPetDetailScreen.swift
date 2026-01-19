@@ -51,6 +51,15 @@ struct DynamicPetDetailScreen: View {
                         onStartBreak: { onAction(.startBreak) },
                         onEndBreak: { onAction(.endBreak) }
                     )
+
+                    PetDetailHeader(
+                        petName: pet.name,
+                        mood: mood,
+                        totalDays: pet.totalDays,
+                        evolutionPhase: pet.currentPhase,
+                        purposeLabel: pet.purpose,
+                        createdAt: pet.evolutionHistory.createdAt
+                    )
                 }
                 .padding()
             }

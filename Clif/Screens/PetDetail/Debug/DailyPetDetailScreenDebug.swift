@@ -47,20 +47,22 @@ struct DailyPetDetailScreenDebug: View {
     }
 
     private var evolutionHistory: EvolutionHistory {
-        // Build events array for phases reached
-        let events: [EvolutionEvent] = (2...currentPhase).map { phase in
-            let daysAgo = (currentPhase - phase + 1) * 3
-            return EvolutionEvent(
-                fromPhase: phase - 1,
-                toPhase: phase,
-                date: Calendar.current.date(byAdding: .day, value: -daysAgo, to: Date())!
-            )
-        }
+        // Build events array for phases reached (only if currentPhase > 1)
+        let events: [EvolutionEvent] = currentPhase > 1
+            ? (2...currentPhase).map { phase in
+                let daysAgo = (currentPhase - phase + 1) * 3
+                return EvolutionEvent(
+                    fromPhase: phase - 1,
+                    toPhase: phase,
+                    date: Calendar.current.date(byAdding: .day, value: -daysAgo, to: Date())!
+                )
+            }
+            : []
 
         return EvolutionHistory(
             createdAt: Calendar.current.date(byAdding: .day, value: -14, to: Date())!,
             essence: essence,
-            events: currentPhase > 1 ? events : [],
+            events: events,
             blownAt: isBlownAway ? Date() : nil
         )
     }
