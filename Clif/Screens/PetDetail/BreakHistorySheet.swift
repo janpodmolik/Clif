@@ -121,52 +121,100 @@ struct BreakHistorySheet: View {
 
             // Charts row
             HStack(spacing: 24) {
-                // Count pie chart
-                VStack(spacing: 8) {
-                    BreakPieChart(
-                        data: breaksByType.map { ($0.type, Double($0.count)) },
-                        centerLabel: "\(totalBreaks)",
-                        centerSubLabel: "breaks"
-                    )
-                    .frame(width: 130, height: 130)
+                chartColumn(
+                    data: breaksByType.map { ($0.type, Double($0.count)) },
+                    centerLabel: "\(totalBreaks)",
+                    centerSubLabel: "breaks",
+                    title: "Count"
+                )
+
+                chartColumn(
+                    data: breaksByType.map { ($0.type, $0.minutes) },
+                    centerLabel: formatMinutesShort(totalMinutes),
+                    centerSubLabel: "total",
+                    title: "Time"
+                )
+            }
+
+            Divider()
+
+            // Shared legend
+            VStack(spacing: 6) {
+                // Header row
+                HStack {
+                    Text("Type")
+                        .font(.caption2)
+                        .foregroundStyle(.tertiary)
+
+                    Spacer()
 
                     Text("Count")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
-
-                // Time pie chart
-                VStack(spacing: 8) {
-                    BreakPieChart(
-                        data: breaksByType.map { ($0.type, $0.minutes) },
-                        centerLabel: formatMinutesShort(totalMinutes),
-                        centerSubLabel: "total"
-                    )
-                    .frame(width: 130, height: 130)
+                        .font(.caption2)
+                        .foregroundStyle(.tertiary)
+                        .frame(width: 40, alignment: .trailing)
 
                     Text("Time")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .font(.caption2)
+                        .foregroundStyle(.tertiary)
+                        .frame(width: 50, alignment: .trailing)
                 }
-            }
-            .frame(maxWidth: .infinity)
 
-            // Legend row
-            HStack(spacing: 16) {
+                // Data rows
                 ForEach(breaksByType, id: \.type) { item in
-                    HStack(spacing: 6) {
+                    HStack {
                         Circle()
                             .fill(item.type.color)
                             .frame(width: 8, height: 8)
 
                         Text(item.type.displayName)
-                            .font(.caption)
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+
+                        Spacer()
+
+                        Text("\(item.count)")
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+                            .fontWeight(.medium)
+                            .frame(width: 40, alignment: .trailing)
+
+                        Text(formatMinutes(item.minutes))
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+                            .fontWeight(.medium)
+                            .frame(width: 50, alignment: .trailing)
                     }
                 }
             }
+            .padding(.top, 4)
         }
         .padding()
         .glassCard()
+    }
+
+    // MARK: - Subviews
+
+    private func chartColumn(
+        data: [(type: BreakType, value: Double)],
+        centerLabel: String,
+        centerSubLabel: String,
+        title: String
+    ) -> some View {
+        VStack(spacing: 8) {
+            BreakPieChart(
+                data: data,
+                centerLabel: centerLabel,
+                centerSubLabel: centerSubLabel
+            )
+            .frame(maxWidth: .infinity)
+            .aspectRatio(1, contentMode: .fit)
+
+            Text(title)
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+                .fontWeight(.medium)
+        }
+        .frame(maxWidth: .infinity)
     }
 
     // MARK: - Helpers
