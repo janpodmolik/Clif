@@ -5,6 +5,7 @@ import SwiftUI
 struct HomeScreen: View {
     @Environment(PetManager.self) private var petManager
     @Environment(EssencePickerCoordinator.self) private var essenceCoordinator
+    @Environment(CreatePetCoordinator.self) private var createPetCoordinator
     @Environment(\.colorScheme) private var colorScheme
 
     @State private var windRhythm = WindRhythm()
@@ -28,6 +29,10 @@ struct HomeScreen: View {
     private var petDropFrame: CGRect? {
         guard petFrame != .zero else { return nil }
         return petFrame.insetBy(dx: -40, dy: -40)
+    }
+
+    private func updatePetDropFrame() {
+        createPetCoordinator.petDropFrame = petDropFrame
     }
 
     var body: some View {
@@ -57,6 +62,9 @@ struct HomeScreen: View {
         }
         .onDisappear {
             windRhythm.stop()
+        }
+        .onChange(of: petFrame) { _, _ in
+            updatePetDropFrame()
         }
     }
 
@@ -194,4 +202,5 @@ private struct HomeCardBackgroundModifier: ViewModifier {
     HomeScreen()
         .environment(PetManager.mock())
         .environment(EssencePickerCoordinator())
+        .environment(CreatePetCoordinator())
 }

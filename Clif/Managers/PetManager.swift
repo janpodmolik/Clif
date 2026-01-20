@@ -34,13 +34,19 @@ final class PetManager {
 
     /// Creates a new Daily pet (starts as blob).
     @discardableResult
-    func createDaily(name: String, purpose: String?, dailyLimitMinutes: Int) -> DailyPet {
+    func createDaily(
+        name: String,
+        purpose: String?,
+        dailyLimitMinutes: Int,
+        limitedSources: [LimitedSource] = []
+    ) -> DailyPet {
         let pet = DailyPet(
             name: name,
             evolutionHistory: EvolutionHistory(),
             purpose: purpose,
             todayUsedMinutes: 0,
-            dailyLimitMinutes: dailyLimitMinutes
+            dailyLimitMinutes: dailyLimitMinutes,
+            limitedSources: limitedSources
         )
         pets.append(.daily(pet))
         saveActivePets()
@@ -49,12 +55,18 @@ final class PetManager {
 
     /// Creates a new Dynamic pet (starts as blob).
     @discardableResult
-    func createDynamic(name: String, purpose: String?, config: DynamicModeConfig = .default) -> DynamicPet {
+    func createDynamic(
+        name: String,
+        purpose: String?,
+        config: DynamicModeConfig = .default,
+        limitedSources: [LimitedSource] = []
+    ) -> DynamicPet {
         let pet = DynamicPet(
             name: name,
             evolutionHistory: EvolutionHistory(),
             purpose: purpose,
-            config: config
+            config: config,
+            limitedSources: limitedSources
         )
         pets.append(.dynamic(pet))
         saveActivePets()

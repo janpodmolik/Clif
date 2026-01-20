@@ -35,8 +35,8 @@ struct LimitedSourcesPreview: View {
             // Apps: max 3 icons with overlap + remaining count
             if !applicationTokens.isEmpty {
                 HStack(spacing: -6) {
-                    ForEach(displayAppTokens.indices, id: \.self) { index in
-                        Label(displayAppTokens[index])
+                    ForEach(displayAppTokens, id: \.self) { token in
+                        Label(token)
                             .labelStyle(.iconOnly)
                             .frame(width: iconSize, height: iconSize)
                             .background(.ultraThinMaterial)

@@ -35,6 +35,7 @@ struct ContentView: View {
     @State private var showSearch = false
     @State private var showPremium = false
     @State private var essenceCoordinator = EssencePickerCoordinator()
+    @State private var createPetCoordinator = CreatePetCoordinator()
     @State private var showMockSheet = false
 
     @Namespace private var tabIndicatorNamespace
@@ -68,8 +69,10 @@ struct ContentView: View {
             }
 
             EssencePickerOverlay()
+            CreatePetOverlay()
         }
         .environment(essenceCoordinator)
+        .environment(createPetCoordinator)
         .preferredColorScheme(isDarkModeEnabled ? .dark : .light)
         .onReceive(NotificationCenter.default.publisher(for: .selectPet)) { _ in
             activeTab = .home
@@ -185,9 +188,9 @@ struct ContentView: View {
         UIImpactFeedbackGenerator(style: .light).impactOccurred()
         switch activeTab {
         case .home:
-            #if DEBUG
-            showPetDebug = true
-            #endif
+            createPetCoordinator.show(petDropFrame: nil) { _ in
+                // Pet created - could navigate or show success
+            }
         case .overview:
             showSearch = true
         case .profile:
