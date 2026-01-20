@@ -53,6 +53,14 @@ final class DailyPet: Identifiable, PetPresentable, PetWithSources {
     func blowAway() {
         guard !isBlown else { return }
         evolutionHistory.markAsBlown()
+
+        // Log snapshot
+        let windPointsValue = Double(windProgress * 100)
+        SnapshotLogging.logBlowAway(
+            petId: id,
+            mode: .daily,
+            windPoints: windPointsValue
+        )
     }
 
     // MARK: - Init

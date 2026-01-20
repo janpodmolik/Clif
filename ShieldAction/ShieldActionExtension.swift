@@ -1,3 +1,4 @@
+import DeviceActivity
 import ManagedSettings
 import UserNotifications
 import os.log
@@ -7,6 +8,7 @@ import os.log
 class ShieldActionExtension: ShieldActionDelegate {
 
     let store = ManagedSettingsStore()
+    let center = DeviceActivityCenter()
     let logger = Logger(subsystem: "com.janpodmolik.Clif.ShieldAction", category: "ShieldAction")
 
     // MARK: - Notifications
@@ -91,6 +93,45 @@ class ShieldActionExtension: ShieldActionDelegate {
         }
     }
 
+    // MARK: - Break Handling
+
+    /// Checks if user is currently on a break and logs breakFailed if violated.
+    private func handlePotentialBreakViolation() {
+        // If there's an active break, opening a shielded app means break was violated
+        guard let breakStartedAt = SharedDefaults.breakStartedAt,
+              let petId = SharedDefaults.monitoredPetId,
+              let mode = SharedDefaults.monitoredPetMode else {
+            return
+        }
+
+        let actualMinutes = Int(Date().timeIntervalSince(breakStartedAt) / 60)
+        let windPoints = SharedDefaults.monitoredWindPoints
+
+        let event = SnapshotEvent(
+            petId: petId,
+            mode: mode,
+            windPoints: windPoints,
+            eventType: .breakFailed(actualMinutes: actualMinutes)
+        )
+
+        SnapshotStore.shared.appendSync(event)
+        SharedDefaults.breakStartedAt = nil
+
+        logger.info("Break violated after \(actualMinutes) minutes - logged breakFailed")
+    }
+
+    /// Clears all shields and optionally requests monitoring restart.
+    private func clearAllShieldsAndRequestRestart() {
+        store.shield.applications = nil
+        store.shield.applicationCategories = nil
+        store.shield.webDomains = nil
+
+        // Set flag for main app to restart monitoring on next launch
+        SharedDefaults.shouldRestartMonitoring = true
+
+        logger.info("Cleared all shields, set shouldRestartMonitoring flag")
+    }
+
     // MARK: - ShieldActionDelegate
 
     override func handle(action: ShieldAction, for application: ApplicationToken, completionHandler: @escaping (ShieldActionResponse) -> Void) {
@@ -106,6 +147,10 @@ class ShieldActionExtension: ShieldActionDelegate {
         case .secondaryButtonPressed:
             // Unlock - removes shield from this app, user stays in app
             logger.info("Secondary button (Unlock) pressed - unlocking app")
+
+            // Check if this violates an active break
+            handlePotentialBreakViolation()
+
             unlockApplication(application)
             sendNotification(title: "App unlocked", body: "Tap to track in Clif")
             completionHandler(.defer) // .defer keeps user in app after unlock
@@ -127,6 +172,7 @@ class ShieldActionExtension: ShieldActionDelegate {
 
         case .secondaryButtonPressed:
             logger.info("Secondary button (Unlock) pressed for web domain")
+            handlePotentialBreakViolation()
             unlockWebDomain(webDomain)
             sendNotification(title: "Web domain unlocked", body: "Tap to track in Clif")
             completionHandler(.defer)
@@ -147,6 +193,7 @@ class ShieldActionExtension: ShieldActionDelegate {
 
         case .secondaryButtonPressed:
             logger.info("Secondary button (Unlock) pressed for category")
+            handlePotentialBreakViolation()
             unlockCategory(category)
             sendNotification(title: "Category unlocked", body: "Tap to track in Clif")
             completionHandler(.defer)

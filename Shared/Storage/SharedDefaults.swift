@@ -111,6 +111,49 @@ struct SharedDefaults {
         set { defaults?.set(newValue, forKey: DefaultsKeys.notificationLastMinuteSent) }
     }
 
+    // MARK: - Monitoring Context (lightweight data for extensions to create snapshots)
+
+    /// Pet ID currently being monitored (set by main app when starting monitoring).
+    static var monitoredPetId: UUID? {
+        get {
+            guard let string = defaults?.string(forKey: DefaultsKeys.monitoredPetId) else { return nil }
+            return UUID(uuidString: string)
+        }
+        set {
+            defaults?.set(newValue?.uuidString, forKey: DefaultsKeys.monitoredPetId)
+        }
+    }
+
+    /// Pet mode currently being monitored (daily or dynamic).
+    static var monitoredPetMode: PetMode? {
+        get {
+            guard let string = defaults?.string(forKey: DefaultsKeys.monitoredPetMode) else { return nil }
+            return PetMode(rawValue: string)
+        }
+        set {
+            defaults?.set(newValue?.rawValue, forKey: DefaultsKeys.monitoredPetMode)
+        }
+    }
+
+    /// Current wind points for the monitored pet (updated by main app).
+    static var monitoredWindPoints: Double {
+        get { defaults?.double(forKey: DefaultsKeys.monitoredWindPoints) ?? 0 }
+        set { defaults?.set(newValue, forKey: DefaultsKeys.monitoredWindPoints) }
+    }
+
+    /// Timestamp when current break started (for calculating actualMinutes on break end).
+    static var breakStartedAt: Date? {
+        get { defaults?.object(forKey: DefaultsKeys.breakStartedAt) as? Date }
+        set { defaults?.set(newValue, forKey: DefaultsKeys.breakStartedAt) }
+    }
+
+    /// Flag set by ShieldAction when it can't restart monitoring directly.
+    /// Main app checks this on launch and restarts monitoring if true.
+    static var shouldRestartMonitoring: Bool {
+        get { defaults?.bool(forKey: DefaultsKeys.shouldRestartMonitoring) ?? false }
+        set { defaults?.set(newValue, forKey: DefaultsKeys.shouldRestartMonitoring) }
+    }
+
     // MARK: - Raw Data Access (for types not available in extensions)
 
     static func data(forKey key: String) -> Data? {

@@ -53,10 +53,3 @@ struct SnapshotEvent: Codable, Identifiable, Equatable {
 enum SnapshotSchema {
     static let currentVersion = 1
 }
-
-// MARK: - Pet Mode
-
-enum PetMode: String, Codable, Equatable {
-    case daily
-    case dynamic
-}

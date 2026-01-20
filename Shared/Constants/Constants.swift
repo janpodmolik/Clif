@@ -21,8 +21,14 @@ enum AppConstants {
 
     // MARK: - Monitoring
 
-    /// Percentage thresholds for monitoring events
-    static let monitoringThresholds = [50, 90, 100]
+    /// Daily mode: percentage thresholds for monitoring events (10% intervals)
+    static let dailyThresholdPercentages = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
+
+    /// Daily mode: percentage at which shield activates
+    static let shieldActivationPercentage = 90
+
+    /// Dynamic mode: maximum thresholds per schedule (DeviceActivity API limit is ~20)
+    static let maxDynamicThresholds = 20
 
     // MARK: - UI
 
@@ -52,4 +58,12 @@ enum DefaultsKeys {
 
     // Legacy key - now using separate keys above
     static let archivedPets = "archivedPets"
+
+    // MARK: - Monitoring Context (lightweight data for extensions)
+
+    static let monitoredPetId = "monitoredPetId"
+    static let monitoredPetMode = "monitoredPetMode"
+    static let monitoredWindPoints = "monitoredWindPoints"
+    static let breakStartedAt = "breakStartedAt"
+    static let shouldRestartMonitoring = "shouldRestartMonitoring"
 }

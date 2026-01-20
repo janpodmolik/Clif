@@ -75,6 +75,24 @@ extension ActiveBreak {
     }
 }
 
+// MARK: - Snapshot Conversion
+
+extension ActiveBreak {
+    /// Converts to BreakTypePayload for snapshot logging.
+    func toSnapshotPayload() -> BreakTypePayload {
+        let plannedMinutes = plannedDuration.map { Int($0 / 60) }
+
+        switch type {
+        case .free:
+            return .free
+        case .committed:
+            return .committed(plannedMinutes: plannedMinutes ?? 0)
+        case .hardcore:
+            return .hardcore(plannedMinutes: plannedMinutes ?? 0)
+        }
+    }
+}
+
 // MARK: - Mock
 
 extension ActiveBreak {

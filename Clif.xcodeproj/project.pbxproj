@@ -13,6 +13,15 @@
 		B4167E5D2F1FE73400D89B36 /* SnapshotEventType.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4167E5B2F1FE73400D89B36 /* SnapshotEventType.swift */; };
 		B4167E5F2F1FEF4E00D89B36 /* SnapshotStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4167E5E2F1FEF4E00D89B36 /* SnapshotStore.swift */; };
 		B4167E602F1FEF4E00D89B36 /* SnapshotStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4167E5E2F1FEF4E00D89B36 /* SnapshotStore.swift */; };
+		B4167E612F1FF91200D89B36 /* SnapshotEventType.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4167E5B2F1FE73400D89B36 /* SnapshotEventType.swift */; };
+		B4167E622F1FF91800D89B36 /* SnapshotEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4167E532F1FE2D800D89B36 /* SnapshotEvent.swift */; };
+		B4167E632F1FF92500D89B36 /* SnapshotStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4167E5E2F1FEF4E00D89B36 /* SnapshotStore.swift */; };
+		B4167E652F1FF93800D89B36 /* SnapshotLogging.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4167E642F1FF93800D89B36 /* SnapshotLogging.swift */; };
+		B42CF1D32F1FF9E600FBCE5F /* PetMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = B42CF1D22F1FF9E600FBCE5F /* PetMode.swift */; };
+		B42CF1D42F1FF9E600FBCE5F /* PetMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = B42CF1D22F1FF9E600FBCE5F /* PetMode.swift */; };
+		B42CF1D52F1FF9E600FBCE5F /* PetMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = B42CF1D22F1FF9E600FBCE5F /* PetMode.swift */; };
+		B42CF1D62F1FFA5400FBCE5F /* PetMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = B42CF1D22F1FF9E600FBCE5F /* PetMode.swift */; };
+		B42CF1D72F1FFA9900FBCE5F /* PetMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = B42CF1D22F1FF9E600FBCE5F /* PetMode.swift */; };
 		B45862152EE5B92C0088CB78 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = B45862142EE5B92C0088CB78 /* Constants.swift */; };
 		B45862162EE5B92C0088CB78 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = B45862142EE5B92C0088CB78 /* Constants.swift */; };
 		B45862172EE5B92C0088CB78 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = B45862142EE5B92C0088CB78 /* Constants.swift */; };
@@ -130,6 +139,8 @@
 		B4167E532F1FE2D800D89B36 /* SnapshotEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SnapshotEvent.swift; sourceTree = "<group>"; };
 		B4167E5B2F1FE73400D89B36 /* SnapshotEventType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SnapshotEventType.swift; sourceTree = "<group>"; };
 		B4167E5E2F1FEF4E00D89B36 /* SnapshotStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SnapshotStore.swift; sourceTree = "<group>"; };
+		B4167E642F1FF93800D89B36 /* SnapshotLogging.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SnapshotLogging.swift; sourceTree = "<group>"; };
+		B42CF1D22F1FF9E600FBCE5F /* PetMode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PetMode.swift; sourceTree = "<group>"; };
 		B45862142EE5B92C0088CB78 /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
 		B45862302EE5F6F80088CB78 /* DeviceActivityReport.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.extensionkit-extension"; includeInIndex = 0; path = DeviceActivityReport.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		B45862422EE5FAF60088CB78 /* ActivityReportContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityReportContext.swift; sourceTree = "<group>"; };
@@ -329,6 +340,7 @@
 		B43998432EE9FCC80049445F /* Storage */ = {
 			isa = PBXGroup;
 			children = (
+				B4167E642F1FF93800D89B36 /* SnapshotLogging.swift */,
 				B4167E5E2F1FEF4E00D89B36 /* SnapshotStore.swift */,
 				B4924AF52EE5807E0033475C /* SharedDefaults.swift */,
 			);
@@ -346,6 +358,7 @@
 		B43998452EE9FCE40049445F /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				B42CF1D22F1FF9E600FBCE5F /* PetMode.swift */,
 				B4167E542F1FE2D800D89B36 /* Snapshot */,
 				B47A5F2A2F152D850068232C /* FullUsageStats.swift */,
 				B4ANI0002F0E00010001B000 /* Animation */,
@@ -627,6 +640,7 @@
 			files = (
 				B4167E5D2F1FE73400D89B36 /* SnapshotEventType.swift in Sources */,
 				B4167E5F2F1FEF4E00D89B36 /* SnapshotStore.swift in Sources */,
+				B4167E652F1FF93800D89B36 /* SnapshotLogging.swift in Sources */,
 				B4167E582F1FE2D800D89B36 /* SnapshotEvent.swift in Sources */,
 				B4924AFB2EE5807E0033475C /* SharedDefaults.swift in Sources */,
 				B4D351262F123DD00076C09B /* StatType.swift in Sources */,
@@ -646,6 +660,7 @@
 				B4ANI1012F0E00010001B001 /* IdleConfig.swift in Sources */,
 				B4ANI1022F0E00010001B002 /* TapAnimationType.swift in Sources */,
 				B4ANI1032F0E00010001B003 /* TapConfig.swift in Sources */,
+				B42CF1D32F1FF9E600FBCE5F /* PetMode.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -655,6 +670,7 @@
 			files = (
 				B4F8F9EC2FEC35C900E9E6D8 /* Constants.swift in Sources */,
 				B4F8F9EB2FEC35C900E9E6D8 /* SharedDefaults.swift in Sources */,
+				B42CF1D72F1FFA9900FBCE5F /* PetMode.swift in Sources */,
 				B45862432EE5FAF60088CB78 /* ActivityReportContext.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -667,6 +683,7 @@
 				B45862172EE5B92C0088CB78 /* Constants.swift in Sources */,
 				B4167E552F1FE2D800D89B36 /* SnapshotEvent.swift in Sources */,
 				B4167E5C2F1FE73400D89B36 /* SnapshotEventType.swift in Sources */,
+				B42CF1D52F1FF9E600FBCE5F /* PetMode.swift in Sources */,
 				B4167E602F1FEF4E00D89B36 /* SnapshotStore.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -680,6 +697,7 @@
 				B49387992F0E428B0090C730 /* WindConfig.swift in Sources */,
 				B493879B2F0E428B0090C730 /* WindLevel.swift in Sources */,
 				B45862152EE5B92C0088CB78 /* Constants.swift in Sources */,
+				B42CF1D62F1FFA5400FBCE5F /* PetMode.swift in Sources */,
 				B4EVO2012F0E00010001A001 /* Blob.swift in Sources */,
 				B4EVO2022F0E00010001A002 /* EvolutionPhase.swift in Sources */,
 				B4EVO2032F0E00010001A003 /* EvolutionPath.swift in Sources */,
@@ -697,6 +715,10 @@
 			files = (
 				B4C4C09F2EE7FEFF00E469E8 /* SharedDefaults.swift in Sources */,
 				B4C4C0A02EE7FF0900E469E8 /* Constants.swift in Sources */,
+				B4167E612F1FF91200D89B36 /* SnapshotEventType.swift in Sources */,
+				B4167E622F1FF91800D89B36 /* SnapshotEvent.swift in Sources */,
+				B42CF1D42F1FF9E600FBCE5F /* PetMode.swift in Sources */,
+				B4167E632F1FF92500D89B36 /* SnapshotStore.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

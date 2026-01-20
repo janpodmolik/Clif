@@ -93,33 +93,90 @@ final class ScreenTimeManager: ObservableObject {
     }
     
     // MARK: - Monitoring
-    
-    func startMonitoring() {
-        let limitMinutes = SharedDefaults.dailyLimitMinutes
+
+    /// Starts monitoring for a specific pet. Updates SharedDefaults with monitoring context.
+    /// - Parameters:
+    ///   - petId: UUID of the pet being monitored
+    ///   - mode: Pet mode (daily or dynamic)
+    ///   - limitMinutes: Screen time limit in minutes
+    ///   - windPoints: Current wind points for snapshot logging
+    func startMonitoring(petId: UUID, mode: PetMode, limitMinutes: Int, windPoints: Double) {
         let limitSeconds = limitMinutes * 60
-        
+
         let appCount = activitySelection.applicationTokens.count
         let catCount = activitySelection.categoryTokens.count
         let webCount = activitySelection.webDomainTokens.count
-        
+
         guard appCount > 0 || catCount > 0 || webCount > 0 else {
             return
         }
-        
+
+        // Update monitoring context for extensions
+        SharedDefaults.monitoredPetId = petId
+        SharedDefaults.monitoredPetMode = mode
+        SharedDefaults.monitoredWindPoints = windPoints
+        SharedDefaults.dailyLimitMinutes = limitMinutes
+
         let schedule = DeviceActivitySchedule(
             intervalStart: DateComponents(hour: 0, minute: 0),
             intervalEnd: DateComponents(hour: 23, minute: 59),
             repeats: true
         )
-        
+
+        let events = buildEvents(for: mode, limitSeconds: limitSeconds)
+
+        do {
+            center.stopMonitoring()
+            try center.startMonitoring(.daily, during: schedule, events: events)
+            #if DEBUG
+            print("[ScreenTimeManager] Started \(mode.rawValue) monitoring with \(events.count) events for pet \(petId)")
+            #endif
+        } catch {
+            #if DEBUG
+            print("[ScreenTimeManager] Failed to start monitoring: \(error.localizedDescription)")
+            #endif
+        }
+    }
+
+    /// Legacy method for backwards compatibility. Uses Daily mode with default limit.
+    func startMonitoring() {
+        let limitMinutes = SharedDefaults.dailyLimitMinutes
+        let petId = SharedDefaults.monitoredPetId ?? UUID()
+        let mode = SharedDefaults.monitoredPetMode ?? .daily
+        let windPoints = SharedDefaults.monitoredWindPoints
+
+        startMonitoring(petId: petId, mode: mode, limitMinutes: limitMinutes, windPoints: windPoints)
+    }
+
+    /// Stops all monitoring and clears monitoring context.
+    func stopMonitoring() {
+        center.stopMonitoring()
+        SharedDefaults.monitoredPetId = nil
+        SharedDefaults.monitoredPetMode = nil
+        #if DEBUG
+        print("[ScreenTimeManager] Stopped monitoring")
+        #endif
+    }
+
+    // MARK: - Event Building
+
+    private func buildEvents(for mode: PetMode, limitSeconds: Int) -> [DeviceActivityEvent.Name: DeviceActivityEvent] {
+        switch mode {
+        case .daily:
+            return buildDailyEvents(limitSeconds: limitSeconds)
+        case .dynamic:
+            return buildDynamicEvents(limitSeconds: limitSeconds)
+        }
+    }
+
+    /// Daily mode: percentage thresholds + "1 minute before limit"
+    private func buildDailyEvents(limitSeconds: Int) -> [DeviceActivityEvent.Name: DeviceActivityEvent] {
         var events: [DeviceActivityEvent.Name: DeviceActivityEvent] = [:]
-        // Track only meaningful thresholds to reduce churn
-        let checkpoints = AppConstants.monitoringThresholds
-        
-        for percentage in checkpoints {
+
+        for percentage in AppConstants.dailyThresholdPercentages {
             let thresholdSeconds = max(AppConstants.minimumThresholdSeconds, (limitSeconds * percentage) / 100)
             let eventName = DeviceActivityEvent.Name("threshold_\(percentage)")
-            
+
             events[eventName] = DeviceActivityEvent(
                 applications: activitySelection.applicationTokens,
                 categories: activitySelection.categoryTokens,
@@ -127,29 +184,43 @@ final class ScreenTimeManager: ObservableObject {
                 threshold: DateComponents(minute: thresholdSeconds / 60, second: thresholdSeconds % 60)
             )
         }
-        
-        // Add 11th event: "1 minute remaining" notification
+
+        // "1 minute remaining" event
         let oneMinuteBeforeLimitSeconds = max(0, limitSeconds - 60)
         if oneMinuteBeforeLimitSeconds > 0 {
-            let lastMinuteEventName = DeviceActivityEvent.Name("lastMinute")
-            events[lastMinuteEventName] = DeviceActivityEvent(
+            events[DeviceActivityEvent.Name("lastMinute")] = DeviceActivityEvent(
                 applications: activitySelection.applicationTokens,
                 categories: activitySelection.categoryTokens,
                 webDomains: activitySelection.webDomainTokens,
                 threshold: DateComponents(minute: oneMinuteBeforeLimitSeconds / 60, second: oneMinuteBeforeLimitSeconds % 60)
             )
         }
-        
-        do {
-            center.stopMonitoring()
-            try center.startMonitoring(.daily, during: schedule, events: events)
-            #if DEBUG
-            print("[ScreenTimeManager] Started monitoring with \(events.count) events")
-            #endif
-        } catch {
-            #if DEBUG
-            print("[ScreenTimeManager] Failed to start monitoring: \(error.localizedDescription)")
-            #endif
+
+        return events
+    }
+
+    /// Dynamic mode: per-minute thresholds for granular windPoints tracking
+    private func buildDynamicEvents(limitSeconds: Int) -> [DeviceActivityEvent.Name: DeviceActivityEvent] {
+        var events: [DeviceActivityEvent.Name: DeviceActivityEvent] = [:]
+
+        let limitMinutes = limitSeconds / 60
+
+        // Create threshold for each minute (1, 2, 3, ..., limitMinutes)
+        // Cap at maxDynamicThresholds due to DeviceActivity API limit
+        let maxThresholds = min(limitMinutes, AppConstants.maxDynamicThresholds)
+
+        for minute in 1...maxThresholds {
+            let thresholdSeconds = minute * 60
+            let eventName = DeviceActivityEvent.Name("minute_\(minute)")
+
+            events[eventName] = DeviceActivityEvent(
+                applications: activitySelection.applicationTokens,
+                categories: activitySelection.categoryTokens,
+                webDomains: activitySelection.webDomainTokens,
+                threshold: DateComponents(minute: minute)
+            )
         }
+
+        return events
     }
 }

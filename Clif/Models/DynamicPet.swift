@@ -74,6 +74,9 @@ final class DynamicPet: Identifiable, PetPresentable, PetWithSources {
         windPoints = min(windPoints, 100)
         lastThresholdMinutes = newThresholdMinutes
 
+        // Keep SharedDefaults in sync for extension snapshots
+        SnapshotLogging.updateWindPoints(windPoints)
+
         if windPoints >= 100 {
             blowAway()
         }
@@ -82,12 +85,22 @@ final class DynamicPet: Identifiable, PetPresentable, PetWithSources {
     /// Starts a new break session.
     func startBreak(_ breakSession: ActiveBreak) {
         activeBreak = breakSession
+
+        // Log snapshot
+        let breakTypePayload = breakSession.toSnapshotPayload()
+        SnapshotLogging.logBreakStarted(
+            petId: id,
+            mode: .dynamic,
+            windPoints: windPoints,
+            breakType: breakTypePayload
+        )
     }
 
     /// Ends current break successfully, applying wind decrease.
     func endBreak() {
         guard let breakSession = activeBreak else { return }
 
+        let actualMinutes = Int(breakSession.elapsedMinutes)
         let decreased = breakSession.windDecreased(for: config)
         let completed = CompletedBreak(
             type: breakSession.type,
@@ -101,12 +114,21 @@ final class DynamicPet: Identifiable, PetPresentable, PetWithSources {
 
         windPoints = max(windPoints - decreased, 0)
         activeBreak = nil
+
+        // Log snapshot
+        SnapshotLogging.logBreakEnded(
+            petId: id,
+            mode: .dynamic,
+            windPoints: windPoints,
+            actualMinutes: actualMinutes
+        )
     }
 
     /// Fails current break (user violated it).
     func failBreak() {
         guard let breakSession = activeBreak else { return }
 
+        let actualMinutes = Int(breakSession.elapsedMinutes)
         let completed = CompletedBreak(
             type: breakSession.type,
             startedAt: breakSession.startedAt,
@@ -125,6 +147,14 @@ final class DynamicPet: Identifiable, PetPresentable, PetWithSources {
         // Free and committed: no wind decrease (windDecreased already set to 0)
 
         activeBreak = nil
+
+        // Log snapshot
+        SnapshotLogging.logBreakFailed(
+            petId: id,
+            mode: .dynamic,
+            windPoints: windPoints,
+            actualMinutes: actualMinutes
+        )
     }
 
     /// Applies essence to blob.
@@ -144,6 +174,13 @@ final class DynamicPet: Identifiable, PetPresentable, PetWithSources {
     func blowAway() {
         guard !isBlown else { return }
         evolutionHistory.markAsBlown()
+
+        // Log snapshot
+        SnapshotLogging.logBlowAway(
+            petId: id,
+            mode: .dynamic,
+            windPoints: windPoints
+        )
     }
 
     /// Resets wind to 0 (for daily reset).
