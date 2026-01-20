@@ -30,7 +30,7 @@ struct ActiveBreak: Codable, Equatable {
     }
 
     /// Calculates wind decrease based on config's fallRate and break type's multiplier.
-    func windDecreased(for config: DynamicWindConfig) -> Double {
+    func windDecreased(for config: DynamicModeConfig) -> Double {
         elapsedMinutes * config.fallRate * type.fallRateMultiplier
     }
 

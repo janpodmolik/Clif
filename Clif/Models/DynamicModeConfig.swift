@@ -2,7 +2,7 @@ import Foundation
 
 /// Wind difficulty presets for Dynamic mode.
 /// Each preset defines how quickly wind rises during app usage and falls during breaks.
-enum DynamicWindConfig: String, Codable, CaseIterable {
+enum DynamicModeConfig: String, Codable, CaseIterable {
     /// Low pressure mode for beginners: 15 min to blow away, 30 min to recover.
     case gentle
 
@@ -65,6 +65,6 @@ enum DynamicWindConfig: String, Codable, CaseIterable {
 
 // MARK: - Default
 
-extension DynamicWindConfig {
-    static let `default`: DynamicWindConfig = .balanced
+extension DynamicModeConfig {
+    static let `default`: DynamicModeConfig = .balanced
 }

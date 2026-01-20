@@ -28,7 +28,7 @@ struct ArchivedDynamicPet: Codable, Identifiable, Equatable, PetWithSources {
     let totalWindDecreased: Double
 
     /// Configuration used for this pet.
-    let config: DynamicWindConfig
+    let config: DynamicModeConfig
 
     // MARK: - Computed
 
@@ -64,7 +64,7 @@ struct ArchivedDynamicPet: Codable, Identifiable, Equatable, PetWithSources {
         peakWindPoints: Double = 0,
         totalBreakMinutes: Double = 0,
         totalWindDecreased: Double = 0,
-        config: DynamicWindConfig = .default
+        config: DynamicModeConfig = .default
     ) {
         self.id = id
         self.name = name

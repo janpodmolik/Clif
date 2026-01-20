@@ -37,7 +37,7 @@ struct PetDetailScreenDebug: View {
     // MARK: - Dynamic Mode State
 
     @State private var windPoints: Double = 45
-    @State private var windConfig: DynamicWindConfig = .balanced
+    @State private var windConfig: DynamicModeConfig = .balanced
     @State private var hasActiveBreak: Bool = false
     @State private var breakType: BreakType = .committed
     @State private var breakMinutesAgo: Double = 5
@@ -79,7 +79,7 @@ struct PetDetailScreenDebug: View {
         WindLevel.from(progress: dynamicWindProgress)
     }
 
-    private var dynamicConfig: DynamicWindConfig {
+    private var dynamicConfig: DynamicModeConfig {
         windConfig
     }
 
@@ -476,7 +476,7 @@ struct PetDetailScreenDebug: View {
                         .foregroundStyle(.secondary)
 
                     Picker("Config", selection: $windConfig) {
-                        ForEach(DynamicWindConfig.allCases, id: \.self) { config in
+                        ForEach(DynamicModeConfig.allCases, id: \.self) { config in
                             Text(config.displayName).tag(config)
                         }
                     }

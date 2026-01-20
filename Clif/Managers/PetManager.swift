@@ -49,7 +49,7 @@ final class PetManager {
 
     /// Creates a new Dynamic pet (starts as blob).
     @discardableResult
-    func createDynamic(name: String, purpose: String?, config: DynamicWindConfig = .default) -> DynamicPet {
+    func createDynamic(name: String, purpose: String?, config: DynamicModeConfig = .default) -> DynamicPet {
         let pet = DynamicPet(
             name: name,
             evolutionHistory: EvolutionHistory(),

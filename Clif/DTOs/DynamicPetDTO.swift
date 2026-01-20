@@ -9,7 +9,7 @@ struct DynamicPetDTO: Codable {
     let windPoints: Double
     let lastThresholdMinutes: Int
     let activeBreak: ActiveBreak?
-    let config: DynamicWindConfig
+    let config: DynamicModeConfig
     let dailyStats: [DailyUsageStat]
     let limitedSources: [LimitedSource]
     let breakHistory: [CompletedBreak]

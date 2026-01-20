@@ -19,7 +19,7 @@ final class DynamicPet: Identifiable, PetPresentable, PetWithSources {
     var activeBreak: ActiveBreak?
 
     /// Configuration for wind rise/fall behavior.
-    let config: DynamicWindConfig
+    let config: DynamicModeConfig
 
     // MARK: - PetWithSources
 
@@ -162,7 +162,7 @@ final class DynamicPet: Identifiable, PetPresentable, PetWithSources {
         windPoints: Double = 0,
         lastThresholdMinutes: Int = 0,
         activeBreak: ActiveBreak? = nil,
-        config: DynamicWindConfig = .default,
+        config: DynamicModeConfig = .default,
         dailyStats: [DailyUsageStat] = [],
         limitedSources: [LimitedSource] = [],
         breakHistory: [CompletedBreak] = []

@@ -7,7 +7,7 @@ enum BreakType: String, Codable, CaseIterable {
     case committed
     case hardcore
 
-    /// Multiplier applied to base fallRate from DynamicWindConfig.
+    /// Multiplier applied to base fallRate from DynamicModeConfig.
     /// Higher = faster wind decrease during break.
     var fallRateMultiplier: Double {
         switch self {

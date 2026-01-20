@@ -3,7 +3,7 @@ import SwiftUI
 struct DynamicStatusCard: View {
     let windProgress: CGFloat
     let windLevel: WindLevel
-    let config: DynamicWindConfig
+    let config: DynamicModeConfig
     var isBlownAway: Bool = false
     var activeBreak: ActiveBreak? = nil
     var currentWindPoints: Double = 0
