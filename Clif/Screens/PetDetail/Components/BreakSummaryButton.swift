@@ -1,7 +1,7 @@
 import SwiftUI
 
 /// Compact button to access break history for DynamicPet.
-struct BreakSummaryCard: View {
+struct BreakSummaryButton: View {
     let breakHistory: [CompletedBreak]
     var onTap: (() -> Void)?
 
@@ -14,7 +14,6 @@ struct BreakSummaryCard: View {
     private var totalMinutes: Double {
         breakHistory.reduce(0) { $0 + $1.durationMinutes }
     }
-
 
     // MARK: - Body
 
@@ -42,12 +41,12 @@ struct BreakSummaryCard: View {
 
                 if onTap != nil {
                     Image(systemName: "chevron.right")
-                        .font(.caption.weight(.semibold))
+                        .font(.body)
                         .foregroundStyle(.tertiary)
                 }
             }
-            .padding(.horizontal, 14)
-            .padding(.vertical, 12)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding()
         }
         .buttonStyle(.plain)
         .glassCard()
@@ -66,23 +65,11 @@ struct BreakSummaryCard: View {
     }
 }
 
-// MARK: - BreakType Color Extension
-
-private extension BreakType {
-    var color: Color {
-        switch self {
-        case .free: return .green
-        case .committed: return .orange
-        case .hardcore: return .red
-        }
-    }
-}
-
 // MARK: - Preview
 
 #if DEBUG
 #Preview("With Breaks") {
-    BreakSummaryCard(
+    BreakSummaryButton(
         breakHistory: CompletedBreak.mockList(),
         onTap: {}
     )
@@ -90,7 +77,7 @@ private extension BreakType {
 }
 
 #Preview("No Tap Action") {
-    BreakSummaryCard(
+    BreakSummaryButton(
         breakHistory: CompletedBreak.mockList()
     )
     .padding()

@@ -381,9 +381,9 @@ private struct BreakPieChart: View {
 private extension BreakType {
     var color: Color {
         switch self {
-        case .free: return .green
-        case .committed: return .orange
-        case .hardcore: return .red
+        case .free: return .cyan
+        case .committed: return .blue
+        case .hardcore: return .indigo
         }
     }
 }

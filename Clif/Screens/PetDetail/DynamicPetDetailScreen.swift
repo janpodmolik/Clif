@@ -95,7 +95,7 @@ struct DynamicPetDetailScreen: View {
                     }
 
                     if !pet.breakHistory.isEmpty {
-                        BreakSummaryCard(
+                        BreakSummaryButton(
                             breakHistory: pet.breakHistory,
                             onTap: { showBreakHistory = true }
                         )

@@ -46,7 +46,7 @@ struct DynamicPetArchivedDetailScreen: View {
                     TrendMiniChart(stats: pet.fullStats)
 
                     if !pet.breakHistory.isEmpty {
-                        BreakSummaryCard(
+                        BreakSummaryButton(
                             breakHistory: pet.breakHistory,
                             onTap: { showBreakHistory = true }
                         )
