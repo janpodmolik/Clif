@@ -37,7 +37,7 @@ struct PetDetailScreenDebug: View {
     // MARK: - Dynamic Mode State
 
     @State private var windPoints: Double = 45
-    @State private var riseRate: Double = 10.0
+    @State private var windConfig: DynamicWindConfig = .balanced
     @State private var hasActiveBreak: Bool = false
     @State private var breakType: BreakType = .committed
     @State private var breakMinutesAgo: Double = 5
@@ -80,7 +80,7 @@ struct PetDetailScreenDebug: View {
     }
 
     private var dynamicConfig: DynamicWindConfig {
-        DynamicWindConfig(riseRate: riseRate)
+        windConfig
     }
 
     private var activeBreak: ActiveBreak? {
@@ -471,18 +471,18 @@ struct PetDetailScreenDebug: View {
                         .tint(.orange)
                 }
 
-                VStack(alignment: .leading, spacing: 4) {
-                    HStack {
-                        Text("Rise Rate")
-                            .foregroundStyle(.secondary)
-                        Spacer()
-                        Text("\(Int(riseRate)) pts/min")
-                            .font(.system(.body, design: .monospaced))
-                    }
-                    Slider(value: $riseRate, in: 1...30, step: 1)
-                        .tint(.red)
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Wind Config")
+                        .foregroundStyle(.secondary)
 
-                    Text("Time to blow: \(Int(100 / riseRate)) min")
+                    Picker("Config", selection: $windConfig) {
+                        ForEach(DynamicWindConfig.allCases, id: \.self) { config in
+                            Text(config.displayName).tag(config)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+
+                    Text("Blow: \(Int(windConfig.minutesToBlowAway)) min • Recover: \(Int(windConfig.minutesToRecover)) min")
                         .font(.caption)
                         .foregroundStyle(.tertiary)
                 }
@@ -606,7 +606,7 @@ struct PetDetailScreenDebug: View {
                             Text("Wind Decrease")
                                 .foregroundStyle(.secondary)
                             Spacer()
-                            Text("-\(String(format: "%.1f", activeBreak.windDecreased)) pts")
+                            Text("-\(String(format: "%.1f", activeBreak.windDecreased(for: windConfig))) pts")
                                 .font(.system(.body, design: .monospaced))
                                 .foregroundStyle(.green)
                         }
@@ -749,7 +749,7 @@ struct PetDetailScreenDebug: View {
             currentPhase = 2
             totalDays = 14
             windPoints = 15
-            riseRate = 10
+            windConfig = .balanced
             hasActiveBreak = false
             isBlownAway = false
         }
@@ -763,7 +763,7 @@ struct PetDetailScreenDebug: View {
             currentPhase = 2
             totalDays = 10
             windPoints = 55
-            riseRate = 10
+            windConfig = .balanced
             hasActiveBreak = false
             isBlownAway = false
         }
@@ -776,7 +776,7 @@ struct PetDetailScreenDebug: View {
             isBlob = true
             totalDays = 1
             windPoints = 25
-            riseRate = 10
+            windConfig = .gentle
             hasActiveBreak = false
             isBlownAway = false
         }
@@ -790,7 +790,7 @@ struct PetDetailScreenDebug: View {
             currentPhase = 2
             totalDays = 8
             windPoints = 65
-            riseRate = 10
+            windConfig = .balanced
             hasActiveBreak = true
             breakType = .committed
             breakMinutesAgo = 10
@@ -807,7 +807,7 @@ struct PetDetailScreenDebug: View {
             currentPhase = 3
             totalDays = 5
             windPoints = 85
-            riseRate = 15
+            windConfig = .intense
             hasActiveBreak = false
             isBlownAway = false
         }
@@ -821,7 +821,7 @@ struct PetDetailScreenDebug: View {
             currentPhase = 3
             totalDays = 0
             windPoints = 100
-            riseRate = 10
+            windConfig = .balanced
             hasActiveBreak = false
             isBlownAway = true
         }

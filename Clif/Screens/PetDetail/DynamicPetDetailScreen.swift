@@ -44,6 +44,7 @@ struct DynamicPetDetailScreen: View {
                     DynamicStatusCard(
                         windProgress: pet.windProgress,
                         windLevel: pet.windLevel,
+                        config: pet.config,
                         isBlownAway: pet.isBlown,
                         activeBreak: pet.activeBreak,
                         currentWindPoints: pet.windPoints,

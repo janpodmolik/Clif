@@ -1,18 +1,19 @@
 import Foundation
 
 /// Types of breaks available in Dynamic Wind mode.
-/// Each type has different wind decrease rates and penalties for breaking early.
+/// Each type has different fall rate multipliers and penalties for breaking early.
 enum BreakType: String, Codable, CaseIterable {
     case free
     case committed
     case hardcore
 
-    /// Wind points decreased per minute during this break type.
-    var decreaseRate: Double {
+    /// Multiplier applied to base fallRate from DynamicWindConfig.
+    /// Higher = faster wind decrease during break.
+    var fallRateMultiplier: Double {
         switch self {
-        case .free: return 0.3
-        case .committed: return 0.6
-        case .hardcore: return 1.0
+        case .free: return 1.0
+        case .committed: return 1.25
+        case .hardcore: return 1.5
         }
     }
 

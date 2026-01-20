@@ -1,39 +1,70 @@
 import Foundation
 
-/// Configuration for Dynamic Wind mode behavior.
-struct DynamicWindConfig: Codable, Equatable {
-    /// Wind points gained per minute of blocked app usage.
-    /// Default: 10 (reaches 100 in 10 minutes)
-    var riseRate: Double
+/// Wind difficulty presets for Dynamic mode.
+/// Each preset defines how quickly wind rises during app usage and falls during breaks.
+enum DynamicWindConfig: String, Codable, CaseIterable {
+    /// Low pressure mode for beginners: 15 min to blow away, 30 min to recover.
+    case gentle
 
-    /// Whether wind resets to 0 at midnight.
-    /// Default: false (wind persists across days)
-    var dailyReset: Bool
+    /// Default balanced mode: 8 min to blow away, 20 min to recover.
+    case balanced
 
-    init(
-        riseRate: Double = 10.0,
-        dailyReset: Bool = false
-    ) {
-        self.riseRate = riseRate
-        self.dailyReset = dailyReset
+    /// High stakes mode: 5 min to blow away, 15 min to recover.
+    case intense
+
+    // MARK: - Wind Rise (during app usage)
+
+    /// Minutes of blocked app usage to reach blow away (wind 0 → 100).
+    var minutesToBlowAway: Double {
+        switch self {
+        case .gentle: return 15
+        case .balanced: return 8
+        case .intense: return 5
+        }
     }
 
-    /// Minutes of blocked app usage to reach blow away (wind = 100).
-    var minutesToBlowAway: Double {
-        guard riseRate > 0 else { return .infinity }
-        return 100 / riseRate
+    /// Wind points gained per minute of blocked app usage.
+    var riseRate: Double {
+        100 / minutesToBlowAway
+    }
+
+    // MARK: - Wind Fall (during breaks)
+
+    /// Minutes of break to fully recover (wind 100 → 0).
+    var minutesToRecover: Double {
+        switch self {
+        case .gentle: return 30
+        case .balanced: return 20
+        case .intense: return 15
+        }
+    }
+
+    /// Wind points decreased per minute during a break.
+    var fallRate: Double {
+        100 / minutesToRecover
+    }
+
+    // MARK: - Display
+
+    var displayName: String {
+        switch self {
+        case .gentle: return "Gentle"
+        case .balanced: return "Balanced"
+        case .intense: return "Intense"
+        }
+    }
+
+    var description: String {
+        switch self {
+        case .gentle: return "Low pressure, learning"
+        case .balanced: return "Real friction"
+        case .intense: return "High stakes"
+        }
     }
 }
 
-// MARK: - Presets
+// MARK: - Default
 
 extension DynamicWindConfig {
-    /// Default configuration: 10 wind/min, no daily reset.
-    static let `default` = DynamicWindConfig()
-
-    /// Relaxed configuration: 5 wind/min (20 min to blow away).
-    static let relaxed = DynamicWindConfig(riseRate: 5.0)
-
-    /// Strict configuration: 20 wind/min (5 min to blow away).
-    static let strict = DynamicWindConfig(riseRate: 20.0)
+    static let `default`: DynamicWindConfig = .balanced
 }

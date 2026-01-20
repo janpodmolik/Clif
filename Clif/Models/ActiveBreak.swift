@@ -24,19 +24,14 @@ struct ActiveBreak: Codable, Equatable {
         self.plannedDuration = plannedDuration
     }
 
-    /// Wind decrease rate per minute for this break.
-    var decreaseRate: Double {
-        type.decreaseRate
-    }
-
     /// Minutes elapsed since break started.
     var elapsedMinutes: Double {
         Date().timeIntervalSince(startedAt) / 60
     }
 
-    /// Wind points that should be decreased based on elapsed time.
-    var windDecreased: Double {
-        elapsedMinutes * decreaseRate
+    /// Calculates wind decrease based on config's fallRate and break type's multiplier.
+    func windDecreased(for config: DynamicWindConfig) -> Double {
+        elapsedMinutes * config.fallRate * type.fallRateMultiplier
     }
 
     /// Remaining time in seconds, if duration is set.

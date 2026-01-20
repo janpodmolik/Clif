@@ -88,17 +88,18 @@ final class DynamicPet: Identifiable, PetPresentable, PetWithSources {
     func endBreak() {
         guard let breakSession = activeBreak else { return }
 
+        let decreased = breakSession.windDecreased(for: config)
         let completed = CompletedBreak(
             type: breakSession.type,
             startedAt: breakSession.startedAt,
             endedAt: Date(),
             windAtStart: windPoints,
-            windDecreased: breakSession.windDecreased,
+            windDecreased: decreased,
             wasViolated: false
         )
         breakHistory.append(completed)
 
-        windPoints = max(windPoints - breakSession.windDecreased, 0)
+        windPoints = max(windPoints - decreased, 0)
         activeBreak = nil
     }
 

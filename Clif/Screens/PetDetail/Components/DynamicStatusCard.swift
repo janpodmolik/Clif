@@ -3,6 +3,7 @@ import SwiftUI
 struct DynamicStatusCard: View {
     let windProgress: CGFloat
     let windLevel: WindLevel
+    let config: DynamicWindConfig
     var isBlownAway: Bool = false
     var activeBreak: ActiveBreak? = nil
     var currentWindPoints: Double = 0
@@ -204,15 +205,16 @@ struct DynamicStatusCard: View {
     // MARK: - Break Calculations
 
     private func predictedWindAfter(_ activeBreak: ActiveBreak) -> Double {
-        max(currentWindPoints - activeBreak.windDecreased, 0)
+        max(currentWindPoints - activeBreak.windDecreased(for: config), 0)
     }
 
     private func minutesToZeroWind(_ activeBreak: ActiveBreak) -> Int? {
         guard activeBreak.type == .free else { return nil }
-        guard activeBreak.decreaseRate > 0 else { return nil }
-        let remainingWind = currentWindPoints - activeBreak.windDecreased
+        let effectiveRate = config.fallRate * activeBreak.type.fallRateMultiplier
+        guard effectiveRate > 0 else { return nil }
+        let remainingWind = currentWindPoints - activeBreak.windDecreased(for: config)
         guard remainingWind > 0 else { return 0 }
-        return Int(ceil(remainingWind / activeBreak.decreaseRate))
+        return Int(ceil(remainingWind / effectiveRate))
     }
 
     // MARK: - Formatters
@@ -454,6 +456,7 @@ private extension View {
     DynamicStatusCard(
         windProgress: 0.25,
         windLevel: .low,
+        config: .balanced,
         currentWindPoints: 25,
         timeToBlowAway: 7.5,
         onStartBreak: {}
@@ -465,6 +468,7 @@ private extension View {
     DynamicStatusCard(
         windProgress: 0.85,
         windLevel: .high,
+        config: .balanced,
         currentWindPoints: 85,
         timeToBlowAway: 1.5,
         onStartBreak: {}
@@ -476,6 +480,7 @@ private extension View {
     DynamicStatusCard(
         windProgress: 0.65,
         windLevel: .medium,
+        config: .balanced,
         activeBreak: .mock(type: .committed, minutesAgo: 10, durationMinutes: 30),
         currentWindPoints: 65,
         onStartBreak: {},
@@ -488,6 +493,7 @@ private extension View {
     DynamicStatusCard(
         windProgress: 0.45,
         windLevel: .low,
+        config: .balanced,
         activeBreak: .unlimitedFree(),
         currentWindPoints: 45,
         onStartBreak: {},
@@ -500,6 +506,7 @@ private extension View {
     DynamicStatusCard(
         windProgress: 0.80,
         windLevel: .high,
+        config: .intense,
         activeBreak: .mock(type: .hardcore, minutesAgo: 5, durationMinutes: 15),
         currentWindPoints: 80,
         onStartBreak: {},
@@ -512,6 +519,7 @@ private extension View {
     DynamicStatusCard(
         windProgress: 1.0,
         windLevel: .high,
+        config: .balanced,
         isBlownAway: true,
         onStartBreak: {}
     )
