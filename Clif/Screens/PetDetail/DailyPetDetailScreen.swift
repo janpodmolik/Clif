@@ -48,8 +48,9 @@ struct DailyPetDetailScreen: View {
                         mood: mood,
                         totalDays: pet.totalDays,
                         evolutionPhase: pet.currentPhase,
-                        purposeLabel: pet.purpose,
-                        createdAt: pet.evolutionHistory.createdAt
+                        purpose: pet.purpose,
+                        createdAt: pet.evolutionHistory.createdAt,
+                        modeInfo: PetModeInfo(from: pet)
                     )
 
                     if pet.isBlob {

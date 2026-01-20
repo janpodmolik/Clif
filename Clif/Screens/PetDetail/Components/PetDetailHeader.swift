@@ -5,8 +5,9 @@ struct PetDetailHeader: View {
     let mood: Mood
     let totalDays: Int
     let evolutionPhase: Int
-    let purposeLabel: String?
+    var purpose: String? = nil
     var createdAt: Date? = nil
+    var modeInfo: PetModeInfo? = nil
 
     private var formattedCreatedAt: String? {
         guard let createdAt else { return nil }
@@ -17,39 +18,45 @@ struct PetDetailHeader: View {
     }
 
     var body: some View {
-        HStack(alignment: .top) {
-            VStack(alignment: .leading, spacing: 4) {
-                HStack(spacing: 8) {
-                    Text(petName)
-                        .font(.title.weight(.bold))
+        VStack(spacing: 0) {
+            HStack(alignment: .top) {
+                VStack(alignment: .leading, spacing: 4) {
+                    HStack(spacing: 8) {
+                        Text(petName)
+                            .font(.title.weight(.bold))
 
-                    Text(mood.emoji)
-                        .font(.title2)
+                        Text(mood.emoji)
+                            .font(.title2)
+                    }
+
+                    if let purpose, !purpose.isEmpty {
+                        Text(purpose)
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                    }
+
+                    if let formattedCreatedAt {
+                        Text("Od \(formattedCreatedAt)")
+                            .font(.caption)
+                            .foregroundStyle(.tertiary)
+                    }
                 }
 
-                if let purposeLabel, !purposeLabel.isEmpty {
-                    Text(purposeLabel)
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                }
+                Spacer()
 
-                if let formattedCreatedAt {
-                    Text("Od \(formattedCreatedAt)")
-                        .font(.caption)
-                        .foregroundStyle(.tertiary)
+                VStack(alignment: .trailing, spacing: 8) {
+                    if evolutionPhase > 0 {
+                        evolutionBadge
+                    }
+                    daysBadge
                 }
             }
+            .padding()
 
-            Spacer()
-
-            VStack(alignment: .trailing, spacing: 8) {
-                if evolutionPhase > 0 {
-                    evolutionBadge
-                }
-                daysBadge
+            if let modeInfo {
+                PetModeInfoSection(modeInfo: modeInfo)
             }
         }
-        .padding()
         .glassCard()
     }
 
@@ -88,23 +95,49 @@ struct PetDetailHeader: View {
 }
 
 #if DEBUG
-#Preview {
+#Preview("With Mode Info - Daily") {
     VStack {
         PetDetailHeader(
             petName: "Fern",
             mood: .happy,
             totalDays: 12,
             evolutionPhase: 2,
-            purposeLabel: "Social Media",
-            createdAt: Calendar.current.date(byAdding: .day, value: -12, to: Date())
+            purpose: "Social Media",
+            createdAt: Calendar.current.date(byAdding: .day, value: -12, to: Date()),
+            modeInfo: .daily(.init(
+                dailyLimitMinutes: 90,
+                limitedSources: LimitedSource.mockList()
+            ))
         )
+    }
+    .padding()
+}
 
+#Preview("With Mode Info - Dynamic") {
+    VStack {
+        PetDetailHeader(
+            petName: "Storm",
+            mood: .neutral,
+            totalDays: 5,
+            evolutionPhase: 2,
+            purpose: "Gaming",
+            createdAt: Calendar.current.date(byAdding: .day, value: -5, to: Date()),
+            modeInfo: .dynamic(.init(
+                config: .intense,
+                limitedSources: LimitedSource.mockList()
+            ))
+        )
+    }
+    .padding()
+}
+
+#Preview("Without Mode Info") {
+    VStack {
         PetDetailHeader(
             petName: "Bloom",
             mood: .sad,
             totalDays: 1,
             evolutionPhase: 0,
-            purposeLabel: nil,
             createdAt: Calendar.current.date(byAdding: .day, value: -3, to: Date())
         )
     }

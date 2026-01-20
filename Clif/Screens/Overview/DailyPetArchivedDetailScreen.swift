@@ -18,10 +18,11 @@ struct DailyPetArchivedDetailScreen: View {
                         petName: pet.name,
                         totalDays: pet.totalDays,
                         evolutionPhase: pet.finalPhase,
-                        purposeLabel: pet.purpose,
                         createdAt: pet.evolutionHistory.createdAt,
                         isBlown: pet.isBlown,
-                        archivedAt: pet.archivedAt
+                        archivedAt: pet.archivedAt,
+                        purpose: pet.purpose,
+                        modeInfo: PetModeInfo(from: pet)
                     )
 
                     if pet.essence != nil {
@@ -53,10 +54,9 @@ struct DailyPetArchivedDetailScreen: View {
                     )
 
                     LimitedAppsButton(
-                        sources: pet.limitedSources
-                    ) {
-                        showAppUsageSheet = true
-                    }
+                        sources: pet.limitedSources,
+                        onTap: { showAppUsageSheet = true }
+                    )
                 }
                 .padding()
             }

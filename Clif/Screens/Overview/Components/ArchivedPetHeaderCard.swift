@@ -4,10 +4,11 @@ struct ArchivedPetHeaderCard: View {
     let petName: String
     let totalDays: Int
     let evolutionPhase: Int
-    let purposeLabel: String?
     let createdAt: Date
     let isBlown: Bool
     let archivedAt: Date
+    var purpose: String? = nil
+    var modeInfo: PetModeInfo? = nil
 
     private var statusText: String {
         isBlown ? "Odfouknut" : "Plně evolvován"
@@ -60,8 +61,8 @@ struct ArchivedPetHeaderCard: View {
                     Text(petName)
                         .font(.title.weight(.bold))
 
-                    if let purposeLabel, !purposeLabel.isEmpty {
-                        Text(purposeLabel)
+                    if let purpose, !purpose.isEmpty {
+                        Text(purpose)
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
                     }
@@ -81,6 +82,10 @@ struct ArchivedPetHeaderCard: View {
                 }
             }
             .padding()
+
+            if let modeInfo {
+                PetModeInfoSection(modeInfo: modeInfo)
+            }
         }
         .clipShape(RoundedRectangle(cornerRadius: 32))
         .glassCard()
@@ -128,26 +133,46 @@ struct ArchivedPetHeaderCard: View {
 }
 
 #if DEBUG
-#Preview("Fully Evolved") {
+#Preview("Fully Evolved - Daily") {
     ArchivedPetHeaderCard(
         petName: "Fern",
         totalDays: 12,
         evolutionPhase: 4,
-        purposeLabel: "Social Media",
         createdAt: Calendar.current.date(byAdding: .day, value: -12, to: Date())!,
         isBlown: false,
-        archivedAt: Date()
+        archivedAt: Date(),
+        purpose: "Social Media",
+        modeInfo: .daily(.init(
+            dailyLimitMinutes: 90,
+            limitedSources: LimitedSource.mockList()
+        ))
     )
     .padding()
 }
 
-#Preview("Blown") {
+#Preview("Blown - Dynamic") {
     ArchivedPetHeaderCard(
-        petName: "Sprout",
+        petName: "Storm",
         totalDays: 5,
         evolutionPhase: 2,
-        purposeLabel: "Gaming",
         createdAt: Calendar.current.date(byAdding: .day, value: -5, to: Date())!,
+        isBlown: true,
+        archivedAt: Date(),
+        purpose: "Gaming",
+        modeInfo: .dynamic(.init(
+            config: .intense,
+            limitedSources: LimitedSource.mockList()
+        ))
+    )
+    .padding()
+}
+
+#Preview("Without Mode Info") {
+    ArchivedPetHeaderCard(
+        petName: "Sprout",
+        totalDays: 3,
+        evolutionPhase: 1,
+        createdAt: Calendar.current.date(byAdding: .day, value: -3, to: Date())!,
         isBlown: true,
         archivedAt: Date()
     )
