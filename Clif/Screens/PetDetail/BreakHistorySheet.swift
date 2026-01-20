@@ -5,6 +5,12 @@ struct BreakHistorySheet: View {
     let breakHistory: [CompletedBreak]
 
     @Environment(\.dismiss) private var dismiss
+    @State private var chartStyle: ChartStyle = .pie
+
+    private enum ChartStyle: String, CaseIterable {
+        case pie = "Pie"
+        case bar = "Bar"
+    }
 
     // MARK: - Computed Stats
 
@@ -48,7 +54,7 @@ struct BreakHistorySheet: View {
                 } else {
                     VStack(spacing: 16) {
                         overviewSection
-                        pieChartsSection
+                        chartsSection
                     }
                     .padding()
                 }
@@ -113,88 +119,126 @@ struct BreakHistorySheet: View {
         .padding(.vertical, 12)
     }
 
-    private var pieChartsSection: some View {
+    private var chartsSection: some View {
         VStack(spacing: 16) {
-            Text("By Type")
-                .font(.headline)
-                .frame(maxWidth: .infinity, alignment: .leading)
+            HStack {
+                Text("By Type")
+                    .font(.headline)
 
-            // Charts row
-            HStack(spacing: 24) {
-                chartColumn(
-                    data: breaksByType.map { ($0.type, Double($0.count)) },
-                    centerLabel: "\(totalBreaks)",
-                    centerSubLabel: "breaks",
-                    title: "Count"
-                )
+                Spacer()
 
-                chartColumn(
-                    data: breaksByType.map { ($0.type, $0.minutes) },
-                    centerLabel: formatMinutesShort(totalMinutes),
-                    centerSubLabel: "total",
-                    title: "Time"
-                )
+                Picker("Chart Style", selection: $chartStyle) {
+                    ForEach(ChartStyle.allCases, id: \.self) { style in
+                        Text(style.rawValue).tag(style)
+                    }
+                }
+                .pickerStyle(.segmented)
+                .frame(width: 120)
+            }
+
+            // Charts
+            switch chartStyle {
+            case .pie:
+                pieChartsView
+            case .bar:
+                barChartsView
             }
 
             Divider()
 
             // Shared legend
-            VStack(spacing: 6) {
-                // Header row
-                HStack {
-                    Text("Type")
-                        .font(.caption2)
-                        .foregroundStyle(.tertiary)
-
-                    Spacer()
-
-                    Text("Count")
-                        .font(.caption2)
-                        .foregroundStyle(.tertiary)
-                        .frame(width: 40, alignment: .trailing)
-
-                    Text("Time")
-                        .font(.caption2)
-                        .foregroundStyle(.tertiary)
-                        .frame(width: 50, alignment: .trailing)
-                }
-
-                // Data rows
-                ForEach(breaksByType, id: \.type) { item in
-                    HStack {
-                        Circle()
-                            .fill(item.type.color)
-                            .frame(width: 8, height: 8)
-
-                        Text(item.type.displayName)
-                            .font(.caption2)
-                            .foregroundStyle(.secondary)
-
-                        Spacer()
-
-                        Text("\(item.count)")
-                            .font(.caption2)
-                            .foregroundStyle(.secondary)
-                            .fontWeight(.medium)
-                            .frame(width: 40, alignment: .trailing)
-
-                        Text(formatMinutes(item.minutes))
-                            .font(.caption2)
-                            .foregroundStyle(.secondary)
-                            .fontWeight(.medium)
-                            .frame(width: 50, alignment: .trailing)
-                    }
-                }
-            }
-            .padding(.top, 4)
+            legendView
         }
         .padding()
         .glassCard()
     }
 
+    private var pieChartsView: some View {
+        HStack(spacing: 24) {
+            pieColumn(
+                data: breaksByType.map { ($0.type, Double($0.count)) },
+                centerLabel: "\(totalBreaks)",
+                centerSubLabel: "breaks",
+                title: "Count"
+            )
+
+            pieColumn(
+                data: breaksByType.map { ($0.type, $0.minutes) },
+                centerLabel: formatMinutesShort(totalMinutes),
+                centerSubLabel: "total",
+                title: "Time"
+            )
+        }
+    }
+
+    private var barChartsView: some View {
+        HStack(spacing: 24) {
+            barColumn(
+                data: breaksByType.map { ($0.type, Double($0.count)) },
+                title: "Count"
+            )
+
+            barColumn(
+                data: breaksByType.map { ($0.type, $0.minutes) },
+                title: "Time"
+            )
+        }
+    }
+
+    private var legendView: some View {
+        VStack(spacing: 6) {
+            // Header row
+            HStack {
+                Text("Type")
+                    .font(.caption2)
+                    .foregroundStyle(.tertiary)
+
+                Spacer()
+
+                Text("Count")
+                    .font(.caption2)
+                    .foregroundStyle(.tertiary)
+                    .frame(width: 40, alignment: .trailing)
+
+                Text("Time")
+                    .font(.caption2)
+                    .foregroundStyle(.tertiary)
+                    .frame(width: 50, alignment: .trailing)
+            }
+
+            // Data rows
+            ForEach(breaksByType, id: \.type) { item in
+                HStack {
+                    Circle()
+                        .fill(item.type.color)
+                        .frame(width: 8, height: 8)
+
+                    Text(item.type.displayName)
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+
+                    Spacer()
+
+                    Text("\(item.count)")
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                        .fontWeight(.medium)
+                        .frame(width: 40, alignment: .trailing)
+
+                    Text(formatMinutes(item.minutes))
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                        .fontWeight(.medium)
+                        .frame(width: 50, alignment: .trailing)
+                }
+            }
+        }
+        .padding(.top, 4)
+    }
+
     // MARK: - Subviews
 
-    private func chartColumn(
+    private func pieColumn(
         data: [(type: BreakType, value: Double)],
         centerLabel: String,
         centerSubLabel: String,
@@ -208,6 +252,36 @@ struct BreakHistorySheet: View {
             )
             .frame(maxWidth: .infinity)
             .aspectRatio(1, contentMode: .fit)
+
+            Text(title)
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+                .fontWeight(.medium)
+        }
+        .frame(maxWidth: .infinity)
+    }
+
+    private func barColumn(
+        data: [(type: BreakType, value: Double)],
+        title: String
+    ) -> some View {
+        let maxValue = data.map(\.value).max() ?? 1
+
+        return VStack(spacing: 8) {
+            HStack(alignment: .bottom, spacing: 8) {
+                ForEach(data, id: \.type) { item in
+                    RoundedRectangle(cornerRadius: 6)
+                        .fill(item.type.color)
+                        .frame(height: max(8, CGFloat(item.value / maxValue) * 100))
+                        .frame(maxWidth: .infinity)
+                }
+            }
+            .frame(height: 100)
+            .padding(12)
+            .background(
+                RoundedRectangle(cornerRadius: 12)
+                    .strokeBorder(.primary.opacity(0.15), lineWidth: 1)
+            )
 
             Text(title)
                 .font(.subheadline)
