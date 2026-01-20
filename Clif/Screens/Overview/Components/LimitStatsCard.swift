@@ -72,7 +72,7 @@ struct LimitStatsCard: View {
         .glassCard()
     }
 
-    private func limitStatItem(title: String, value: String, icon: String) -> some View {
+private func limitStatItem(title: String, value: String, icon: String) -> some View {
         VStack(spacing: 8) {
             Image(systemName: icon)
                 .font(.title3)
