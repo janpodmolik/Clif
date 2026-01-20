@@ -1,24 +1,23 @@
 #if DEBUG
 import SwiftUI
 
-enum PetMode: String, CaseIterable {
-    case daily
-    case dynamic
+struct PetDetailScreenDebug: View {
+    private enum DebugPetMode: String, CaseIterable {
+        case daily
+        case dynamic
 
-    var displayName: String {
-        switch self {
-        case .daily: return "Daily"
-        case .dynamic: return "Dynamic"
+        var displayName: String {
+            switch self {
+            case .daily: return "Daily"
+            case .dynamic: return "Dynamic"
+            }
         }
     }
-}
-
-struct PetDetailScreenDebug: View {
     @Environment(\.dismiss) private var dismiss
 
     // MARK: - Mode Selection
 
-    @State private var petMode: PetMode = .daily
+    @State private var petMode: DebugPetMode = .daily
 
     // MARK: - Pet Identity State
 
@@ -318,7 +317,7 @@ struct PetDetailScreenDebug: View {
     private var modePickerSection: some View {
         VStack(spacing: 8) {
             Picker("Mode", selection: $petMode) {
-                ForEach(PetMode.allCases, id: \.self) { mode in
+                ForEach(DebugPetMode.allCases, id: \.self) { mode in
                     Text(mode.displayName).tag(mode)
                 }
             }
