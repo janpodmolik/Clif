@@ -45,57 +45,72 @@ struct SharedDefaults {
         set { defaults?.set(newValue, forKey: DefaultsKeys.dailyLimitMinutes) }
     }
     
-    // MARK: - Selection
-    
-    static var selection: FamilyActivitySelection? {
-        get {
-            guard let data = defaults?.data(forKey: DefaultsKeys.selection) else { return nil }
-            return try? PropertyListDecoder().decode(FamilyActivitySelection.self, from: data)
-        }
-        set {
-            if let newValue, let data = try? PropertyListEncoder().encode(newValue) {
-                defaults?.set(data, forKey: DefaultsKeys.selection)
-            } else {
-                defaults?.removeObject(forKey: DefaultsKeys.selection)
-            }
-        }
+    // MARK: - Per-Pet Token Storage
+
+    private static func tokenKey(_ petId: UUID, _ suffix: String) -> String {
+        "pet_\(petId.uuidString)_\(suffix)"
     }
-    
-    // MARK: - Lightweight token access for extensions (avoids full FamilyActivitySelection decode)
-    
-    static var applicationTokensData: Data? {
-        get { defaults?.data(forKey: "applicationTokens") }
-        set { defaults?.set(newValue, forKey: "applicationTokens") }
+
+    /// Saves tokens for a specific pet.
+    static func saveTokens(
+        petId: UUID,
+        applications: Set<ApplicationToken>,
+        categories: Set<ActivityCategoryToken>,
+        webDomains: Set<WebDomainToken>
+    ) {
+        defaults?.set(try? PropertyListEncoder().encode(applications), forKey: tokenKey(petId, "appTokens"))
+        defaults?.set(try? PropertyListEncoder().encode(categories), forKey: tokenKey(petId, "catTokens"))
+        defaults?.set(try? PropertyListEncoder().encode(webDomains), forKey: tokenKey(petId, "webTokens"))
+
+        // Also save to current "active" keys for extension access
+        // (extension reads from monitoredPetId, then loads tokens)
+        defaults?.set(try? PropertyListEncoder().encode(applications), forKey: "applicationTokens")
+        defaults?.set(try? PropertyListEncoder().encode(categories), forKey: "categoryTokens")
+        defaults?.set(try? PropertyListEncoder().encode(webDomains), forKey: "webDomainTokens")
     }
-    
-    static var categoryTokensData: Data? {
-        get { defaults?.data(forKey: "categoryTokens") }
-        set { defaults?.set(newValue, forKey: "categoryTokens") }
+
+    /// Clears tokens for a specific pet.
+    static func clearTokens(petId: UUID) {
+        defaults?.removeObject(forKey: tokenKey(petId, "appTokens"))
+        defaults?.removeObject(forKey: tokenKey(petId, "catTokens"))
+        defaults?.removeObject(forKey: tokenKey(petId, "webTokens"))
     }
-    
-    static var webDomainTokensData: Data? {
-        get { defaults?.data(forKey: "webDomainTokens") }
-        set { defaults?.set(newValue, forKey: "webDomainTokens") }
-    }
-    
-    static func saveTokens(from selection: FamilyActivitySelection) {
-        applicationTokensData = try? PropertyListEncoder().encode(selection.applicationTokens)
-        categoryTokensData = try? PropertyListEncoder().encode(selection.categoryTokens)
-        webDomainTokensData = try? PropertyListEncoder().encode(selection.webDomainTokens)
-    }
-    
-    static func loadApplicationTokens() -> Set<ApplicationToken>? {
-        guard let data = applicationTokensData else { return nil }
+
+    /// Loads application tokens for a specific pet.
+    static func loadApplicationTokens(petId: UUID) -> Set<ApplicationToken>? {
+        guard let data = defaults?.data(forKey: tokenKey(petId, "appTokens")) else { return nil }
         return try? PropertyListDecoder().decode(Set<ApplicationToken>.self, from: data)
     }
-    
-    static func loadCategoryTokens() -> Set<ActivityCategoryToken>? {
-        guard let data = categoryTokensData else { return nil }
+
+    /// Loads category tokens for a specific pet.
+    static func loadCategoryTokens(petId: UUID) -> Set<ActivityCategoryToken>? {
+        guard let data = defaults?.data(forKey: tokenKey(petId, "catTokens")) else { return nil }
         return try? PropertyListDecoder().decode(Set<ActivityCategoryToken>.self, from: data)
     }
-    
+
+    /// Loads web domain tokens for a specific pet.
+    static func loadWebDomainTokens(petId: UUID) -> Set<WebDomainToken>? {
+        guard let data = defaults?.data(forKey: tokenKey(petId, "webTokens")) else { return nil }
+        return try? PropertyListDecoder().decode(Set<WebDomainToken>.self, from: data)
+    }
+
+    // MARK: - Legacy Token Access (for extensions using monitoredPetId)
+
+    /// Loads application tokens for the currently monitored pet.
+    static func loadApplicationTokens() -> Set<ApplicationToken>? {
+        guard let data = defaults?.data(forKey: "applicationTokens") else { return nil }
+        return try? PropertyListDecoder().decode(Set<ApplicationToken>.self, from: data)
+    }
+
+    /// Loads category tokens for the currently monitored pet.
+    static func loadCategoryTokens() -> Set<ActivityCategoryToken>? {
+        guard let data = defaults?.data(forKey: "categoryTokens") else { return nil }
+        return try? PropertyListDecoder().decode(Set<ActivityCategoryToken>.self, from: data)
+    }
+
+    /// Loads web domain tokens for the currently monitored pet.
     static func loadWebDomainTokens() -> Set<WebDomainToken>? {
-        guard let data = webDomainTokensData else { return nil }
+        guard let data = defaults?.data(forKey: "webDomainTokens") else { return nil }
         return try? PropertyListDecoder().decode(Set<WebDomainToken>.self, from: data)
     }
     

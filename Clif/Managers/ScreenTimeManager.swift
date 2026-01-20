@@ -5,34 +5,34 @@ import DeviceActivity
 import ManagedSettings
 
 extension DeviceActivityName {
-    static let daily = DeviceActivityName("daily")
+    /// Creates a pet-specific activity name.
+    static func forPet(_ petId: UUID) -> DeviceActivityName {
+        DeviceActivityName("pet_\(petId.uuidString)")
+    }
 }
 
-/// Manages Screen Time authorization, app selection, and device activity monitoring
+/// Manages Screen Time authorization and per-pet device activity monitoring.
+/// Each pet can have its own set of monitored apps/categories with independent schedules.
 final class ScreenTimeManager: ObservableObject {
     static let shared = ScreenTimeManager()
 
-    @Published var activitySelection = FamilyActivitySelection()
     @Published var isAuthorized = false
+
+    /// Debug-only: Global activity selection for testing in DebugView.
+    /// Production code should use pet.limitedSources instead.
+    @Published var activitySelection = FamilyActivitySelection()
 
     private let center = DeviceActivityCenter()
     private let store = ManagedSettingsStore()
 
-    /// Task for debouncing selection saves
-    private var saveSelectionTask: Task<Void, Never>?
-
     private init() {
-        if let savedSelection = SharedDefaults.selection {
-            self.activitySelection = savedSelection
-        }
-        
         Task {
             await checkAuthorization()
         }
     }
-    
+
     // MARK: - Authorization
-    
+
     @MainActor
     func requestAuthorization() async {
         do {
@@ -42,74 +42,71 @@ final class ScreenTimeManager: ObservableObject {
             self.isAuthorized = false
         }
     }
-    
+
     @MainActor
     func checkAuthorization() async {
         self.isAuthorized = AuthorizationCenter.shared.authorizationStatus == .approved
     }
-    
-    // MARK: - Selection
 
-    /// Saves selection with debouncing to prevent rapid successive calls
-    /// when user toggles multiple apps quickly
-    func saveSelection() {
-        saveSelectionTask?.cancel()
-        saveSelectionTask = Task {
-            // Debounce before actually saving
-            try? await Task.sleep(nanoseconds: AppConstants.selectionDebounceNanoseconds)
-            guard !Task.isCancelled else { return }
+    // MARK: - Shield Management
 
-            await MainActor.run {
-                performSaveSelection()
-            }
+    /// Activates shield for specific tokens.
+    func activateShield(
+        applications: Set<ApplicationToken>,
+        categories: Set<ActivityCategoryToken>,
+        webDomains: Set<WebDomainToken>
+    ) {
+        if !applications.isEmpty {
+            store.shield.applications = applications
+        }
+        if !categories.isEmpty {
+            store.shield.applicationCategories = .specific(categories, except: Set())
+        }
+        if !webDomains.isEmpty {
+            store.shield.webDomains = webDomains
         }
     }
 
-    /// Immediately saves selection without debouncing (for programmatic use)
-    private func performSaveSelection() {
-        SharedDefaults.selection = activitySelection
-        // Also save tokens separately for lightweight extension access
-        SharedDefaults.saveTokens(from: activitySelection)
-        // Clear any existing shields before starting fresh monitoring
-        clearShield()
-        startMonitoring()
-    }
-    
-    // MARK: - Shield Management
-    
-    func updateShield() {
-        store.shield.applications = activitySelection.applicationTokens
-        store.shield.applicationCategories = ShieldSettings.ActivityCategoryPolicy.specific(
-            activitySelection.categoryTokens,
-            except: Set()
-        )
-        store.shield.webDomains = activitySelection.webDomainTokens
-    }
-    
     func clearShield() {
         store.shield.applications = nil
         store.shield.applicationCategories = nil
         store.shield.webDomains = nil
     }
-    
-    // MARK: - Monitoring
 
-    /// Starts monitoring for a specific pet. Updates SharedDefaults with monitoring context.
+    // MARK: - Per-Pet Monitoring
+
+    /// Starts monitoring for a specific pet using its limitedSources.
     /// - Parameters:
     ///   - petId: UUID of the pet being monitored
     ///   - mode: Pet mode (daily or dynamic)
     ///   - limitMinutes: Screen time limit in minutes
     ///   - windPoints: Current wind points for snapshot logging
-    func startMonitoring(petId: UUID, mode: PetMode, limitMinutes: Int, windPoints: Double) {
-        let limitSeconds = limitMinutes * 60
+    ///   - limitedSources: Pet's limited sources containing tokens to monitor
+    func startMonitoring(
+        petId: UUID,
+        mode: PetMode,
+        limitMinutes: Int,
+        windPoints: Double,
+        limitedSources: [LimitedSource]
+    ) {
+        let appTokens = limitedSources.applicationTokens
+        let catTokens = limitedSources.categoryTokens
+        let webTokens = limitedSources.webDomainTokens
 
-        let appCount = activitySelection.applicationTokens.count
-        let catCount = activitySelection.categoryTokens.count
-        let webCount = activitySelection.webDomainTokens.count
-
-        guard appCount > 0 || catCount > 0 || webCount > 0 else {
+        guard !appTokens.isEmpty || !catTokens.isEmpty || !webTokens.isEmpty else {
+            #if DEBUG
+            print("[ScreenTimeManager] No tokens to monitor for pet \(petId)")
+            #endif
             return
         }
+
+        // Save tokens for this pet (extension will load them)
+        SharedDefaults.saveTokens(
+            petId: petId,
+            applications: appTokens,
+            categories: catTokens,
+            webDomains: webTokens
+        )
 
         // Update monitoring context for extensions
         SharedDefaults.monitoredPetId = petId
@@ -123,54 +120,93 @@ final class ScreenTimeManager: ObservableObject {
             repeats: true
         )
 
-        let events = buildEvents(for: mode, limitSeconds: limitSeconds)
+        let events = buildEvents(
+            for: mode,
+            limitSeconds: limitMinutes * 60,
+            appTokens: appTokens,
+            catTokens: catTokens,
+            webTokens: webTokens
+        )
+
+        let activityName = DeviceActivityName.forPet(petId)
 
         do {
-            center.stopMonitoring()
-            try center.startMonitoring(.daily, during: schedule, events: events)
+            // Stop any existing monitoring for this pet before starting new
+            center.stopMonitoring([activityName])
+            try center.startMonitoring(activityName, during: schedule, events: events)
             #if DEBUG
             print("[ScreenTimeManager] Started \(mode.rawValue) monitoring with \(events.count) events for pet \(petId)")
             #endif
         } catch {
             #if DEBUG
-            print("[ScreenTimeManager] Failed to start monitoring: \(error.localizedDescription)")
+            print("[ScreenTimeManager] Failed to start monitoring for pet \(petId): \(error.localizedDescription)")
             #endif
         }
     }
 
-    /// Legacy method for backwards compatibility. Uses Daily mode with default limit.
-    func startMonitoring() {
-        let limitMinutes = SharedDefaults.dailyLimitMinutes
-        let petId = SharedDefaults.monitoredPetId ?? UUID()
-        let mode = SharedDefaults.monitoredPetMode ?? .daily
-        let windPoints = SharedDefaults.monitoredWindPoints
+    /// Stops monitoring for a specific pet.
+    func stopMonitoring(petId: UUID) {
+        let activityName = DeviceActivityName.forPet(petId)
+        center.stopMonitoring([activityName])
 
-        startMonitoring(petId: petId, mode: mode, limitMinutes: limitMinutes, windPoints: windPoints)
+        // Clear tokens for this pet
+        SharedDefaults.clearTokens(petId: petId)
+
+        // Clear monitoring context if this was the active pet
+        if SharedDefaults.monitoredPetId == petId {
+            SharedDefaults.monitoredPetId = nil
+            SharedDefaults.monitoredPetMode = nil
+        }
+
+        #if DEBUG
+        print("[ScreenTimeManager] Stopped monitoring for pet \(petId)")
+        #endif
     }
 
-    /// Stops all monitoring and clears monitoring context.
-    func stopMonitoring() {
+    /// Stops all monitoring.
+    func stopAllMonitoring() {
         center.stopMonitoring()
         SharedDefaults.monitoredPetId = nil
         SharedDefaults.monitoredPetMode = nil
         #if DEBUG
-        print("[ScreenTimeManager] Stopped monitoring")
+        print("[ScreenTimeManager] Stopped all monitoring")
         #endif
     }
 
     // MARK: - Event Building
 
-    private func buildEvents(for mode: PetMode, limitSeconds: Int) -> [DeviceActivityEvent.Name: DeviceActivityEvent] {
+    private func buildEvents(
+        for mode: PetMode,
+        limitSeconds: Int,
+        appTokens: Set<ApplicationToken>,
+        catTokens: Set<ActivityCategoryToken>,
+        webTokens: Set<WebDomainToken>
+    ) -> [DeviceActivityEvent.Name: DeviceActivityEvent] {
         switch mode {
         case .daily:
-            return buildDailyEvents(limitSeconds: limitSeconds)
+            return buildDailyEvents(
+                limitSeconds: limitSeconds,
+                appTokens: appTokens,
+                catTokens: catTokens,
+                webTokens: webTokens
+            )
         case .dynamic:
-            return buildDynamicEvents(limitSeconds: limitSeconds)
+            return buildDynamicEvents(
+                limitSeconds: limitSeconds,
+                appTokens: appTokens,
+                catTokens: catTokens,
+                webTokens: webTokens
+            )
         }
     }
 
     /// Daily mode: percentage thresholds + "1 minute before limit"
-    private func buildDailyEvents(limitSeconds: Int) -> [DeviceActivityEvent.Name: DeviceActivityEvent] {
+    private func buildDailyEvents(
+        limitSeconds: Int,
+        appTokens: Set<ApplicationToken>,
+        catTokens: Set<ActivityCategoryToken>,
+        webTokens: Set<WebDomainToken>
+    ) -> [DeviceActivityEvent.Name: DeviceActivityEvent] {
         var events: [DeviceActivityEvent.Name: DeviceActivityEvent] = [:]
 
         for percentage in AppConstants.dailyThresholdPercentages {
@@ -178,9 +214,9 @@ final class ScreenTimeManager: ObservableObject {
             let eventName = DeviceActivityEvent.Name("threshold_\(percentage)")
 
             events[eventName] = DeviceActivityEvent(
-                applications: activitySelection.applicationTokens,
-                categories: activitySelection.categoryTokens,
-                webDomains: activitySelection.webDomainTokens,
+                applications: appTokens,
+                categories: catTokens,
+                webDomains: webTokens,
                 threshold: DateComponents(minute: thresholdSeconds / 60, second: thresholdSeconds % 60)
             )
         }
@@ -189,9 +225,9 @@ final class ScreenTimeManager: ObservableObject {
         let oneMinuteBeforeLimitSeconds = max(0, limitSeconds - 60)
         if oneMinuteBeforeLimitSeconds > 0 {
             events[DeviceActivityEvent.Name("lastMinute")] = DeviceActivityEvent(
-                applications: activitySelection.applicationTokens,
-                categories: activitySelection.categoryTokens,
-                webDomains: activitySelection.webDomainTokens,
+                applications: appTokens,
+                categories: catTokens,
+                webDomains: webTokens,
                 threshold: DateComponents(minute: oneMinuteBeforeLimitSeconds / 60, second: oneMinuteBeforeLimitSeconds % 60)
             )
         }
@@ -200,7 +236,12 @@ final class ScreenTimeManager: ObservableObject {
     }
 
     /// Dynamic mode: per-minute thresholds for granular windPoints tracking
-    private func buildDynamicEvents(limitSeconds: Int) -> [DeviceActivityEvent.Name: DeviceActivityEvent] {
+    private func buildDynamicEvents(
+        limitSeconds: Int,
+        appTokens: Set<ApplicationToken>,
+        catTokens: Set<ActivityCategoryToken>,
+        webTokens: Set<WebDomainToken>
+    ) -> [DeviceActivityEvent.Name: DeviceActivityEvent] {
         var events: [DeviceActivityEvent.Name: DeviceActivityEvent] = [:]
 
         let limitMinutes = limitSeconds / 60
@@ -210,17 +251,108 @@ final class ScreenTimeManager: ObservableObject {
         let maxThresholds = min(limitMinutes, AppConstants.maxDynamicThresholds)
 
         for minute in 1...maxThresholds {
-            let thresholdSeconds = minute * 60
             let eventName = DeviceActivityEvent.Name("minute_\(minute)")
 
             events[eventName] = DeviceActivityEvent(
-                applications: activitySelection.applicationTokens,
-                categories: activitySelection.categoryTokens,
-                webDomains: activitySelection.webDomainTokens,
+                applications: appTokens,
+                categories: catTokens,
+                webDomains: webTokens,
                 threshold: DateComponents(minute: minute)
             )
         }
 
         return events
     }
+
+    // MARK: - Debug Methods
+
+    #if DEBUG
+    /// Debug-only: Starts monitoring using the global activitySelection.
+    /// Creates a temporary debug pet ID.
+    func startMonitoring() {
+        let debugPetId = UUID()
+        let limitMinutes = SharedDefaults.dailyLimitMinutes
+
+        startMonitoring(
+            petId: debugPetId,
+            mode: .daily,
+            limitMinutes: limitMinutes,
+            windPoints: 0,
+            appTokens: activitySelection.applicationTokens,
+            catTokens: activitySelection.categoryTokens,
+            webTokens: activitySelection.webDomainTokens
+        )
+    }
+
+    /// Debug-only: Applies shield using global activitySelection.
+    func updateShield() {
+        activateShield(
+            applications: activitySelection.applicationTokens,
+            categories: activitySelection.categoryTokens,
+            webDomains: activitySelection.webDomainTokens
+        )
+    }
+
+    /// Debug-only: Saves global selection (no-op for production).
+    func saveSelection() {
+        // For debug: just restart monitoring with current selection
+        startMonitoring()
+    }
+
+    /// Internal helper for debug that takes tokens directly.
+    private func startMonitoring(
+        petId: UUID,
+        mode: PetMode,
+        limitMinutes: Int,
+        windPoints: Double,
+        appTokens: Set<ApplicationToken>,
+        catTokens: Set<ActivityCategoryToken>,
+        webTokens: Set<WebDomainToken>
+    ) {
+        guard !appTokens.isEmpty || !catTokens.isEmpty || !webTokens.isEmpty else {
+            #if DEBUG
+            print("[ScreenTimeManager] No tokens to monitor for pet \(petId)")
+            #endif
+            return
+        }
+
+        // Save tokens for this pet (extension will load them)
+        SharedDefaults.saveTokens(
+            petId: petId,
+            applications: appTokens,
+            categories: catTokens,
+            webDomains: webTokens
+        )
+
+        // Update monitoring context for extensions
+        SharedDefaults.monitoredPetId = petId
+        SharedDefaults.monitoredPetMode = mode
+        SharedDefaults.monitoredWindPoints = windPoints
+        SharedDefaults.dailyLimitMinutes = limitMinutes
+
+        let schedule = DeviceActivitySchedule(
+            intervalStart: DateComponents(hour: 0, minute: 0),
+            intervalEnd: DateComponents(hour: 23, minute: 59),
+            repeats: true
+        )
+
+        let events = buildEvents(
+            for: mode,
+            limitSeconds: limitMinutes * 60,
+            appTokens: appTokens,
+            catTokens: catTokens,
+            webTokens: webTokens
+        )
+
+        let activityName = DeviceActivityName.forPet(petId)
+
+        do {
+            center.stopMonitoring([activityName])
+            try center.startMonitoring(activityName, during: schedule, events: events)
+            print("[ScreenTimeManager] Started \(mode.rawValue) monitoring with \(events.count) events for pet \(petId)")
+        } catch {
+            print("[ScreenTimeManager] Failed to start monitoring for pet \(petId): \(error.localizedDescription)")
+        }
+    }
+    #endif
 }

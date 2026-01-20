@@ -242,6 +242,48 @@ extension LimitedSource: Codable {
     }
 }
 
+// MARK: - Token Extraction
+
+extension Array where Element == LimitedSource {
+    /// Extracts all application tokens from limited sources.
+    var applicationTokens: Set<ApplicationToken> {
+        var tokens = Set<ApplicationToken>()
+        for source in self {
+            if case .app(let appSource) = source, let token = appSource.applicationToken {
+                tokens.insert(token)
+            }
+        }
+        return tokens
+    }
+
+    /// Extracts all category tokens from limited sources.
+    var categoryTokens: Set<ActivityCategoryToken> {
+        var tokens = Set<ActivityCategoryToken>()
+        for source in self {
+            if case .category(let catSource) = source, let token = catSource.categoryToken {
+                tokens.insert(token)
+            }
+        }
+        return tokens
+    }
+
+    /// Extracts all web domain tokens from limited sources.
+    var webDomainTokens: Set<WebDomainToken> {
+        var tokens = Set<WebDomainToken>()
+        for source in self {
+            if case .website(let webSource) = source, let token = webSource.webDomainToken {
+                tokens.insert(token)
+            }
+        }
+        return tokens
+    }
+
+    /// Whether this collection has any tokens to monitor.
+    var hasTokens: Bool {
+        !applicationTokens.isEmpty || !categoryTokens.isEmpty || !webDomainTokens.isEmpty
+    }
+}
+
 // MARK: - Mock Data
 
 extension LimitedSource {
