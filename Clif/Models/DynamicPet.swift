@@ -216,6 +216,55 @@ struct CompletedBreak: Codable, Equatable, Identifiable {
     }
 }
 
+// MARK: - CompletedBreak Mock Data
+
+extension CompletedBreak {
+    static func mock(
+        type: BreakType = .committed,
+        minutesAgo: Int = 60,
+        durationMinutes: Double = 15,
+        windAtStart: Double = 50,
+        windDecreased: Double = 12,
+        wasViolated: Bool = false
+    ) -> CompletedBreak {
+        let endedAt = Date().addingTimeInterval(-Double(minutesAgo) * 60)
+        let startedAt = endedAt.addingTimeInterval(-durationMinutes * 60)
+
+        return CompletedBreak(
+            type: type,
+            startedAt: startedAt,
+            endedAt: endedAt,
+            windAtStart: windAtStart,
+            windDecreased: wasViolated ? 0 : windDecreased,
+            wasViolated: wasViolated
+        )
+    }
+
+    static func mockList(count: Int = 8) -> [CompletedBreak] {
+        let configs: [(BreakType, Int, Double, Double, Bool)] = [
+            (.free, 30, 10, 40, false),
+            (.committed, 120, 20, 55, false),
+            (.hardcore, 240, 25, 70, false),
+            (.free, 360, 8, 35, false),
+            (.committed, 480, 15, 60, true),
+            (.hardcore, 600, 30, 85, false),
+            (.free, 720, 12, 45, false),
+            (.committed, 840, 18, 50, false),
+        ]
+
+        return configs.prefix(count).map { type, minutesAgo, duration, wind, violated in
+            mock(
+                type: type,
+                minutesAgo: minutesAgo,
+                durationMinutes: duration,
+                windAtStart: wind,
+                windDecreased: duration * 0.8,
+                wasViolated: violated
+            )
+        }
+    }
+}
+
 // MARK: - Mock Data
 
 extension DynamicPet {
@@ -235,13 +284,19 @@ extension DynamicPet {
             purpose: "Social Media",
             windPoints: windPoints,
             dailyStats: DailyUsageStat.mockList(petId: petId, days: totalDays),
-            limitedSources: LimitedSource.mockList(days: totalDays)
+            limitedSources: LimitedSource.mockList(days: totalDays),
+            breakHistory: totalDays > 3 ? CompletedBreak.mockList(count: min(totalDays, 8)) : []
         )
     }
 
     static func mockWithBreak() -> DynamicPet {
         let pet = mock(windPoints: 65)
         pet.activeBreak = .mock(type: .committed, minutesAgo: 10, durationMinutes: 30)
+        return pet
+    }
+
+    static func mockWithBreakHistory() -> DynamicPet {
+        let pet = mock(windPoints: 45, totalDays: 10)
         return pet
     }
 

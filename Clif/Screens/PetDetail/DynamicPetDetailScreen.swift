@@ -11,6 +11,7 @@ struct DynamicPetDetailScreen: View {
 
     @Environment(\.dismiss) private var dismiss
     @State private var showEssencePicker = false
+    @State private var showBreakHistory = false
 
     private var mood: Mood {
         pet.isBlown ? .blown : Mood(from: pet.windLevel)
@@ -93,6 +94,13 @@ struct DynamicPetDetailScreen: View {
                         TrendMiniChart(stats: pet.fullStats)
                     }
 
+                    if !pet.breakHistory.isEmpty {
+                        BreakSummaryCard(
+                            breakHistory: pet.breakHistory,
+                            onTap: { showBreakHistory = true }
+                        )
+                    }
+
                     LimitedAppsButton(
                         sources: pet.limitedSources,
                         onTap: { onAction(.limitedApps) }
@@ -150,6 +158,9 @@ struct DynamicPetDetailScreen: View {
                     pet.applyEssence(essence)
                 }
             }
+            .sheet(isPresented: $showBreakHistory) {
+                BreakHistorySheet(breakHistory: pet.breakHistory)
+            }
         }
     }
 
@@ -174,6 +185,13 @@ struct DynamicPetDetailScreen: View {
     Text("Tap to open")
         .fullScreenCover(isPresented: .constant(true)) {
             DynamicPetDetailScreen(pet: .mockBlob(name: "Blobby", canUseEssence: true))
+        }
+}
+
+#Preview("With Break History") {
+    Text("Tap to open")
+        .fullScreenCover(isPresented: .constant(true)) {
+            DynamicPetDetailScreen(pet: .mockWithBreakHistory())
         }
 }
 

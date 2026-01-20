@@ -5,6 +5,7 @@ struct DynamicPetArchivedDetailScreen: View {
 
     @Environment(\.dismiss) private var dismiss
     @State private var showAppUsageSheet = false
+    @State private var showBreakHistory = false
 
     private var mood: Mood {
         pet.isBlown ? .blown : .happy
@@ -44,12 +45,22 @@ struct DynamicPetArchivedDetailScreen: View {
 
                     TrendMiniChart(stats: pet.fullStats)
 
+                    if !pet.breakHistory.isEmpty {
+                        BreakSummaryCard(
+                            breakHistory: pet.breakHistory,
+                            onTap: { showBreakHistory = true }
+                        )
+                    }
+
                     LimitedAppsButton(
                         sources: pet.limitedSources,
                         onTap: { showAppUsageSheet = true }
                     )
                 }
                 .padding()
+            }
+            .sheet(isPresented: $showBreakHistory) {
+                BreakHistorySheet(breakHistory: pet.breakHistory)
             }
             .sheet(isPresented: $showAppUsageSheet) {
                 DynamicAppUsageDetailSheet(

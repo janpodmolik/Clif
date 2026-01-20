@@ -244,7 +244,7 @@ struct OverviewScreen: View {
             if let url = URL(string: "clif://pet/\(pet.id.uuidString)") {
                 UIApplication.shared.open(url)
             }
-        case .blowAway, .replay, .delete, .limitedApps, .progress, .startBreak, .endBreak:
+        case .blowAway, .replay, .delete, .limitedApps, .progress, .startBreak, .endBreak, .breakHistory:
             break // TODO: Implement remaining actions
         }
     }
