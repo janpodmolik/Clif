@@ -13,9 +13,23 @@ struct HomeScreen: View {
     @State private var showPetDetail = false
     @State private var showBreakSheet = false
     @State private var petFrame: CGRect = .zero
+    @State private var dropZoneFrame: CGRect = .zero
 
     private let homeCardInset: CGFloat = 16
     private let homeCardCornerRadius: CGFloat = 24
+
+    /// Whether we're in pet creation mode (empty island shown during entire flow)
+    private var isInCreationMode: Bool {
+        createPetCoordinator.isShowing || createPetCoordinator.isDropping
+    }
+
+    /// Whether the dragged pet is near the drop zone
+    private var isDropZoneHighlighted: Bool {
+        guard createPetCoordinator.dragState.isDragging,
+              dropZoneFrame != .zero else { return false }
+        let expandedFrame = dropZoneFrame.insetBy(dx: -60, dy: -60)
+        return expandedFrame.contains(createPetCoordinator.dragState.dragLocation)
+    }
 
     private var pets: [ActivePet] { petManager.activePets }
 
@@ -27,8 +41,10 @@ struct HomeScreen: View {
     }
 
     private var petDropFrame: CGRect? {
-        guard petFrame != .zero else { return nil }
-        return petFrame.insetBy(dx: -40, dy: -40)
+        // Use drop zone frame during creation, pet frame otherwise
+        let frame = isInCreationMode ? dropZoneFrame : petFrame
+        guard frame != .zero else { return nil }
+        return frame.insetBy(dx: -40, dy: -40)
     }
 
     private func updatePetDropFrame() {
@@ -40,7 +56,10 @@ struct HomeScreen: View {
             ZStack {
                 background
 
-                if pets.count > 1 {
+                if isInCreationMode {
+                    // Show empty island with drop zone during pet creation
+                    emptyIslandPage(geometry: geometry)
+                } else if pets.count > 1 {
                     petPager(geometry: geometry)
                 } else if let pet = currentPet {
                     petPage(pet, geometry: geometry)
@@ -66,6 +85,12 @@ struct HomeScreen: View {
         .onChange(of: petFrame) { _, _ in
             updatePetDropFrame()
         }
+        .onChange(of: dropZoneFrame) { _, _ in
+            updatePetDropFrame()
+        }
+        .onChange(of: isInCreationMode) { _, _ in
+            updatePetDropFrame()
+        }
     }
 
     // MARK: - Background
@@ -77,6 +102,20 @@ struct HomeScreen: View {
         } else {
             DayBackgroundView()
         }
+    }
+
+    // MARK: - Empty Island (Pet Creation)
+
+    private func emptyIslandPage(geometry: GeometryProxy) -> some View {
+        EmptyIslandView(
+            screenHeight: geometry.size.height,
+            isDropZoneHighlighted: isDropZoneHighlighted,
+            onDropZoneFrameChange: { frame in
+                dropZoneFrame = frame
+            }
+        )
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
+        .ignoresSafeArea(.container, edges: .bottom)
     }
 
     // MARK: - Pet Pager

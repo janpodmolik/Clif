@@ -1,13 +1,22 @@
 import SwiftUI
 
 struct BlobDragPreview: View {
+    var dragVelocity: CGSize = .zero
+
     private enum Layout {
-        static let imageSize: CGFloat = 70
-        static let padding: CGFloat = 12
-        static let cornerRadius: CGFloat = 28
-        static let shadowOpacity: CGFloat = 0.18
-        static let shadowRadius: CGFloat = 10
-        static let shadowY: CGFloat = 8
+        static let imageSize: CGFloat = 80
+        static let maxRotation: CGFloat = 25
+        static let velocityDamping: CGFloat = 0.008
+        static let shadowOpacity: CGFloat = 0.25
+        static let shadowRadius: CGFloat = 12
+        static let shadowY: CGFloat = 10
+    }
+
+    private var rotation: Angle {
+        // Rotate based on horizontal velocity - feels like physics
+        let rotationAmount = -dragVelocity.width * Layout.velocityDamping
+        let clamped = max(-Layout.maxRotation, min(Layout.maxRotation, rotationAmount))
+        return .degrees(clamped)
     }
 
     var body: some View {
@@ -15,14 +24,14 @@ struct BlobDragPreview: View {
             .resizable()
             .scaledToFit()
             .frame(width: Layout.imageSize, height: Layout.imageSize)
-            .padding(Layout.padding)
-            .glassBackground(cornerRadius: Layout.cornerRadius)
+            .rotationEffect(rotation, anchor: .top)
             .shadow(
                 color: .black.opacity(Layout.shadowOpacity),
                 radius: Layout.shadowRadius,
                 x: 0,
                 y: Layout.shadowY
             )
+            .animation(.interactiveSpring(response: 0.3, dampingFraction: 0.6), value: dragVelocity.width)
     }
 }
 

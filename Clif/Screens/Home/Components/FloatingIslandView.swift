@@ -86,71 +86,78 @@ struct FloatingIslandView: View {
                         .scaledToFit()
                 }
 
-            // Pet with animation effects, speech bubble, and mood-aware image (top layer)
-            ZStack {
-                Image(pet.assetName(for: windLevel))
-                    .resizable()
-                    .scaledToFit()
-                    .frame(height: petHeight)
-                    .background {
-                        GeometryReader { proxy in
-                            Color.clear
-                                .preference(
-                                    key: PetFramePreferenceKey.self,
-                                    value: proxy.frame(in: .global)
-                                )
-                        }
-                    }
-                    .petAnimation(
-                        intensity: windConfig.intensity,
-                        direction: windDirection,
-                        bendCurve: windConfig.bendCurve,
-                        swayAmount: windConfig.swayAmount,
-                        rotationAmount: windConfig.rotationAmount,
-                        tapTime: internalTapTime,
-                        tapType: currentTapType,
-                        tapConfig: currentTapConfig,
-                        idleConfig: idleConfig,
-                        screenWidth: screenWidth,
-                        windRhythm: windRhythm,
-                        onTransformUpdate: { transform in
-                            petTransform = PetAnimationTransform(
-                                rotation: transform.rotation,
-                                swayOffset: transform.swayOffset * pet.displayScale,
-                                topOffset: transform.topOffset * pet.displayScale
-                            )
-                        }
-                    )
-                    .scaleEffect(pet.displayScale, anchor: .bottom)
-                    .onTapGesture {
-                        triggerTap()
-                    }
+            // Pet with animation effects, speech bubble, and mood-aware image
+            petContent
+        }
+    }
 
-                // Speech bubble overlay - follows pet with inertia
-                if let config = speechBubbleState.currentConfig {
-                    SpeechBubbleView(
-                        config: config,
-                        isVisible: speechBubbleState.isVisible,
-                        petTransform: petTransform
-                    )
+    // MARK: - Pet Content
+
+    @ViewBuilder
+    private var petContent: some View {
+        ZStack {
+            Image(pet.assetName(for: windLevel))
+                .resizable()
+                .scaledToFit()
+                .frame(height: petHeight)
+                .background {
+                    GeometryReader { proxy in
+                        Color.clear
+                            .preference(
+                                key: PetFramePreferenceKey.self,
+                                value: proxy.frame(in: .global)
+                            )
+                    }
                 }
+                .petAnimation(
+                    intensity: windConfig.intensity,
+                    direction: windDirection,
+                    bendCurve: windConfig.bendCurve,
+                    swayAmount: windConfig.swayAmount,
+                    rotationAmount: windConfig.rotationAmount,
+                    tapTime: internalTapTime,
+                    tapType: currentTapType,
+                    tapConfig: currentTapConfig,
+                    idleConfig: idleConfig,
+                    screenWidth: screenWidth,
+                    windRhythm: windRhythm,
+                    onTransformUpdate: { transform in
+                        petTransform = PetAnimationTransform(
+                            rotation: transform.rotation,
+                            swayOffset: transform.swayOffset * pet.displayScale,
+                            topOffset: transform.topOffset * pet.displayScale
+                        )
+                    }
+                )
+                .scaleEffect(pet.displayScale, anchor: .bottom)
+                .onTapGesture {
+                    triggerTap()
+                }
+
+            // Speech bubble overlay - follows pet with inertia
+            if let config = speechBubbleState.currentConfig {
+                SpeechBubbleView(
+                    config: config,
+                    isVisible: speechBubbleState.isVisible,
+                    petTransform: petTransform
+                )
             }
-            .padding(.top, petHeight * 0.6)
-            .offset(y: petOffset)
-            .contentTransition(.opacity)
-            .animation(.easeInOut(duration: 0.5), value: windProgress)
-            .onAppear {
-                speechBubbleState.startAutoTriggers(mood: currentMood)
-            }
-            .onDisappear {
-                speechBubbleState.stopAutoTriggers()
-            }
-            .onChange(of: windLevel) { _, newValue in
-                speechBubbleState.updateMood(Mood(from: newValue))
-            }
-            .onPreferenceChange(PetFramePreferenceKey.self) { frame in
-                onPetFrameChange?(frame)
-            }
+        }
+        .padding(.top, petHeight * 0.6)
+        .offset(y: petOffset)
+        .contentTransition(.opacity)
+        .animation(.easeInOut(duration: 0.5), value: windProgress)
+        .onAppear {
+            speechBubbleState.startAutoTriggers(mood: currentMood)
+        }
+        .onDisappear {
+            speechBubbleState.stopAutoTriggers()
+        }
+        .onChange(of: windLevel) { _, newValue in
+            speechBubbleState.updateMood(Mood(from: newValue))
+        }
+        .onPreferenceChange(PetFramePreferenceKey.self) { frame in
+            onPetFrameChange?(frame)
         }
     }
 

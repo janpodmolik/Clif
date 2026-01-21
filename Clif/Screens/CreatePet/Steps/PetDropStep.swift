@@ -6,6 +6,7 @@ struct PetDropStep: View {
     @Environment(PetManager.self) private var petManager
 
     @State private var hapticController = DragHapticController()
+    @State private var stagingCardFrame: CGRect = .zero
 
     private enum Layout {
         static let outerPadding: CGFloat = 16
@@ -71,14 +72,26 @@ struct PetDropStep: View {
                     .background(cardBackground)
 
                     // Staging card with drag
-                    PetStagingCard()
+                    PetStagingCard(isDragging: coordinator.dragState.isDragging || coordinator.dragState.isReturning)
+                        .background {
+                            GeometryReader { proxy in
+                                Color.clear
+                                    .onAppear {
+                                        stagingCardFrame = proxy.frame(in: .global)
+                                    }
+                                    .onChange(of: proxy.frame(in: .global)) { _, newFrame in
+                                        stagingCardFrame = newFrame
+                                    }
+                            }
+                        }
                         .gesture(
                             DragGesture(minimumDistance: 0, coordinateSpace: .global)
                                 .onChanged { value in
                                     if !coordinator.dragState.isDragging {
-                                        startDragging()
+                                        startDragging(at: value.startLocation)
                                     }
                                     coordinator.dragState.dragLocation = value.location
+                                    coordinator.dragState.dragVelocity = value.velocity
                                     updateDragHaptics(at: value.location)
                                 }
                                 .onEnded { value in
@@ -156,23 +169,49 @@ struct PetDropStep: View {
 
     // MARK: - Drag Handling
 
-    private func startDragging() {
+    private func startDragging(at location: CGPoint) {
         coordinator.dragState.isDragging = true
+        coordinator.dragState.startLocation = CGPoint(
+            x: stagingCardFrame.midX,
+            y: stagingCardFrame.midY
+        )
         hapticController.startDragging()
         HapticType.impactLight.trigger()
     }
 
     private func handleDragEnded(at location: CGPoint) {
-        defer {
-            coordinator.dragState.isDragging = false
-            hapticController.stop()
-        }
+        hapticController.stop()
 
         guard let petDropFrame = coordinator.petDropFrame,
-              petDropFrame.contains(location) else { return }
+              petDropFrame.contains(location) else {
+            // Failed drop - return pet to staging card
+            triggerReturnAnimation()
+            return
+        }
 
+        // Successful drop
+        coordinator.dragState.isDragging = false
         coordinator.handleBlobDrop(petManager: petManager)
         HapticType.notificationSuccess.trigger()
+    }
+
+    private func triggerReturnAnimation() {
+        // Start return animation
+        coordinator.dragState.isReturning = true
+        coordinator.dragState.isDragging = false
+
+        // Animate back to start position
+        withAnimation(.spring(response: 0.4, dampingFraction: 0.7)) {
+            coordinator.dragState.dragLocation = coordinator.dragState.startLocation
+            coordinator.dragState.dragVelocity = .zero
+        }
+
+        // Reset state after animation
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+            coordinator.dragState.isReturning = false
+        }
+
+        HapticType.notificationError.trigger()
     }
 
     private func updateDragHaptics(at location: CGPoint) {
