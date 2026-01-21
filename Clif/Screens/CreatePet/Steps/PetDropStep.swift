@@ -8,9 +8,13 @@ struct PetDropStep: View {
     @State private var hapticController = DragHapticController()
 
     private enum Layout {
-        static let cardCornerRadius: CGFloat = 20
-        static let cardPadding: CGFloat = 16
-        static let rowSpacing: CGFloat = 12
+        static let outerPadding: CGFloat = 16
+        static let cardSpacing: CGFloat = 12
+        static let innerPadding: CGFloat = 16
+        static let outerCornerRadius: CGFloat = 24
+        static var innerCornerRadius: CGFloat {
+            DeviceMetrics.concentricCornerRadius(inset: outerPadding + innerPadding)
+        }
     }
 
     private enum Haptics {
@@ -22,7 +26,7 @@ struct PetDropStep: View {
 
     var body: some View {
         VStack(spacing: 12) {
-            // Header with back/cancel buttons (matching toolbar glass style)
+            // Header with back/cancel buttons
             HStack {
                 CircleButton(icon: "chevron.left") {
                     coordinator.backFromDrop()
@@ -44,58 +48,89 @@ struct PetDropStep: View {
                     coordinator.dismiss()
                 }
             }
-            .padding(.horizontal, Layout.cardPadding)
+            .padding(.horizontal, Layout.outerPadding)
             .padding(.top, 12)
 
-            // Main card: overview + blob
-            HStack(spacing: Layout.cardPadding) {
-                // Left: Overview rows
-                VStack(alignment: .leading, spacing: Layout.rowSpacing) {
-                    overviewRow(icon: "app.badge.fill", label: "Apps") {
+            // Content area
+            VStack(spacing: Layout.cardSpacing) {
+                // Row 1: Pet info + staging card
+                HStack(spacing: Layout.cardSpacing) {
+                    // Pet name and purpose
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(coordinator.petName.isEmpty ? "Your Pet" : coordinator.petName)
+                            .font(.title3.weight(.semibold))
+
+                        if !coordinator.petPurpose.isEmpty {
+                            Text(coordinator.petPurpose)
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+                    .padding(Layout.innerPadding)
+                    .background(cardBackground)
+
+                    // Staging card with drag
+                    PetStagingCard()
+                        .gesture(
+                            DragGesture(minimumDistance: 0, coordinateSpace: .global)
+                                .onChanged { value in
+                                    if !coordinator.dragState.isDragging {
+                                        startDragging()
+                                    }
+                                    coordinator.dragState.dragLocation = value.location
+                                    updateDragHaptics(at: value.location)
+                                }
+                                .onEnded { value in
+                                    handleDragEnded(at: value.location)
+                                }
+                        )
+                }
+                .fixedSize(horizontal: false, vertical: true)
+
+                Divider()
+                    .padding(.horizontal, 8)
+
+                // Row 2: Limits + Mode cards
+                HStack(spacing: Layout.cardSpacing) {
+                    // Limits card
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Limits")
+                            .font(.subheadline.weight(.medium))
+                            .foregroundStyle(.secondary)
+
                         LimitedSourcesPreview(
                             applicationTokens: coordinator.selectedApps.applicationTokens,
                             categoryTokens: coordinator.selectedApps.categoryTokens,
                             webDomainTokens: coordinator.selectedApps.webDomainTokens
                         )
                     }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+                    .padding(Layout.innerPadding)
+                    .background(cardBackground)
 
-                    overviewRow(
-                        icon: coordinator.selectedMode.iconName,
-                        label: coordinator.selectedMode.shortName
-                    ) {
-                        Text(modeDisplayText)
+                    // Mode card
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("\(coordinator.selectedMode.shortName) Mode")
                             .font(.subheadline.weight(.medium))
-                    }
+                            .foregroundStyle(.secondary)
 
-                    if !coordinator.petName.isEmpty {
-                        overviewRow(icon: "leaf.fill", label: "Name") {
-                            Text(coordinator.petName)
-                                .font(.subheadline.weight(.medium))
-                        }
+                        Text(modeDisplayText)
+                            .font(.headline)
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+                    .padding(Layout.innerPadding)
+                    .background(cardBackground)
+                    .overlay(alignment: .topTrailing) {
+                        Image(systemName: modeIconName)
+                            .font(.subheadline)
+                            .foregroundStyle(modeThemeColor)
+                            .padding(Layout.innerPadding)
                     }
                 }
-
-                Spacer()
-
-                // Right: Blob
-                BlobStagingCard()
-                    .gesture(
-                        DragGesture(minimumDistance: 0, coordinateSpace: .global)
-                            .onChanged { value in
-                                if !coordinator.dragState.isDragging {
-                                    startDragging()
-                                }
-                                coordinator.dragState.dragLocation = value.location
-                                updateDragHaptics(at: value.location)
-                            }
-                            .onEnded { value in
-                                handleDragEnded(at: value.location)
-                            }
-                    )
+                .fixedSize(horizontal: false, vertical: true)
             }
-            .padding(Layout.cardPadding)
-            .glassBackground(cornerRadius: Layout.cardCornerRadius)
-            .padding(.horizontal)
+            .padding(Layout.outerPadding)
         }
         .padding(.top)
         .onDisappear {
@@ -103,25 +138,12 @@ struct PetDropStep: View {
         }
     }
 
-    // MARK: - Overview Rows
+    // MARK: - Card Background
 
-    private func overviewRow<Content: View>(
-        icon: String,
-        label: String,
-        @ViewBuilder content: () -> Content
-    ) -> some View {
-        HStack(spacing: 8) {
-            Image(systemName: icon)
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-                .frame(width: 20)
-
-            Text(label)
-                .font(.subheadline)
-                .foregroundStyle(.tertiary)
-
-            content()
-        }
+    @ViewBuilder
+    private var cardBackground: some View {
+        RoundedRectangle(cornerRadius: Layout.innerCornerRadius)
+            .fill(.ultraThinMaterial)
     }
 
     private var modeDisplayText: String {
@@ -129,6 +151,22 @@ struct PetDropStep: View {
             return MinutesFormatter.rate(coordinator.dailyLimitMinutes)
         } else {
             return coordinator.dynamicConfig.displayName
+        }
+    }
+
+    private var modeIconName: String {
+        if coordinator.selectedMode == .daily {
+            return coordinator.selectedMode.iconName
+        } else {
+            return coordinator.dynamicConfig.iconName
+        }
+    }
+
+    private var modeThemeColor: Color {
+        if coordinator.selectedMode == .daily {
+            return coordinator.selectedMode.themeColor
+        } else {
+            return coordinator.dynamicConfig.themeColor
         }
     }
 

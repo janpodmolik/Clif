@@ -1,10 +1,10 @@
 import SwiftUI
 
-struct BlobStagingCard: View {
+struct PetStagingCard: View {
     private enum Layout {
-        static let imageSize: CGFloat = 80
-        static let padding: CGFloat = 16
-        static let cornerRadius: CGFloat = 32
+        static let imageSize: CGFloat = 56
+        static let padding: CGFloat = 12
+        static let cornerRadius: CGFloat = 24
         static let strokeOpacity: CGFloat = 0.3
     }
 
@@ -24,6 +24,6 @@ struct BlobStagingCard: View {
 
 #if DEBUG
 #Preview {
-    BlobStagingCard()
+    PetStagingCard()
 }
 #endif
