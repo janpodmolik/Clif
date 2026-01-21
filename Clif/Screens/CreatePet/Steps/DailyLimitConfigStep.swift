@@ -18,6 +18,8 @@ struct DailyLimitConfigStep: View {
                 .multilineTextAlignment(.center)
                 .padding(.horizontal)
 
+            Spacer()
+
             Picker("Daily Limit", selection: $coordinator.dailyLimitMinutes) {
                 ForEach(minuteOptions, id: \.self) { minutes in
                     Text(MinutesFormatter.long(minutes))
@@ -25,12 +27,18 @@ struct DailyLimitConfigStep: View {
                 }
             }
             .pickerStyle(.wheel)
+            .clipShape(RoundedRectangle(cornerRadius: DeviceMetrics.concentricCornerRadius(inset: 20)))
+            .overlay(
+                RoundedRectangle(cornerRadius: DeviceMetrics.concentricCornerRadius(inset: 20))
+                    .stroke(.blue, lineWidth: 2)
+            )
             .frame(maxWidth: .infinity)
-            .padding(.top, 20)
-
-            limitDescription
+            .padding(.horizontal, 20)
 
             Spacer()
+
+            limitDescription
+                .padding(.bottom, 20)
         }
         .padding(.top)
     }
