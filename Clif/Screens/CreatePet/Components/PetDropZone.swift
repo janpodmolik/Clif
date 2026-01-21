@@ -6,11 +6,12 @@ import SwiftUI
 struct PetDropZone: View {
     var isHighlighted: Bool = false
     var isSnapped: Bool = false
+    var size: CGFloat = Layout.defaultSize
 
     @State private var pulsePhase: CGFloat = 0
 
     private enum Layout {
-        static let size: CGFloat = 80
+        static let defaultSize: CGFloat = 80
         static let cornerRadius: CGFloat = 24  // Same as PetStagingCard
         static let innerScale: CGFloat = 0.7
         static let pulseScale: CGFloat = 1.2
@@ -38,7 +39,7 @@ struct PetDropZone: View {
                     strokeColor.opacity(currentOpacity * (1 - pulsePhase * 0.5)),
                     lineWidth: 2
                 )
-                .frame(width: Layout.size, height: Layout.size)
+                .frame(width: size, height: size)
                 .scaleEffect(1 + pulsePhase * (Layout.pulseScale - 1))
 
             // Middle dashed ring
@@ -47,7 +48,7 @@ struct PetDropZone: View {
                     strokeColor.opacity(currentOpacity * 0.8),
                     style: StrokeStyle(lineWidth: 2, dash: [6, 4])
                 )
-                .frame(width: Layout.size * Layout.innerScale, height: Layout.size * Layout.innerScale)
+                .frame(width: size * Layout.innerScale, height: size * Layout.innerScale)
 
             // Inner glow
             RoundedRectangle(cornerRadius: innerCornerRadius * 0.6)
@@ -59,10 +60,10 @@ struct PetDropZone: View {
                         ],
                         center: .center,
                         startRadius: 0,
-                        endRadius: Layout.size * 0.35
+                        endRadius: size * 0.35
                     )
                 )
-                .frame(width: Layout.size * 0.5, height: Layout.size * 0.5)
+                .frame(width: size * 0.5, height: size * 0.5)
                 .scaleEffect(isHighlighted ? 1.15 : 1.0)
         }
         .animation(.easeInOut(duration: 0.2), value: isHighlighted)

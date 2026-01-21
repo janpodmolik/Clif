@@ -26,8 +26,9 @@ struct BlobDragPreview: View {
         Image(Blob.shared.assetName(for: .none))
             .resizable()
             .scaledToFit()
-            .frame(width: imageSize, height: imageSize)
+            .frame(height: imageSize)
             .rotationEffect(rotation, anchor: .top)
+            .scaleEffect(Blob.shared.displayScale, anchor: .bottom)
             .shadow(
                 color: .black.opacity(Layout.shadowOpacity),
                 radius: Layout.shadowRadius,

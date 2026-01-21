@@ -1,33 +1,33 @@
 import SwiftUI
 
-/// Displays the island scene with rock, grass, and animated pet.
+/// Content displayed on the island - either a pet or a drop zone during creation.
+enum IslandContent {
+    case pet(any PetDisplayable, windProgress: CGFloat, windDirection: CGFloat, windRhythm: WindRhythm?)
+    case dropZone(isHighlighted: Bool, isSnapped: Bool, isVisible: Bool)
+
+    var displayablePet: (any PetDisplayable)? {
+        if case .pet(let pet, _, _, _) = self { return pet }
+        return nil
+    }
+}
+
+/// Displays the island scene with rock, grass, and either a pet or drop zone.
 struct IslandView: View {
     let screenHeight: CGFloat
     let screenWidth: CGFloat?
-    let pet: any PetDisplayable
-    let windProgress: CGFloat
-    var windDirection: CGFloat = 1.0
-
-    /// Optional shared wind rhythm for synchronized effects with wind lines.
-    var windRhythm: WindRhythm?
-    var onPetFrameChange: ((CGRect) -> Void)?
+    let content: IslandContent
+    var onFrameChange: ((CGRect) -> Void)?
 
     init(
         screenHeight: CGFloat,
         screenWidth: CGFloat? = nil,
-        pet: any PetDisplayable,
-        windProgress: CGFloat,
-        windDirection: CGFloat = 1.0,
-        windRhythm: WindRhythm? = nil,
-        onPetFrameChange: ((CGRect) -> Void)? = nil
+        content: IslandContent,
+        onFrameChange: ((CGRect) -> Void)? = nil
     ) {
         self.screenHeight = screenHeight
         self.screenWidth = screenWidth
-        self.pet = pet
-        self.windProgress = windProgress
-        self.windDirection = windDirection
-        self.windRhythm = windRhythm
-        self.onPetFrameChange = onPetFrameChange
+        self.content = content
+        self.onFrameChange = onFrameChange
     }
 
     // Internal tap state
@@ -43,9 +43,30 @@ struct IslandView: View {
 
     // MARK: - Computed Properties
 
-    private var islandHeight: CGFloat { screenHeight * 0.6 }
     private var petHeight: CGFloat { screenHeight * 0.10 }
     private var petOffset: CGFloat { -petHeight }
+    private var dropZoneSize: CGFloat { petHeight * 1.5 }
+
+    /// The pet to display, used for scale and asset calculations.
+    /// For drop zone, uses Blob as reference for consistent sizing.
+    private var referencePet: any PetDisplayable {
+        content.displayablePet ?? Blob.shared
+    }
+
+    private var windProgress: CGFloat {
+        if case .pet(_, let progress, _, _) = content { return progress }
+        return 0
+    }
+
+    private var windDirection: CGFloat {
+        if case .pet(_, _, let direction, _) = content { return direction }
+        return 1.0
+    }
+
+    private var windRhythm: WindRhythm? {
+        if case .pet(_, _, _, let rhythm) = content { return rhythm }
+        return nil
+    }
 
     private var windLevel: WindLevel {
         WindLevel.from(progress: windProgress)
@@ -53,10 +74,6 @@ struct IslandView: View {
 
     private var windConfig: WindConfig {
         WindConfig.interpolated(progress: windProgress)
-    }
-
-    private var idleConfig: IdleConfig {
-        pet.idleConfig
     }
 
     private var currentMood: Mood {
@@ -76,57 +93,25 @@ struct IslandView: View {
     var body: some View {
         ZStack(alignment: .top) {
             IslandBase(screenHeight: screenHeight)
-
-            // Pet with animation effects, speech bubble, and mood-aware image
-            petContent
+            islandContent
         }
     }
 
-    // MARK: - Pet Content
+    // MARK: - Island Content
 
     @ViewBuilder
-    private var petContent: some View {
+    private var islandContent: some View {
         ZStack {
-            Image(pet.assetName(for: windLevel))
-                .resizable()
-                .scaledToFit()
-                .frame(height: petHeight)
-                .petAnimation(
-                    intensity: windConfig.intensity,
-                    direction: windDirection,
-                    bendCurve: windConfig.bendCurve,
-                    swayAmount: windConfig.swayAmount,
-                    rotationAmount: windConfig.rotationAmount,
-                    tapTime: internalTapTime,
-                    tapType: currentTapType,
-                    tapConfig: currentTapConfig,
-                    idleConfig: idleConfig,
-                    screenWidth: screenWidth,
-                    windRhythm: windRhythm,
-                    onTransformUpdate: { transform in
-                        petTransform = PetAnimationTransform(
-                            rotation: transform.rotation,
-                            swayOffset: transform.swayOffset * pet.displayScale,
-                            topOffset: transform.topOffset * pet.displayScale
-                        )
-                    }
-                )
-                .scaleEffect(pet.displayScale, anchor: .bottom)
-                .background {
-                    GeometryReader { proxy in
-                        Color.clear
-                            .preference(
-                                key: PetFramePreferenceKey.self,
-                                value: proxy.frame(in: .global)
-                            )
-                    }
-                }
-                .onTapGesture {
-                    triggerTap()
-                }
+            switch content {
+            case .pet(let pet, _, _, _):
+                petView(for: pet)
 
-            // Speech bubble overlay - follows pet with inertia
-            if let config = speechBubbleState.currentConfig {
+            case .dropZone(let isHighlighted, let isSnapped, let isVisible):
+                dropZoneView(isHighlighted: isHighlighted, isSnapped: isSnapped, isVisible: isVisible)
+            }
+
+            // Speech bubble overlay - only for pet content
+            if case .pet = content, let config = speechBubbleState.currentConfig {
                 SpeechBubbleView(
                     config: config,
                     isVisible: speechBubbleState.isVisible,
@@ -136,25 +121,94 @@ struct IslandView: View {
         }
         .padding(.top, petHeight * 0.6)
         .offset(y: petOffset)
-        .contentTransition(.opacity)
-        .animation(.easeInOut(duration: 0.5), value: windProgress)
-        .onAppear {
-            speechBubbleState.startAutoTriggers(mood: currentMood)
+        .onPreferenceChange(IslandFramePreferenceKey.self) { frame in
+            onFrameChange?(frame)
         }
-        .onDisappear {
-            speechBubbleState.stopAutoTriggers()
-        }
-        .onChange(of: windLevel) { _, newValue in
-            speechBubbleState.updateMood(Mood(from: newValue))
-        }
-        .onPreferenceChange(PetFramePreferenceKey.self) { frame in
-            onPetFrameChange?(frame)
-        }
+    }
+
+    // MARK: - Pet View
+
+    @ViewBuilder
+    private func petView(for pet: any PetDisplayable) -> some View {
+        Image(pet.assetName(for: windLevel))
+            .resizable()
+            .scaledToFit()
+            .frame(height: petHeight)
+            .petAnimation(
+                intensity: windConfig.intensity,
+                direction: windDirection,
+                bendCurve: windConfig.bendCurve,
+                swayAmount: windConfig.swayAmount,
+                rotationAmount: windConfig.rotationAmount,
+                tapTime: internalTapTime,
+                tapType: currentTapType,
+                tapConfig: currentTapConfig,
+                idleConfig: pet.idleConfig,
+                screenWidth: screenWidth,
+                windRhythm: windRhythm,
+                onTransformUpdate: { transform in
+                    petTransform = PetAnimationTransform(
+                        rotation: transform.rotation,
+                        swayOffset: transform.swayOffset * pet.displayScale,
+                        topOffset: transform.topOffset * pet.displayScale
+                    )
+                }
+            )
+            .scaleEffect(pet.displayScale, anchor: .bottom)
+            .background {
+                GeometryReader { proxy in
+                    Color.clear
+                        .preference(
+                            key: IslandFramePreferenceKey.self,
+                            value: proxy.frame(in: .global)
+                        )
+                }
+            }
+            .onTapGesture {
+                triggerTap(for: pet)
+            }
+            .contentTransition(.opacity)
+            .animation(.easeInOut(duration: 0.5), value: windProgress)
+            .onAppear {
+                speechBubbleState.startAutoTriggers(mood: currentMood)
+            }
+            .onDisappear {
+                speechBubbleState.stopAutoTriggers()
+            }
+            .onChange(of: windLevel) { _, newValue in
+                speechBubbleState.updateMood(Mood(from: newValue))
+            }
+    }
+
+    // MARK: - Drop Zone View
+
+    @ViewBuilder
+    private func dropZoneView(isHighlighted: Bool, isSnapped: Bool, isVisible: Bool) -> some View {
+        // Use invisible blob image to match exact pet dimensions
+        Image(Blob.shared.assetName(for: .none))
+            .resizable()
+            .scaledToFit()
+            .frame(height: petHeight)
+            .opacity(0)
+            .overlay {
+                PetDropZone(isHighlighted: isHighlighted, isSnapped: isSnapped, size: dropZoneSize)
+                    .opacity(isVisible ? 1 : 0)
+            }
+            .scaleEffect(Blob.shared.displayScale, anchor: .bottom)
+            .background {
+                GeometryReader { proxy in
+                    Color.clear
+                        .preference(
+                            key: IslandFramePreferenceKey.self,
+                            value: proxy.frame(in: .global)
+                        )
+                }
+            }
     }
 
     // MARK: - Actions
 
-    private func triggerTap() {
+    private func triggerTap(for pet: any PetDisplayable) {
         let tapType = randomTapType()
         let tapConfig = pet.tapConfig(for: tapType)
 
@@ -171,7 +225,7 @@ struct IslandView: View {
     }
 }
 
-private struct PetFramePreferenceKey: PreferenceKey {
+private struct IslandFramePreferenceKey: PreferenceKey {
     static var defaultValue: CGRect = .zero
 
     static func reduce(value: inout CGRect, nextValue: () -> CGRect) {
@@ -189,8 +243,7 @@ private struct PetFramePreferenceKey: PreferenceKey {
             IslandView(
                 screenHeight: geometry.size.height,
                 screenWidth: geometry.size.width,
-                pet: Blob.shared,
-                windProgress: 0
+                content: .pet(Blob.shared, windProgress: 0, windDirection: 1.0, windRhythm: nil)
             )
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
         }
@@ -205,8 +258,7 @@ private struct PetFramePreferenceKey: PreferenceKey {
             IslandView(
                 screenHeight: geometry.size.height,
                 screenWidth: geometry.size.width,
-                pet: EvolutionPath.plant.phase(at: 2)!,
-                windProgress: 0.5
+                content: .pet(EvolutionPath.plant.phase(at: 2)!, windProgress: 0.5, windDirection: 1.0, windRhythm: nil)
             )
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
         }
@@ -214,15 +266,44 @@ private struct PetFramePreferenceKey: PreferenceKey {
     }
 }
 
-#Preview("Plant Phase 4 - 100% Progress") {
+#Preview("Drop Zone") {
     GeometryReader { geometry in
         ZStack {
             Color.blue.opacity(0.3)
             IslandView(
                 screenHeight: geometry.size.height,
                 screenWidth: geometry.size.width,
-                pet: EvolutionPath.plant.phase(at: 4)!,
-                windProgress: 1.0
+                content: .dropZone(isHighlighted: false, isSnapped: false, isVisible: true)
+            )
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
+        }
+        .ignoresSafeArea()
+    }
+}
+
+#Preview("Drop Zone - Highlighted") {
+    GeometryReader { geometry in
+        ZStack {
+            Color.blue.opacity(0.3)
+            IslandView(
+                screenHeight: geometry.size.height,
+                screenWidth: geometry.size.width,
+                content: .dropZone(isHighlighted: true, isSnapped: false, isVisible: true)
+            )
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
+        }
+        .ignoresSafeArea()
+    }
+}
+
+#Preview("Drop Zone - Snapped") {
+    GeometryReader { geometry in
+        ZStack {
+            Color.blue.opacity(0.3)
+            IslandView(
+                screenHeight: geometry.size.height,
+                screenWidth: geometry.size.width,
+                content: .dropZone(isHighlighted: true, isSnapped: true, isVisible: true)
             )
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
         }

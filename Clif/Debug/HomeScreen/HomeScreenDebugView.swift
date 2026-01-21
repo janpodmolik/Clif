@@ -165,10 +165,12 @@ struct HomeScreenDebugView: View {
                     IslandView(
                         screenHeight: geometry.size.height,
                         screenWidth: geometry.size.width,
-                        pet: currentPet,
-                        windProgress: windProgress,
-                        windDirection: 1.0,
-                        windRhythm: windRhythm
+                        content: .pet(
+                            currentPet,
+                            windProgress: windProgress,
+                            windDirection: 1.0,
+                            windRhythm: windRhythm
+                        )
                     )
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
                     .ignoresSafeArea(.container, edges: .bottom)
