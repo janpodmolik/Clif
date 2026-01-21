@@ -47,6 +47,10 @@ private struct ModeOptionCard: View {
     let isSelected: Bool
     let onTap: () -> Void
 
+    private var modeInfo: PetModeInfo {
+        .display(for: mode)
+    }
+
     private enum Layout {
         static let cornerRadius: CGFloat = 20
         static let padding: CGFloat = 16
@@ -72,7 +76,7 @@ private struct ModeOptionCard: View {
                 Spacer()
 
                 Image(systemName: "checkmark.circle.fill")
-                    .foregroundStyle(mode.themeColor)
+                    .foregroundStyle(modeInfo.themeColor)
                     .font(.title2)
                     .opacity(isSelected ? 1 : 0)
             }
@@ -81,16 +85,16 @@ private struct ModeOptionCard: View {
             .glassSelectableBackground(
                 cornerRadius: Layout.cornerRadius,
                 isSelected: isSelected,
-                tintColor: mode.themeColor
+                tintColor: modeInfo.themeColor
             )
         }
         .buttonStyle(.plain)
     }
 
     private var iconView: some View {
-        Image(systemName: mode.iconName)
+        Image(systemName: modeInfo.iconName)
             .font(.title2)
-            .foregroundStyle(mode.themeColor)
+            .foregroundStyle(modeInfo.themeColor)
             .frame(width: Layout.iconSize, height: Layout.iconSize)
     }
 }

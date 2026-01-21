@@ -111,7 +111,7 @@ struct PetDropStep: View {
 
                     // Mode card
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("\(coordinator.selectedMode.shortName) Mode")
+                        Text("\(coordinator.modeInfo.shortName) Mode")
                             .font(.subheadline.weight(.medium))
                             .foregroundStyle(.secondary)
 
@@ -122,9 +122,9 @@ struct PetDropStep: View {
                     .padding(Layout.innerPadding)
                     .background(cardBackground)
                     .overlay(alignment: .topTrailing) {
-                        Image(systemName: modeIconName)
+                        Image(systemName: coordinator.modeInfo.iconName)
                             .font(.subheadline)
-                            .foregroundStyle(modeThemeColor)
+                            .foregroundStyle(coordinator.modeInfo.themeColor)
                             .padding(Layout.innerPadding)
                     }
                 }
@@ -151,22 +151,6 @@ struct PetDropStep: View {
             return MinutesFormatter.rate(coordinator.dailyLimitMinutes)
         } else {
             return coordinator.dynamicConfig.displayName
-        }
-    }
-
-    private var modeIconName: String {
-        if coordinator.selectedMode == .daily {
-            return coordinator.selectedMode.iconName
-        } else {
-            return coordinator.dynamicConfig.iconName
-        }
-    }
-
-    private var modeThemeColor: Color {
-        if coordinator.selectedMode == .daily {
-            return coordinator.selectedMode.themeColor
-        } else {
-            return coordinator.dynamicConfig.themeColor
         }
     }
 

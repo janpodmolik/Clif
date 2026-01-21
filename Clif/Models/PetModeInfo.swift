@@ -35,17 +35,24 @@ enum PetModeInfo {
         }
     }
 
-    var modeIcon: String {
+    var iconName: String {
         switch self {
         case .daily: return "clock.fill"
         case .dynamic: return "gauge.with.needle.fill"
         }
     }
 
-    var modeColor: Color {
+    var themeColor: Color {
         switch self {
         case .daily: return .blue
         case .dynamic: return .yellow
+        }
+    }
+
+    var shortName: String {
+        switch self {
+        case .daily: return "Daily"
+        case .dynamic: return "Dynamic"
         }
     }
 
@@ -86,5 +93,19 @@ extension PetModeInfo {
             config: pet.config,
             limitedSources: pet.limitedSources
         ))
+    }
+}
+
+// MARK: - Display Factory
+
+extension PetModeInfo {
+    /// Creates a display-only PetModeInfo for UI selection (without configuration data).
+    static func display(for mode: PetMode) -> PetModeInfo {
+        switch mode {
+        case .daily:
+            return .daily(DailyModeInfo(dailyLimitMinutes: 0, limitedSources: []))
+        case .dynamic:
+            return .dynamic(DynamicModeInfo(config: .balanced, limitedSources: []))
+        }
     }
 }

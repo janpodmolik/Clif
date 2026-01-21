@@ -69,6 +69,21 @@ final class CreatePetCoordinator {
 
     // MARK: - Computed
 
+    var modeInfo: PetModeInfo {
+        switch selectedMode {
+        case .daily:
+            return .daily(PetModeInfo.DailyModeInfo(
+                dailyLimitMinutes: dailyLimitMinutes,
+                limitedSources: []
+            ))
+        case .dynamic:
+            return .dynamic(PetModeInfo.DynamicModeInfo(
+                config: dynamicConfig,
+                limitedSources: []
+            ))
+        }
+    }
+
     var canProceed: Bool {
         switch currentStep {
         case .appSelection:

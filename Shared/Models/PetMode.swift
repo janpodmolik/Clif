@@ -17,31 +17,10 @@ extension PetMode {
         }
     }
 
-    var shortName: String {
-        switch self {
-        case .daily: "Daily"
-        case .dynamic: "Dynamic"
-        }
-    }
-
     var description: String {
         switch self {
         case .daily: "Set a fixed daily time limit. Simple and predictable."
         case .dynamic: "Wind rises while using apps, take breaks to recover."
-        }
-    }
-
-    var iconName: String {
-        switch self {
-        case .daily: "clock.fill"
-        case .dynamic: "wind"
-        }
-    }
-
-    var themeColor: Color {
-        switch self {
-        case .daily: .blue
-        case .dynamic: .orange
         }
     }
 }

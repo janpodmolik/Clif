@@ -28,11 +28,11 @@ struct SelectionSummaryCard: View {
                 }
 
                 HStack(spacing: 4) {
-                    Image(systemName: coordinator.selectedMode.iconName)
+                    Image(systemName: coordinator.modeInfo.iconName)
                         .font(.system(size: 14))
-                        .foregroundStyle(coordinator.selectedMode.themeColor)
+                        .foregroundStyle(coordinator.modeInfo.themeColor)
 
-                    Text(coordinator.selectedMode.shortName)
+                    Text(coordinator.modeInfo.shortName)
                         .font(.subheadline.weight(.medium))
                         .foregroundStyle(.secondary)
                 }

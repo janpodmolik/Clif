@@ -71,11 +71,11 @@ struct PetModeInfoSection: View {
     }
 
     private var modeIcon: some View {
-        Image(systemName: modeInfo.modeIcon)
+        Image(systemName: modeInfo.iconName)
             .font(.system(size: 16, weight: .medium))
-            .foregroundStyle(modeInfo.modeColor)
+            .foregroundStyle(modeInfo.themeColor)
             .frame(width: 32, height: 32)
-            .background(modeInfo.modeColor.opacity(0.15), in: Circle())
+            .background(modeInfo.themeColor.opacity(0.15), in: Circle())
     }
 
     @ViewBuilder
