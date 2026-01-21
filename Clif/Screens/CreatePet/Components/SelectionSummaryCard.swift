@@ -38,25 +38,13 @@ struct SelectionSummaryCard: View {
                 }
             }
 
-            // Limit value (show after step 2)
-            if coordinator.currentStep.rawValue >= CreatePetStep.petInfo.rawValue {
+            // Limit value (show on last step - petInfo)
+            if coordinator.currentStep == .petInfo {
                 divider
 
                 Text(limitDisplayText)
                     .font(.subheadline.weight(.medium))
                     .foregroundStyle(.secondary)
-            }
-
-            // Pet name (show after step 3, only if entered)
-            if coordinator.currentStep.rawValue >= CreatePetStep.petDrop.rawValue,
-               !coordinator.petName.isEmpty
-            {
-                divider
-
-                Text(coordinator.petName)
-                    .font(.subheadline.weight(.medium))
-                    .foregroundStyle(.primary)
-                    .lineLimit(1)
             }
         }
         .padding(Layout.padding)

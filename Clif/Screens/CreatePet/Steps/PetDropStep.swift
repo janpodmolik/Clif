@@ -22,12 +22,39 @@ struct PetDropStep: View {
 
     var body: some View {
         VStack(spacing: 12) {
-            Text("Review & Drop")
-                .font(.title3.weight(.semibold))
+            // Header with back/cancel buttons
+            HStack {
+                Button {
+                    coordinator.backFromDrop()
+                } label: {
+                    Image(systemName: "chevron.left")
+                        .font(.system(size: 16, weight: .medium))
+                        .foregroundStyle(.secondary)
+                        .frame(width: 32, height: 32)
+                }
 
-            Text("Drag the blob to the island")
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
+                Spacer()
+
+                VStack(spacing: 2) {
+                    Text("Review & Drop")
+                        .font(.headline)
+                    Text("Drag the blob to the island")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+
+                Spacer()
+
+                Button {
+                    coordinator.dismiss()
+                } label: {
+                    Image(systemName: "xmark")
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundStyle(.secondary)
+                        .frame(width: 32, height: 32)
+                }
+            }
+            .padding(.horizontal, Layout.cardPadding)
 
             // Main card: overview + blob
             HStack(spacing: Layout.cardPadding) {

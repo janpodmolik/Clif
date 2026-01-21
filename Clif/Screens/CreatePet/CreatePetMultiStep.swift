@@ -15,10 +15,7 @@ struct CreatePetMultiStep: View {
                 stepContent
                     .frame(maxWidth: .infinity)
 
-                // Footer (not shown on petDrop)
-                if coordinator.currentStep != .petDrop {
-                    footerBar
-                }
+                footerBar
             }
             .navigationTitle(coordinator.currentStep.title)
             .navigationBarTitleDisplayMode(.inline)
@@ -67,8 +64,6 @@ struct CreatePetMultiStep: View {
             }
         case .petInfo:
             PetInfoStep()
-        case .petDrop:
-            PetDropStep()
         }
     }
 
@@ -83,9 +78,10 @@ struct CreatePetMultiStep: View {
 
             // Navigation row: step indicator (centered) + next button (trailing)
             ZStack {
+                // Add 1 to totalSteps to account for drop step (shown in DragPortalSheet)
                 StepIndicator(
                     currentStep: coordinator.currentStep.rawValue,
-                    totalSteps: coordinator.totalSteps
+                    totalSteps: coordinator.totalSteps + 1
                 )
 
                 HStack {
@@ -108,7 +104,9 @@ struct CreatePetMultiStep: View {
 
     private var nextButton: some View {
         Button {
-            withAnimation(.easeInOut(duration: 0.25)) {
+            if coordinator.currentStep.isLast {
+                coordinator.proceedToDrop()
+            } else {
                 coordinator.nextStep()
             }
         } label: {
@@ -123,7 +121,7 @@ struct CreatePetMultiStep: View {
     }
 
     private var nextButtonTitle: String {
-        coordinator.currentStep == .petInfo ? "Create Pet" : "Next"
+        coordinator.currentStep.isLast ? "Drop Pet" : "Next"
     }
 
     @ViewBuilder

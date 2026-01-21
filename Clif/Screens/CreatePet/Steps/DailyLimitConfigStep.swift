@@ -3,7 +3,7 @@ import SwiftUI
 struct DailyLimitConfigStep: View {
     @Environment(CreatePetCoordinator.self) private var coordinator
 
-    private let minuteOptions = [15, 30, 45, 60, 90, 120, 150, 180, 240, 300, 360]
+    private let minuteOptions = [10, 15, 30, 45, 60, 90, 120, 150, 180, 240, 300, 360]
 
     var body: some View {
         @Bindable var coordinator = coordinator

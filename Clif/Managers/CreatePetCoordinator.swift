@@ -8,7 +8,6 @@ enum CreatePetStep: Int, CaseIterable {
     case modeSelection = 1
     case modeConfig = 2
     case petInfo = 3
-    case petDrop = 4
 
     var title: String {
         switch self {
@@ -16,12 +15,15 @@ enum CreatePetStep: Int, CaseIterable {
         case .modeSelection: "Choose Mode"
         case .modeConfig: "Configure"
         case .petInfo: "Name Your Pet"
-        case .petDrop: "Drop Your Pet"
         }
     }
 
     var canGoBack: Bool {
         self != .appSelection
+    }
+
+    var isLast: Bool {
+        self == .petInfo
     }
 }
 
@@ -36,9 +38,11 @@ struct BlobDragState: Equatable {
 
 @Observable
 final class CreatePetCoordinator {
-    // MARK: - Sheet State
+    // MARK: - Presentation State
 
     var isShowing = false
+    var isDropping = false
+    var dismissDragOffset: CGFloat = 0
 
     // MARK: - Step Navigation
 
@@ -77,8 +81,6 @@ final class CreatePetCoordinator {
             dailyLimitMinutes > 0
         case .petInfo:
             !petName.trimmingCharacters(in: .whitespaces).isEmpty
-        case .petDrop:
-            true
         }
     }
 
@@ -99,6 +101,7 @@ final class CreatePetCoordinator {
 
     func dismiss() {
         isShowing = false
+        isDropping = false
 
         cleanupWorkItem?.cancel()
         let workItem = DispatchWorkItem { [weak self] in
@@ -122,6 +125,37 @@ final class CreatePetCoordinator {
         guard let prevIndex = CreatePetStep(rawValue: currentStep.rawValue - 1) else { return }
         withAnimation(.easeInOut(duration: 0.25)) {
             currentStep = prevIndex
+        }
+    }
+
+    // MARK: - Drop Phase Transitions
+
+    func proceedToDrop() {
+        guard canProceed, currentStep.isLast else { return }
+
+        // Dismiss sheet with spring animation
+        withAnimation(.spring(response: 0.25, dampingFraction: 0.9)) {
+            isShowing = false
+        }
+
+        // Show drop overlay after short delay
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+            withAnimation(.spring(response: 0.3, dampingFraction: 0.85)) {
+                self.isDropping = true
+            }
+        }
+    }
+
+    func backFromDrop() {
+        withAnimation(.spring(response: 0.25, dampingFraction: 0.9)) {
+            isDropping = false
+        }
+
+        // Re-open sheet on last step after delay
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+            withAnimation(.spring(response: 0.3, dampingFraction: 0.85)) {
+                self.isShowing = true
+            }
         }
     }
 
@@ -175,6 +209,7 @@ final class CreatePetCoordinator {
         petName = ""
         petPurpose = ""
         dragState = BlobDragState()
+        dismissDragOffset = 0
         onComplete = nil
     }
 
