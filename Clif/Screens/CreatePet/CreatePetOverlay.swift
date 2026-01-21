@@ -25,7 +25,7 @@ struct CreatePetOverlay: View {
             DragPortalSheet(
                 isPresented: $coordinator.isDropping,
                 dismissDragOffset: $coordinator.dismissDragOffset,
-                onDismiss: { coordinator.dismiss() }
+                configuration: .petDrop
             ) {
                 PetDropStep()
             } overlay: {

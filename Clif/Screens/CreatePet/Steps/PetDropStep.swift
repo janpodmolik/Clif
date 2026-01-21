@@ -22,15 +22,10 @@ struct PetDropStep: View {
 
     var body: some View {
         VStack(spacing: 12) {
-            // Header with back/cancel buttons
+            // Header with back/cancel buttons (matching toolbar glass style)
             HStack {
-                Button {
+                CircleButton(icon: "chevron.left") {
                     coordinator.backFromDrop()
-                } label: {
-                    Image(systemName: "chevron.left")
-                        .font(.system(size: 16, weight: .medium))
-                        .foregroundStyle(.secondary)
-                        .frame(width: 32, height: 32)
                 }
 
                 Spacer()
@@ -45,16 +40,12 @@ struct PetDropStep: View {
 
                 Spacer()
 
-                Button {
+                CircleButton(icon: "xmark") {
                     coordinator.dismiss()
-                } label: {
-                    Image(systemName: "xmark")
-                        .font(.system(size: 14, weight: .medium))
-                        .foregroundStyle(.secondary)
-                        .frame(width: 32, height: 32)
                 }
             }
             .padding(.horizontal, Layout.cardPadding)
+            .padding(.top, 12)
 
             // Main card: overview + blob
             HStack(spacing: Layout.cardPadding) {

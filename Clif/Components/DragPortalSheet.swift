@@ -1,12 +1,28 @@
 import SwiftUI
 
+// MARK: - Configuration
+
+struct DragPortalSheetConfiguration {
+    var showsDragHandle: Bool = true
+    var allowsSwipeToDismiss: Bool = true
+    var usesGlassBackground: Bool = true
+
+    static let `default` = DragPortalSheetConfiguration()
+
+    static let petDrop = DragPortalSheetConfiguration(
+        showsDragHandle: false,
+        allowsSwipeToDismiss: false,
+        usesGlassBackground: false
+    )
+}
+
 // MARK: - Constants
 
 private enum DragPortalSheetLayout {
     static let trayInset: CGFloat = 10
     static let dragHandleWidth: CGFloat = 36
     static let dragHandleHeight: CGFloat = 5
-    static let dragHandleTopPadding: CGFloat = 4
+    static let dragHandleTopPadding: CGFloat = 8
     static let dragHandleBottomPadding: CGFloat = 4
     /// Extra touch area extending above the visible tray bounds
     static let dragHandleTouchExtensionAbove: CGFloat = 60
@@ -29,30 +45,51 @@ private enum DragPortalSheetDismiss {
 struct DragPortalSheet<Content: View, Overlay: View>: View {
     @Binding var isPresented: Bool
     @Binding var dismissDragOffset: CGFloat
+    var configuration: DragPortalSheetConfiguration
     var onDismiss: (() -> Void)?
     @ViewBuilder var content: () -> Content
     @ViewBuilder var overlay: () -> Overlay
 
     @State private var stretchOffset: CGFloat = 0
 
+    init(
+        isPresented: Binding<Bool>,
+        dismissDragOffset: Binding<CGFloat>,
+        configuration: DragPortalSheetConfiguration = .default,
+        onDismiss: (() -> Void)? = nil,
+        @ViewBuilder content: @escaping () -> Content,
+        @ViewBuilder overlay: @escaping () -> Overlay
+    ) {
+        self._isPresented = isPresented
+        self._dismissDragOffset = dismissDragOffset
+        self.configuration = configuration
+        self.onDismiss = onDismiss
+        self.content = content
+        self.overlay = overlay
+    }
+
     var body: some View {
         ZStack(alignment: .bottom) {
             if isPresented {
-                // Tap-to-dismiss background
-                Color.clear
-                    .contentShape(Rectangle())
-                    .onTapGesture {
-                        dismiss()
-                    }
-                    .ignoresSafeArea()
+                // Tap-to-dismiss background (only if swipe dismiss allowed)
+                if configuration.allowsSwipeToDismiss {
+                    Color.clear
+                        .contentShape(Rectangle())
+                        .onTapGesture {
+                            dismiss()
+                        }
+                        .ignoresSafeArea()
+                }
 
                 // Tray container - fixed to bottom
                 VStack {
                     Spacer()
 
-                    // Tray with drag handle
+                    // Tray with optional drag handle
                     VStack(spacing: 0) {
-                        dragHandleIndicator
+                        if configuration.showsDragHandle {
+                            dragHandleIndicator
+                        }
 
                         content()
 
@@ -64,9 +101,11 @@ struct DragPortalSheet<Content: View, Overlay: View>: View {
                     .background(trayBackground)
                     .clipShape(trayClipShape)
                     .contentShape(Rectangle())
-                    .gesture(dismissDragGesture)
+                    .gesture(rubberBandGesture)
                     .overlay(alignment: .top) {
-                        aboveTrayGestureArea
+                        if configuration.showsDragHandle {
+                            aboveTrayGestureArea
+                        }
                     }
                     .offset(y: dismissDragOffset)
                     .padding(.horizontal, DragPortalSheetLayout.trayInset)
@@ -102,31 +141,39 @@ struct DragPortalSheet<Content: View, Overlay: View>: View {
             .frame(maxWidth: .infinity)
             .contentShape(Rectangle())
             .offset(y: -aboveExtension)
-            .gesture(dismissDragGesture)
+            .gesture(rubberBandGesture)
     }
 
-    private var dismissDragGesture: some Gesture {
+    private var rubberBandGesture: some Gesture {
         DragGesture(minimumDistance: DragPortalSheetDismiss.minDragDistance)
             .onChanged { value in
                 let translation = value.translation.height
+                let resistance: CGFloat = 0.3
+
                 if translation >= 0 {
-                    // Dragging down - dismiss behavior
-                    dismissDragOffset = translation
-                    stretchOffset = 0
+                    // Dragging down
+                    if configuration.allowsSwipeToDismiss {
+                        // Full dismiss behavior - no resistance
+                        dismissDragOffset = translation
+                        stretchOffset = 0
+                    } else {
+                        // Rubber band with resistance (sheet moves down slightly)
+                        dismissDragOffset = translation * resistance
+                        stretchOffset = 0
+                    }
                 } else {
-                    // Dragging up - rubber band stretch
-                    let resistance: CGFloat = 0.3
+                    // Dragging up - rubber band stretch (sheet grows taller)
                     stretchOffset = -translation * resistance
                     dismissDragOffset = 0
                 }
             }
             .onEnded { value in
                 let translation = value.translation.height
-                let velocity = value.velocity.height
-                let predictedEnd = value.predictedEndTranslation.height
 
-                if translation >= 0 {
-                    // Was dragging down - check for dismiss
+                if translation >= 0 && configuration.allowsSwipeToDismiss {
+                    // Was dragging down with dismiss enabled - check for dismiss
+                    let velocity = value.velocity.height
+                    let predictedEnd = value.predictedEndTranslation.height
                     let draggedPastThreshold = translation > DragPortalSheetDismiss.dragThreshold
                     let fastFlick = velocity > DragPortalSheetDismiss.velocityThreshold
                     let momentumDismiss = predictedEnd > DragPortalSheetDismiss.predictedThreshold && translation > 20
@@ -137,9 +184,10 @@ struct DragPortalSheet<Content: View, Overlay: View>: View {
                         dismissDragOffset = 0
                     }
                 } else {
-                    // Was dragging up - spring back
+                    // Spring back (either dragging up, or dismiss disabled)
                     withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
                         stretchOffset = 0
+                        dismissDragOffset = 0
                     }
                 }
             }
@@ -151,12 +199,17 @@ struct DragPortalSheet<Content: View, Overlay: View>: View {
 
     @ViewBuilder
     private var trayBackground: some View {
-        if #available(iOS 26.0, *) {
-            // ConcentricRectangle automatically calculates correct radius based on distance from screen edge
-            Color.clear.glassEffect(.regular, in: ConcentricRectangle(corners: .concentric(minimum: 12), isUniform: true))
+        if configuration.usesGlassBackground {
+            if #available(iOS 26.0, *) {
+                // ConcentricRectangle automatically calculates correct radius based on distance from screen edge
+                Color.clear.glassEffect(.regular, in: ConcentricRectangle(corners: .concentric(minimum: 12), isUniform: true))
+            } else {
+                // Manual calculation for iOS < 26
+                trayClipShape.fill(.ultraThinMaterial)
+            }
         } else {
-            // Manual calculation for iOS < 26
-            trayClipShape.fill(.ultraThinMaterial)
+            // Solid background matching iOS sheet style
+            trayClipShape.fill(Color(.systemBackground))
         }
     }
 
@@ -167,17 +220,19 @@ struct DragPortalSheet<Content: View, Overlay: View>: View {
     }
 }
 
-// MARK: - Convenience Init (No Overlay)
+// MARK: - Convenience Init
 
 extension DragPortalSheet where Overlay == EmptyView {
     init(
         isPresented: Binding<Bool>,
         dismissDragOffset: Binding<CGFloat>,
+        configuration: DragPortalSheetConfiguration = .default,
         onDismiss: (() -> Void)? = nil,
         @ViewBuilder content: @escaping () -> Content
     ) {
         self._isPresented = isPresented
         self._dismissDragOffset = dismissDragOffset
+        self.configuration = configuration
         self.onDismiss = onDismiss
         self.content = content
         self.overlay = { EmptyView() }
