@@ -5,6 +5,7 @@ import SwiftUI
 /// Uses same corner radius as PetStagingCard for visual consistency.
 struct PetDropZone: View {
     var isHighlighted: Bool = false
+    var isSnapped: Bool = false
 
     @State private var pulsePhase: CGFloat = 0
 
@@ -21,6 +22,10 @@ struct PetDropZone: View {
         isHighlighted ? Layout.highlightOpacity : Layout.baseOpacity
     }
 
+    private var strokeColor: Color {
+        isSnapped ? .green : .white
+    }
+
     private var innerCornerRadius: CGFloat {
         Layout.cornerRadius * Layout.innerScale
     }
@@ -30,7 +35,7 @@ struct PetDropZone: View {
             // Outer pulsing ring
             RoundedRectangle(cornerRadius: Layout.cornerRadius)
                 .stroke(
-                    Color.white.opacity(currentOpacity * (1 - pulsePhase * 0.5)),
+                    strokeColor.opacity(currentOpacity * (1 - pulsePhase * 0.5)),
                     lineWidth: 2
                 )
                 .frame(width: Layout.size, height: Layout.size)
@@ -39,7 +44,7 @@ struct PetDropZone: View {
             // Middle dashed ring
             RoundedRectangle(cornerRadius: innerCornerRadius)
                 .stroke(
-                    Color.white.opacity(currentOpacity * 0.8),
+                    strokeColor.opacity(currentOpacity * 0.8),
                     style: StrokeStyle(lineWidth: 2, dash: [6, 4])
                 )
                 .frame(width: Layout.size * Layout.innerScale, height: Layout.size * Layout.innerScale)
@@ -49,8 +54,8 @@ struct PetDropZone: View {
                 .fill(
                     RadialGradient(
                         colors: [
-                            Color.white.opacity(currentOpacity * 0.5),
-                            Color.white.opacity(0)
+                            strokeColor.opacity(currentOpacity * 0.5),
+                            strokeColor.opacity(0)
                         ],
                         center: .center,
                         startRadius: 0,
@@ -61,6 +66,7 @@ struct PetDropZone: View {
                 .scaleEffect(isHighlighted ? 1.15 : 1.0)
         }
         .animation(.easeInOut(duration: 0.2), value: isHighlighted)
+        .animation(.easeInOut(duration: 0.15), value: isSnapped)
         .onAppear {
             withAnimation(
                 .easeInOut(duration: 1.5)
@@ -81,6 +87,7 @@ struct PetDropZone: View {
         VStack(spacing: 40) {
             PetDropZone(isHighlighted: false)
             PetDropZone(isHighlighted: true)
+            PetDropZone(isHighlighted: true, isSnapped: true)
         }
     }
 }

@@ -161,8 +161,8 @@ struct HomeScreenDebugView: View {
                         windRhythm: windRhythm
                     )
 
-                    // Floating island with pet
-                    FloatingIslandView(
+                    // Island with pet
+                    IslandView(
                         screenHeight: geometry.size.height,
                         screenWidth: geometry.size.width,
                         pet: currentPet,

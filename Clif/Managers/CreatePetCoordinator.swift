@@ -32,9 +32,11 @@ enum CreatePetStep: Int, CaseIterable {
 struct BlobDragState: Equatable {
     var isDragging = false
     var isReturning = false
+    var isSnapped = false
     var dragLocation: CGPoint = .zero
     var dragVelocity: CGSize = .zero
     var startLocation: CGPoint = .zero
+    var snapTargetCenter: CGPoint = .zero
 }
 
 // MARK: - Coordinator

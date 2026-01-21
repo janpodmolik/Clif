@@ -1,6 +1,8 @@
 import SwiftUI
 
 struct CreatePetOverlay: View {
+    let screenHeight: CGFloat
+
     @Environment(CreatePetCoordinator.self) private var coordinator
 
     private enum Layout {
@@ -31,20 +33,32 @@ struct CreatePetOverlay: View {
                 PetDropStep()
             } overlay: {
                 if coordinator.dragState.isDragging || coordinator.dragState.isReturning {
+                    // When snapped, position at drop zone center
                     // When returning, position directly at dragLocation (which animates to staging card center)
                     // When dragging, apply offset to show pet below finger
-                    let offset = coordinator.dragState.isReturning ? .zero : Layout.dragPreviewOffset
+                    let position: CGPoint = {
+                        if coordinator.dragState.isSnapped {
+                            return coordinator.dragState.snapTargetCenter
+                        } else if coordinator.dragState.isReturning {
+                            return coordinator.dragState.dragLocation
+                        } else {
+                            return CGPoint(
+                                x: coordinator.dragState.dragLocation.x + Layout.dragPreviewOffset.width,
+                                y: coordinator.dragState.dragLocation.y + Layout.dragPreviewOffset.height
+                            )
+                        }
+                    }()
 
-                    BlobDragPreview(dragVelocity: coordinator.dragState.dragVelocity)
-                        .position(
-                            x: coordinator.dragState.dragLocation.x + offset.width,
-                            y: coordinator.dragState.dragLocation.y + offset.height
-                        )
+                    BlobDragPreview(
+                        screenHeight: screenHeight,
+                        dragVelocity: coordinator.dragState.isSnapped ? .zero : coordinator.dragState.dragVelocity
+                    )
+                        .position(position)
                         .animation(
                             coordinator.dragState.isReturning
                                 ? .spring(response: 0.4, dampingFraction: 0.7)
-                                : .interactiveSpring(response: 0.15, dampingFraction: 0.8),
-                            value: coordinator.dragState.dragLocation
+                                : .spring(response: 0.25, dampingFraction: 0.7),
+                            value: position
                         )
                 }
             }
@@ -54,8 +68,10 @@ struct CreatePetOverlay: View {
 
 #if DEBUG
 #Preview {
-    CreatePetOverlay()
-        .environment(CreatePetCoordinator())
-        .environment(PetManager.mock())
+    GeometryReader { geometry in
+        CreatePetOverlay(screenHeight: geometry.size.height)
+            .environment(CreatePetCoordinator())
+            .environment(PetManager.mock())
+    }
 }
 #endif

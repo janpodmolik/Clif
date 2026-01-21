@@ -23,7 +23,7 @@ struct HomeScreen: View {
         createPetCoordinator.isShowing || createPetCoordinator.isDropping
     }
 
-    /// Whether the dragged pet is near the drop zone
+    /// Whether the dragged pet is near the drop zone (larger area for visual feedback)
     private var isDropZoneHighlighted: Bool {
         guard createPetCoordinator.dragState.isDragging,
               dropZoneFrame != .zero else { return false }
@@ -56,14 +56,19 @@ struct HomeScreen: View {
             ZStack {
                 background
 
-                if isInCreationMode {
-                    // Show empty island with drop zone during pet creation
+                if isInCreationMode || pets.isEmpty {
+                    // Show empty island during pet creation or when no pets exist
                     emptyIslandPage(geometry: geometry)
                 } else if pets.count > 1 {
                     petPager(geometry: geometry)
                 } else if let pet = currentPet {
                     petPage(pet, geometry: geometry)
                 }
+
+                // DEBUG: Show frame positions
+                #if DEBUG
+                debugFrameOverlay
+                #endif
             }
         }
         .fullScreenCover(isPresented: $showPetDetail) {
@@ -109,7 +114,9 @@ struct HomeScreen: View {
     private func emptyIslandPage(geometry: GeometryProxy) -> some View {
         EmptyIslandView(
             screenHeight: geometry.size.height,
+            showDropZone: createPetCoordinator.isDropping,
             isDropZoneHighlighted: isDropZoneHighlighted,
+            isDropZoneSnapped: createPetCoordinator.dragState.isSnapped,
             onDropZoneFrameChange: { frame in
                 dropZoneFrame = frame
             }
@@ -147,7 +154,7 @@ struct HomeScreen: View {
                 windRhythm: windRhythm
             )
 
-            FloatingIslandView(
+            IslandView(
                 screenHeight: geometry.size.height,
                 screenWidth: geometry.size.width,
                 pet: pet.phase ?? Blob.shared,
@@ -220,6 +227,49 @@ struct HomeScreen: View {
         showBreakSheet = true
     }
 }
+
+// MARK: - Debug Frame Overlay
+
+#if DEBUG
+extension HomeScreen {
+    @ViewBuilder
+    var debugFrameOverlay: some View {
+        ZStack {
+            // Pet frame (blue)
+            if petFrame != .zero {
+                Rectangle()
+                    .stroke(Color.blue, lineWidth: 2)
+                    .frame(width: petFrame.width, height: petFrame.height)
+                    .position(x: petFrame.midX, y: petFrame.midY)
+            }
+
+            // Drop zone frame (red)
+            if dropZoneFrame != .zero {
+                Rectangle()
+                    .stroke(Color.red, lineWidth: 2)
+                    .frame(width: dropZoneFrame.width, height: dropZoneFrame.height)
+                    .position(x: dropZoneFrame.midX, y: dropZoneFrame.midY)
+            }
+
+            // Frame info
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Pet: \(Int(petFrame.minY))-\(Int(petFrame.maxY)) (h:\(Int(petFrame.height)))")
+                    .foregroundStyle(.blue)
+                Text("Drop: \(Int(dropZoneFrame.minY))-\(Int(dropZoneFrame.maxY)) (h:\(Int(dropZoneFrame.height)))")
+                    .foregroundStyle(.red)
+            }
+            .font(.caption.monospaced())
+            .padding(8)
+            .background(.black.opacity(0.7))
+            .clipShape(RoundedRectangle(cornerRadius: 8))
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+            .padding(.top, 60)
+            .padding(.leading, 16)
+        }
+        .allowsHitTesting(false)
+    }
+}
+#endif
 
 // MARK: - HomeCardBackgroundModifier
 

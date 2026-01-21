@@ -4,42 +4,42 @@ import SwiftUI
 /// Used during pet creation flow before the pet is dropped.
 struct EmptyIslandView: View {
     let screenHeight: CGFloat
+    var showDropZone: Bool = false
     var isDropZoneHighlighted: Bool = false
+    var isDropZoneSnapped: Bool = false
     var onDropZoneFrameChange: ((CGRect) -> Void)?
 
-    private var islandHeight: CGFloat { screenHeight * 0.6 }
-    private var dropZoneVerticalOffset: CGFloat { screenHeight * 0.10 * 0.6 }
-    private var dropZoneOffset: CGFloat { -(screenHeight * 0.10) }
+    /// Same calculation as IslandView.petHeight
+    private var petHeight: CGFloat { screenHeight * 0.10 }
+    private var petOffset: CGFloat { -petHeight }
 
     var body: some View {
         ZStack(alignment: .top) {
-            // Rock with grass overlay
-            Image("rock")
-                .resizable()
-                .scaledToFit()
-                .frame(maxHeight: islandHeight)
-                .overlay(alignment: .top) {
-                    Image("grass")
-                        .resizable()
-                        .scaledToFit()
-                }
+            IslandBase(screenHeight: screenHeight)
 
-            // Drop zone indicator
-            PetDropZone(isHighlighted: isDropZoneHighlighted)
-                .background {
-                    GeometryReader { proxy in
-                        Color.clear
-                            .preference(
-                                key: EmptyIslandDropZoneFrameKey.self,
-                                value: proxy.frame(in: .global)
-                            )
-                    }
+            // Drop zone indicator (only during pet creation)
+            // Uses same structure as IslandView.petContent
+            if showDropZone {
+                ZStack {
+                    PetDropZone(isHighlighted: isDropZoneHighlighted, isSnapped: isDropZoneSnapped)
+                        .frame(height: petHeight)
+                        .scaleEffect(Blob.shared.displayScale, anchor: .bottom)
+                        .background {
+                            GeometryReader { proxy in
+                                Color.clear
+                                    .preference(
+                                        key: EmptyIslandDropZoneFrameKey.self,
+                                        value: proxy.frame(in: .global)
+                                    )
+                            }
+                        }
                 }
-                .padding(.top, dropZoneVerticalOffset)
-                .offset(y: dropZoneOffset)
+                .padding(.top, petHeight * 0.6)
+                .offset(y: petOffset)
                 .onPreferenceChange(EmptyIslandDropZoneFrameKey.self) { frame in
                     onDropZoneFrameChange?(frame)
                 }
+            }
         }
     }
 }
@@ -53,13 +53,24 @@ private struct EmptyIslandDropZoneFrameKey: PreferenceKey {
 }
 
 #if DEBUG
-#Preview {
+#Preview("Empty") {
+    GeometryReader { geometry in
+        ZStack {
+            Color.blue.opacity(0.3)
+            EmptyIslandView(screenHeight: geometry.size.height)
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
+        }
+        .ignoresSafeArea()
+    }
+}
+
+#Preview("With Drop Zone") {
     GeometryReader { geometry in
         ZStack {
             Color.blue.opacity(0.3)
             EmptyIslandView(
                 screenHeight: geometry.size.height,
-                isDropZoneHighlighted: false
+                showDropZone: true
             )
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
         }
@@ -73,6 +84,7 @@ private struct EmptyIslandDropZoneFrameKey: PreferenceKey {
             Color.blue.opacity(0.3)
             EmptyIslandView(
                 screenHeight: geometry.size.height,
+                showDropZone: true,
                 isDropZoneHighlighted: true
             )
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)

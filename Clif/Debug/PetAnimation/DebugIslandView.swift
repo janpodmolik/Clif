@@ -1,9 +1,9 @@
 #if DEBUG
 import SwiftUI
 
-/// Debug version of FloatingIslandView with full debug parameter support.
+/// Debug version of IslandView with full debug parameter support.
 /// Use this for testing and configuring animation parameters.
-struct DebugFloatingIslandView: View {
+struct DebugIslandView: View {
     let screenHeight: CGFloat
     let screenWidth: CGFloat?
     let pet: any PetDisplayable

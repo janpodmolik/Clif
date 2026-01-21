@@ -92,6 +92,7 @@ struct PetDropStep: View {
                                     }
                                     coordinator.dragState.dragLocation = value.location
                                     coordinator.dragState.dragVelocity = value.velocity
+                                    updateSnapState(at: value.location)
                                     updateDragHaptics(at: value.location)
                                 }
                                 .onEnded { value in
@@ -182,8 +183,14 @@ struct PetDropStep: View {
     private func handleDragEnded(at location: CGPoint) {
         hapticController.stop()
 
+        // Use blob position (with offset), not finger position
+        let blobPosition = CGPoint(
+            x: location.x - 20,
+            y: location.y - 50
+        )
+
         guard let petDropFrame = coordinator.petDropFrame,
-              petDropFrame.contains(location) else {
+              petDropFrame.contains(blobPosition) else {
             // Failed drop - return pet to staging card
             triggerReturnAnimation()
             return
@@ -212,6 +219,30 @@ struct PetDropStep: View {
         }
 
         HapticType.notificationError.trigger()
+    }
+
+    private func updateSnapState(at location: CGPoint) {
+        guard let petDropFrame = coordinator.petDropFrame else {
+            coordinator.dragState.isSnapped = false
+            return
+        }
+
+        // Use blob position (with offset), not finger position
+        let blobPosition = CGPoint(
+            x: location.x - 20,
+            y: location.y - 50
+        )
+        let isSnapped = petDropFrame.contains(blobPosition)
+        if isSnapped != coordinator.dragState.isSnapped {
+            coordinator.dragState.isSnapped = isSnapped
+            if isSnapped {
+                coordinator.dragState.snapTargetCenter = CGPoint(
+                    x: petDropFrame.midX,
+                    y: petDropFrame.midY
+                )
+                HapticType.impactMedium.trigger()
+            }
+        }
     }
 
     private func updateDragHaptics(at location: CGPoint) {

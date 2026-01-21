@@ -1,7 +1,7 @@
 import SwiftUI
 
-/// Displays the floating island scene with rock, grass, and animated pet.
-struct FloatingIslandView: View {
+/// Displays the island scene with rock, grass, and animated pet.
+struct IslandView: View {
     let screenHeight: CGFloat
     let screenWidth: CGFloat?
     let pet: any PetDisplayable
@@ -75,16 +75,7 @@ struct FloatingIslandView: View {
 
     var body: some View {
         ZStack(alignment: .top) {
-            // Rock with grass overlay (base layer)
-            Image("rock")
-                .resizable()
-                .scaledToFit()
-                .frame(maxHeight: islandHeight)
-                .overlay(alignment: .top) {
-                    Image("grass")
-                        .resizable()
-                        .scaledToFit()
-                }
+            IslandBase(screenHeight: screenHeight)
 
             // Pet with animation effects, speech bubble, and mood-aware image
             petContent
@@ -100,15 +91,6 @@ struct FloatingIslandView: View {
                 .resizable()
                 .scaledToFit()
                 .frame(height: petHeight)
-                .background {
-                    GeometryReader { proxy in
-                        Color.clear
-                            .preference(
-                                key: PetFramePreferenceKey.self,
-                                value: proxy.frame(in: .global)
-                            )
-                    }
-                }
                 .petAnimation(
                     intensity: windConfig.intensity,
                     direction: windDirection,
@@ -130,6 +112,15 @@ struct FloatingIslandView: View {
                     }
                 )
                 .scaleEffect(pet.displayScale, anchor: .bottom)
+                .background {
+                    GeometryReader { proxy in
+                        Color.clear
+                            .preference(
+                                key: PetFramePreferenceKey.self,
+                                value: proxy.frame(in: .global)
+                            )
+                    }
+                }
                 .onTapGesture {
                     triggerTap()
                 }
@@ -195,7 +186,7 @@ private struct PetFramePreferenceKey: PreferenceKey {
     GeometryReader { geometry in
         ZStack {
             Color.blue.opacity(0.3)
-            FloatingIslandView(
+            IslandView(
                 screenHeight: geometry.size.height,
                 screenWidth: geometry.size.width,
                 pet: Blob.shared,
@@ -211,7 +202,7 @@ private struct PetFramePreferenceKey: PreferenceKey {
     GeometryReader { geometry in
         ZStack {
             Color.blue.opacity(0.3)
-            FloatingIslandView(
+            IslandView(
                 screenHeight: geometry.size.height,
                 screenWidth: geometry.size.width,
                 pet: EvolutionPath.plant.phase(at: 2)!,
@@ -227,7 +218,7 @@ private struct PetFramePreferenceKey: PreferenceKey {
     GeometryReader { geometry in
         ZStack {
             Color.blue.opacity(0.3)
-            FloatingIslandView(
+            IslandView(
                 screenHeight: geometry.size.height,
                 screenWidth: geometry.size.width,
                 pet: EvolutionPath.plant.phase(at: 4)!,

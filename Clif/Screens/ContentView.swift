@@ -47,29 +47,31 @@ struct ContentView: View {
     #endif
 
     var body: some View {
-        ZStack {
-            TabView(selection: $activeTab) {
-                Tab(value: .home) {
-                    HomeScreen()
-                        .toolbarVisibility(.hidden, for: .tabBar)
+        GeometryReader { geometry in
+            ZStack {
+                TabView(selection: $activeTab) {
+                    Tab(value: .home) {
+                        HomeScreen()
+                            .toolbarVisibility(.hidden, for: .tabBar)
+                    }
+                    Tab(value: .overview) {
+                        OverviewScreen()
+                            .toolbarVisibility(.hidden, for: .tabBar)
+                    }
+                    Tab(value: .profile) {
+                        ProfileScreen()
+                            .toolbarVisibility(.hidden, for: .tabBar)
+                    }
                 }
-                Tab(value: .overview) {
-                    OverviewScreen()
-                        .toolbarVisibility(.hidden, for: .tabBar)
+                .tint(.primary)
+                .safeAreaInset(edge: .bottom, spacing: 0) {
+                    customTabBar()
+                        .padding(.horizontal, 20)
                 }
-                Tab(value: .profile) {
-                    ProfileScreen()
-                        .toolbarVisibility(.hidden, for: .tabBar)
-                }
-            }
-            .tint(.primary)
-            .safeAreaInset(edge: .bottom, spacing: 0) {
-                customTabBar()
-                    .padding(.horizontal, 20)
-            }
 
-            EssencePickerOverlay()
-            CreatePetOverlay()
+                EssencePickerOverlay()
+                CreatePetOverlay(screenHeight: geometry.size.height)
+            }
         }
         .environment(essenceCoordinator)
         .environment(createPetCoordinator)

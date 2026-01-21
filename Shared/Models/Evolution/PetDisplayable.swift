@@ -1,6 +1,6 @@
 import Foundation
 
-/// Protocol for types that can be displayed as a pet in FloatingIslandView.
+/// Protocol for types that can be displayed as a pet in IslandView.
 protocol PetDisplayable {
     var displayScale: CGFloat { get }
     var idleConfig: IdleConfig { get }

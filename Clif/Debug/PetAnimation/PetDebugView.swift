@@ -177,8 +177,8 @@ struct PetDebugView: View {
                         windRhythm: windLinesBurstActive ? nil : debugWindRhythm
                     )
 
-                    // Floating island with pet
-                    DebugFloatingIslandView(
+                    // Island with pet
+                    DebugIslandView(
                         screenHeight: geometry.size.height,
                         screenWidth: geometry.size.width,
                         pet: currentPet,
