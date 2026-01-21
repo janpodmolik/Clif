@@ -61,9 +61,9 @@ struct CreatePetMultiStep: View {
             ModeSelectionStep()
         case .modeConfig:
             if coordinator.selectedMode == .daily {
-                DailyModeSelectionStep()
+                DailyLimitConfigStep()
             } else {
-                DynamicModeSelectionStep()
+                DynamicIntensityConfigStep()
             }
         case .petInfo:
             PetInfoStep()

@@ -14,26 +14,11 @@ struct BlobStagingCard: View {
             .scaledToFit()
             .frame(width: Layout.imageSize, height: Layout.imageSize)
             .padding(Layout.padding)
-            .background(cardBackground)
-    }
-
-    @ViewBuilder
-    private var cardBackground: some View {
-        let shape = RoundedRectangle(cornerRadius: Layout.cornerRadius)
-
-        if #available(iOS 26.0, *) {
-            Color.clear
-                .glassEffect(.regular, in: shape)
-                .overlay {
-                    shape.stroke(Color.secondary.opacity(Layout.strokeOpacity), lineWidth: 2)
-                }
-        } else {
-            shape
-                .fill(.ultraThinMaterial)
-                .overlay {
-                    shape.stroke(Color.secondary.opacity(Layout.strokeOpacity), lineWidth: 2)
-                }
-        }
+            .glassBackground(cornerRadius: Layout.cornerRadius)
+            .overlay {
+                RoundedRectangle(cornerRadius: Layout.cornerRadius)
+                    .stroke(Color.secondary.opacity(Layout.strokeOpacity), lineWidth: 2)
+            }
     }
 }
 

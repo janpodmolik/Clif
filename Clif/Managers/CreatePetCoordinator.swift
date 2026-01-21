@@ -88,13 +88,12 @@ final class CreatePetCoordinator {
 
     // MARK: - Public API
 
-    func show(petDropFrame: CGRect?, onComplete: @escaping (ActivePet) -> Void) {
+    func show(onComplete: @escaping (ActivePet) -> Void) {
         cleanupWorkItem?.cancel()
         cleanupWorkItem = nil
 
-        self.petDropFrame = petDropFrame
         self.onComplete = onComplete
-        resetState()
+        resetWizardState()
         isShowing = true
     }
 
@@ -103,7 +102,7 @@ final class CreatePetCoordinator {
 
         cleanupWorkItem?.cancel()
         let workItem = DispatchWorkItem { [weak self] in
-            self?.resetState()
+            self?.resetWizardState()
             self?.cleanupWorkItem = nil
         }
         cleanupWorkItem = workItem
@@ -165,7 +164,9 @@ final class CreatePetCoordinator {
 
     // MARK: - Private
 
-    private func resetState() {
+    /// Resets wizard data when starting a new pet creation flow.
+    /// Does NOT reset petDropFrame since it's managed by HomeScreen.
+    private func resetWizardState() {
         currentStep = .appSelection
         selectedApps = FamilyActivitySelection()
         selectedMode = .daily
@@ -174,7 +175,6 @@ final class CreatePetCoordinator {
         petName = ""
         petPurpose = ""
         dragState = BlobDragState()
-        petDropFrame = nil
         onComplete = nil
     }
 

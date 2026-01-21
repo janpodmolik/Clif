@@ -9,11 +9,6 @@ struct PetInfoStep: View {
         case purpose
     }
 
-    private enum Layout {
-        static let textFieldCornerRadius: CGFloat = 12
-        static let textFieldPadding: CGFloat = 14
-    }
-
     var body: some View {
         @Bindable var coordinator = coordinator
 
@@ -85,20 +80,7 @@ private struct GlassTextFieldStyle: TextFieldStyle {
     func _body(configuration: TextField<Self._Label>) -> some View {
         configuration
             .padding(Layout.padding)
-            .background(fieldBackground)
-    }
-
-    @ViewBuilder
-    private var fieldBackground: some View {
-        let shape = RoundedRectangle(cornerRadius: Layout.cornerRadius)
-
-        if #available(iOS 26.0, *) {
-            Color.clear
-                .glassEffect(.regular, in: shape)
-        } else {
-            shape
-                .fill(.ultraThinMaterial)
-        }
+            .glassBackground(cornerRadius: Layout.cornerRadius)
     }
 }
 

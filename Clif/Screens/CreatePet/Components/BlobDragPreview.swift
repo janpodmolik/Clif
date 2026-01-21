@@ -16,26 +16,13 @@ struct BlobDragPreview: View {
             .scaledToFit()
             .frame(width: Layout.imageSize, height: Layout.imageSize)
             .padding(Layout.padding)
-            .background(previewBackground)
+            .glassBackground(cornerRadius: Layout.cornerRadius)
             .shadow(
                 color: .black.opacity(Layout.shadowOpacity),
                 radius: Layout.shadowRadius,
                 x: 0,
                 y: Layout.shadowY
             )
-    }
-
-    @ViewBuilder
-    private var previewBackground: some View {
-        let shape = RoundedRectangle(cornerRadius: Layout.cornerRadius)
-
-        if #available(iOS 26.0, *) {
-            Color.clear
-                .glassEffect(.regular, in: shape)
-        } else {
-            shape
-                .fill(.ultraThinMaterial)
-        }
     }
 }
 

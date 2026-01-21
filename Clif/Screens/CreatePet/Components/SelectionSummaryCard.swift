@@ -60,7 +60,7 @@ struct SelectionSummaryCard: View {
             }
         }
         .padding(Layout.padding)
-        .background(cardBackground)
+        .glassBackground(cornerRadius: Layout.cornerRadius)
         .animation(.easeInOut(duration: 0.2), value: coordinator.currentStep)
     }
 
@@ -72,15 +72,7 @@ struct SelectionSummaryCard: View {
 
     private var limitDisplayText: String {
         if coordinator.selectedMode == .daily {
-            let hours = coordinator.dailyLimitMinutes / 60
-            let minutes = coordinator.dailyLimitMinutes % 60
-            if hours > 0 && minutes > 0 {
-                return "\(hours)h \(minutes)m"
-            } else if hours > 0 {
-                return "\(hours)h"
-            } else {
-                return "\(minutes)m"
-            }
+            return MinutesFormatter.compact(coordinator.dailyLimitMinutes)
         } else {
             return coordinator.dynamicConfig.displayName
         }
@@ -90,44 +82,6 @@ struct SelectionSummaryCard: View {
         Circle()
             .fill(.tertiary)
             .frame(width: 4, height: 4)
-    }
-
-    @ViewBuilder
-    private var cardBackground: some View {
-        let shape = RoundedRectangle(cornerRadius: Layout.cornerRadius)
-
-        if #available(iOS 26.0, *) {
-            Color.clear
-                .glassEffect(.regular, in: shape)
-        } else {
-            shape
-                .fill(.ultraThinMaterial)
-        }
-    }
-}
-
-// MARK: - PetMode Extensions
-
-private extension PetMode {
-    var iconName: String {
-        switch self {
-        case .daily: "clock.fill"
-        case .dynamic: "wind"
-        }
-    }
-
-    var shortName: String {
-        switch self {
-        case .daily: "Daily"
-        case .dynamic: "Dynamic"
-        }
-    }
-
-    var themeColor: Color {
-        switch self {
-        case .daily: .blue
-        case .dynamic: .orange
-        }
     }
 }
 

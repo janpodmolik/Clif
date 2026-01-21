@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct DailyModeSelectionStep: View {
+struct DailyLimitConfigStep: View {
     @Environment(CreatePetCoordinator.self) private var coordinator
 
     private let minuteOptions = [15, 30, 45, 60, 90, 120, 150, 180, 240, 300, 360]
@@ -20,7 +20,7 @@ struct DailyModeSelectionStep: View {
 
             Picker("Daily Limit", selection: $coordinator.dailyLimitMinutes) {
                 ForEach(minuteOptions, id: \.self) { minutes in
-                    Text(formatMinutes(minutes))
+                    Text(MinutesFormatter.long(minutes))
                         .tag(minutes)
                 }
             }
@@ -37,10 +37,8 @@ struct DailyModeSelectionStep: View {
 
     @ViewBuilder
     private var limitDescription: some View {
-        let minutes = coordinator.dailyLimitMinutes
-
         VStack(spacing: 4) {
-            Text(formatMinutes(minutes))
+            Text(MinutesFormatter.long(coordinator.dailyLimitMinutes))
                 .font(.title.weight(.bold))
                 .foregroundStyle(.blue)
 
@@ -50,24 +48,11 @@ struct DailyModeSelectionStep: View {
         }
         .padding(.top, 8)
     }
-
-    private func formatMinutes(_ minutes: Int) -> String {
-        if minutes < 60 {
-            return "\(minutes) min"
-        } else if minutes % 60 == 0 {
-            let hours = minutes / 60
-            return hours == 1 ? "1 hour" : "\(hours) hours"
-        } else {
-            let hours = minutes / 60
-            let mins = minutes % 60
-            return "\(hours)h \(mins)m"
-        }
-    }
 }
 
 #if DEBUG
 #Preview {
-    DailyModeSelectionStep()
+    DailyLimitConfigStep()
         .environment(CreatePetCoordinator())
 }
 #endif

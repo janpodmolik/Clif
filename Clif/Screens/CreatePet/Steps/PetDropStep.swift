@@ -33,27 +33,27 @@ struct PetDropStep: View {
             HStack(spacing: Layout.cardPadding) {
                 // Left: Overview rows
                 VStack(alignment: .leading, spacing: Layout.rowSpacing) {
-                    overviewRow(
-                        icon: "app.badge.fill",
-                        label: "Apps",
-                        content: appsContent
-                    )
+                    overviewRow(icon: "app.badge.fill", label: "Apps") {
+                        LimitedSourcesPreview(
+                            applicationTokens: coordinator.selectedApps.applicationTokens,
+                            categoryTokens: coordinator.selectedApps.categoryTokens,
+                            webDomainTokens: coordinator.selectedApps.webDomainTokens
+                        )
+                    }
 
                     overviewRow(
-                        icon: coordinator.selectedMode == .daily ? "clock.fill" : "wind",
-                        label: coordinator.selectedMode == .daily ? "Daily" : "Dynamic",
-                        content: modeContent
-                    )
+                        icon: coordinator.selectedMode.iconName,
+                        label: coordinator.selectedMode.shortName
+                    ) {
+                        Text(modeDisplayText)
+                            .font(.subheadline.weight(.medium))
+                    }
 
                     if !coordinator.petName.isEmpty {
-                        overviewRow(
-                            icon: "leaf.fill",
-                            label: "Name",
-                            content: AnyView(
-                                Text(coordinator.petName)
-                                    .font(.subheadline.weight(.medium))
-                            )
-                        )
+                        overviewRow(icon: "leaf.fill", label: "Name") {
+                            Text(coordinator.petName)
+                                .font(.subheadline.weight(.medium))
+                        }
                     }
                 }
 
@@ -76,7 +76,7 @@ struct PetDropStep: View {
                     )
             }
             .padding(Layout.cardPadding)
-            .background(cardBackground)
+            .glassBackground(cornerRadius: Layout.cardCornerRadius)
             .padding(.horizontal)
         }
         .padding(.top)
@@ -87,7 +87,11 @@ struct PetDropStep: View {
 
     // MARK: - Overview Rows
 
-    private func overviewRow(icon: String, label: String, content: AnyView) -> some View {
+    private func overviewRow<Content: View>(
+        icon: String,
+        label: String,
+        @ViewBuilder content: () -> Content
+    ) -> some View {
         HStack(spacing: 8) {
             Image(systemName: icon)
                 .font(.subheadline)
@@ -98,55 +102,15 @@ struct PetDropStep: View {
                 .font(.subheadline)
                 .foregroundStyle(.tertiary)
 
-            content
+            content()
         }
     }
 
-    private var appsContent: AnyView {
-        let selection = coordinator.selectedApps
-        return AnyView(
-            LimitedSourcesPreview(
-                applicationTokens: selection.applicationTokens,
-                categoryTokens: selection.categoryTokens,
-                webDomainTokens: selection.webDomainTokens
-            )
-        )
-    }
-
-    private var modeContent: AnyView {
+    private var modeDisplayText: String {
         if coordinator.selectedMode == .daily {
-            let hours = coordinator.dailyLimitMinutes / 60
-            let minutes = coordinator.dailyLimitMinutes % 60
-            let text: String
-            if hours > 0 && minutes > 0 {
-                text = "\(hours)h \(minutes)m/day"
-            } else if hours > 0 {
-                text = "\(hours)h/day"
-            } else {
-                text = "\(minutes)m/day"
-            }
-            return AnyView(
-                Text(text)
-                    .font(.subheadline.weight(.medium))
-            )
+            return MinutesFormatter.rate(coordinator.dailyLimitMinutes)
         } else {
-            return AnyView(
-                Text(coordinator.dynamicConfig.displayName)
-                    .font(.subheadline.weight(.medium))
-            )
-        }
-    }
-
-    @ViewBuilder
-    private var cardBackground: some View {
-        let shape = RoundedRectangle(cornerRadius: Layout.cardCornerRadius)
-
-        if #available(iOS 26.0, *) {
-            Color.clear
-                .glassEffect(.regular, in: shape)
-        } else {
-            shape
-                .fill(.ultraThinMaterial)
+            return coordinator.dynamicConfig.displayName
         }
     }
 

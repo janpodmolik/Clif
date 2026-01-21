@@ -1,4 +1,5 @@
 import Foundation
+import SwiftUI
 
 /// Wind difficulty presets for Dynamic mode.
 /// Each preset defines how quickly wind rises during app usage and falls during breaks.
@@ -59,6 +60,22 @@ enum DynamicModeConfig: String, Codable, CaseIterable {
         case .gentle: return "Low pressure, learning"
         case .balanced: return "Real friction"
         case .intense: return "High stakes"
+        }
+    }
+
+    var themeColor: Color {
+        switch self {
+        case .gentle: .green
+        case .balanced: .orange
+        case .intense: .red
+        }
+    }
+
+    var iconName: String {
+        switch self {
+        case .gentle: "leaf.fill"
+        case .balanced: "scalemass.fill"
+        case .intense: "flame.fill"
         }
     }
 }

@@ -36,7 +36,7 @@ struct AppSelectionStep: View {
             .padding(.horizontal, Layout.headerPadding)
             .padding(.vertical, Layout.headerPadding)
             .frame(maxWidth: .infinity)
-            .background(headerBackground)
+            .glassBackground(cornerRadius: Layout.headerCornerRadius)
             .padding(.horizontal, Layout.headerPadding)
             .padding(.top, 8)
             .zIndex(1)
@@ -52,19 +52,6 @@ struct AppSelectionStep: View {
                     .frame(height: Layout.fadeHeight)
                     .allowsHitTesting(false)
                 }
-        }
-    }
-
-    @ViewBuilder
-    private var headerBackground: some View {
-        let shape = RoundedRectangle(cornerRadius: Layout.headerCornerRadius)
-
-        if #available(iOS 26.0, *) {
-            Color.clear
-                .glassEffect(.regular, in: shape)
-        } else {
-            shape
-                .fill(.ultraThinMaterial)
         }
     }
 
