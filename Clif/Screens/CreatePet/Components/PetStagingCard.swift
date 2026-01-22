@@ -3,11 +3,20 @@ import SwiftUI
 struct PetStagingCard: View {
     var isDragging: Bool = false
 
+    @Environment(\.colorScheme) private var colorScheme
+    @State private var glowPhase: CGFloat = 0
+
     private enum Layout {
         static let imageSize: CGFloat = 56
         static let padding: CGFloat = 12
         static let cornerRadius: CGFloat = 24
         static let strokeOpacity: CGFloat = 0.3
+        static let glowRadius: CGFloat = 12
+        static let glowOpacity: CGFloat = 0.6
+    }
+
+    private var glowColor: Color {
+        colorScheme == .dark ? .white : .accentColor
     }
 
     var body: some View {
@@ -32,11 +41,23 @@ struct PetStagingCard: View {
                     .glassBackground(cornerRadius: Layout.cornerRadius)
                     .overlay {
                         RoundedRectangle(cornerRadius: Layout.cornerRadius)
-                            .stroke(Color.secondary.opacity(Layout.strokeOpacity), lineWidth: 2)
+                            .stroke(glowColor.opacity(Layout.strokeOpacity + glowPhase * 0.3), lineWidth: 2)
                     }
+                    .shadow(
+                        color: glowColor.opacity(Layout.glowOpacity * glowPhase),
+                        radius: Layout.glowRadius * glowPhase
+                    )
             }
         }
         .animation(.easeOut(duration: 0.2), value: isDragging)
+        .onAppear {
+            withAnimation(
+                .easeInOut(duration: 1.2)
+                .repeatForever(autoreverses: true)
+            ) {
+                glowPhase = 1
+            }
+        }
     }
 }
 
