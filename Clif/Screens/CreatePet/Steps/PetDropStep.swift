@@ -61,11 +61,9 @@ struct PetDropStep: View {
                         Text(coordinator.petName.isEmpty ? "Your Pet" : coordinator.petName)
                             .font(.title3.weight(.semibold))
 
-                        if !coordinator.petPurpose.isEmpty {
-                            Text(coordinator.petPurpose)
-                                .font(.subheadline)
-                                .foregroundStyle(.secondary)
-                        }
+                        Text(coordinator.petPurpose.isEmpty ? "No special purpose" : coordinator.petPurpose)
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
                     .padding(Layout.innerPadding)
