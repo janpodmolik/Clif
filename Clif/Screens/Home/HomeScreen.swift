@@ -127,6 +127,23 @@ struct HomeScreen: View {
             )
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
             .ignoresSafeArea(.container, edges: .bottom)
+
+            // Show empty island card only when not in creation mode
+            if !isInCreationMode {
+                emptyIslandCard
+                    .modifier(HomeCardBackgroundModifier(cornerRadius: homeCardCornerRadius))
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
+                    .padding(homeCardInset)
+                    .transition(.opacity.combined(with: .scale(scale: 0.95)))
+            }
+        }
+    }
+
+    // MARK: - Empty Island Card
+
+    private var emptyIslandCard: some View {
+        EmptyIslandCard {
+            createPetCoordinator.show { _ in }
         }
     }
 
