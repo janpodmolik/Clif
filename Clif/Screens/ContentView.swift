@@ -190,9 +190,15 @@ struct ContentView: View {
         UIImpactFeedbackGenerator(style: .light).impactOccurred()
         switch activeTab {
         case .home:
+            #if DEBUG
+            createPetCoordinator.showDropOnly { _ in
+                // Pet created - could navigate or show success
+            }
+            #else
             createPetCoordinator.show { _ in
                 // Pet created - could navigate or show success
             }
+            #endif
         case .overview:
             showSearch = true
         case .profile:

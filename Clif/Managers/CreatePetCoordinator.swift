@@ -119,6 +119,26 @@ final class CreatePetCoordinator {
         isShowing = true
     }
 
+    #if DEBUG
+    /// Skips directly to drop phase with mock data for faster testing
+    func showDropOnly(onComplete: @escaping (ActivePet) -> Void) {
+        cleanupWorkItem?.cancel()
+        cleanupWorkItem = nil
+
+        self.onComplete = onComplete
+        resetWizardState()
+
+        // Pre-fill with mock data
+        selectedMode = .daily
+        dailyLimitMinutes = 60
+        petName = "Debug Pet"
+        currentStep = .petInfo
+
+        // Go straight to drop phase
+        isDropping = true
+    }
+    #endif
+
     func dismiss() {
         isShowing = false
         isDropping = false
