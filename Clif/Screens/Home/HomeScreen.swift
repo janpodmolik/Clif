@@ -60,10 +60,8 @@ struct HomeScreen: View {
                 if isInCreationMode || pets.isEmpty {
                     // Show empty island during pet creation or when no pets exist
                     emptyIslandPage(geometry: geometry)
-                } else if pets.count > 1 {
+                } else {
                     petPager(geometry: geometry)
-                } else if let pet = currentPet {
-                    petPage(pet, geometry: geometry)
                 }
 
             }
@@ -159,7 +157,13 @@ struct HomeScreen: View {
         .tabViewStyle(.page(indexDisplayMode: .automatic))
         .ignoresSafeArea(.container, edges: .bottom)
         .onAppear {
-            if selectedPetId == nil {
+            if selectedPetId == nil || !pets.contains(where: { $0.id == selectedPetId }) {
+                selectedPetId = pets.first?.id
+            }
+        }
+        .onChange(of: pets.count) { _, _ in
+            // Reset selection if current pet no longer exists
+            if !pets.contains(where: { $0.id == selectedPetId }) {
                 selectedPetId = pets.first?.id
             }
         }

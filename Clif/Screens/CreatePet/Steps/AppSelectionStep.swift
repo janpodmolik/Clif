@@ -8,9 +8,9 @@ struct AppSelectionStep: View {
 
     private enum Layout {
         static let headerSpacing: CGFloat = 8
-        static let headerPadding: CGFloat = 16
+        static let headerPadding: CGFloat = 12
         static let headerCornerRadius: CGFloat = 20
-        static let fadeHeight: CGFloat = 24
+        static let fadeHeight: CGFloat = 16
     }
 
     private var backgroundColor: Color {
@@ -23,13 +23,8 @@ struct AppSelectionStep: View {
         VStack(spacing: 0) {
             // Header with glass background
             VStack(spacing: Layout.headerSpacing) {
-                Text("Select apps to limit")
+                Text("Select what to limit")
                     .font(.title3.weight(.semibold))
-
-                Text("Choose which apps and categories your pet will monitor")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                    .multilineTextAlignment(.center)
 
                 selectionSummary
             }
