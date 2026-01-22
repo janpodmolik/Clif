@@ -173,28 +173,29 @@ final class CreatePetCoordinator {
     func proceedToDrop() {
         guard canProceed, currentStep.isLast else { return }
 
-        // Dismiss sheet with spring animation
-        withAnimation(.spring(response: 0.25, dampingFraction: 0.9)) {
-            isShowing = false
+        // First activate drop mode (keeps isInCreationMode true)
+        withAnimation(.spring(response: 0.3, dampingFraction: 0.85)) {
+            isDropping = true
         }
 
-        // Show drop overlay after short delay
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-            withAnimation(.spring(response: 0.3, dampingFraction: 0.85)) {
-                self.isDropping = true
+        // Then dismiss wizard sheet after overlap
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+            withAnimation(.spring(response: 0.25, dampingFraction: 0.9)) {
+                self.isShowing = false
             }
         }
     }
 
     func backFromDrop() {
-        withAnimation(.spring(response: 0.25, dampingFraction: 0.9)) {
-            isDropping = false
+        // First show wizard sheet (keeps isInCreationMode true)
+        withAnimation(.spring(response: 0.3, dampingFraction: 0.85)) {
+            isShowing = true
         }
 
-        // Re-open sheet on last step after delay
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-            withAnimation(.spring(response: 0.3, dampingFraction: 0.85)) {
-                self.isShowing = true
+        // Then dismiss drop overlay after overlap
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+            withAnimation(.spring(response: 0.25, dampingFraction: 0.9)) {
+                self.isDropping = false
             }
         }
     }
