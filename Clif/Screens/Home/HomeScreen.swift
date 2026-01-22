@@ -140,6 +140,7 @@ struct HomeScreen: View {
             }
         }
         .tabViewStyle(.page(indexDisplayMode: .automatic))
+        .ignoresSafeArea(.container, edges: .bottom)
         .onAppear {
             if selectedPetId == nil {
                 selectedPetId = pets.first?.id
