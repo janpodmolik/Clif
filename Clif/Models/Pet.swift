@@ -12,8 +12,8 @@ final class Pet: Identifiable, PetPresentable, PetWithSources {
     /// Current wind points (0-100). At 100, pet blows away.
     var windPoints: Double
 
-    /// Last recorded threshold minutes from DeviceActivityMonitor.
-    var lastThresholdMinutes: Int
+    /// Last recorded threshold seconds from DeviceActivityMonitor.
+    var lastThresholdSeconds: Int
 
     /// Currently active break session, if any.
     var activeBreak: ActiveBreak?
@@ -84,14 +84,16 @@ final class Pet: Identifiable, PetPresentable, PetWithSources {
 
     // MARK: - Mutations
 
-    /// Updates wind based on new threshold minutes from monitor.
-    func updateWind(newThresholdMinutes: Int) {
-        let deltaMinutes = newThresholdMinutes - lastThresholdMinutes
-        guard deltaMinutes > 0 else { return }
+    /// Updates wind based on new threshold seconds from monitor.
+    func updateWind(newThresholdSeconds: Int) {
+        let deltaSeconds = newThresholdSeconds - lastThresholdSeconds
+        guard deltaSeconds > 0 else { return }
 
-        windPoints += Double(deltaMinutes) * preset.riseRate
+        // riseRate is now per second
+        let riseRatePerSecond = preset.riseRate / 60.0
+        windPoints += Double(deltaSeconds) * riseRatePerSecond
         windPoints = min(windPoints, 100)
-        lastThresholdMinutes = newThresholdMinutes
+        lastThresholdSeconds = newThresholdSeconds
 
         // Keep SharedDefaults in sync for extension snapshots
         SnapshotLogging.updateWindPoints(windPoints)
@@ -201,7 +203,59 @@ final class Pet: Identifiable, PetPresentable, PetWithSources {
     /// Resets wind to 0 (for daily reset).
     func resetWind() {
         windPoints = 0
-        lastThresholdMinutes = 0
+        lastThresholdSeconds = 0
+    }
+
+    /// Syncs wind state from SharedDefaults (called when app returns to foreground).
+    /// The extension updates SharedDefaults directly, so this is the most accurate source.
+    func syncFromSnapshots() {
+        #if DEBUG
+        print("[Pet.sync] Starting sync for pet \(id)")
+        print("[Pet.sync] SharedDefaults.monitoredPetId = \(SharedDefaults.monitoredPetId?.uuidString ?? "nil")")
+        #endif
+
+        // Only sync if this is the monitored pet
+        guard SharedDefaults.monitoredPetId == id else {
+            #if DEBUG
+            print("[Pet.sync] Skipping - not the monitored pet")
+            #endif
+            return
+        }
+
+        // Check if blown away today (from snapshots as backup)
+        if SnapshotStore.shared.wasBlownAwayToday(petId: id) {
+            if !isBlownAway {
+                windPoints = 100
+                blowAway()
+            }
+            return
+        }
+
+        // Read wind state from SharedDefaults (updated by extension in real-time)
+        let extensionWindPoints = SharedDefaults.monitoredWindPoints
+        let extensionLastSeconds = SharedDefaults.monitoredLastThresholdSeconds
+
+        #if DEBUG
+        print("[Pet.sync] Extension values: wind=\(extensionWindPoints), lastSec=\(extensionLastSeconds)")
+        print("[Pet.sync] Pet values: wind=\(windPoints), lastSec=\(lastThresholdSeconds)")
+        #endif
+
+        // Sync if extension has newer data
+        if extensionLastSeconds > lastThresholdSeconds || extensionWindPoints > windPoints {
+            #if DEBUG
+            print("[Pet.sync] Updating pet: \(windPoints) -> \(extensionWindPoints)")
+            #endif
+            windPoints = extensionWindPoints
+            lastThresholdSeconds = extensionLastSeconds
+
+            if windPoints >= 100 && !isBlownAway {
+                blowAway()
+            }
+        } else {
+            #if DEBUG
+            print("[Pet.sync] No update needed")
+            #endif
+        }
     }
 
     // MARK: - Init
@@ -212,7 +266,7 @@ final class Pet: Identifiable, PetPresentable, PetWithSources {
         evolutionHistory: EvolutionHistory,
         purpose: String?,
         windPoints: Double = 0,
-        lastThresholdMinutes: Int = 0,
+        lastThresholdSeconds: Int = 0,
         activeBreak: ActiveBreak? = nil,
         preset: WindPreset = .default,
         dailyStats: [DailyUsageStat] = [],
@@ -224,7 +278,7 @@ final class Pet: Identifiable, PetPresentable, PetWithSources {
         self.evolutionHistory = evolutionHistory
         self.purpose = purpose
         self.windPoints = windPoints
-        self.lastThresholdMinutes = lastThresholdMinutes
+        self.lastThresholdSeconds = lastThresholdSeconds
         self.activeBreak = activeBreak
         self.preset = preset
         self.dailyStats = dailyStats

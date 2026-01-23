@@ -78,13 +78,17 @@ final class ScreenTimeManager: ObservableObject {
     /// Starts monitoring for a specific pet using its limitedSources.
     /// - Parameters:
     ///   - petId: UUID of the pet being monitored
-    ///   - limitMinutes: Screen time limit in minutes (minutesToBlowAway from config)
+    ///   - limitSeconds: Screen time limit in seconds (minutesToBlowAway * 60 from config)
     ///   - windPoints: Current wind points for snapshot logging
+    ///   - riseRatePerSecond: Wind points per second of usage (from preset, divided by 60)
+    ///   - lastThresholdSeconds: Last recorded threshold seconds (for resuming mid-day)
     ///   - limitedSources: Pet's limited sources containing tokens to monitor
     func startMonitoring(
         petId: UUID,
-        limitMinutes: Int,
+        limitSeconds: Int,
         windPoints: Double,
+        riseRatePerSecond: Double,
+        lastThresholdSeconds: Int = 0,
         limitedSources: [LimitedSource]
     ) {
         let appTokens = limitedSources.applicationTokens
@@ -106,10 +110,12 @@ final class ScreenTimeManager: ObservableObject {
             webDomains: webTokens
         )
 
-        // Update monitoring context for extensions
+        // Update monitoring context for extensions (extension uses these to calculate wind)
         SharedDefaults.monitoredPetId = petId
         SharedDefaults.monitoredWindPoints = windPoints
-        SharedDefaults.setInt(limitMinutes, forKey: DefaultsKeys.monitoringLimitMinutes)
+        SharedDefaults.monitoredLastThresholdSeconds = lastThresholdSeconds
+        SharedDefaults.monitoredRiseRate = riseRatePerSecond
+        SharedDefaults.setInt(limitSeconds, forKey: DefaultsKeys.monitoringLimitSeconds)
 
         let schedule = DeviceActivitySchedule(
             intervalStart: DateComponents(hour: 0, minute: 0),
@@ -118,7 +124,7 @@ final class ScreenTimeManager: ObservableObject {
         )
 
         let events = buildEvents(
-            limitSeconds: limitMinutes * 60,
+            limitSeconds: limitSeconds,
             appTokens: appTokens,
             catTokens: catTokens,
             webTokens: webTokens
@@ -131,7 +137,7 @@ final class ScreenTimeManager: ObservableObject {
             center.stopMonitoring([activityName])
             try center.startMonitoring(activityName, during: schedule, events: events)
             #if DEBUG
-            print("[ScreenTimeManager] Started monitoring with \(events.count) events for pet \(petId)")
+            print("[ScreenTimeManager] Started monitoring with \(events.count) events, limit: \(limitSeconds)s for pet \(petId)")
             #endif
         } catch {
             #if DEBUG
@@ -169,7 +175,9 @@ final class ScreenTimeManager: ObservableObject {
 
     // MARK: - Event Building
 
-    /// Builds per-minute thresholds for granular windPoints tracking.
+    /// Builds thresholds for granular windPoints tracking.
+    /// For short limits (< 20 thresholds worth of minutes), uses second-based intervals.
+    /// For longer limits, uses minute-based intervals.
     private func buildEvents(
         limitSeconds: Int,
         appTokens: Set<ApplicationToken>,
@@ -178,22 +186,35 @@ final class ScreenTimeManager: ObservableObject {
     ) -> [DeviceActivityEvent.Name: DeviceActivityEvent] {
         var events: [DeviceActivityEvent.Name: DeviceActivityEvent] = [:]
 
-        let limitMinutes = limitSeconds / 60
+        let maxThresholds = AppConstants.maxThresholds
+        let minInterval = AppConstants.minimumThresholdSeconds
 
-        // Create threshold for each minute (1, 2, 3, ..., limitMinutes)
-        // Cap at maxThresholds due to DeviceActivity API limit
-        let maxThresholds = min(limitMinutes, AppConstants.maxThresholds)
+        // Calculate optimal interval to fit maxThresholds within limitSeconds
+        // intervalSeconds = limitSeconds / maxThresholds, but at least minInterval
+        let intervalSeconds = max(limitSeconds / maxThresholds, minInterval)
 
-        for minute in 1...maxThresholds {
-            let eventName = DeviceActivityEvent.Name("minute_\(minute)")
+        // Generate thresholds: interval, 2*interval, 3*interval, ... up to limitSeconds
+        var currentSeconds = intervalSeconds
+        while currentSeconds <= limitSeconds && events.count < maxThresholds {
+            let eventName = DeviceActivityEvent.Name("second_\(currentSeconds)")
+
+            // DateComponents supports second precision
+            let minutes = currentSeconds / 60
+            let seconds = currentSeconds % 60
 
             events[eventName] = DeviceActivityEvent(
                 applications: appTokens,
                 categories: catTokens,
                 webDomains: webTokens,
-                threshold: DateComponents(minute: minute)
+                threshold: DateComponents(minute: minutes, second: seconds)
             )
+
+            currentSeconds += intervalSeconds
         }
+
+        #if DEBUG
+        print("[ScreenTimeManager] Built \(events.count) events with \(intervalSeconds)s interval for \(limitSeconds)s limit")
+        #endif
 
         return events
     }
@@ -201,22 +222,6 @@ final class ScreenTimeManager: ObservableObject {
     // MARK: - Debug Methods
 
     #if DEBUG
-    /// Debug-only: Starts monitoring using the global activitySelection.
-    /// Creates a temporary debug pet ID.
-    func startMonitoring() {
-        let debugPetId = UUID()
-        let limitMinutes = SharedDefaults.integer(forKey: DefaultsKeys.monitoringLimitMinutes)
-
-        startMonitoring(
-            petId: debugPetId,
-            limitMinutes: limitMinutes > 0 ? limitMinutes : 100,
-            windPoints: 0,
-            appTokens: activitySelection.applicationTokens,
-            catTokens: activitySelection.categoryTokens,
-            webTokens: activitySelection.webDomainTokens
-        )
-    }
-
     /// Debug-only: Applies shield using global activitySelection.
     func updateShield() {
         activateShield(
@@ -224,63 +229,6 @@ final class ScreenTimeManager: ObservableObject {
             categories: activitySelection.categoryTokens,
             webDomains: activitySelection.webDomainTokens
         )
-    }
-
-    /// Debug-only: Saves global selection (no-op for production).
-    func saveSelection() {
-        // For debug: just restart monitoring with current selection
-        startMonitoring()
-    }
-
-    /// Internal helper for debug that takes tokens directly.
-    private func startMonitoring(
-        petId: UUID,
-        limitMinutes: Int,
-        windPoints: Double,
-        appTokens: Set<ApplicationToken>,
-        catTokens: Set<ActivityCategoryToken>,
-        webTokens: Set<WebDomainToken>
-    ) {
-        guard !appTokens.isEmpty || !catTokens.isEmpty || !webTokens.isEmpty else {
-            print("[ScreenTimeManager] No tokens to monitor for pet \(petId)")
-            return
-        }
-
-        // Save tokens for this pet (extension will load them)
-        SharedDefaults.saveTokens(
-            petId: petId,
-            applications: appTokens,
-            categories: catTokens,
-            webDomains: webTokens
-        )
-
-        // Update monitoring context for extensions
-        SharedDefaults.monitoredPetId = petId
-        SharedDefaults.monitoredWindPoints = windPoints
-        SharedDefaults.setInt(limitMinutes, forKey: DefaultsKeys.monitoringLimitMinutes)
-
-        let schedule = DeviceActivitySchedule(
-            intervalStart: DateComponents(hour: 0, minute: 0),
-            intervalEnd: DateComponents(hour: 23, minute: 59),
-            repeats: true
-        )
-
-        let events = buildEvents(
-            limitSeconds: limitMinutes * 60,
-            appTokens: appTokens,
-            catTokens: catTokens,
-            webTokens: webTokens
-        )
-
-        let activityName = DeviceActivityName.forPet(petId)
-
-        do {
-            center.stopMonitoring([activityName])
-            try center.startMonitoring(activityName, during: schedule, events: events)
-            print("[ScreenTimeManager] Started monitoring with \(events.count) events for pet \(petId)")
-        } catch {
-            print("[ScreenTimeManager] Failed to start monitoring for pet \(petId): \(error.localizedDescription)")
-        }
     }
     #endif
 }

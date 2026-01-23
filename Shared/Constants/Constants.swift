@@ -53,7 +53,9 @@ enum DefaultsKeys {
 
     static let monitoredPetId = "monitoredPetId"
     static let monitoredWindPoints = "monitoredWindPoints"
-    static let monitoringLimitMinutes = "monitoringLimitMinutes"
+    static let monitoringLimitSeconds = "monitoringLimitSeconds"
+    static let monitoredLastThresholdSeconds = "monitoredLastThresholdSeconds"
+    static let monitoredRiseRate = "monitoredRiseRate"
     static let breakStartedAt = "breakStartedAt"
     static let shouldRestartMonitoring = "shouldRestartMonitoring"
 }

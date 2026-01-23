@@ -2,6 +2,7 @@ import DeviceActivity
 import FamilyControls
 import Foundation
 import ManagedSettings
+import UserNotifications
 
 /// Background extension that monitors device activity and updates progress.
 /// Runs in a separate process with very limited memory (~6MB).
@@ -20,8 +21,10 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
         store.shield.applicationCategories = nil
         store.shield.webDomains = nil
 
-        // Reset progress
+        // Reset wind state for new day
         SharedDefaults.currentProgress = 0
+        SharedDefaults.monitoredWindPoints = 0
+        SharedDefaults.monitoredLastThresholdSeconds = 0
 
         // Log systemDayStart snapshot
         logSnapshot(eventType: .systemDayStart)
@@ -40,20 +43,63 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
         // Use autoreleasepool to immediately free memory in this memory-constrained extension
         autoreleasepool {
             let eventName = event.rawValue
+            logToFile("[Extension] eventDidReachThreshold: \(eventName)")
 
-            // Parse minute from event name "minute_X"
-            if eventName.hasPrefix("minute_"),
+            // Parse seconds from event name "second_X"
+            if eventName.hasPrefix("second_"),
                let valueString = eventName.split(separator: "_").last,
-               let minute = Int(valueString) {
+               let currentSeconds = Int(valueString) {
 
-                // Log snapshot with cumulative minutes
-                logSnapshot(eventType: .usageThreshold(cumulativeMinutes: minute))
+                // Calculate wind increase directly in extension
+                let lastSeconds = SharedDefaults.monitoredLastThresholdSeconds
+                let riseRatePerSecond = SharedDefaults.monitoredRiseRate
+                let oldWindPoints = SharedDefaults.monitoredWindPoints
+                let deltaSeconds = currentSeconds - lastSeconds
 
-                // Activate shield when limit reached (last threshold = minutesToBlowAway)
-                let limitMinutes = SharedDefaults.integer(forKey: DefaultsKeys.monitoringLimitMinutes)
-                if minute >= limitMinutes {
-                    activateShield()
+                logToFile("[Extension] seconds=\(currentSeconds), lastSeconds=\(lastSeconds), delta=\(deltaSeconds), riseRate=\(riseRatePerSecond)/s, oldWind=\(oldWindPoints)")
+
+                if deltaSeconds > 0 {
+                    var windPoints = oldWindPoints
+                    windPoints += Double(deltaSeconds) * riseRatePerSecond
+                    windPoints = min(windPoints, 100)
+
+                    // Update SharedDefaults so main app can read it
+                    SharedDefaults.monitoredWindPoints = windPoints
+                    SharedDefaults.monitoredLastThresholdSeconds = currentSeconds
+
+                    logToFile("[Extension] Updated wind: \(oldWindPoints) -> \(windPoints)")
                 }
+
+                // Log snapshot with cumulative seconds (converted to minutes for compatibility)
+                logSnapshot(eventType: .usageThreshold(cumulativeMinutes: currentSeconds / 60))
+
+                // Activate shield when limit reached
+                let limitSeconds = SharedDefaults.integer(forKey: DefaultsKeys.monitoringLimitSeconds)
+                logToFile("[Extension] limitSeconds=\(limitSeconds), checking if \(currentSeconds) >= \(limitSeconds)")
+                if currentSeconds >= limitSeconds {
+                    logToFile("[Extension] LIMIT REACHED - activating shield")
+                    activateShield()
+                    sendLimitReachedNotification()
+                }
+            }
+        }
+    }
+
+    /// Logs to shared file for debugging (extension can't print to console)
+    private func logToFile(_ message: String) {
+        guard let containerURL = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: AppConstants.appGroupIdentifier) else { return }
+        let logURL = containerURL.appendingPathComponent("extension_log.txt")
+        let timestamp = ISO8601DateFormatter().string(from: Date())
+        let line = "[\(timestamp)] \(message)\n"
+        if let data = line.data(using: .utf8) {
+            if FileManager.default.fileExists(atPath: logURL.path) {
+                if let handle = try? FileHandle(forWritingTo: logURL) {
+                    handle.seekToEndOfFile()
+                    handle.write(data)
+                    handle.closeFile()
+                }
+            } else {
+                try? data.write(to: logURL)
             }
         }
     }
@@ -97,5 +143,22 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
                 store.shield.webDomains = webTokens
             }
         }
+    }
+
+    /// Sends notification when screen time limit is reached
+    private func sendLimitReachedNotification() {
+        let content = UNMutableNotificationContent()
+        content.title = "Screen Time Limit Reached"
+        content.body = "Your pet is being blown away by the wind!"
+        content.sound = .default
+        content.userInfo = ["deepLink": "clif://shield"]
+
+        let request = UNNotificationRequest(
+            identifier: "limitReached_\(UUID().uuidString)",
+            content: content,
+            trigger: nil // Immediate
+        )
+
+        UNUserNotificationCenter.current().add(request) { _ in }
     }
 }

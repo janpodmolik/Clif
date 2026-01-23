@@ -7,7 +7,7 @@ struct PetDTO: Codable {
     let evolutionHistory: EvolutionHistory
     let purpose: String?
     let windPoints: Double
-    let lastThresholdMinutes: Int
+    let lastThresholdSeconds: Int
     let activeBreak: ActiveBreak?
     let preset: WindPreset
     let dailyStats: [DailyUsageStat]
@@ -20,7 +20,7 @@ struct PetDTO: Codable {
         self.evolutionHistory = pet.evolutionHistory
         self.purpose = pet.purpose
         self.windPoints = pet.windPoints
-        self.lastThresholdMinutes = pet.lastThresholdMinutes
+        self.lastThresholdSeconds = pet.lastThresholdSeconds
         self.activeBreak = pet.activeBreak
         self.preset = pet.preset
         self.dailyStats = pet.dailyStats
@@ -37,7 +37,7 @@ extension Pet {
             evolutionHistory: dto.evolutionHistory,
             purpose: dto.purpose,
             windPoints: dto.windPoints,
-            lastThresholdMinutes: dto.lastThresholdMinutes,
+            lastThresholdSeconds: dto.lastThresholdSeconds,
             activeBreak: dto.activeBreak,
             preset: dto.preset,
             dailyStats: dto.dailyStats,

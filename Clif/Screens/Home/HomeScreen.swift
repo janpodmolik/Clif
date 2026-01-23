@@ -168,8 +168,28 @@ struct HomeScreen: View {
                 .modifier(HomeCardBackgroundModifier(cornerRadius: homeCardCornerRadius))
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
                 .padding(homeCardInset)
+
+            #if DEBUG
+            debugWindOverlay(pet)
+            #endif
         }
     }
+
+    #if DEBUG
+    private func debugWindOverlay(_ pet: Pet) -> some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text("Wind: \(String(format: "%.1f", pet.windPoints)) pts")
+            Text("Last threshold: \(pet.lastThresholdSeconds)s")
+            Text("Rise rate: \(String(format: "%.1f", pet.preset.riseRate)) pts/min")
+        }
+        .font(.system(size: 10, design: .monospaced))
+        .padding(8)
+        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 8))
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomLeading)
+        .padding(.leading, 16)
+        .padding(.bottom, 200)
+    }
+    #endif
 
     // MARK: - Home Card
 

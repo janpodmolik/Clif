@@ -117,10 +117,22 @@ struct SharedDefaults {
         }
     }
 
-    /// Current wind points for the monitored pet (updated by main app).
+    /// Current wind points for the monitored pet (updated by extension on each threshold).
     static var monitoredWindPoints: Double {
         get { defaults?.double(forKey: DefaultsKeys.monitoredWindPoints) ?? 0 }
         set { defaults?.set(newValue, forKey: DefaultsKeys.monitoredWindPoints) }
+    }
+
+    /// Last threshold seconds recorded (for calculating wind delta in extension).
+    static var monitoredLastThresholdSeconds: Int {
+        get { defaults?.integer(forKey: DefaultsKeys.monitoredLastThresholdSeconds) ?? 0 }
+        set { defaults?.set(newValue, forKey: DefaultsKeys.monitoredLastThresholdSeconds) }
+    }
+
+    /// Rise rate in points per second (set by main app from preset).
+    static var monitoredRiseRate: Double {
+        get { defaults?.double(forKey: DefaultsKeys.monitoredRiseRate) ?? 12.5 }
+        set { defaults?.set(newValue, forKey: DefaultsKeys.monitoredRiseRate) }
     }
 
     /// Timestamp when current break started (for calculating actualMinutes on break end).
