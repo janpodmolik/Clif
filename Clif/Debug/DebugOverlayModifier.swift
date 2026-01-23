@@ -2,6 +2,8 @@
 import SwiftUI
 
 struct DebugOverlayModifier: ViewModifier {
+    @Environment(PetManager.self) private var petManager
+
     @State
     private var showDebugView = false
 
@@ -24,6 +26,7 @@ struct DebugOverlayModifier: ViewModifier {
             }
             .fullScreenCover(isPresented: $showDebugView) {
                 DebugView()
+                    .environment(petManager)
             }
     }
 }

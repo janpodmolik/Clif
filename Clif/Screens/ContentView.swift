@@ -99,6 +99,7 @@ struct ContentView: View {
         .fullScreenCover(isPresented: $showPetDebug) {
             PetDebugView()
         }
+        .withDebugOverlay()
         #endif
     }
 

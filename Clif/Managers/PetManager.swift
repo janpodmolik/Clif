@@ -87,6 +87,49 @@ final class PetManager {
     func savePet() {
         saveActivePet()
     }
+
+    // MARK: - Foreground Sync
+
+    /// Syncs pet state from snapshots when app returns to foreground.
+    /// Call this from scenePhase change handler.
+    func syncFromSnapshots() {
+        pet?.syncFromSnapshots()
+        saveActivePet()
+    }
+
+    // MARK: - Daily Reset
+
+    /// Performs daily reset if needed (new day since last activity).
+    /// Call this on app launch and foreground return.
+    func performDailyResetIfNeeded() {
+        guard let pet = pet, !pet.isBlownAway else { return }
+
+        let today = SnapshotEvent.dateString(from: Date())
+        let lastResetKey = "lastDailyReset_\(pet.id.uuidString)"
+
+        if let lastReset = UserDefaults.standard.string(forKey: lastResetKey),
+           lastReset == today {
+            // Already reset today
+            return
+        }
+
+        // Check if we have any usage from today - if not, don't reset yet
+        // (user might be opening app for first time today)
+        let todaySnapshots = SnapshotStore.shared.load(for: today)
+        let hasSystemDayStart = todaySnapshots.contains { $0.eventType == .systemDayStart }
+
+        if hasSystemDayStart {
+            // New monitoring interval started, reset wind
+            pet.resetWind()
+            SnapshotLogging.logDailyReset(petId: pet.id, windPoints: 0)
+            UserDefaults.standard.set(today, forKey: lastResetKey)
+            saveActivePet()
+
+            #if DEBUG
+            print("[PetManager] Daily reset performed for pet \(pet.id)")
+            #endif
+        }
+    }
 }
 
 // MARK: - Persistence (Active → SharedDefaults)

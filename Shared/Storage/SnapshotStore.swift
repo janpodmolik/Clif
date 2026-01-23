@@ -151,6 +151,33 @@ final class SnapshotStore {
         return (unsynced, all.count)
     }
 
+    // MARK: - Wind Sync Support
+
+    /// Returns the latest cumulative minutes from today's usage threshold events for the given pet.
+    /// Used by main app to sync wind state when returning to foreground.
+    func latestThresholdMinutes(petId: UUID) -> Int? {
+        let todayString = SnapshotEvent.dateString(from: Date())
+        let todayEvents = loadAll().filter { $0.petId == petId && $0.date == todayString }
+
+        // Find the most recent usageThreshold event
+        for event in todayEvents.reversed() {
+            if case .usageThreshold(let minutes) = event.eventType {
+                return minutes
+            }
+        }
+        return nil
+    }
+
+    /// Returns whether the pet was blown away today (either via wind or break failure).
+    func wasBlownAwayToday(petId: UUID) -> Bool {
+        let todayString = SnapshotEvent.dateString(from: Date())
+        return loadAll().contains { event in
+            event.petId == petId &&
+            event.date == todayString &&
+            event.eventType == .blowAway
+        }
+    }
+
     // MARK: - Private Helpers
 
     private func parseJSONL(_ content: String) -> [SnapshotEvent] {
