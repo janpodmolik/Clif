@@ -1,9 +1,9 @@
 import SwiftUI
 
-struct DynamicStatusCard: View {
+struct StatusCard: View {
     let windProgress: CGFloat
     let windLevel: WindLevel
-    let config: DynamicModeConfig
+    let preset: WindPreset
     var isBlownAway: Bool = false
     var activeBreak: ActiveBreak? = nil
     var currentWindPoints: Double = 0
@@ -205,14 +205,14 @@ struct DynamicStatusCard: View {
     // MARK: - Break Calculations
 
     private func predictedWindAfter(_ activeBreak: ActiveBreak) -> Double {
-        max(currentWindPoints - activeBreak.windDecreased(for: config), 0)
+        max(currentWindPoints - activeBreak.windDecreased(for: preset), 0)
     }
 
     private func minutesToZeroWind(_ activeBreak: ActiveBreak) -> Int? {
         guard activeBreak.type == .free else { return nil }
-        let effectiveRate = config.fallRate * activeBreak.type.fallRateMultiplier
+        let effectiveRate = preset.fallRate * activeBreak.type.fallRateMultiplier
         guard effectiveRate > 0 else { return nil }
-        let remainingWind = currentWindPoints - activeBreak.windDecreased(for: config)
+        let remainingWind = currentWindPoints - activeBreak.windDecreased(for: preset)
         guard remainingWind > 0 else { return 0 }
         return Int(ceil(remainingWind / effectiveRate))
     }
@@ -242,6 +242,7 @@ struct WeatherCardContent: View {
     var windProgress: CGFloat = 0
 
     @State private var showAlternateIcon = false
+    @State private var alternationTask: Task<Void, Never>?
 
     private var windDescription: String {
         if isBlownAway {
@@ -315,17 +316,16 @@ struct WeatherCardContent: View {
 
             WindIntensityBars(level: windLevel, isBlownAway: isBlownAway, isOnBreak: isOnBreak, progress: windProgress)
         }
-        .onAppear {
-            if isOnBreak {
-                startIconAlternation()
-            }
-        }
         .onChange(of: isOnBreak) { _, newValue in
+            alternationTask?.cancel()
             if newValue {
                 startIconAlternation()
             } else {
                 showAlternateIcon = false
             }
+        }
+        .onDisappear {
+            alternationTask?.cancel()
         }
     }
 
@@ -364,13 +364,13 @@ struct WeatherCardContent: View {
     }
 
     private func startIconAlternation() {
-        Timer.scheduledTimer(withTimeInterval: 2.5, repeats: true) { timer in
-            if isOnBreak {
+        alternationTask = Task {
+            while !Task.isCancelled && isOnBreak {
+                try? await Task.sleep(for: .seconds(2.5))
+                guard !Task.isCancelled else { break }
                 withAnimation(.easeInOut(duration: 0.5)) {
                     showAlternateIcon.toggle()
                 }
-            } else {
-                timer.invalidate()
             }
         }
     }
@@ -453,10 +453,10 @@ private extension View {
 
 #if DEBUG
 #Preview("Normal - Low Wind") {
-    DynamicStatusCard(
+    StatusCard(
         windProgress: 0.25,
         windLevel: .low,
-        config: .balanced,
+        preset: .balanced,
         currentWindPoints: 25,
         timeToBlowAway: 7.5,
         onStartBreak: {}
@@ -465,10 +465,10 @@ private extension View {
 }
 
 #Preview("Normal - High Wind (Pulsing)") {
-    DynamicStatusCard(
+    StatusCard(
         windProgress: 0.85,
         windLevel: .high,
-        config: .balanced,
+        preset: .balanced,
         currentWindPoints: 85,
         timeToBlowAway: 1.5,
         onStartBreak: {}
@@ -477,10 +477,10 @@ private extension View {
 }
 
 #Preview("Committed Break") {
-    DynamicStatusCard(
+    StatusCard(
         windProgress: 0.65,
         windLevel: .medium,
-        config: .balanced,
+        preset: .balanced,
         activeBreak: .mock(type: .committed, minutesAgo: 10, durationMinutes: 30),
         currentWindPoints: 65,
         onStartBreak: {},
@@ -490,10 +490,10 @@ private extension View {
 }
 
 #Preview("Free Break - Unlimited") {
-    DynamicStatusCard(
+    StatusCard(
         windProgress: 0.45,
         windLevel: .low,
-        config: .balanced,
+        preset: .balanced,
         activeBreak: .unlimitedFree(),
         currentWindPoints: 45,
         onStartBreak: {},
@@ -503,10 +503,10 @@ private extension View {
 }
 
 #Preview("Hardcore Break") {
-    DynamicStatusCard(
+    StatusCard(
         windProgress: 0.80,
         windLevel: .high,
-        config: .intense,
+        preset: .intense,
         activeBreak: .mock(type: .hardcore, minutesAgo: 5, durationMinutes: 15),
         currentWindPoints: 80,
         onStartBreak: {},
@@ -516,10 +516,10 @@ private extension View {
 }
 
 #Preview("Blown Away") {
-    DynamicStatusCard(
+    StatusCard(
         windProgress: 1.0,
         windLevel: .high,
-        config: .balanced,
+        preset: .balanced,
         isBlownAway: true,
         onStartBreak: {}
     )

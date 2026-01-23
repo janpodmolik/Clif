@@ -99,8 +99,7 @@ class ShieldActionExtension: ShieldActionDelegate {
     private func handlePotentialBreakViolation() {
         // If there's an active break, opening a shielded app means break was violated
         guard let breakStartedAt = SharedDefaults.breakStartedAt,
-              let petId = SharedDefaults.monitoredPetId,
-              let mode = SharedDefaults.monitoredPetMode else {
+              let petId = SharedDefaults.monitoredPetId else {
             return
         }
 
@@ -109,7 +108,6 @@ class ShieldActionExtension: ShieldActionDelegate {
 
         let event = SnapshotEvent(
             petId: petId,
-            mode: mode,
             windPoints: windPoints,
             eventType: .breakFailed(actualMinutes: actualMinutes)
         )

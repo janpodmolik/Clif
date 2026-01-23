@@ -1,21 +1,16 @@
-import FamilyControls
 import SwiftUI
 
 struct OverviewScreen: View {
     @Environment(PetManager.self) private var petManager
     @Environment(ArchivedPetManager.self) private var archivedPetManager
 
-    @State private var selectedActivePet: ActivePet?
-    @State private var selectedArchivedDetail: ArchivedPetDetail?
+    @State private var selectedActivePet: Pet?
+    @State private var selectedArchivedPet: ArchivedPet?
     @State private var historyViewMode: HistoryViewMode = .list
-
-    @ObservedObject private var screenTimeManager = ScreenTimeManager.shared
 
     enum HistoryViewMode {
         case list, grid
     }
-
-    @State private var weeklyStats = WeeklyUsageStats.mock()
 
     private var completedPets: [ArchivedPetSummary] {
         archivedPetManager.completedPets
@@ -25,7 +20,7 @@ struct OverviewScreen: View {
         archivedPetManager.summaries
     }
 
-    private var activePets: [ActivePet] {
+    private var activePets: [Pet] {
         petManager.activePets
     }
 
@@ -35,22 +30,9 @@ struct OverviewScreen: View {
                 headerSection
                     .padding(.horizontal, 20)
 
-                PetScreenTimeCarousel(
-                    activePets: activePets.compactMap { pet in
-                        if case .daily(let daily) = pet { return daily }
-                        return nil
-                    },
-                    fallbackStats: weeklyStats,
-                    applicationTokens: screenTimeManager.activitySelection.applicationTokens,
-                    categoryTokens: screenTimeManager.activitySelection.categoryTokens,
-                    onPetTap: { pet in
-                        selectedActivePet = .daily(pet)
-                    }
-                )
-
                 HistoryIslandsCarousel(pets: completedPets) { summary in
                     Task {
-                        selectedArchivedDetail = await archivedPetManager.loadDetail(for: summary)
+                        selectedArchivedPet = await archivedPetManager.loadDetail(for: summary)
                     }
                 }
                 .padding(.horizontal, 20)
@@ -69,28 +51,14 @@ struct OverviewScreen: View {
             archivedPetManager.loadSummariesIfNeeded()
         }
         .fullScreenCover(item: $selectedActivePet) { pet in
-            switch pet {
-            case .daily(let daily):
-                DailyPetDetailScreen(
-                    pet: daily,
-                    showOverviewActions: true,
-                    onAction: { handleDailyAction($0, for: pet) }
-                )
-            case .dynamic(let dynamic):
-                DynamicPetDetailScreen(
-                    pet: dynamic,
-                    showOverviewActions: true,
-                    onAction: { handleDynamicAction($0, for: pet) }
-                )
-            }
+            PetDetailScreen(
+                pet: pet,
+                showOverviewActions: true,
+                onAction: { handlePetAction($0, for: pet) }
+            )
         }
-        .fullScreenCover(item: $selectedArchivedDetail) { detail in
-            switch detail {
-            case .daily(let pet):
-                DailyPetArchivedDetailScreen(pet: pet)
-            case .dynamic(let pet):
-                DynamicPetArchivedDetailScreen(pet: pet)
-            }
+        .fullScreenCover(item: $selectedArchivedPet) { pet in
+            ArchivedPetDetailScreen(pet: pet)
         }
     }
 
@@ -121,14 +89,8 @@ struct OverviewScreen: View {
             } else {
                 LazyVStack(spacing: 12) {
                     ForEach(activePets) { pet in
-                        switch pet {
-                        case .daily(let daily):
-                            ActivePetRow(pet: daily) {
-                                selectedActivePet = pet
-                            }
-                        case .dynamic:
-                            // TODO: Add row for DynamicPet
-                            EmptyView()
+                        ActivePetRow(pet: pet) {
+                            selectedActivePet = pet
                         }
                     }
                 }
@@ -187,7 +149,7 @@ struct OverviewScreen: View {
                         ForEach(allSummaries) { summary in
                             ArchivedPetRow(pet: summary) {
                                 Task {
-                                    selectedArchivedDetail = await archivedPetManager.loadDetail(for: summary)
+                                    selectedArchivedPet = await archivedPetManager.loadDetail(for: summary)
                                 }
                             }
                         }
@@ -197,7 +159,7 @@ struct OverviewScreen: View {
                         ForEach(allSummaries) { summary in
                             ArchivedPetGridItem(pet: summary) {
                                 Task {
-                                    selectedArchivedDetail = await archivedPetManager.loadDetail(for: summary)
+                                    selectedArchivedPet = await archivedPetManager.loadDetail(for: summary)
                                 }
                             }
                         }
@@ -225,19 +187,7 @@ struct OverviewScreen: View {
 
     // MARK: - Actions
 
-    private func handleDailyAction(_ action: DailyPetDetailAction, for pet: ActivePet) {
-        switch action {
-        case .showOnHomepage:
-            selectedActivePet = nil
-            if let url = URL(string: "clif://pet/\(pet.id.uuidString)") {
-                UIApplication.shared.open(url)
-            }
-        case .blowAway, .replay, .delete, .limitedApps, .progress:
-            break // TODO: Implement remaining actions
-        }
-    }
-
-    private func handleDynamicAction(_ action: DynamicPetDetailAction, for pet: ActivePet) {
+    private func handlePetAction(_ action: PetDetailAction, for pet: Pet) {
         switch action {
         case .showOnHomepage:
             selectedActivePet = nil

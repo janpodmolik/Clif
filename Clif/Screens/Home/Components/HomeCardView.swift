@@ -13,7 +13,7 @@ enum HomeCardAction {
 // MARK: - HomeCardView
 
 struct HomeCardView: View {
-    let pet: ActivePet
+    let pet: Pet
     let streakCount: Int
     let showDetailButton: Bool
     var onAction: (HomeCardAction) -> Void = { _ in }
@@ -119,41 +119,9 @@ struct HomeCardView: View {
         .font(.system(size: 14, weight: .semibold))
     }
 
-    // MARK: - Stats Row (Mode-Specific)
+    // MARK: - Stats Row
 
-    @ViewBuilder
     private var statsRow: some View {
-        switch pet {
-        case .daily(let dailyPet):
-            dailyStatsRow(dailyPet)
-        case .dynamic(let dynamicPet):
-            dynamicStatsRow(dynamicPet)
-        }
-    }
-
-    private func dailyStatsRow(_ pet: DailyPet) -> some View {
-        HStack(alignment: .firstTextBaseline) {
-            Text(formatMinutes(pet.todayUsedMinutes))
-                .font(.system(size: 28, weight: .bold))
-                .tracking(-0.5)
-
-            Text("/")
-                .font(.system(size: 20, weight: .medium))
-                .foregroundStyle(.secondary)
-
-            Text(formatMinutes(pet.dailyLimitMinutes))
-                .font(.system(size: 20, weight: .medium))
-                .foregroundStyle(.secondary)
-
-            Spacer()
-
-            Text("\(Int(pet.windProgress * 100))%")
-                .font(.system(size: 20, weight: .semibold))
-                .foregroundStyle(pet.windProgress > 1.0 ? .red : .primary)
-        }
-    }
-
-    private func dynamicStatsRow(_ pet: DynamicPet) -> some View {
         HStack(alignment: .firstTextBaseline) {
             Text("\(Int(pet.windProgress * 100))%")
                 .font(.system(size: 28, weight: .bold))
@@ -196,9 +164,7 @@ struct HomeCardView: View {
 
             Spacer()
 
-            if case .dynamic(let dynamicPet) = pet {
-                breakButton(for: dynamicPet)
-            }
+            breakButton
         }
     }
 
@@ -233,11 +199,10 @@ struct HomeCardView: View {
 
     // MARK: - Break Button
 
-    @ViewBuilder
-    private func breakButton(for pet: DynamicPet) -> some View {
+    private var breakButton: some View {
         let isOnBreak = pet.activeBreak != nil
 
-        Button { onAction(.startBreak) } label: {
+        return Button { onAction(.startBreak) } label: {
             Text(isOnBreak ? "Release the Wind" : "Calm the Wind")
                 .font(.system(size: 14, weight: .semibold))
                 .foregroundStyle(.cyan)
@@ -282,35 +247,14 @@ struct HomeCardView: View {
             onAction(.delete)
         }
     }
-
-    // MARK: - Helpers
-
-    private func formatMinutes(_ minutes: Int) -> String {
-        let hours = minutes / 60
-        let mins = minutes % 60
-        if hours > 0 {
-            return mins > 0 ? "\(hours)h \(mins)m" : "\(hours)h"
-        }
-        return "\(mins)m"
-    }
 }
 
 // MARK: - Preview
 
 #if DEBUG
-#Preview("Daily Pet") {
+#Preview("Pet") {
     HomeCardView(
-        pet: .daily(.mock()),
-        streakCount: 7,
-        showDetailButton: true
-    )
-    .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 24))
-    .padding()
-}
-
-#Preview("Dynamic Pet") {
-    HomeCardView(
-        pet: .dynamic(.mock()),
+        pet: .mock(),
         streakCount: 12,
         showDetailButton: true
     )
@@ -318,9 +262,9 @@ struct HomeCardView: View {
     .padding()
 }
 
-#Preview("Dynamic Pet - On Break") {
+#Preview("Pet - On Break") {
     HomeCardView(
-        pet: .dynamic(.mockWithBreak()),
+        pet: .mockWithBreak(),
         streakCount: 5,
         showDetailButton: true
     )
@@ -328,9 +272,9 @@ struct HomeCardView: View {
     .padding()
 }
 
-#Preview("Dynamic Pet - High Wind") {
+#Preview("Pet - High Wind") {
     HomeCardView(
-        pet: .dynamic(.mock(windPoints: 85)),
+        pet: .mock(windPoints: 85),
         streakCount: 3,
         showDetailButton: true
     )

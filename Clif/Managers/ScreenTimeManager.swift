@@ -78,13 +78,11 @@ final class ScreenTimeManager: ObservableObject {
     /// Starts monitoring for a specific pet using its limitedSources.
     /// - Parameters:
     ///   - petId: UUID of the pet being monitored
-    ///   - mode: Pet mode (daily or dynamic)
-    ///   - limitMinutes: Screen time limit in minutes
+    ///   - limitMinutes: Screen time limit in minutes (minutesToBlowAway from config)
     ///   - windPoints: Current wind points for snapshot logging
     ///   - limitedSources: Pet's limited sources containing tokens to monitor
     func startMonitoring(
         petId: UUID,
-        mode: PetMode,
         limitMinutes: Int,
         windPoints: Double,
         limitedSources: [LimitedSource]
@@ -110,9 +108,8 @@ final class ScreenTimeManager: ObservableObject {
 
         // Update monitoring context for extensions
         SharedDefaults.monitoredPetId = petId
-        SharedDefaults.monitoredPetMode = mode
         SharedDefaults.monitoredWindPoints = windPoints
-        SharedDefaults.dailyLimitMinutes = limitMinutes
+        SharedDefaults.setInt(limitMinutes, forKey: DefaultsKeys.monitoringLimitMinutes)
 
         let schedule = DeviceActivitySchedule(
             intervalStart: DateComponents(hour: 0, minute: 0),
@@ -121,7 +118,6 @@ final class ScreenTimeManager: ObservableObject {
         )
 
         let events = buildEvents(
-            for: mode,
             limitSeconds: limitMinutes * 60,
             appTokens: appTokens,
             catTokens: catTokens,
@@ -135,7 +131,7 @@ final class ScreenTimeManager: ObservableObject {
             center.stopMonitoring([activityName])
             try center.startMonitoring(activityName, during: schedule, events: events)
             #if DEBUG
-            print("[ScreenTimeManager] Started \(mode.rawValue) monitoring with \(events.count) events for pet \(petId)")
+            print("[ScreenTimeManager] Started monitoring with \(events.count) events for pet \(petId)")
             #endif
         } catch {
             #if DEBUG
@@ -155,7 +151,6 @@ final class ScreenTimeManager: ObservableObject {
         // Clear monitoring context if this was the active pet
         if SharedDefaults.monitoredPetId == petId {
             SharedDefaults.monitoredPetId = nil
-            SharedDefaults.monitoredPetMode = nil
         }
 
         #if DEBUG
@@ -167,7 +162,6 @@ final class ScreenTimeManager: ObservableObject {
     func stopAllMonitoring() {
         center.stopMonitoring()
         SharedDefaults.monitoredPetId = nil
-        SharedDefaults.monitoredPetMode = nil
         #if DEBUG
         print("[ScreenTimeManager] Stopped all monitoring")
         #endif
@@ -175,68 +169,8 @@ final class ScreenTimeManager: ObservableObject {
 
     // MARK: - Event Building
 
+    /// Builds per-minute thresholds for granular windPoints tracking.
     private func buildEvents(
-        for mode: PetMode,
-        limitSeconds: Int,
-        appTokens: Set<ApplicationToken>,
-        catTokens: Set<ActivityCategoryToken>,
-        webTokens: Set<WebDomainToken>
-    ) -> [DeviceActivityEvent.Name: DeviceActivityEvent] {
-        switch mode {
-        case .daily:
-            return buildDailyEvents(
-                limitSeconds: limitSeconds,
-                appTokens: appTokens,
-                catTokens: catTokens,
-                webTokens: webTokens
-            )
-        case .dynamic:
-            return buildDynamicEvents(
-                limitSeconds: limitSeconds,
-                appTokens: appTokens,
-                catTokens: catTokens,
-                webTokens: webTokens
-            )
-        }
-    }
-
-    /// Daily mode: percentage thresholds + "1 minute before limit"
-    private func buildDailyEvents(
-        limitSeconds: Int,
-        appTokens: Set<ApplicationToken>,
-        catTokens: Set<ActivityCategoryToken>,
-        webTokens: Set<WebDomainToken>
-    ) -> [DeviceActivityEvent.Name: DeviceActivityEvent] {
-        var events: [DeviceActivityEvent.Name: DeviceActivityEvent] = [:]
-
-        for percentage in AppConstants.dailyThresholdPercentages {
-            let thresholdSeconds = max(AppConstants.minimumThresholdSeconds, (limitSeconds * percentage) / 100)
-            let eventName = DeviceActivityEvent.Name("threshold_\(percentage)")
-
-            events[eventName] = DeviceActivityEvent(
-                applications: appTokens,
-                categories: catTokens,
-                webDomains: webTokens,
-                threshold: DateComponents(minute: thresholdSeconds / 60, second: thresholdSeconds % 60)
-            )
-        }
-
-        // "1 minute remaining" event
-        let oneMinuteBeforeLimitSeconds = max(0, limitSeconds - 60)
-        if oneMinuteBeforeLimitSeconds > 0 {
-            events[DeviceActivityEvent.Name("lastMinute")] = DeviceActivityEvent(
-                applications: appTokens,
-                categories: catTokens,
-                webDomains: webTokens,
-                threshold: DateComponents(minute: oneMinuteBeforeLimitSeconds / 60, second: oneMinuteBeforeLimitSeconds % 60)
-            )
-        }
-
-        return events
-    }
-
-    /// Dynamic mode: per-minute thresholds for granular windPoints tracking
-    private func buildDynamicEvents(
         limitSeconds: Int,
         appTokens: Set<ApplicationToken>,
         catTokens: Set<ActivityCategoryToken>,
@@ -247,8 +181,8 @@ final class ScreenTimeManager: ObservableObject {
         let limitMinutes = limitSeconds / 60
 
         // Create threshold for each minute (1, 2, 3, ..., limitMinutes)
-        // Cap at maxDynamicThresholds due to DeviceActivity API limit
-        let maxThresholds = min(limitMinutes, AppConstants.maxDynamicThresholds)
+        // Cap at maxThresholds due to DeviceActivity API limit
+        let maxThresholds = min(limitMinutes, AppConstants.maxThresholds)
 
         for minute in 1...maxThresholds {
             let eventName = DeviceActivityEvent.Name("minute_\(minute)")
@@ -271,12 +205,11 @@ final class ScreenTimeManager: ObservableObject {
     /// Creates a temporary debug pet ID.
     func startMonitoring() {
         let debugPetId = UUID()
-        let limitMinutes = SharedDefaults.dailyLimitMinutes
+        let limitMinutes = SharedDefaults.integer(forKey: DefaultsKeys.monitoringLimitMinutes)
 
         startMonitoring(
             petId: debugPetId,
-            mode: .daily,
-            limitMinutes: limitMinutes,
+            limitMinutes: limitMinutes > 0 ? limitMinutes : 100,
             windPoints: 0,
             appTokens: activitySelection.applicationTokens,
             catTokens: activitySelection.categoryTokens,
@@ -302,7 +235,6 @@ final class ScreenTimeManager: ObservableObject {
     /// Internal helper for debug that takes tokens directly.
     private func startMonitoring(
         petId: UUID,
-        mode: PetMode,
         limitMinutes: Int,
         windPoints: Double,
         appTokens: Set<ApplicationToken>,
@@ -310,9 +242,7 @@ final class ScreenTimeManager: ObservableObject {
         webTokens: Set<WebDomainToken>
     ) {
         guard !appTokens.isEmpty || !catTokens.isEmpty || !webTokens.isEmpty else {
-            #if DEBUG
             print("[ScreenTimeManager] No tokens to monitor for pet \(petId)")
-            #endif
             return
         }
 
@@ -326,9 +256,8 @@ final class ScreenTimeManager: ObservableObject {
 
         // Update monitoring context for extensions
         SharedDefaults.monitoredPetId = petId
-        SharedDefaults.monitoredPetMode = mode
         SharedDefaults.monitoredWindPoints = windPoints
-        SharedDefaults.dailyLimitMinutes = limitMinutes
+        SharedDefaults.setInt(limitMinutes, forKey: DefaultsKeys.monitoringLimitMinutes)
 
         let schedule = DeviceActivitySchedule(
             intervalStart: DateComponents(hour: 0, minute: 0),
@@ -337,7 +266,6 @@ final class ScreenTimeManager: ObservableObject {
         )
 
         let events = buildEvents(
-            for: mode,
             limitSeconds: limitMinutes * 60,
             appTokens: appTokens,
             catTokens: catTokens,
@@ -349,7 +277,7 @@ final class ScreenTimeManager: ObservableObject {
         do {
             center.stopMonitoring([activityName])
             try center.startMonitoring(activityName, during: schedule, events: events)
-            print("[ScreenTimeManager] Started \(mode.rawValue) monitoring with \(events.count) events for pet \(petId)")
+            print("[ScreenTimeManager] Started monitoring with \(events.count) events for pet \(petId)")
         } catch {
             print("[ScreenTimeManager] Failed to start monitoring for pet \(petId): \(error.localizedDescription)")
         }

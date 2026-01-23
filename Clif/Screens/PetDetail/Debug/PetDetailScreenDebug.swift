@@ -2,22 +2,7 @@
 import SwiftUI
 
 struct PetDetailScreenDebug: View {
-    private enum DebugPetMode: String, CaseIterable {
-        case daily
-        case dynamic
-
-        var displayName: String {
-            switch self {
-            case .daily: return "Daily"
-            case .dynamic: return "Dynamic"
-            }
-        }
-    }
     @Environment(\.dismiss) private var dismiss
-
-    // MARK: - Mode Selection
-
-    @State private var petMode: DebugPetMode = .daily
 
     // MARK: - Pet Identity State
 
@@ -28,15 +13,10 @@ struct PetDetailScreenDebug: View {
     @State private var currentPhase: Int = 2
     @State private var totalDays: Int = 12
 
-    // MARK: - Daily Mode State
-
-    @State private var todayUsedMinutes: Double = 83
-    @State private var dailyLimitMinutes: Double = 180
-
-    // MARK: - Dynamic Mode State
+    // MARK: - Wind State
 
     @State private var windPoints: Double = 45
-    @State private var windConfig: DynamicModeConfig = .balanced
+    @State private var windPreset: WindPreset = .balanced
     @State private var hasActiveBreak: Bool = false
     @State private var breakType: BreakType = .committed
     @State private var breakMinutesAgo: Double = 5
@@ -50,7 +30,6 @@ struct PetDetailScreenDebug: View {
 
     @State private var isPetSectionExpanded: Bool = true
     @State private var isWeatherSectionExpanded: Bool = true
-    @State private var isTimeSectionExpanded: Bool = true
     @State private var isBreakSectionExpanded: Bool = true
     @State private var isPresetsSectionExpanded: Bool = true
 
@@ -58,28 +37,14 @@ struct PetDetailScreenDebug: View {
 
     @State private var showSheet: Bool = false
 
-    // MARK: - Computed Properties (Daily)
+    // MARK: - Computed Properties
 
-    private var dailyWindProgress: CGFloat {
-        dailyLimitMinutes > 0 ? CGFloat(todayUsedMinutes / dailyLimitMinutes) : 0
-    }
-
-    private var dailyWindLevel: WindLevel {
-        WindLevel.from(progress: dailyWindProgress)
-    }
-
-    // MARK: - Computed Properties (Dynamic)
-
-    private var dynamicWindProgress: CGFloat {
+    private var windProgress: CGFloat {
         CGFloat(min(max(windPoints / 100.0, 0), 1.0))
     }
 
-    private var dynamicWindLevel: WindLevel {
-        WindLevel.from(progress: dynamicWindProgress)
-    }
-
-    private var dynamicConfig: DynamicModeConfig {
-        windConfig
+    private var windLevel: WindLevel {
+        WindLevel.from(progress: windProgress)
     }
 
     private var activeBreak: ActiveBreak? {
@@ -91,26 +56,12 @@ struct PetDetailScreenDebug: View {
         )
     }
 
-    // MARK: - Computed Properties (Shared)
-
-    private var currentWindProgress: CGFloat {
-        petMode == .daily ? dailyWindProgress : dynamicWindProgress
-    }
-
-    private var currentWindLevel: WindLevel {
-        petMode == .daily ? dailyWindLevel : dynamicWindLevel
-    }
-
     private var mood: Mood {
-        isBlownAway ? .blown : Mood(from: currentWindLevel)
+        isBlownAway ? .blown : Mood(from: windLevel)
     }
 
     private var effectiveEssence: Essence? {
         isBlob ? nil : essence
-    }
-
-    private var effectivePhase: Int {
-        isBlob ? 0 : currentPhase
     }
 
     private var evolutionHistory: EvolutionHistory {
@@ -151,29 +102,17 @@ struct PetDetailScreenDebug: View {
         DailyUsageStat.mockList(
             petId: UUID(),
             days: totalDays,
-            dailyLimitMinutes: Int(dailyLimitMinutes),
             wasBlown: isBlownAway
         )
     }
 
-    private var debugDailyPet: DailyPet {
-        DailyPet(
-            name: petName,
-            evolutionHistory: evolutionHistory,
-            purpose: purposeLabel.isEmpty ? nil : purposeLabel,
-            todayUsedMinutes: Int(todayUsedMinutes),
-            dailyLimitMinutes: Int(dailyLimitMinutes),
-            dailyStats: dailyStats
-        )
-    }
-
-    private var debugDynamicPet: DynamicPet {
-        let pet = DynamicPet(
+    private var debugPet: Pet {
+        let pet = Pet(
             name: petName,
             evolutionHistory: evolutionHistory,
             purpose: purposeLabel.isEmpty ? nil : purposeLabel,
             windPoints: windPoints,
-            config: dynamicConfig,
+            preset: windPreset,
             dailyStats: dailyStats
         )
         pet.activeBreak = activeBreak
@@ -209,21 +148,12 @@ struct PetDetailScreenDebug: View {
             }
         }
         .fullScreenCover(isPresented: $showSheet) {
-            if petMode == .daily {
-                DailyPetDetailScreen(
-                    pet: debugDailyPet,
-                    onAction: { action in
-                        print("Daily Action: \(action)")
-                    }
-                )
-            } else {
-                DynamicPetDetailScreen(
-                    pet: debugDynamicPet,
-                    onAction: { action in
-                        print("Dynamic Action: \(action)")
-                    }
-                )
-            }
+            PetDetailScreen(
+                pet: debugPet,
+                onAction: { action in
+                    print("Action: \(action)")
+                }
+            )
         }
     }
 
@@ -232,9 +162,7 @@ struct PetDetailScreenDebug: View {
     private var previewSection: some View {
         ZStack {
             LinearGradient(
-                colors: petMode == .daily
-                    ? [.blue.opacity(0.3), .purple.opacity(0.2)]
-                    : [.orange.opacity(0.3), .red.opacity(0.2)],
+                colors: [.orange.opacity(0.3), .red.opacity(0.2)],
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
             )
@@ -260,14 +188,6 @@ struct PetDetailScreenDebug: View {
                             .foregroundStyle(.secondary)
                     }
                     .font(.subheadline)
-
-                    // Mode indicator
-                    Text(petMode == .daily ? "Daily Mode" : "Dynamic Mode")
-                        .font(.caption.weight(.medium))
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 4)
-                        .background(petMode == .daily ? Color.blue.opacity(0.2) : Color.orange.opacity(0.2))
-                        .clipShape(Capsule())
                 }
                 .padding(24)
                 .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 20))
@@ -282,7 +202,7 @@ struct PetDetailScreenDebug: View {
                     .font(.headline)
                     .foregroundStyle(.white)
                     .padding()
-                    .background(petMode == .daily ? .blue : .orange, in: Capsule())
+                    .background(.orange, in: Capsule())
                 }
             }
         }
@@ -293,39 +213,15 @@ struct PetDetailScreenDebug: View {
     private var controlsPanel: some View {
         ScrollView {
             VStack(spacing: 16) {
-                modePickerSection
                 petIdentitySection
-
-                if petMode == .daily {
-                    dailyWeatherSection
-                    screenTimeSection
-                } else {
-                    dynamicWeatherSection
-                    breakSection
-                }
-
+                windSection
+                breakSection
                 presetsSection
             }
             .padding()
         }
         .frame(height: 420)
         .background(Color(.systemGroupedBackground))
-    }
-
-    // MARK: - Mode Picker Section
-
-    private var modePickerSection: some View {
-        VStack(spacing: 8) {
-            Picker("Mode", selection: $petMode) {
-                ForEach(DebugPetMode.allCases, id: \.self) { mode in
-                    Text(mode.displayName).tag(mode)
-                }
-            }
-            .pickerStyle(.segmented)
-        }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 12)
-        .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 12))
     }
 
     // MARK: - Pet Identity Section
@@ -405,52 +301,9 @@ struct PetDetailScreenDebug: View {
         }
     }
 
-    // MARK: - Daily Weather Section
+    // MARK: - Wind Section
 
-    private var dailyWeatherSection: some View {
-        collapsibleSection(
-            title: "Weather",
-            systemImage: "wind",
-            isExpanded: $isWeatherSectionExpanded
-        ) {
-            VStack(spacing: 12) {
-                HStack {
-                    Text("Wind Level")
-                        .foregroundStyle(.secondary)
-                    Spacer()
-                    Text(dailyWindLevel.displayName)
-                        .foregroundStyle(dailyWindLevel.color)
-                        .font(.system(.body, weight: .semibold))
-                }
-
-                HStack {
-                    Text("Wind Progress")
-                        .foregroundStyle(.secondary)
-                    Spacer()
-                    Text("\(Int(dailyWindProgress * 100))%")
-                        .font(.system(.body, design: .monospaced))
-                }
-
-                HStack {
-                    Text("Pet Mood")
-                        .foregroundStyle(.secondary)
-                    Spacer()
-                    Text(mood.emoji)
-                        .font(.title2)
-                    Text(mood.rawValue.capitalized)
-                        .foregroundStyle(.secondary)
-                }
-
-                Text("Wind level is computed from Screen Time progress")
-                    .font(.caption)
-                    .foregroundStyle(.tertiary)
-            }
-        }
-    }
-
-    // MARK: - Dynamic Weather Section
-
-    private var dynamicWeatherSection: some View {
+    private var windSection: some View {
         collapsibleSection(
             title: "Wind Points",
             systemImage: "wind",
@@ -471,17 +324,17 @@ struct PetDetailScreenDebug: View {
                 }
 
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("Wind Config")
+                    Text("Wind Preset")
                         .foregroundStyle(.secondary)
 
-                    Picker("Config", selection: $windConfig) {
-                        ForEach(DynamicModeConfig.allCases, id: \.self) { config in
-                            Text(config.displayName).tag(config)
+                    Picker("Preset", selection: $windPreset) {
+                        ForEach(WindPreset.allCases, id: \.self) { preset in
+                            Text(preset.displayName).tag(preset)
                         }
                     }
                     .pickerStyle(.segmented)
 
-                    Text("Blow: \(Int(windConfig.minutesToBlowAway)) min • Recover: \(Int(windConfig.minutesToRecover)) min")
+                    Text("Blow: \(Int(windPreset.minutesToBlowAway)) min • Recover: \(Int(windPreset.minutesToRecover)) min")
                         .font(.caption)
                         .foregroundStyle(.tertiary)
                 }
@@ -490,8 +343,8 @@ struct PetDetailScreenDebug: View {
                     Text("Wind Level")
                         .foregroundStyle(.secondary)
                     Spacer()
-                    Text(dynamicWindLevel.displayName)
-                        .foregroundStyle(dynamicWindLevel.color)
+                    Text(windLevel.displayName)
+                        .foregroundStyle(windLevel.color)
                         .font(.system(.body, weight: .semibold))
                 }
 
@@ -508,51 +361,7 @@ struct PetDetailScreenDebug: View {
         }
     }
 
-    // MARK: - Screen Time Section (Daily)
-
-    private var screenTimeSection: some View {
-        collapsibleSection(
-            title: "Screen Time",
-            systemImage: "clock",
-            isExpanded: $isTimeSectionExpanded
-        ) {
-            VStack(spacing: 16) {
-                VStack(alignment: .leading, spacing: 4) {
-                    HStack {
-                        Text("Used Today")
-                            .foregroundStyle(.secondary)
-                        Spacer()
-                        Text(formatTime(minutes: Int(todayUsedMinutes)))
-                            .font(.system(.body, design: .monospaced))
-                    }
-                    Slider(value: $todayUsedMinutes, in: 0...300, step: 1)
-                }
-
-                VStack(alignment: .leading, spacing: 4) {
-                    HStack {
-                        Text("Limit")
-                            .foregroundStyle(.secondary)
-                        Spacer()
-                        Text(formatTime(minutes: Int(dailyLimitMinutes)))
-                            .font(.system(.body, design: .monospaced))
-                    }
-                    Slider(value: $dailyLimitMinutes, in: 1...480, step: 1)
-                }
-
-                HStack {
-                    Text("Progress")
-                        .foregroundStyle(.secondary)
-                    Spacer()
-                    let progress = todayUsedMinutes / dailyLimitMinutes
-                    Text("\(Int(progress * 100))%")
-                        .font(.system(.body, design: .monospaced, weight: .semibold))
-                        .foregroundStyle(progressColor(for: progress))
-                }
-            }
-        }
-    }
-
-    // MARK: - Break Section (Dynamic)
+    // MARK: - Break Section
 
     private var breakSection: some View {
         collapsibleSection(
@@ -605,7 +414,7 @@ struct PetDetailScreenDebug: View {
                             Text("Wind Decrease")
                                 .foregroundStyle(.secondary)
                             Spacer()
-                            Text("-\(String(format: "%.1f", activeBreak.windDecreased(for: windConfig))) pts")
+                            Text("-\(String(format: "%.1f", activeBreak.windDecreased(for: windPreset))) pts")
                                 .font(.system(.body, design: .monospaced))
                                 .foregroundStyle(.green)
                         }
@@ -627,21 +436,12 @@ struct PetDetailScreenDebug: View {
                 GridItem(.flexible()),
                 GridItem(.flexible())
             ], spacing: 8) {
-                if petMode == .daily {
-                    presetButton("Normal", color: .blue) { applyDailyNormalPreset() }
-                    presetButton("Evolve Ready", color: .green) { applyDailyEvolveReadyPreset() }
-                    presetButton("Max Evolution", color: .purple) { applyDailyMaxEvolutionPreset() }
-                    presetButton("Blob", color: .gray) { applyDailyBlobPreset() }
-                    presetButton("Critical", color: .orange) { applyDailyCriticalPreset() }
-                    presetButton("Blown Away", color: .red) { applyDailyBlownAwayPreset() }
-                } else {
-                    presetButton("Calm", color: .green) { applyDynamicCalmPreset() }
-                    presetButton("Rising Wind", color: .yellow) { applyDynamicRisingPreset() }
-                    presetButton("Blob", color: .gray) { applyDynamicBlobPreset() }
-                    presetButton("On Break", color: .blue) { applyDynamicBreakPreset() }
-                    presetButton("Critical", color: .orange) { applyDynamicCriticalPreset() }
-                    presetButton("Blown Away", color: .red) { applyDynamicBlownAwayPreset() }
-                }
+                presetButton("Calm", color: .green) { applyCalmPreset() }
+                presetButton("Rising Wind", color: .yellow) { applyRisingPreset() }
+                presetButton("Blob", color: .gray) { applyBlobPreset() }
+                presetButton("On Break", color: .blue) { applyBreakPreset() }
+                presetButton("Critical", color: .orange) { applyCriticalPreset() }
+                presetButton("Blown Away", color: .red) { applyBlownAwayPreset() }
             }
         }
     }
@@ -659,88 +459,9 @@ struct PetDetailScreenDebug: View {
         .buttonStyle(.plain)
     }
 
-    // MARK: - Daily Presets
+    // MARK: - Presets
 
-    private func applyDailyNormalPreset() {
-        withAnimation(.easeInOut(duration: 0.2)) {
-            petName = "Fern"
-            purposeLabel = "Social Media"
-            isBlob = false
-            currentPhase = 2
-            totalDays = 12
-            todayUsedMinutes = 100
-            dailyLimitMinutes = 180
-            isBlownAway = false
-        }
-    }
-
-    private func applyDailyEvolveReadyPreset() {
-        withAnimation(.easeInOut(duration: 0.2)) {
-            petName = "Sprout"
-            purposeLabel = "Gaming"
-            isBlob = false
-            currentPhase = 2
-            totalDays = 7
-            todayUsedMinutes = 60
-            dailyLimitMinutes = 180
-            isBlownAway = false
-        }
-    }
-
-    private func applyDailyMaxEvolutionPreset() {
-        withAnimation(.easeInOut(duration: 0.2)) {
-            petName = "Elder Oak"
-            purposeLabel = "Work Apps"
-            isBlob = false
-            currentPhase = 4
-            totalDays = 30
-            todayUsedMinutes = 0
-            dailyLimitMinutes = 180
-            isBlownAway = false
-        }
-    }
-
-    private func applyDailyBlobPreset() {
-        withAnimation(.easeInOut(duration: 0.2)) {
-            petName = "Blobby"
-            purposeLabel = "Social Media"
-            isBlob = true
-            totalDays = 1
-            todayUsedMinutes = 40
-            dailyLimitMinutes = 180
-            isBlownAway = false
-        }
-    }
-
-    private func applyDailyCriticalPreset() {
-        withAnimation(.easeInOut(duration: 0.2)) {
-            petName = "Willow"
-            purposeLabel = "Streaming"
-            isBlob = false
-            currentPhase = 3
-            totalDays = 5
-            todayUsedMinutes = 160
-            dailyLimitMinutes = 180
-            isBlownAway = false
-        }
-    }
-
-    private func applyDailyBlownAwayPreset() {
-        withAnimation(.easeInOut(duration: 0.2)) {
-            petName = "Willow"
-            purposeLabel = "Social Media"
-            isBlob = false
-            currentPhase = 3
-            totalDays = 0
-            todayUsedMinutes = 230
-            dailyLimitMinutes = 180
-            isBlownAway = true
-        }
-    }
-
-    // MARK: - Dynamic Presets
-
-    private func applyDynamicCalmPreset() {
+    private func applyCalmPreset() {
         withAnimation(.easeInOut(duration: 0.2)) {
             petName = "Fern"
             purposeLabel = "Social Media"
@@ -748,13 +469,13 @@ struct PetDetailScreenDebug: View {
             currentPhase = 2
             totalDays = 14
             windPoints = 15
-            windConfig = .balanced
+            windPreset = .balanced
             hasActiveBreak = false
             isBlownAway = false
         }
     }
 
-    private func applyDynamicRisingPreset() {
+    private func applyRisingPreset() {
         withAnimation(.easeInOut(duration: 0.2)) {
             petName = "Fern"
             purposeLabel = "Gaming"
@@ -762,26 +483,26 @@ struct PetDetailScreenDebug: View {
             currentPhase = 2
             totalDays = 10
             windPoints = 55
-            windConfig = .balanced
+            windPreset = .balanced
             hasActiveBreak = false
             isBlownAway = false
         }
     }
 
-    private func applyDynamicBlobPreset() {
+    private func applyBlobPreset() {
         withAnimation(.easeInOut(duration: 0.2)) {
             petName = "Blobby"
             purposeLabel = "Social Media"
             isBlob = true
             totalDays = 1
             windPoints = 25
-            windConfig = .gentle
+            windPreset = .gentle
             hasActiveBreak = false
             isBlownAway = false
         }
     }
 
-    private func applyDynamicBreakPreset() {
+    private func applyBreakPreset() {
         withAnimation(.easeInOut(duration: 0.2)) {
             petName = "Sprout"
             purposeLabel = "Social Media"
@@ -789,7 +510,7 @@ struct PetDetailScreenDebug: View {
             currentPhase = 2
             totalDays = 8
             windPoints = 65
-            windConfig = .balanced
+            windPreset = .balanced
             hasActiveBreak = true
             breakType = .committed
             breakMinutesAgo = 10
@@ -798,7 +519,7 @@ struct PetDetailScreenDebug: View {
         }
     }
 
-    private func applyDynamicCriticalPreset() {
+    private func applyCriticalPreset() {
         withAnimation(.easeInOut(duration: 0.2)) {
             petName = "Willow"
             purposeLabel = "Streaming"
@@ -806,13 +527,13 @@ struct PetDetailScreenDebug: View {
             currentPhase = 3
             totalDays = 5
             windPoints = 85
-            windConfig = .intense
+            windPreset = .intense
             hasActiveBreak = false
             isBlownAway = false
         }
     }
 
-    private func applyDynamicBlownAwayPreset() {
+    private func applyBlownAwayPreset() {
         withAnimation(.easeInOut(duration: 0.2)) {
             petName = "Willow"
             purposeLabel = "Social Media"
@@ -820,22 +541,13 @@ struct PetDetailScreenDebug: View {
             currentPhase = 3
             totalDays = 0
             windPoints = 100
-            windConfig = .balanced
+            windPreset = .balanced
             hasActiveBreak = false
             isBlownAway = true
         }
     }
 
     // MARK: - Helpers
-
-    private func formatTime(minutes: Int) -> String {
-        let hours = minutes / 60
-        let mins = minutes % 60
-        if hours > 0 {
-            return mins > 0 ? "\(hours)h \(mins)m" : "\(hours)h"
-        }
-        return "\(mins)m"
-    }
 
     private func progressColor(for progress: Double) -> Color {
         switch progress {

@@ -4,17 +4,17 @@ import Foundation
 final class PetManager {
     // MARK: - Private Storage
 
-    private var pets: [ActivePet] = []
+    private var pets: [Pet] = []
 
     // MARK: - Public API
 
     /// All active pets, sorted by creation date (newest first).
-    var activePets: [ActivePet] {
-        pets.sorted { $0.createdAt > $1.createdAt }
+    var activePets: [Pet] {
+        pets.sorted { $0.evolutionHistory.createdAt > $1.evolutionHistory.createdAt }
     }
 
     /// Currently selected pet for display (first in list).
-    var currentPet: ActivePet? {
+    var currentPet: Pet? {
         activePets.first
     }
 
@@ -25,50 +25,29 @@ final class PetManager {
 
         #if DEBUG
         if pets.isEmpty {
-            pets = [.daily(DailyPet.mockBlob(name: "Blob", canUseEssence: true, todayUsedMinutes: 100, dailyLimitMinutes: 120))]
+            pets = [Pet.mockBlob(name: "Blob", canUseEssence: true, windPoints: 30)]
         }
         #endif
     }
 
     // MARK: - Create
 
-    /// Creates a new Daily pet (starts as blob).
+    /// Creates a new pet (starts as blob).
     @discardableResult
-    func createDaily(
+    func create(
         name: String,
         purpose: String?,
-        dailyLimitMinutes: Int,
+        preset: WindPreset = .default,
         limitedSources: [LimitedSource] = []
-    ) -> DailyPet {
-        let pet = DailyPet(
+    ) -> Pet {
+        let pet = Pet(
             name: name,
             evolutionHistory: EvolutionHistory(),
             purpose: purpose,
-            todayUsedMinutes: 0,
-            dailyLimitMinutes: dailyLimitMinutes,
+            preset: preset,
             limitedSources: limitedSources
         )
-        pets.append(.daily(pet))
-        saveActivePets()
-        return pet
-    }
-
-    /// Creates a new Dynamic pet (starts as blob).
-    @discardableResult
-    func createDynamic(
-        name: String,
-        purpose: String?,
-        config: DynamicModeConfig = .default,
-        limitedSources: [LimitedSource] = []
-    ) -> DynamicPet {
-        let pet = DynamicPet(
-            name: name,
-            evolutionHistory: EvolutionHistory(),
-            purpose: purpose,
-            config: config,
-            limitedSources: limitedSources
-        )
-        pets.append(.dynamic(pet))
+        pets.append(pet)
         saveActivePets()
         return pet
     }
@@ -110,40 +89,16 @@ final class PetManager {
 
 private extension PetManager {
     func loadActivePets() {
-        var loaded: [ActivePet] = []
-
-        if let data = SharedDefaults.data(forKey: DefaultsKeys.activeDailyPets),
-           let dtos = try? JSONDecoder().decode([DailyPetDTO].self, from: data) {
-            loaded += dtos.map { .daily(DailyPet(from: $0)) }
+        if let data = SharedDefaults.data(forKey: DefaultsKeys.activePets),
+           let dtos = try? JSONDecoder().decode([PetDTO].self, from: data) {
+            pets = dtos.map { Pet(from: $0) }
         }
-
-        if let data = SharedDefaults.data(forKey: DefaultsKeys.activeDynamicPets),
-           let dtos = try? JSONDecoder().decode([DynamicPetDTO].self, from: data) {
-            loaded += dtos.map { .dynamic(DynamicPet(from: $0)) }
-        }
-
-        pets = loaded
     }
 
     func saveActivePets() {
-        var dailyPets: [DailyPet] = []
-        var dynamicPets: [DynamicPet] = []
-
-        for pet in pets {
-            switch pet {
-            case .daily(let daily): dailyPets.append(daily)
-            case .dynamic(let dynamic): dynamicPets.append(dynamic)
-            }
-        }
-
-        let dailyDTOs = dailyPets.map { DailyPetDTO(from: $0) }
-        if let data = try? JSONEncoder().encode(dailyDTOs) {
-            SharedDefaults.setData(data, forKey: DefaultsKeys.activeDailyPets)
-        }
-
-        let dynamicDTOs = dynamicPets.map { DynamicPetDTO(from: $0) }
-        if let data = try? JSONEncoder().encode(dynamicDTOs) {
-            SharedDefaults.setData(data, forKey: DefaultsKeys.activeDynamicPets)
+        let dtos = pets.map { PetDTO(from: $0) }
+        if let data = try? JSONEncoder().encode(dtos) {
+            SharedDefaults.setData(data, forKey: DefaultsKeys.activePets)
         }
     }
 }
@@ -151,19 +106,11 @@ private extension PetManager {
 // MARK: - Mock Data
 
 extension PetManager {
-    static func mock(
-        withDailyPets: Bool = true,
-        withDynamicPets: Bool = false
-    ) -> PetManager {
+    static func mock(withPets: Bool = true) -> PetManager {
         let manager = PetManager()
-        var mockPets: [ActivePet] = []
-        if withDailyPets {
-            mockPets += DailyPet.mockList().map { .daily($0) }
+        if withPets {
+            manager.pets = [Pet.mock(), Pet.mockWithBreak()]
         }
-        if withDynamicPets {
-            mockPets += [DynamicPet.mock(), .mockWithBreak()].map { .dynamic($0) }
-        }
-        manager.pets = mockPets
         return manager
     }
 }

@@ -15,7 +15,7 @@ struct UsageCard: View {
         switch viewMode {
         case .week:
             let lastSevenDays = Array(stats.days.suffix(7))
-            return FullUsageStats(days: lastSevenDays, dailyLimitMinutes: stats.dailyLimitMinutes)
+            return FullUsageStats(days: lastSevenDays)
         case .all:
             return stats
         }

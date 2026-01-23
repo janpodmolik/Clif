@@ -1,11 +1,5 @@
 import Foundation
 
-/// Distinguishes archived pet types for proper detail loading.
-enum ArchivedPetType: String, Codable {
-    case daily
-    case dynamic
-}
-
 /// Lightweight summary for archived pet listings.
 /// Contains only fields needed for ArchivedPetRow, ArchivedPetGridItem, HistoryIslandView.
 struct ArchivedPetSummary: Codable, Identifiable, Equatable, PetEvolvable {
@@ -14,7 +8,6 @@ struct ArchivedPetSummary: Codable, Identifiable, Equatable, PetEvolvable {
     let evolutionHistory: EvolutionHistory
     let purpose: String?
     let archivedAt: Date
-    let petType: ArchivedPetType
     let totalDays: Int
 
     var finalPhase: Int { currentPhase }
@@ -23,23 +16,12 @@ struct ArchivedPetSummary: Codable, Identifiable, Equatable, PetEvolvable {
 // MARK: - Factory Methods
 
 extension ArchivedPetSummary {
-    init(from pet: ArchivedDailyPet) {
+    init(from pet: ArchivedPet) {
         self.id = pet.id
         self.name = pet.name
         self.evolutionHistory = pet.evolutionHistory
         self.purpose = pet.purpose
         self.archivedAt = pet.archivedAt
-        self.petType = .daily
-        self.totalDays = pet.totalDays
-    }
-
-    init(from pet: ArchivedDynamicPet) {
-        self.id = pet.id
-        self.name = pet.name
-        self.evolutionHistory = pet.evolutionHistory
-        self.purpose = pet.purpose
-        self.archivedAt = pet.archivedAt
-        self.petType = .dynamic
         self.totalDays = pet.totalDays
     }
 }
@@ -51,8 +33,7 @@ extension ArchivedPetSummary {
         name: String = "Fern",
         phase: Int = 4,
         isBlown: Bool = false,
-        totalDays: Int = 21,
-        petType: ArchivedPetType = .daily
+        totalDays: Int = 21
     ) -> ArchivedPetSummary {
         ArchivedPetSummary(
             id: UUID(),
@@ -60,7 +41,6 @@ extension ArchivedPetSummary {
             evolutionHistory: .mock(phase: phase, essence: .plant, totalDays: totalDays, isBlown: isBlown),
             purpose: "Social Media",
             archivedAt: Date(),
-            petType: petType,
             totalDays: totalDays
         )
     }
@@ -69,7 +49,7 @@ extension ArchivedPetSummary {
         [
             .mock(name: "Fern", phase: 4, isBlown: false, totalDays: 21),
             .mock(name: "Ivy", phase: 4, isBlown: false, totalDays: 18),
-            .mock(name: "Storm", phase: 3, isBlown: true, totalDays: 5, petType: .dynamic),
+            .mock(name: "Storm", phase: 3, isBlown: true, totalDays: 5),
             .mock(name: "Sprout", phase: 2, isBlown: true, totalDays: 4)
         ]
     }

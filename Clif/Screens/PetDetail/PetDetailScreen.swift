@@ -1,13 +1,13 @@
 import SwiftUI
 
-struct DynamicPetDetailScreen: View {
-    let pet: DynamicPet
+struct PetDetailScreen: View {
+    let pet: Pet
 
     // MARK: - Context
     var showOverviewActions: Bool = false
 
     // MARK: - Actions
-    var onAction: (DynamicPetDetailAction) -> Void = { _ in }
+    var onAction: (PetDetailAction) -> Void = { _ in }
 
     @Environment(\.dismiss) private var dismiss
     @State private var showEssencePicker = false
@@ -33,8 +33,8 @@ struct DynamicPetDetailScreen: View {
 
     /// Minutes remaining until wind reaches 100% (blow away)
     private var timeToBlowAway: Double? {
-        guard pet.config.riseRate > 0 else { return nil }
-        let remaining = (100 - pet.windPoints) / pet.config.riseRate
+        guard pet.preset.riseRate > 0 else { return nil }
+        let remaining = (100 - pet.windPoints) / pet.preset.riseRate
         return remaining > 0 ? remaining : nil
     }
 
@@ -42,10 +42,10 @@ struct DynamicPetDetailScreen: View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 20) {
-                    DynamicStatusCard(
+                    StatusCard(
                         windProgress: pet.windProgress,
                         windLevel: pet.windLevel,
-                        config: pet.config,
+                        preset: pet.preset,
                         isBlownAway: pet.isBlown,
                         activeBreak: pet.activeBreak,
                         currentWindPoints: pet.windPoints,
@@ -61,7 +61,8 @@ struct DynamicPetDetailScreen: View {
                         evolutionPhase: pet.currentPhase,
                         purpose: pet.purpose,
                         createdAt: pet.evolutionHistory.createdAt,
-                        modeInfo: PetModeInfo(from: pet)
+                        preset: pet.preset,
+                        limitedSources: pet.limitedSources
                     )
 
                     if pet.isBlob {
@@ -170,35 +171,35 @@ struct DynamicPetDetailScreen: View {
 #Preview("Dynamic Pet Detail") {
     Text("Tap to open")
         .fullScreenCover(isPresented: .constant(true)) {
-            DynamicPetDetailScreen(pet: .mock(name: "Fern", phase: 2, windPoints: 45))
+            PetDetailScreen(pet: .mock(name: "Fern", phase: 2, windPoints: 45))
         }
 }
 
 #Preview("With Active Break") {
     Text("Tap to open")
         .fullScreenCover(isPresented: .constant(true)) {
-            DynamicPetDetailScreen(pet: .mockWithBreak())
+            PetDetailScreen(pet: .mockWithBreak())
         }
 }
 
 #Preview("Blob - Ready for Essence") {
     Text("Tap to open")
         .fullScreenCover(isPresented: .constant(true)) {
-            DynamicPetDetailScreen(pet: .mockBlob(name: "Blobby", canUseEssence: true))
+            PetDetailScreen(pet: .mockBlob(name: "Blobby", canUseEssence: true))
         }
 }
 
 #Preview("With Break History") {
     Text("Tap to open")
         .fullScreenCover(isPresented: .constant(true)) {
-            DynamicPetDetailScreen(pet: .mockWithBreakHistory())
+            PetDetailScreen(pet: .mockWithBreakHistory())
         }
 }
 
 #Preview("Overview Actions") {
     Text("Tap to open")
         .fullScreenCover(isPresented: .constant(true)) {
-            DynamicPetDetailScreen(pet: .mock(name: "Ivy", phase: 3, windPoints: 30), showOverviewActions: true)
+            PetDetailScreen(pet: .mock(name: "Ivy", phase: 3, windPoints: 30), showOverviewActions: true)
         }
 }
 #endif

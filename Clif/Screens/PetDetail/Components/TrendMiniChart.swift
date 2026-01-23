@@ -111,12 +111,12 @@ struct TrendMiniChart: View {
 
 #if DEBUG
 #Preview("Improving") {
-    TrendMiniChart(stats: .mock(days: 14, dailyLimitMinutes: 60))
+    TrendMiniChart(stats: .mock(days: 14))
         .padding()
 }
 
 #Preview("30 days") {
-    TrendMiniChart(stats: .mock(days: 30, dailyLimitMinutes: 90))
+    TrendMiniChart(stats: .mock(days: 30))
         .padding()
 }
 #endif

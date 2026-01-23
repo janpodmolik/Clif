@@ -1,7 +1,7 @@
 import Foundation
 
 /// Actions available on the Dynamic Pet Detail screen.
-enum DynamicPetDetailAction {
+enum PetDetailAction {
     case blowAway
     case replay
     case delete

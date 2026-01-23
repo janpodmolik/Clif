@@ -1,7 +1,7 @@
 import SwiftUI
 
-struct DynamicPetArchivedDetailScreen: View {
-    let pet: ArchivedDynamicPet
+struct ArchivedPetDetailScreen: View {
+    let pet: ArchivedPet
 
     @Environment(\.dismiss) private var dismiss
     @State private var showAppUsageSheet = false
@@ -23,7 +23,8 @@ struct DynamicPetArchivedDetailScreen: View {
                         isBlown: pet.isBlown,
                         archivedAt: pet.archivedAt,
                         purpose: pet.purpose,
-                        modeInfo: PetModeInfo(from: pet)
+                        preset: pet.preset,
+                        limitedSources: pet.limitedSources
                     )
 
                     EssenceInfoCard(evolutionHistory: pet.evolutionHistory)
@@ -63,9 +64,9 @@ struct DynamicPetArchivedDetailScreen: View {
                 BreakHistorySheet(breakHistory: pet.breakHistory)
             }
             .sheet(isPresented: $showAppUsageSheet) {
-                DynamicAppUsageDetailSheet(
+                AppUsageDetailSheet(
                     sources: pet.limitedSources,
-                    config: pet.config,
+                    preset: pet.preset,
                     totalDays: pet.totalDays
                 )
             }
@@ -88,9 +89,9 @@ struct DynamicPetArchivedDetailScreen: View {
 
 // MARK: - Dynamic App Usage Detail Sheet
 
-struct DynamicAppUsageDetailSheet: View {
+struct AppUsageDetailSheet: View {
     let sources: [LimitedSource]
-    let config: DynamicModeConfig
+    let preset: WindPreset
     let totalDays: Int
 
     @Environment(\.dismiss) private var dismiss
@@ -106,14 +107,14 @@ struct DynamicAppUsageDetailSheet: View {
                     HStack {
                         Label("Obtížnost", systemImage: "gauge.with.needle.fill")
                         Spacer()
-                        Text(config.displayName)
+                        Text(preset.displayName)
                             .foregroundStyle(.secondary)
                     }
 
                     HStack {
                         Label("Čas do blow away", systemImage: "wind")
                         Spacer()
-                        Text("\(Int(config.minutesToBlowAway)) min")
+                        Text("\(Int(preset.minutesToBlowAway)) min")
                             .foregroundStyle(.secondary)
                     }
 
@@ -174,17 +175,17 @@ struct DynamicAppUsageDetailSheet: View {
 }
 
 #Preview("Blown") {
-    DynamicPetArchivedDetailScreen(pet: .mock(name: "Storm", phase: 3, isBlown: true))
+    ArchivedPetDetailScreen(pet: .mock(name: "Storm", phase: 3, isBlown: true))
 }
 
 #Preview("Fully Evolved") {
-    DynamicPetArchivedDetailScreen(pet: .mock(name: "Breeze", phase: 4, isBlown: false, totalDays: 14))
+    ArchivedPetDetailScreen(pet: .mock(name: "Breeze", phase: 4, isBlown: false, totalDays: 14))
 }
 
 #Preview("Dynamic App Usage Sheet") {
-    DynamicAppUsageDetailSheet(
+    AppUsageDetailSheet(
         sources: LimitedSource.mockList(days: 14),
-        config: .balanced,
+        preset: .balanced,
         totalDays: 14
     )
 }

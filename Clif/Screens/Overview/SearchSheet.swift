@@ -5,7 +5,7 @@ struct SearchSheet: View {
     @Environment(ArchivedPetManager.self) private var archivedPetManager
 
     @State private var filter = PetSearchFilter()
-    @State private var selectedArchivedDetail: ArchivedPetDetail?
+    @State private var selectedArchivedPet: ArchivedPet?
     @State private var activeFilterSheet: FilterType?
 
     private enum FilterType: Identifiable {
@@ -109,13 +109,8 @@ struct SearchSheet: View {
         .sheet(item: $activeFilterSheet) { type in
             filterSheet(for: type)
         }
-        .fullScreenCover(item: $selectedArchivedDetail) { detail in
-            switch detail {
-            case .daily(let pet):
-                DailyPetArchivedDetailScreen(pet: pet)
-            case .dynamic(let pet):
-                DynamicPetArchivedDetailScreen(pet: pet)
-            }
+        .fullScreenCover(item: $selectedArchivedPet) { pet in
+            ArchivedPetDetailScreen(pet: pet)
         }
     }
 
@@ -173,7 +168,7 @@ struct SearchSheet: View {
                 ForEach(filteredPets) { summary in
                     ArchivedPetRow(pet: summary) {
                         Task {
-                            selectedArchivedDetail = await archivedPetManager.loadDetail(for: summary)
+                            selectedArchivedPet = await archivedPetManager.loadDetail(for: summary)
                         }
                     }
                 }

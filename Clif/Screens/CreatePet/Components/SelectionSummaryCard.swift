@@ -21,30 +21,21 @@ struct SelectionSummaryCard: View {
                 )
             }
 
-            // Mode (show after step 1)
-            if coordinator.currentStep.rawValue >= CreatePetStep.modeConfig.rawValue {
+            // Preset (show after step 1)
+            if coordinator.currentStep.rawValue >= CreatePetStep.presetSelection.rawValue {
                 if hasAppsSelected {
                     divider
                 }
 
                 HStack(spacing: 4) {
-                    Image(systemName: coordinator.modeInfo.iconName)
+                    Image(systemName: coordinator.preset.iconName)
                         .font(.system(size: 14))
-                        .foregroundStyle(coordinator.modeInfo.themeColor)
+                        .foregroundStyle(coordinator.preset.themeColor)
 
-                    Text(coordinator.modeInfo.shortName)
+                    Text(coordinator.preset.displayName)
                         .font(.subheadline.weight(.medium))
                         .foregroundStyle(.secondary)
                 }
-            }
-
-            // Limit value (show on last step - petInfo)
-            if coordinator.currentStep == .petInfo {
-                divider
-
-                Text(limitDisplayText)
-                    .font(.subheadline.weight(.medium))
-                    .foregroundStyle(.secondary)
             }
         }
         .padding(Layout.padding)
@@ -56,14 +47,6 @@ struct SelectionSummaryCard: View {
         !coordinator.selectedApps.applicationTokens.isEmpty
             || !coordinator.selectedApps.categoryTokens.isEmpty
             || !coordinator.selectedApps.webDomainTokens.isEmpty
-    }
-
-    private var limitDisplayText: String {
-        if coordinator.selectedMode == .daily {
-            return MinutesFormatter.compact(coordinator.dailyLimitMinutes)
-        } else {
-            return coordinator.dynamicConfig.displayName
-        }
     }
 
     private var divider: some View {

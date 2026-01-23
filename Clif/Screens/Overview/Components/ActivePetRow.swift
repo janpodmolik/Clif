@@ -1,16 +1,11 @@
 import SwiftUI
 
 struct ActivePetRow: View {
-    let pet: DailyPet
+    let pet: Pet
     let onTap: () -> Void
 
     private var mood: Mood {
         Mood(from: pet.windLevel)
-    }
-
-    private var progress: Double {
-        guard pet.dailyLimitMinutes > 0 else { return 0 }
-        return min(Double(pet.todayUsedMinutes) / Double(pet.dailyLimitMinutes), 1.0)
     }
 
     var body: some View {
@@ -50,7 +45,7 @@ struct ActivePetRow: View {
                 VStack(alignment: .trailing, spacing: 6) {
                     windIndicator
                     Spacer()
-                    progressIndicator
+                    windProgressIndicator
                 }
             }
             .fixedSize(horizontal: false, vertical: true)
@@ -69,15 +64,11 @@ struct ActivePetRow: View {
         .foregroundStyle(pet.windLevel.color)
     }
 
-    private var remainingMinutes: Int {
-        max(pet.dailyLimitMinutes - pet.todayUsedMinutes, 0)
-    }
-
-    private var progressIndicator: some View {
+    private var windProgressIndicator: some View {
         VStack(alignment: .trailing, spacing: 4) {
-            Text(remainingMinutes > 0 ? "zbývá \(remainingMinutes)m" : "limit překročen")
+            Text("\(Int(pet.windPoints))%")
                 .font(.caption2)
-                .foregroundStyle(remainingMinutes > 0 ? Color.secondary : Color.red)
+                .foregroundStyle(windProgressColor)
 
             GeometryReader { geometry in
                 ZStack(alignment: .leading) {
@@ -85,18 +76,18 @@ struct ActivePetRow: View {
                         .fill(Color.secondary.opacity(0.2))
 
                     RoundedRectangle(cornerRadius: 2)
-                        .fill(progressColor)
-                        .frame(width: geometry.size.width * progress)
+                        .fill(windProgressColor)
+                        .frame(width: geometry.size.width * pet.windProgress)
                 }
             }
             .frame(width: 50, height: 4)
         }
     }
 
-    private var progressColor: Color {
-        if progress >= 1.0 {
+    private var windProgressColor: Color {
+        if pet.windProgress >= 0.8 {
             return .red
-        } else if progress >= 0.7 {
+        } else if pet.windProgress >= 0.5 {
             return .orange
         } else {
             return .green
@@ -106,10 +97,10 @@ struct ActivePetRow: View {
 
 #Preview {
     VStack(spacing: 12) {
-        ActivePetRow(pet: .mock(name: "Fern", phase: 2, todayUsedMinutes: 0)) {}
-        ActivePetRow(pet: .mock(name: "Ivy", phase: 3, todayUsedMinutes: 45)) {}
-        ActivePetRow(pet: .mock(name: "Sage", phase: 2, todayUsedMinutes: 67)) {}
-        ActivePetRow(pet: .mock(name: "Willow", phase: 1, todayUsedMinutes: 130, dailyLimitMinutes: 120)) {}
+        ActivePetRow(pet: .mock(name: "Fern", phase: 2, windPoints: 20)) {}
+        ActivePetRow(pet: .mock(name: "Ivy", phase: 3, windPoints: 55)) {}
+        ActivePetRow(pet: .mock(name: "Sage", phase: 2, windPoints: 75)) {}
+        ActivePetRow(pet: .mock(name: "Willow", phase: 1, windPoints: 95)) {}
     }
     .padding()
 }

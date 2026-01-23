@@ -1,21 +1,5 @@
 import Foundation
 
-// MARK: - Cached Detail Type
-
-enum ArchivedPetDetail: Identifiable {
-    case daily(ArchivedDailyPet)
-    case dynamic(ArchivedDynamicPet)
-
-    var id: UUID {
-        switch self {
-        case .daily(let pet): pet.id
-        case .dynamic(let pet): pet.id
-        }
-    }
-}
-
-// MARK: - Manager
-
 @Observable
 final class ArchivedPetManager {
     // MARK: - Public State
@@ -28,7 +12,7 @@ final class ArchivedPetManager {
 
     // MARK: - Private Cache (LRU, newest at end)
 
-    private var detailCache: [ArchivedPetDetail] = []
+    private var detailCache: [ArchivedPet] = []
     private let maxCacheSize = 5
 
     // MARK: - Storage URLs
@@ -79,46 +63,24 @@ final class ArchivedPetManager {
     // MARK: - Public API: Load Detail
 
     /// Load full detail for an archived pet.
-    func loadDetail(for summary: ArchivedPetSummary) async -> ArchivedPetDetail? {
+    func loadDetail(for summary: ArchivedPetSummary) async -> ArchivedPet? {
         if let cached = detailCache.first(where: { $0.id == summary.id }) {
             return cached
         }
 
-        let detail: ArchivedPetDetail? = switch summary.petType {
-        case .daily: loadFromDisk(id: summary.id, as: ArchivedDailyPet.self).map { .daily($0) }
-        case .dynamic: loadFromDisk(id: summary.id, as: ArchivedDynamicPet.self).map { .dynamic($0) }
+        guard let detail = loadFromDisk(id: summary.id, as: ArchivedPet.self) else {
+            return nil
         }
 
-        if let detail {
-            await MainActor.run { cacheDetail(detail) }
-        }
-
+        await MainActor.run { cacheDetail(detail) }
         return detail
     }
 
     // MARK: - Public API: Archive
 
-    /// Archive an active pet.
-    func archive(_ pet: ActivePet) {
-        switch pet {
-        case .daily(let daily): archive(daily)
-        case .dynamic(let dynamic): archive(dynamic)
-        }
-    }
-
-    /// Archive a DailyPet.
-    func archive(_ pet: DailyPet) {
-        let archived = ArchivedDailyPet(archiving: pet)
-        let summary = ArchivedPetSummary(from: archived)
-
-        saveDetail(archived, for: pet.id)
-        summaries.insert(summary, at: 0)
-        saveSummaries()
-    }
-
-    /// Archive a DynamicPet.
-    func archive(_ pet: DynamicPet) {
-        let archived = ArchivedDynamicPet(archiving: pet)
+    /// Archive a Pet.
+    func archive(_ pet: Pet) {
+        let archived = ArchivedPet(archiving: pet)
         let summary = ArchivedPetSummary(from: archived)
 
         saveDetail(archived, for: pet.id)
@@ -144,16 +106,6 @@ final class ArchivedPetManager {
     /// Completed pets (not blown).
     var completedPets: [ArchivedPetSummary] {
         summaries.filter { !$0.isBlown }
-    }
-
-    /// Daily pet summaries.
-    var dailySummaries: [ArchivedPetSummary] {
-        summaries.filter { $0.petType == .daily }
-    }
-
-    /// Dynamic pet summaries.
-    var dynamicSummaries: [ArchivedPetSummary] {
-        summaries.filter { $0.petType == .dynamic }
     }
 }
 
@@ -188,16 +140,13 @@ private extension ArchivedPetManager {
         return try? JSONDecoder().decode(type, from: data)
     }
 
-    func cacheDetail(_ detail: ArchivedPetDetail) {
-        // Remove if already cached (will be re-added at end)
+    func cacheDetail(_ detail: ArchivedPet) {
         detailCache.removeAll { $0.id == detail.id }
 
-        // Evict oldest if at capacity
         if detailCache.count >= maxCacheSize {
             detailCache.removeFirst()
         }
 
-        // Add to end (most recent)
         detailCache.append(detail)
     }
 }

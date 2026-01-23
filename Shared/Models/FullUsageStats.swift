@@ -26,11 +26,9 @@ enum UsageTrend: String, Codable {
 /// Full statistics container for extended history display (5-30 days).
 struct FullUsageStats: Codable, Equatable, UsageStatsProtocol {
     let days: [DailyUsageStat]
-    let dailyLimitMinutes: Int
 
-    init(days: [DailyUsageStat], dailyLimitMinutes: Int) {
+    init(days: [DailyUsageStat]) {
         self.days = days
-        self.dailyLimitMinutes = dailyLimitMinutes
     }
 
     var totalDays: Int { days.count }
@@ -102,19 +100,14 @@ struct FullUsageStats: Codable, Equatable, UsageStatsProtocol {
     }
 
     /// Empty stats.
-    static func empty(dailyLimitMinutes: Int = 60) -> FullUsageStats {
-        FullUsageStats(days: [], dailyLimitMinutes: dailyLimitMinutes)
+    static func empty() -> FullUsageStats {
+        FullUsageStats(days: [])
     }
 
     /// Creates mock data for preview/debug purposes.
-    /// All days are under limit (pet still alive).
-    static func mock(days: Int = 14, dailyLimitMinutes: Int = 60) -> FullUsageStats {
+    static func mock(days: Int = 14) -> FullUsageStats {
         let mockPetId = UUID()
-        let dailyStats = DailyUsageStat.mockList(
-            petId: mockPetId,
-            days: days,
-            dailyLimitMinutes: dailyLimitMinutes
-        )
-        return FullUsageStats(days: dailyStats, dailyLimitMinutes: dailyLimitMinutes)
+        let dailyStats = DailyUsageStat.mockList(petId: mockPetId, days: days)
+        return FullUsageStats(days: dailyStats)
     }
 }

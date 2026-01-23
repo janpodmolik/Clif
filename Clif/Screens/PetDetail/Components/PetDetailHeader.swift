@@ -7,7 +7,8 @@ struct PetDetailHeader: View {
     let evolutionPhase: Int
     var purpose: String? = nil
     var createdAt: Date? = nil
-    var modeInfo: PetModeInfo? = nil
+    var preset: WindPreset? = nil
+    var limitedSources: [LimitedSource] = []
 
     private var formattedCreatedAt: String? {
         guard let createdAt else { return nil }
@@ -53,8 +54,8 @@ struct PetDetailHeader: View {
             }
             .padding()
 
-            if let modeInfo {
-                PetModeInfoSection(modeInfo: modeInfo)
+            if let preset {
+                WindPresetInfoSection(preset: preset, limitedSources: limitedSources)
             }
         }
         .glassCard()
@@ -95,7 +96,7 @@ struct PetDetailHeader: View {
 }
 
 #if DEBUG
-#Preview("With Mode Info - Daily") {
+#Preview("With Config - Default") {
     VStack {
         PetDetailHeader(
             petName: "Fern",
@@ -104,16 +105,14 @@ struct PetDetailHeader: View {
             evolutionPhase: 2,
             purpose: "Social Media",
             createdAt: Calendar.current.date(byAdding: .day, value: -12, to: Date()),
-            modeInfo: .daily(.init(
-                dailyLimitMinutes: 90,
-                limitedSources: LimitedSource.mockList()
-            ))
+            preset: .default,
+            limitedSources: LimitedSource.mockList()
         )
     }
     .padding()
 }
 
-#Preview("With Mode Info - Dynamic") {
+#Preview("With Config - Intense") {
     VStack {
         PetDetailHeader(
             petName: "Storm",
@@ -122,16 +121,14 @@ struct PetDetailHeader: View {
             evolutionPhase: 2,
             purpose: "Gaming",
             createdAt: Calendar.current.date(byAdding: .day, value: -5, to: Date()),
-            modeInfo: .dynamic(.init(
-                config: .intense,
-                limitedSources: LimitedSource.mockList()
-            ))
+            preset: .intense,
+            limitedSources: LimitedSource.mockList()
         )
     }
     .padding()
 }
 
-#Preview("Without Mode Info") {
+#Preview("Without Config") {
     VStack {
         PetDetailHeader(
             petName: "Bloom",

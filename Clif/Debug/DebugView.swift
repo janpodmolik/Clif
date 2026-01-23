@@ -12,10 +12,10 @@ struct DebugView: View {
     @AppStorage(DefaultsKeys.currentProgress, store: UserDefaults(suiteName: AppConstants.appGroupIdentifier))
     private var currentProgress = 0
 
-    @AppStorage(DefaultsKeys.dailyLimitMinutes, store: UserDefaults(suiteName: AppConstants.appGroupIdentifier))
-    private var dailyLimitMinutes = AppConstants.defaultDailyLimitMinutes
+    @AppStorage(DefaultsKeys.monitoringLimitMinutes, store: UserDefaults(suiteName: AppConstants.appGroupIdentifier))
+    private var monitoringLimitMinutes = AppConstants.defaultMonitoringLimitMinutes
 
-    @State private var dailyLimit: Double = 1
+    @State private var limitSliderValue: Double = 1
     @State private var reportFilter: DeviceActivityFilter?
     @State private var reportId = UUID()
 
@@ -31,7 +31,6 @@ struct DebugView: View {
                         appSelectionSection
                         progressSection
                         debugToolsSection
-                        homeScreenSection
                         petAnimationSection
                         evolutionScaleSection
                         homeCardSection
@@ -140,14 +139,14 @@ struct DebugView: View {
 
     private var limitSliderSection: some View {
         VStack {
-            Text("Daily Limit: \(Int(dailyLimit))m")
+            Text("Monitoring Limit: \(Int(limitSliderValue))m")
                 .font(.headline)
 
-            Slider(value: $dailyLimit, in: 1...30, step: 1) {
+            Slider(value: $limitSliderValue, in: 1...30, step: 1) {
                 Text("Limit")
             } onEditingChanged: { isEditing in
                 if !isEditing {
-                    dailyLimitMinutes = Int(dailyLimit)
+                    monitoringLimitMinutes = Int(limitSliderValue)
                     refreshReport()
                 }
             }
@@ -160,7 +159,7 @@ struct DebugView: View {
         .background(Color(.secondarySystemBackground))
         .cornerRadius(12)
         .onAppear {
-            dailyLimit = Double(min(max(dailyLimitMinutes, 1), 30))
+            limitSliderValue = Double(min(max(monitoringLimitMinutes, 1), 30))
         }
     }
 
@@ -261,21 +260,6 @@ struct DebugView: View {
             .frame(maxWidth: .infinity)
             .padding()
             .background(Color.purple.opacity(0.2))
-            .cornerRadius(12)
-        }
-    }
-
-    // MARK: - HomeScreen Debug
-
-    private var homeScreenSection: some View {
-        NavigationLink(destination: HomeScreenDebugView()) {
-            HStack {
-                Image(systemName: "house")
-                Text("HomeScreen Debug")
-            }
-            .frame(maxWidth: .infinity)
-            .padding()
-            .background(Color.teal.opacity(0.2))
             .cornerRadius(12)
         }
     }
@@ -395,10 +379,10 @@ struct DebugView: View {
     }
 
     private var timeSpentText: String {
-        let totalSeconds = (dailyLimitMinutes * 60 * currentProgress) / 100
+        let totalSeconds = (monitoringLimitMinutes * 60 * currentProgress) / 100
         let minutes = totalSeconds / 60
         let seconds = totalSeconds % 60
-        return "~\(minutes)m \(seconds)s / \(dailyLimitMinutes)m"
+        return "~\(minutes)m \(seconds)s / \(monitoringLimitMinutes)m"
     }
 
     private func createFilter() -> DeviceActivityFilter {

@@ -26,18 +26,9 @@ struct UsageChart<Stats: UsageStatsProtocol>: View {
         return formatter
     }
 
-    private var isDynamicMode: Bool {
-        stats.dailyLimitMinutes == .max
-    }
-
     private var chartMax: Int {
-        if isDynamicMode {
-            // Dynamic mode: use maxMinutes + 15% padding (no fixed limit)
-            return max(Int(Double(stats.maxMinutes) * 1.15), 1)
-        } else {
-            // Daily mode: use limit as max (full bar = limit reached)
-            return max(stats.dailyLimitMinutes, 1)
-        }
+        // Use maxMinutes + 15% padding for chart scaling
+        max(Int(Double(stats.maxMinutes) * 1.15), 1)
     }
 
     private var totalHeight: CGFloat {
@@ -192,7 +183,7 @@ struct UsageChart<Stats: UsageStatsProtocol>: View {
 
 #Preview("Weekly (fixed)") {
     UsageChart(
-        stats: WeeklyUsageStats.mock(dailyLimitMinutes: 90),
+        stats: WeeklyUsageStats.mock(),
         themeColor: .green
     )
     .padding()
@@ -200,7 +191,7 @@ struct UsageChart<Stats: UsageStatsProtocol>: View {
 
 #Preview("Full (scrollable)") {
     UsageChart(
-        stats: FullUsageStats.mock(days: 14, dailyLimitMinutes: 60),
+        stats: FullUsageStats.mock(days: 14),
         scrollable: true,
         showDateLabel: true,
         themeColor: .purple
@@ -210,7 +201,7 @@ struct UsageChart<Stats: UsageStatsProtocol>: View {
 
 #Preview("30 days") {
     UsageChart(
-        stats: FullUsageStats.mock(days: 30, dailyLimitMinutes: 90),
+        stats: FullUsageStats.mock(days: 30),
         scrollable: true,
         showDateLabel: true,
         themeColor: .green

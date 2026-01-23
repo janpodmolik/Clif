@@ -6,20 +6,15 @@ import UIKit
 // The system provides a default appearance for any methods that your subclass doesn't override.
 // Make sure that your class name matches the NSExtensionPrincipalClass in your Info.plist.
 class ShieldConfigurationExtension: ShieldConfigurationDataSource {
-    
-    private func getShieldConfiguration() -> ShieldConfiguration {
-        let progress = SharedDefaults.currentProgress
-        let dailyLimit = SharedDefaults.dailyLimitMinutes
 
-        // Calculate remaining time
-        let usedMinutes = (dailyLimit * progress) / 100
-        let remainingMinutes = max(0, dailyLimit - usedMinutes)
+    private func getShieldConfiguration() -> ShieldConfiguration {
+        let windPoints = SharedDefaults.monitoredWindPoints
 
         let subtitleText: String
-        if remainingMinutes > 0 {
-            subtitleText = "\(remainingMinutes) min remaining (\(progress)%)"
+        if windPoints >= 100 {
+            subtitleText = "Your pet was blown away!"
         } else {
-            subtitleText = "Limit reached (\(progress)%)"
+            subtitleText = "Wind: \(Int(windPoints))% - Take a break to calm it"
         }
 
         return ShieldConfiguration(
@@ -33,19 +28,19 @@ class ShieldConfigurationExtension: ShieldConfigurationDataSource {
             secondaryButtonLabel: ShieldConfiguration.Label(text: "Unlock", color: .systemBlue)
         )
     }
-    
+
     override func configuration(shielding application: Application) -> ShieldConfiguration {
         return getShieldConfiguration()
     }
-    
+
     override func configuration(shielding application: Application, in category: ActivityCategory) -> ShieldConfiguration {
         return getShieldConfiguration()
     }
-    
+
     override func configuration(shielding webDomain: WebDomain) -> ShieldConfiguration {
         return getShieldConfiguration()
     }
-    
+
     override func configuration(shielding webDomain: WebDomain, in category: ActivityCategory) -> ShieldConfiguration {
         return getShieldConfiguration()
     }

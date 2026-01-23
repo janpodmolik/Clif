@@ -1,7 +1,7 @@
 import Foundation
 
-/// Archived version of a DynamicPet for history/graveyard.
-struct ArchivedDynamicPet: Codable, Identifiable, Equatable, PetWithSources {
+/// Archived version of a Pet for history/graveyard.
+struct ArchivedPet: Codable, Identifiable, Equatable, PetWithSources {
     let id: UUID
     let name: String
     let evolutionHistory: EvolutionHistory
@@ -27,8 +27,8 @@ struct ArchivedDynamicPet: Codable, Identifiable, Equatable, PetWithSources {
     /// Total wind points decreased from breaks.
     let totalWindDecreased: Double
 
-    /// Configuration used for this pet.
-    let config: DynamicModeConfig
+    /// Wind preset used for this pet.
+    let preset: WindPreset
 
     // MARK: - Computed
 
@@ -45,9 +45,9 @@ struct ArchivedDynamicPet: Codable, Identifiable, Equatable, PetWithSources {
         breakHistory.filter(\.wasViolated).count
     }
 
-    /// Full usage stats for history display. Dynamic mode has no fixed daily limit.
+    /// Full usage stats for history display.
     var fullStats: FullUsageStats {
-        FullUsageStats(days: dailyStats, dailyLimitMinutes: .max)
+        FullUsageStats(days: dailyStats)
     }
 
     // MARK: - Init
@@ -64,7 +64,7 @@ struct ArchivedDynamicPet: Codable, Identifiable, Equatable, PetWithSources {
         peakWindPoints: Double = 0,
         totalBreakMinutes: Double = 0,
         totalWindDecreased: Double = 0,
-        config: DynamicModeConfig = .default
+        preset: WindPreset = .default
     ) {
         self.id = id
         self.name = name
@@ -77,15 +77,15 @@ struct ArchivedDynamicPet: Codable, Identifiable, Equatable, PetWithSources {
         self.peakWindPoints = peakWindPoints
         self.totalBreakMinutes = totalBreakMinutes
         self.totalWindDecreased = totalWindDecreased
-        self.config = config
+        self.preset = preset
     }
 }
 
-// MARK: - Archiving from DynamicPet
+// MARK: - Archiving from Pet
 
-extension ArchivedDynamicPet {
-    /// Creates an archived pet from an active DynamicPet.
-    init(archiving pet: DynamicPet, archivedAt: Date = Date()) {
+extension ArchivedPet {
+    /// Creates an archived pet from an active Pet.
+    init(archiving pet: Pet, archivedAt: Date = Date()) {
         self.init(
             id: pet.id,
             name: pet.name,
@@ -98,20 +98,20 @@ extension ArchivedDynamicPet {
             peakWindPoints: pet.peakWindPoints,
             totalBreakMinutes: pet.totalBreakMinutes,
             totalWindDecreased: pet.totalWindDecreased,
-            config: pet.config
+            preset: pet.preset
         )
     }
 }
 
 // MARK: - Mock Data
 
-extension ArchivedDynamicPet {
+extension ArchivedPet {
     static func mock(
         name: String = "Windy",
         phase: Int = 3,
         isBlown: Bool = true,
         totalDays: Int = 5
-    ) -> ArchivedDynamicPet {
+    ) -> ArchivedPet {
         let petId = UUID()
         let calendar = Calendar.current
         let archivedAt = calendar.date(byAdding: .day, value: -1, to: Date()) ?? Date()
@@ -130,7 +130,7 @@ extension ArchivedDynamicPet {
             )
         }
 
-        return ArchivedDynamicPet(
+        return ArchivedPet(
             id: petId,
             name: name,
             evolutionHistory: .mock(phase: phase, essence: .plant, totalDays: totalDays, isBlown: isBlown),
@@ -145,11 +145,20 @@ extension ArchivedDynamicPet {
         )
     }
 
-    static func mockList() -> [ArchivedDynamicPet] {
+    static func mockList() -> [ArchivedPet] {
         [
             .mock(name: "Storm", phase: 4, isBlown: false, totalDays: 10),
             .mock(name: "Breeze", phase: 3, isBlown: true, totalDays: 5),
             .mock(name: "Gust", phase: 2, isBlown: true, totalDays: 2)
         ]
+    }
+
+    static func mockBlob(name: String = "Blobby") -> ArchivedPet {
+        ArchivedPet(
+            name: name,
+            evolutionHistory: .mock(phase: 0, essence: nil, totalDays: 1, isBlown: false),
+            purpose: nil,
+            archivedAt: Date()
+        )
     }
 }

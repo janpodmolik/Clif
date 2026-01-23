@@ -8,7 +8,6 @@ enum SnapshotLogging {
     /// Call this when user starts a break in the main app.
     static func logBreakStarted(
         petId: UUID,
-        mode: PetMode,
         windPoints: Double,
         breakType: BreakTypePayload
     ) {
@@ -18,7 +17,6 @@ enum SnapshotLogging {
 
         let event = SnapshotEvent(
             petId: petId,
-            mode: mode,
             windPoints: windPoints,
             eventType: .breakStarted(type: breakType)
         )
@@ -30,7 +28,6 @@ enum SnapshotLogging {
     /// Call this when break timer completes successfully.
     static func logBreakEnded(
         petId: UUID,
-        mode: PetMode,
         windPoints: Double,
         actualMinutes: Int
     ) {
@@ -40,7 +37,6 @@ enum SnapshotLogging {
 
         let event = SnapshotEvent(
             petId: petId,
-            mode: mode,
             windPoints: windPoints,
             eventType: .breakEnded(actualMinutes: actualMinutes)
         )
@@ -52,7 +48,6 @@ enum SnapshotLogging {
     /// Call this when user violates a break (opens blocked app during break).
     static func logBreakFailed(
         petId: UUID,
-        mode: PetMode,
         windPoints: Double,
         actualMinutes: Int
     ) {
@@ -62,7 +57,6 @@ enum SnapshotLogging {
 
         let event = SnapshotEvent(
             petId: petId,
-            mode: mode,
             windPoints: windPoints,
             eventType: .breakFailed(actualMinutes: actualMinutes)
         )
@@ -74,12 +68,10 @@ enum SnapshotLogging {
     /// Call this at midnight rollover.
     static func logDailyReset(
         petId: UUID,
-        mode: PetMode,
         windPoints: Double
     ) {
         let event = SnapshotEvent(
             petId: petId,
-            mode: mode,
             windPoints: windPoints,
             eventType: .dailyReset
         )
@@ -91,12 +83,10 @@ enum SnapshotLogging {
     /// Call this when pet blows away (windPoints >= 100).
     static func logBlowAway(
         petId: UUID,
-        mode: PetMode,
         windPoints: Double
     ) {
         let event = SnapshotEvent(
             petId: petId,
-            mode: mode,
             windPoints: windPoints,
             eventType: .blowAway
         )

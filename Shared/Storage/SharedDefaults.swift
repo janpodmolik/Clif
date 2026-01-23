@@ -35,16 +35,6 @@ struct SharedDefaults {
         set { defaults?.set(newValue, forKey: DefaultsKeys.lastMonitorUpdate) }
     }
     
-    // MARK: - Settings
-    
-    static var dailyLimitMinutes: Int {
-        get { 
-            let value = defaults?.integer(forKey: DefaultsKeys.dailyLimitMinutes) ?? 0
-            return value > 0 ? value : AppConstants.defaultDailyLimitMinutes
-        }
-        set { defaults?.set(newValue, forKey: DefaultsKeys.dailyLimitMinutes) }
-    }
-    
     // MARK: - Per-Pet Token Storage
 
     private static func tokenKey(_ petId: UUID, _ suffix: String) -> String {
@@ -114,18 +104,6 @@ struct SharedDefaults {
         return try? PropertyListDecoder().decode(Set<WebDomainToken>.self, from: data)
     }
     
-    // MARK: - Notifications
-    
-    static var notification90Sent: Bool {
-        get { defaults?.bool(forKey: DefaultsKeys.notification90Sent) ?? false }
-        set { defaults?.set(newValue, forKey: DefaultsKeys.notification90Sent) }
-    }
-    
-    static var notificationLastMinuteSent: Bool {
-        get { defaults?.bool(forKey: DefaultsKeys.notificationLastMinuteSent) ?? false }
-        set { defaults?.set(newValue, forKey: DefaultsKeys.notificationLastMinuteSent) }
-    }
-
     // MARK: - Monitoring Context (lightweight data for extensions to create snapshots)
 
     /// Pet ID currently being monitored (set by main app when starting monitoring).
@@ -136,17 +114,6 @@ struct SharedDefaults {
         }
         set {
             defaults?.set(newValue?.uuidString, forKey: DefaultsKeys.monitoredPetId)
-        }
-    }
-
-    /// Pet mode currently being monitored (daily or dynamic).
-    static var monitoredPetMode: PetMode? {
-        get {
-            guard let string = defaults?.string(forKey: DefaultsKeys.monitoredPetMode) else { return nil }
-            return PetMode(rawValue: string)
-        }
-        set {
-            defaults?.set(newValue?.rawValue, forKey: DefaultsKeys.monitoredPetMode)
         }
     }
 
@@ -185,5 +152,13 @@ struct SharedDefaults {
 
     static func removeObject(forKey key: String) {
         defaults?.removeObject(forKey: key)
+    }
+
+    static func integer(forKey key: String) -> Int {
+        defaults?.integer(forKey: key) ?? 0
+    }
+
+    static func setInt(_ value: Int, forKey key: String) {
+        defaults?.set(value, forKey: key)
     }
 }

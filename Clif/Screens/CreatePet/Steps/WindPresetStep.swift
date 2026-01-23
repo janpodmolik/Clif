@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct DynamicIntensityConfigStep: View {
+struct WindPresetStep: View {
     @Environment(CreatePetCoordinator.self) private var coordinator
 
     var body: some View {
@@ -15,11 +15,11 @@ struct DynamicIntensityConfigStep: View {
                 .padding(.horizontal)
 
             VStack(spacing: 12) {
-                ForEach(DynamicModeConfig.allCases, id: \.self) { config in
-                    DynamicConfigCard(
-                        config: config,
-                        isSelected: coordinator.dynamicConfig == config,
-                        onTap: { coordinator.dynamicConfig = config }
+                ForEach(WindPreset.allCases, id: \.self) { preset in
+                    WindPresetCard(
+                        preset: preset,
+                        isSelected: coordinator.preset == preset,
+                        onTap: { coordinator.preset = preset }
                     )
                 }
             }
@@ -32,10 +32,10 @@ struct DynamicIntensityConfigStep: View {
     }
 }
 
-// MARK: - Dynamic Config Card
+// MARK: - Wind Preset Card
 
-private struct DynamicConfigCard: View {
-    let config: DynamicModeConfig
+private struct WindPresetCard: View {
+    let preset: WindPreset
     let isSelected: Bool
     let onTap: () -> Void
 
@@ -50,11 +50,11 @@ private struct DynamicConfigCard: View {
                 iconView
 
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(config.displayName)
+                    Text(preset.displayName)
                         .font(.headline)
                         .foregroundStyle(.primary)
 
-                    Text(config.description)
+                    Text(preset.description)
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
@@ -62,9 +62,9 @@ private struct DynamicConfigCard: View {
                 Spacer()
 
                 VStack(alignment: .trailing, spacing: 2) {
-                    Text("\(Int(config.minutesToBlowAway)) min")
+                    Text("\(Int(preset.minutesToBlowAway)) min")
                         .font(.subheadline.weight(.semibold))
-                        .foregroundStyle(config.themeColor)
+                        .foregroundStyle(preset.themeColor)
 
                     Text("to blow away")
                         .font(.caption2)
@@ -72,7 +72,7 @@ private struct DynamicConfigCard: View {
                 }
 
                 Image(systemName: "checkmark.circle.fill")
-                    .foregroundStyle(config.themeColor)
+                    .foregroundStyle(preset.themeColor)
                     .font(.title3)
                     .opacity(isSelected ? 1 : 0)
             }
@@ -81,23 +81,23 @@ private struct DynamicConfigCard: View {
             .glassSelectableBackground(
                 cornerRadius: Layout.cornerRadius,
                 isSelected: isSelected,
-                tintColor: config.themeColor
+                tintColor: preset.themeColor
             )
         }
         .buttonStyle(.plain)
     }
 
     private var iconView: some View {
-        Image(systemName: config.iconName)
+        Image(systemName: preset.iconName)
             .font(.title3)
-            .foregroundStyle(config.themeColor)
+            .foregroundStyle(preset.themeColor)
             .frame(width: 28, height: 28)
     }
 }
 
 #if DEBUG
 #Preview {
-    DynamicIntensityConfigStep()
+    WindPresetStep()
         .environment(CreatePetCoordinator())
 }
 #endif

@@ -8,7 +8,8 @@ struct ArchivedPetHeaderCard: View {
     let isBlown: Bool
     let archivedAt: Date
     var purpose: String? = nil
-    var modeInfo: PetModeInfo? = nil
+    var preset: WindPreset? = nil
+    var limitedSources: [LimitedSource] = []
 
     private var statusText: String {
         isBlown ? "Odfouknut" : "Plně evolvován"
@@ -83,8 +84,8 @@ struct ArchivedPetHeaderCard: View {
             }
             .padding()
 
-            if let modeInfo {
-                PetModeInfoSection(modeInfo: modeInfo)
+            if let preset {
+                WindPresetInfoSection(preset: preset, limitedSources: limitedSources)
             }
         }
         .clipShape(RoundedRectangle(cornerRadius: 32))
@@ -133,7 +134,7 @@ struct ArchivedPetHeaderCard: View {
 }
 
 #if DEBUG
-#Preview("Fully Evolved - Daily") {
+#Preview("Fully Evolved") {
     ArchivedPetHeaderCard(
         petName: "Fern",
         totalDays: 12,
@@ -142,15 +143,13 @@ struct ArchivedPetHeaderCard: View {
         isBlown: false,
         archivedAt: Date(),
         purpose: "Social Media",
-        modeInfo: .daily(.init(
-            dailyLimitMinutes: 90,
-            limitedSources: LimitedSource.mockList()
-        ))
+        preset: .default,
+        limitedSources: LimitedSource.mockList()
     )
     .padding()
 }
 
-#Preview("Blown - Dynamic") {
+#Preview("Blown") {
     ArchivedPetHeaderCard(
         petName: "Storm",
         totalDays: 5,
@@ -159,15 +158,13 @@ struct ArchivedPetHeaderCard: View {
         isBlown: true,
         archivedAt: Date(),
         purpose: "Gaming",
-        modeInfo: .dynamic(.init(
-            config: .intense,
-            limitedSources: LimitedSource.mockList()
-        ))
+        preset: .intense,
+        limitedSources: LimitedSource.mockList()
     )
     .padding()
 }
 
-#Preview("Without Mode Info") {
+#Preview("Without Config") {
     ArchivedPetHeaderCard(
         petName: "Sprout",
         totalDays: 3,

@@ -401,32 +401,32 @@ struct EvolutionPhaseCard: View {
         VStack(spacing: 20) {
             Text("Blob (no essence)").font(.caption)
             EvolutionCarousel(
-                pet: ArchivedDailyPet.mockBlob(),
+                pet: ArchivedPet.mockBlob(),
                 mood: .happy
             )
 
             Text("Blob - Ready for Essence").font(.caption)
             EvolutionCarousel(
-                pet: ArchivedDailyPet.mockBlob(),
+                pet: ArchivedPet.mockBlob(),
                 mood: .happy,
                 canUseEssence: true
             )
 
             Text("With essence - Phase 2").font(.caption)
             EvolutionCarousel(
-                pet: ArchivedDailyPet.mock(phase: 2),
+                pet: ArchivedPet.mock(phase: 2),
                 mood: .happy
             )
 
             Text("Blown away at Phase 1").font(.caption)
             EvolutionCarousel(
-                pet: ArchivedDailyPet.mock(phase: 1, isBlown: true),
+                pet: ArchivedPet.mock(phase: 1, isBlown: true),
                 mood: .sad
             )
 
             Text("Fully evolved - Phase 4").font(.caption)
             EvolutionCarousel(
-                pet: ArchivedDailyPet.mock(phase: 4),
+                pet: ArchivedPet.mock(phase: 4),
                 mood: .neutral
             )
         }

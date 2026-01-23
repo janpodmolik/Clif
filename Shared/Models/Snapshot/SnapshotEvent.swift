@@ -2,11 +2,10 @@ import Foundation
 
 /// A single event in the snapshot log.
 /// Events are append-only and represent state changes for analytics/premium graphs.
-/// The source of truth for game mechanics remains in DailyPet/DynamicPet aggregates.
+/// The source of truth for game mechanics remains in Pet aggregates.
 struct SnapshotEvent: Codable, Identifiable, Equatable {
     let id: UUID
     let petId: UUID
-    let mode: PetMode
     /// Date in YYYY-MM-DD format. Redundant (derivable from timestamp) but simplifies
     /// BE queries and indexing for group-by-day operations.
     let date: String
@@ -18,7 +17,6 @@ struct SnapshotEvent: Codable, Identifiable, Equatable {
     init(
         id: UUID = UUID(),
         petId: UUID,
-        mode: PetMode,
         date: String? = nil,
         timestamp: Date = Date(),
         windPoints: Double,
@@ -26,7 +24,6 @@ struct SnapshotEvent: Codable, Identifiable, Equatable {
     ) {
         self.id = id
         self.petId = petId
-        self.mode = mode
         self.date = date ?? Self.dateString(from: timestamp)
         self.timestamp = timestamp
         self.windPoints = windPoints
@@ -51,5 +48,5 @@ struct SnapshotEvent: Codable, Identifiable, Equatable {
 // MARK: - Schema Versioning
 
 enum SnapshotSchema {
-    static let currentVersion = 1
+    static let currentVersion = 2
 }

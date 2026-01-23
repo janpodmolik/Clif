@@ -2,32 +2,29 @@ import FamilyControls
 import ManagedSettings
 import SwiftUI
 
-/// A section displaying pet mode configuration.
+/// A section displaying wind preset configuration and limited sources.
 /// Designed to be placed below the pet header content within the same card.
 /// This is a read-only informational section.
-struct PetModeInfoSection: View {
-    let modeInfo: PetModeInfo
-
-    private var sources: [LimitedSource] {
-        modeInfo.limitedSources
-    }
+struct WindPresetInfoSection: View {
+    let preset: WindPreset
+    let limitedSources: [LimitedSource]
 
     private var applicationTokens: Set<ApplicationToken> {
-        Set(sources.compactMap {
+        Set(limitedSources.compactMap {
             if case .app(let source) = $0 { return source.applicationToken }
             return nil
         })
     }
 
     private var categoryTokens: Set<ActivityCategoryToken> {
-        Set(sources.compactMap {
+        Set(limitedSources.compactMap {
             if case .category(let source) = $0 { return source.categoryToken }
             return nil
         })
     }
 
     private var webDomainTokens: Set<WebDomainToken> {
-        Set(sources.compactMap {
+        Set(limitedSources.compactMap {
             if case .website(let source) = $0 { return source.webDomainToken }
             return nil
         })
@@ -46,10 +43,10 @@ struct PetModeInfoSection: View {
                 modeIcon
 
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(modeInfo.modeName)
+                    Text(preset.displayName)
                         .font(.subheadline.weight(.semibold))
 
-                    modeDetailText
+                    Text("\(Int(preset.minutesToBlowAway)) min to blow away")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
@@ -71,27 +68,16 @@ struct PetModeInfoSection: View {
     }
 
     private var modeIcon: some View {
-        Image(systemName: modeInfo.iconName)
+        Image(systemName: preset.iconName)
             .font(.system(size: 16, weight: .medium))
-            .foregroundStyle(modeInfo.themeColor)
+            .foregroundStyle(preset.themeColor)
             .frame(width: 32, height: 32)
-            .background(modeInfo.themeColor.opacity(0.15), in: Circle())
-    }
-
-    @ViewBuilder
-    private var modeDetailText: some View {
-        switch modeInfo {
-        case .daily(let info):
-            Text("Limit: \(info.formattedLimit) / day")
-
-        case .dynamic(let info):
-            Text(info.config.displayName)
-        }
+            .background(preset.themeColor.opacity(0.15), in: Circle())
     }
 
     /// Fallback when no valid tokens are available (e.g. archived pets without tokens)
     private var sourcesCountBadge: some View {
-        let count = sources.count
+        let count = limitedSources.count
         return HStack(spacing: 4) {
             Image(systemName: "app.badge.fill")
                 .font(.caption)
@@ -107,39 +93,22 @@ struct PetModeInfoSection: View {
 }
 
 #if DEBUG
-#Preview("Daily Mode") {
+#Preview("Balanced") {
     VStack(spacing: 20) {
-        PetModeInfoSection(
-            modeInfo: .daily(.init(
-                dailyLimitMinutes: 90,
-                limitedSources: LimitedSource.mockList()
-            ))
+        WindPresetInfoSection(
+            preset: .balanced,
+            limitedSources: LimitedSource.mockList()
         )
         .glassCard()
     }
     .padding()
 }
 
-#Preview("Dynamic Mode - Balanced") {
+#Preview("Intense") {
     VStack(spacing: 20) {
-        PetModeInfoSection(
-            modeInfo: .dynamic(.init(
-                config: .balanced,
-                limitedSources: LimitedSource.mockList()
-            ))
-        )
-        .glassCard()
-    }
-    .padding()
-}
-
-#Preview("Dynamic Mode - Intense") {
-    VStack(spacing: 20) {
-        PetModeInfoSection(
-            modeInfo: .dynamic(.init(
-                config: .intense,
-                limitedSources: LimitedSource.mockList()
-            ))
+        WindPresetInfoSection(
+            preset: .intense,
+            limitedSources: LimitedSource.mockList()
         )
         .glassCard()
     }

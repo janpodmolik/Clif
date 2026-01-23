@@ -103,7 +103,7 @@ struct PetDropStep: View {
                 Divider()
                     .padding(.horizontal, 8)
 
-                // Row 2: Limits + Mode cards
+                // Row 2: Limits + Preset cards
                 HStack(spacing: Layout.cardSpacing) {
                     // Limits card
                     VStack(alignment: .leading, spacing: 8) {
@@ -121,22 +121,22 @@ struct PetDropStep: View {
                     .padding(Layout.innerPadding)
                     .background(cardBackground)
 
-                    // Mode card
+                    // Preset card
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("\(coordinator.modeInfo.shortName) Mode")
+                        Text("Preset")
                             .font(.subheadline.weight(.medium))
                             .foregroundStyle(.secondary)
 
-                        Text(modeDisplayText)
+                        Text(coordinator.preset.displayName)
                             .font(.headline)
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
                     .padding(Layout.innerPadding)
                     .background(cardBackground)
                     .overlay(alignment: .topTrailing) {
-                        Image(systemName: coordinator.modeInfo.iconName)
+                        Image(systemName: coordinator.preset.iconName)
                             .font(.subheadline)
-                            .foregroundStyle(coordinator.modeInfo.themeColor)
+                            .foregroundStyle(coordinator.preset.themeColor)
                             .padding(Layout.innerPadding)
                     }
                 }
@@ -156,14 +156,6 @@ struct PetDropStep: View {
     private var cardBackground: some View {
         RoundedRectangle(cornerRadius: Layout.innerCornerRadius)
             .fill(.ultraThinMaterial)
-    }
-
-    private var modeDisplayText: String {
-        if coordinator.selectedMode == .daily {
-            return MinutesFormatter.rate(coordinator.dailyLimitMinutes)
-        } else {
-            return coordinator.dynamicConfig.displayName
-        }
     }
 
     // MARK: - Drag Handling

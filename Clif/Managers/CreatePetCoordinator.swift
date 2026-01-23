@@ -5,15 +5,13 @@ import SwiftUI
 
 enum CreatePetStep: Int, CaseIterable {
     case appSelection = 0
-    case modeSelection = 1
-    case modeConfig = 2
-    case petInfo = 3
+    case presetSelection = 1
+    case petInfo = 2
 
     var title: String {
         switch self {
         case .appSelection: "Select Apps"
-        case .modeSelection: "Choose Mode"
-        case .modeConfig: "Configure"
+        case .presetSelection: "Configure"
         case .petInfo: "Name Your Pet"
         }
     }
@@ -56,38 +54,21 @@ final class CreatePetCoordinator {
     // MARK: - Collected Data
 
     var selectedApps = FamilyActivitySelection()
-    var selectedMode: PetMode = .daily
-    var dailyLimitMinutes: Int = 60
-    var dynamicConfig: DynamicModeConfig = .balanced
+    var preset: WindPreset = .balanced
     var petName: String = ""
     var petPurpose: String = ""
 
-    // MARK: - Drag State (Step 5)
+    // MARK: - Drag State (Step 3)
 
     var dragState = BlobDragState()
     var petDropFrame: CGRect?
 
     // MARK: - Callbacks
 
-    private var onComplete: ((ActivePet) -> Void)?
+    private var onComplete: ((Pet) -> Void)?
     private var cleanupWorkItem: DispatchWorkItem?
 
     // MARK: - Computed
-
-    var modeInfo: PetModeInfo {
-        switch selectedMode {
-        case .daily:
-            return .daily(PetModeInfo.DailyModeInfo(
-                dailyLimitMinutes: dailyLimitMinutes,
-                limitedSources: []
-            ))
-        case .dynamic:
-            return .dynamic(PetModeInfo.DynamicModeInfo(
-                config: dynamicConfig,
-                limitedSources: []
-            ))
-        }
-    }
 
     var canProceed: Bool {
         switch currentStep {
@@ -95,10 +76,8 @@ final class CreatePetCoordinator {
             !selectedApps.applicationTokens.isEmpty ||
             !selectedApps.categoryTokens.isEmpty ||
             !selectedApps.webDomainTokens.isEmpty
-        case .modeSelection:
+        case .presetSelection:
             true
-        case .modeConfig:
-            dailyLimitMinutes > 0
         case .petInfo:
             !petName.trimmingCharacters(in: .whitespaces).isEmpty
         }
@@ -110,7 +89,7 @@ final class CreatePetCoordinator {
 
     // MARK: - Public API
 
-    func show(onComplete: @escaping (ActivePet) -> Void) {
+    func show(onComplete: @escaping (Pet) -> Void) {
         cleanupWorkItem?.cancel()
         cleanupWorkItem = nil
 
@@ -121,7 +100,7 @@ final class CreatePetCoordinator {
 
     #if DEBUG
     /// Skips directly to drop phase with mock data for faster testing
-    func showDropOnly(onComplete: @escaping (ActivePet) -> Void) {
+    func showDropOnly(onComplete: @escaping (Pet) -> Void) {
         cleanupWorkItem?.cancel()
         cleanupWorkItem = nil
 
@@ -129,8 +108,7 @@ final class CreatePetCoordinator {
         resetWizardState()
 
         // Pre-fill with mock data
-        selectedMode = .daily
-        dailyLimitMinutes = 60
+        preset = .balanced
         petName = "Debug Pet"
         currentStep = .petInfo
 
@@ -203,32 +181,17 @@ final class CreatePetCoordinator {
     func handleBlobDrop(petManager: PetManager) {
         let limitedSources = createLimitedSources(from: selectedApps)
 
-        let pet: ActivePet
-        switch selectedMode {
-        case .daily:
-            let dailyPet = petManager.createDaily(
-                name: petName,
-                purpose: petPurpose.isEmpty ? nil : petPurpose,
-                dailyLimitMinutes: dailyLimitMinutes,
-                limitedSources: limitedSources
-            )
-            pet = .daily(dailyPet)
-
-        case .dynamic:
-            let dynamicPet = petManager.createDynamic(
-                name: petName,
-                purpose: petPurpose.isEmpty ? nil : petPurpose,
-                config: dynamicConfig,
-                limitedSources: limitedSources
-            )
-            pet = .dynamic(dynamicPet)
-        }
+        let pet = petManager.create(
+            name: petName,
+            purpose: petPurpose.isEmpty ? nil : petPurpose,
+            preset: preset,
+            limitedSources: limitedSources
+        )
 
         // Start monitoring
         ScreenTimeManager.shared.startMonitoring(
             petId: pet.id,
-            mode: selectedMode,
-            limitMinutes: selectedMode == .daily ? dailyLimitMinutes : Int(dynamicConfig.minutesToBlowAway),
+            limitMinutes: Int(preset.minutesToBlowAway),
             windPoints: 0,
             limitedSources: limitedSources
         )
@@ -244,9 +207,7 @@ final class CreatePetCoordinator {
     private func resetWizardState() {
         currentStep = .appSelection
         selectedApps = FamilyActivitySelection()
-        selectedMode = .daily
-        dailyLimitMinutes = 60
-        dynamicConfig = .balanced
+        preset = .balanced
         petName = ""
         petPurpose = ""
         dragState = BlobDragState()

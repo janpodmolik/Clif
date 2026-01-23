@@ -4,15 +4,6 @@ import SwiftUI
 struct HomeCardDebugView: View {
     @Environment(\.dismiss) private var dismiss
 
-    // MARK: - Mode Selection
-
-    @State private var selectedMode: PetMode = .daily
-
-    enum PetMode: String, CaseIterable {
-        case daily = "Daily"
-        case dynamic = "Dynamic"
-    }
-
     // MARK: - Pet Identity State
 
     @State private var petName: String = "Blob"
@@ -20,16 +11,11 @@ struct HomeCardDebugView: View {
     @State private var evolutionStage: Int = 0
     private let maxEvolutionStage = 4
 
-    // MARK: - Screen Time State (Daily)
-
-    @State private var usedMinutes: Double = 83
-    @State private var limitMinutes: Double = 180
-    @State private var streakCount: Int = 12
-
-    // MARK: - Wind State (Dynamic)
+    // MARK: - Wind State
 
     @State private var windPoints: Double = 45
     @State private var isOnBreak: Bool = false
+    @State private var streakCount: Int = 12
 
     // MARK: - Button Visibility State
 
@@ -41,20 +27,14 @@ struct HomeCardDebugView: View {
     // MARK: - Section Expansion
 
     @State private var isPetSectionExpanded: Bool = true
-    @State private var isTimeSectionExpanded: Bool = true
+    @State private var isWindSectionExpanded: Bool = true
     @State private var isButtonsSectionExpanded: Bool = true
     @State private var isPresetsSectionExpanded: Bool = true
 
     // MARK: - Computed Properties
 
     private var progress: Double {
-        switch selectedMode {
-        case .daily:
-            guard limitMinutes > 0 else { return 0 }
-            return usedMinutes / limitMinutes
-        case .dynamic:
-            return windPoints / 100.0
-        }
+        windPoints / 100.0
     }
 
     private var currentMood: Mood {
@@ -66,14 +46,6 @@ struct HomeCardDebugView: View {
         case 0.5..<0.8: return .neutral
         default: return .sad
         }
-    }
-
-    private var usedTimeText: String {
-        formatTime(minutes: Int(usedMinutes))
-    }
-
-    private var dailyLimitText: String {
-        formatTime(minutes: Int(limitMinutes))
     }
 
     private var isSaveEnabled: Bool {
@@ -115,34 +87,46 @@ struct HomeCardDebugView: View {
 
     // MARK: - Preview Section
 
-    private var mockPet: ActivePet {
-        switch selectedMode {
-        case .daily:
-            let dailyPet = DailyPet(
-                name: petName,
-                evolutionHistory: .mock(phase: evolutionStage, totalDays: evolutionStage > 0 ? evolutionStage : 0),
-                purpose: purposeLabel.isEmpty ? nil : purposeLabel,
-                todayUsedMinutes: Int(usedMinutes),
-                dailyLimitMinutes: Int(limitMinutes)
-            )
-            if isBlownAway {
-                dailyPet.blowAway()
-            }
-            return .daily(dailyPet)
+    private var mockPet: Pet {
+        // Build evolution history that respects showEvolveButton toggle
+        // Blob: canUseEssence requires totalDays >= 1
+        // Evolved: canEvolve requires phase < maxPhase (4 for plant)
+        let effectivePhase: Int
+        let effectiveEssence: Essence?
+        let effectiveTotalDays: Int
 
-        case .dynamic:
-            let dynamicPet = DynamicPet(
-                name: petName,
-                evolutionHistory: .mock(phase: evolutionStage, totalDays: evolutionStage > 0 ? evolutionStage : 0),
-                purpose: purposeLabel.isEmpty ? nil : purposeLabel,
-                windPoints: windPoints,
-                activeBreak: isOnBreak ? .mock(type: .committed, minutesAgo: 5, durationMinutes: 30) : nil
-            )
-            if isBlownAway {
-                dynamicPet.blowAway()
-            }
-            return .dynamic(dynamicPet)
+        if evolutionStage == 0 {
+            // Blob - no essence, totalDays controls canUseEssence
+            effectivePhase = 0
+            effectiveEssence = nil
+            effectiveTotalDays = showEvolveButton ? 2 : 0
+        } else if showEvolveButton {
+            // Want evolve button visible: ensure phase < maxPhase (4)
+            effectivePhase = min(evolutionStage, 3)
+            effectiveEssence = .plant
+            effectiveTotalDays = evolutionStage
+        } else {
+            // Want evolve button hidden: set phase to maxPhase
+            effectivePhase = 4
+            effectiveEssence = .plant
+            effectiveTotalDays = evolutionStage
         }
+
+        let pet = Pet(
+            name: petName,
+            evolutionHistory: .mock(
+                phase: effectivePhase,
+                essence: effectiveEssence,
+                totalDays: effectiveTotalDays
+            ),
+            purpose: purposeLabel.isEmpty ? nil : purposeLabel,
+            windPoints: windPoints,
+            activeBreak: isOnBreak ? .mock(type: .committed, minutesAgo: 5, durationMinutes: 30) : nil
+        )
+        if isBlownAway {
+            pet.blowAway()
+        }
+        return pet
     }
 
     private var previewSection: some View {
@@ -172,13 +156,8 @@ struct HomeCardDebugView: View {
     private var controlsPanel: some View {
         ScrollView {
             VStack(spacing: 16) {
-                modeSelectionSection
                 petIdentitySection
-                if selectedMode == .daily {
-                    screenTimeSection
-                } else {
-                    windSection
-                }
+                windSection
                 buttonsSection
                 presetsSection
             }
@@ -186,22 +165,6 @@ struct HomeCardDebugView: View {
         }
         .frame(height: 380)
         .background(Color(.systemGroupedBackground))
-    }
-
-    // MARK: - Mode Selection Section
-
-    private var modeSelectionSection: some View {
-        VStack(spacing: 0) {
-            Picker("Mode", selection: $selectedMode) {
-                ForEach(PetMode.allCases, id: \.self) { mode in
-                    Text(mode.rawValue).tag(mode)
-                }
-            }
-            .pickerStyle(.segmented)
-        }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 12)
-        .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 12))
     }
 
     // MARK: - Pet Identity Section
@@ -252,80 +215,6 @@ struct HomeCardDebugView: View {
         }
     }
 
-    // MARK: - Screen Time Section
-
-    private var screenTimeSection: some View {
-        collapsibleSection(
-            title: "Screen Time",
-            systemImage: "clock",
-            isExpanded: $isTimeSectionExpanded
-        ) {
-            VStack(spacing: 16) {
-                // Used minutes slider
-                VStack(alignment: .leading, spacing: 4) {
-                    HStack {
-                        Text("Used")
-                            .foregroundStyle(.secondary)
-                        Spacer()
-                        Text(usedTimeText)
-                            .font(.system(.body, design: .monospaced))
-                    }
-                    Slider(value: $usedMinutes, in: 0...300, step: 1)
-                }
-
-                // Limit minutes slider
-                VStack(alignment: .leading, spacing: 4) {
-                    HStack {
-                        Text("Limit")
-                            .foregroundStyle(.secondary)
-                        Spacer()
-                        Text(dailyLimitText)
-                            .font(.system(.body, design: .monospaced))
-                    }
-                    Slider(value: $limitMinutes, in: 1...480, step: 1)
-                }
-
-                // Progress display
-                HStack {
-                    Text("Progress")
-                        .foregroundStyle(.secondary)
-                    Spacer()
-                    Text("\(Int(progress * 100))%")
-                        .font(.system(.body, design: .monospaced, weight: .semibold))
-                        .foregroundStyle(progressColor)
-                }
-
-                // Streak stepper
-                HStack {
-                    Text("Streak")
-                        .foregroundStyle(.secondary)
-                    Spacer()
-                    HStack(spacing: 12) {
-                        Button {
-                            if streakCount > 0 { streakCount -= 1 }
-                        } label: {
-                            Image(systemName: "minus.circle.fill")
-                                .font(.title2)
-                                .foregroundStyle(.secondary)
-                        }
-
-                        Text("\(streakCount)")
-                            .font(.system(.body, design: .monospaced, weight: .semibold))
-                            .frame(width: 40)
-
-                        Button {
-                            streakCount += 1
-                        } label: {
-                            Image(systemName: "plus.circle.fill")
-                                .font(.title2)
-                                .foregroundStyle(.blue)
-                        }
-                    }
-                }
-            }
-        }
-    }
-
     private var progressColor: Color {
         switch progress {
         case 0..<0.5: return .green
@@ -334,13 +223,13 @@ struct HomeCardDebugView: View {
         }
     }
 
-    // MARK: - Wind Section (Dynamic Mode)
+    // MARK: - Wind Section
 
     private var windSection: some View {
         collapsibleSection(
             title: "Wind Points",
             systemImage: "wind",
-            isExpanded: $isTimeSectionExpanded
+            isExpanded: $isWindSectionExpanded
         ) {
             VStack(spacing: 16) {
                 // Wind points slider
@@ -478,17 +367,15 @@ struct HomeCardDebugView: View {
                     presetButton("Blown Away", color: .red) { applyBlownAwayPreset() }
                 }
 
-                if selectedMode == .dynamic {
-                    Divider()
-                        .padding(.vertical, 4)
+                Divider()
+                    .padding(.vertical, 4)
 
-                    LazyVGrid(columns: [
-                        GridItem(.flexible()),
-                        GridItem(.flexible())
-                    ], spacing: 8) {
-                        presetButton("On Break", color: .green) { applyOnBreakPreset() }
-                        presetButton("High Wind", color: .orange) { applyHighWindPreset() }
-                    }
+                LazyVGrid(columns: [
+                    GridItem(.flexible()),
+                    GridItem(.flexible())
+                ], spacing: 8) {
+                    presetButton("On Break", color: .green) { applyOnBreakPreset() }
+                    presetButton("High Wind", color: .orange) { applyHighWindPreset() }
                 }
             }
         }
@@ -518,14 +405,8 @@ struct HomeCardDebugView: View {
             showEvolveButton = true
             showDetailButton = true
             isBlownAway = false
-
-            if selectedMode == .daily {
-                usedMinutes = 45
-                limitMinutes = 180
-            } else {
-                windPoints = 25
-                isOnBreak = false
-            }
+            windPoints = 25
+            isOnBreak = false
         }
     }
 
@@ -538,14 +419,8 @@ struct HomeCardDebugView: View {
             showEvolveButton = true
             showDetailButton = true
             isBlownAway = false
-
-            if selectedMode == .daily {
-                usedMinutes = 30
-                limitMinutes = 180
-            } else {
-                windPoints = 20
-                isOnBreak = false
-            }
+            windPoints = 20
+            isOnBreak = false
         }
     }
 
@@ -558,14 +433,8 @@ struct HomeCardDebugView: View {
             showEvolveButton = false
             showDetailButton = true
             isBlownAway = false
-
-            if selectedMode == .daily {
-                usedMinutes = 45
-                limitMinutes = 180
-            } else {
-                windPoints = 30
-                isOnBreak = false
-            }
+            windPoints = 30
+            isOnBreak = false
         }
     }
 
@@ -579,14 +448,8 @@ struct HomeCardDebugView: View {
             daysUntilEvolution = 7
             showDetailButton = true
             isBlownAway = false
-
-            if selectedMode == .daily {
-                usedMinutes = 0
-                limitMinutes = 180
-            } else {
-                windPoints = 0
-                isOnBreak = false
-            }
+            windPoints = 0
+            isOnBreak = false
         }
     }
 
@@ -599,14 +462,8 @@ struct HomeCardDebugView: View {
             showEvolveButton = false
             showDetailButton = true
             isBlownAway = false
-
-            if selectedMode == .daily {
-                usedMinutes = 170
-                limitMinutes = 180
-            } else {
-                windPoints = 85
-                isOnBreak = false
-            }
+            windPoints = 85
+            isOnBreak = false
         }
     }
 
@@ -619,18 +476,10 @@ struct HomeCardDebugView: View {
             showEvolveButton = false
             showDetailButton = true
             isBlownAway = true
-
-            if selectedMode == .daily {
-                usedMinutes = 230
-                limitMinutes = 180
-            } else {
-                windPoints = 100
-                isOnBreak = false
-            }
+            windPoints = 100
+            isOnBreak = false
         }
     }
-
-    // MARK: - Dynamic-Only Presets
 
     private func applyOnBreakPreset() {
         withAnimation(.easeInOut(duration: 0.2)) {
@@ -658,17 +507,6 @@ struct HomeCardDebugView: View {
             showDetailButton = true
             isBlownAway = false
         }
-    }
-
-    // MARK: - Helpers
-
-    private func formatTime(minutes: Int) -> String {
-        let hours = minutes / 60
-        let mins = minutes % 60
-        if hours > 0 {
-            return mins > 0 ? "\(hours)h \(mins)m" : "\(hours)h"
-        }
-        return "\(mins)m"
     }
 
     // MARK: - Collapsible Section

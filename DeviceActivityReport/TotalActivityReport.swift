@@ -36,9 +36,9 @@ struct TotalActivityReport: DeviceActivityReportScene {
         formatter.unitsStyle = .abbreviated
         formatter.zeroFormattingBehavior = .dropAll
         
-        // Read daily limit from SharedDefaults (App Group)
-        let dailyLimitMinutes = SharedDefaults.dailyLimitMinutes
-        let dailyLimit = TimeInterval(dailyLimitMinutes * 60)
+        // Read limit from SharedDefaults (App Group) - this is minutesToBlowAway
+        let limitMinutes = SharedDefaults.integer(forKey: DefaultsKeys.monitoringLimitMinutes)
+        let dailyLimit = TimeInterval(limitMinutes * 60)
         
         var totalDuration: TimeInterval = 0
         var appDurations: [ApplicationToken: TimeInterval] = [:]

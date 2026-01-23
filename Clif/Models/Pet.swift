@@ -3,7 +3,7 @@ import Foundation
 import ManagedSettings
 
 @Observable
-final class DynamicPet: Identifiable, PetPresentable, PetWithSources {
+final class Pet: Identifiable, PetPresentable, PetWithSources {
     let id: UUID
     let name: String
     private(set) var evolutionHistory: EvolutionHistory
@@ -19,7 +19,7 @@ final class DynamicPet: Identifiable, PetPresentable, PetWithSources {
     var activeBreak: ActiveBreak?
 
     /// Configuration for wind rise/fall behavior.
-    let config: DynamicModeConfig
+    let preset: WindPreset
 
     // MARK: - PetWithSources
 
@@ -29,12 +29,12 @@ final class DynamicPet: Identifiable, PetPresentable, PetWithSources {
     /// Break history for current session.
     var breakHistory: [CompletedBreak]
 
-    /// Full usage stats for history display. Dynamic mode has no fixed daily limit.
+    /// Full usage stats for history display.
     var fullStats: FullUsageStats {
-        FullUsageStats(days: dailyStats, dailyLimitMinutes: .max)
+        FullUsageStats(days: dailyStats)
     }
 
-    // MARK: - Wind (Dynamic mode uses 0-100 points)
+    // MARK: - Wind Progress
 
     /// Wind progress for UI (0-1), clamped.
     var windProgress: CGFloat {
@@ -44,6 +44,25 @@ final class DynamicPet: Identifiable, PetPresentable, PetWithSources {
     /// Whether pet has been blown away.
     var isBlownAway: Bool {
         windPoints >= 100
+    }
+
+    /// Whether pet is currently on a break.
+    var isOnBreak: Bool {
+        activeBreak != nil
+    }
+
+    /// Whether evolution is available for this pet.
+    var isEvolutionAvailable: Bool {
+        isBlob ? canUseEssence : canEvolve
+    }
+
+    /// Days until next milestone (essence or evolution).
+    var daysUntilNextMilestone: Int? {
+        if isBlob {
+            return daysUntilEssence
+        } else {
+            return daysUntilEvolution
+        }
     }
 
     // MARK: - Break Statistics
@@ -70,7 +89,7 @@ final class DynamicPet: Identifiable, PetPresentable, PetWithSources {
         let deltaMinutes = newThresholdMinutes - lastThresholdMinutes
         guard deltaMinutes > 0 else { return }
 
-        windPoints += Double(deltaMinutes) * config.riseRate
+        windPoints += Double(deltaMinutes) * preset.riseRate
         windPoints = min(windPoints, 100)
         lastThresholdMinutes = newThresholdMinutes
 
@@ -90,7 +109,6 @@ final class DynamicPet: Identifiable, PetPresentable, PetWithSources {
         let breakTypePayload = breakSession.toSnapshotPayload()
         SnapshotLogging.logBreakStarted(
             petId: id,
-            mode: .dynamic,
             windPoints: windPoints,
             breakType: breakTypePayload
         )
@@ -101,7 +119,7 @@ final class DynamicPet: Identifiable, PetPresentable, PetWithSources {
         guard let breakSession = activeBreak else { return }
 
         let actualMinutes = Int(breakSession.elapsedMinutes)
-        let decreased = breakSession.windDecreased(for: config)
+        let decreased = breakSession.windDecreased(for: preset)
         let completed = CompletedBreak(
             type: breakSession.type,
             startedAt: breakSession.startedAt,
@@ -118,7 +136,6 @@ final class DynamicPet: Identifiable, PetPresentable, PetWithSources {
         // Log snapshot
         SnapshotLogging.logBreakEnded(
             petId: id,
-            mode: .dynamic,
             windPoints: windPoints,
             actualMinutes: actualMinutes
         )
@@ -151,7 +168,6 @@ final class DynamicPet: Identifiable, PetPresentable, PetWithSources {
         // Log snapshot
         SnapshotLogging.logBreakFailed(
             petId: id,
-            mode: .dynamic,
             windPoints: windPoints,
             actualMinutes: actualMinutes
         )
@@ -178,7 +194,6 @@ final class DynamicPet: Identifiable, PetPresentable, PetWithSources {
         // Log snapshot
         SnapshotLogging.logBlowAway(
             petId: id,
-            mode: .dynamic,
             windPoints: windPoints
         )
     }
@@ -199,7 +214,7 @@ final class DynamicPet: Identifiable, PetPresentable, PetWithSources {
         windPoints: Double = 0,
         lastThresholdMinutes: Int = 0,
         activeBreak: ActiveBreak? = nil,
-        config: DynamicModeConfig = .default,
+        preset: WindPreset = .default,
         dailyStats: [DailyUsageStat] = [],
         limitedSources: [LimitedSource] = [],
         breakHistory: [CompletedBreak] = []
@@ -211,7 +226,7 @@ final class DynamicPet: Identifiable, PetPresentable, PetWithSources {
         self.windPoints = windPoints
         self.lastThresholdMinutes = lastThresholdMinutes
         self.activeBreak = activeBreak
-        self.config = config
+        self.preset = preset
         self.dailyStats = dailyStats
         self.limitedSources = limitedSources
         self.breakHistory = breakHistory
@@ -304,17 +319,17 @@ extension CompletedBreak {
 
 // MARK: - Mock Data
 
-extension DynamicPet {
+extension Pet {
     static func mock(
         name: String = "Fern",
         phase: Int = 2,
         essence: Essence? = .plant,
         windPoints: Double = 45,
         totalDays: Int = 14
-    ) -> DynamicPet {
+    ) -> Pet {
         let petId = UUID()
 
-        return DynamicPet(
+        return Pet(
             id: petId,
             name: name,
             evolutionHistory: .mock(phase: phase, essence: essence, totalDays: totalDays),
@@ -326,13 +341,13 @@ extension DynamicPet {
         )
     }
 
-    static func mockWithBreak() -> DynamicPet {
+    static func mockWithBreak() -> Pet {
         let pet = mock(windPoints: 65)
         pet.activeBreak = .mock(type: .committed, minutesAgo: 10, durationMinutes: 30)
         return pet
     }
 
-    static func mockWithBreakHistory() -> DynamicPet {
+    static func mockWithBreakHistory() -> Pet {
         let pet = mock(windPoints: 45, totalDays: 10)
         return pet
     }
@@ -341,7 +356,7 @@ extension DynamicPet {
         name: String = "Blobby",
         canUseEssence: Bool = false,
         windPoints: Double = 20
-    ) -> DynamicPet {
+    ) -> Pet {
         let totalDays = canUseEssence ? 2 : 0
         return mock(
             name: name,

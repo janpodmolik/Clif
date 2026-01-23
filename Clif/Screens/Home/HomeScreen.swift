@@ -32,9 +32,9 @@ struct HomeScreen: View {
         return expandedFrame.contains(createPetCoordinator.dragState.dragLocation)
     }
 
-    private var pets: [ActivePet] { petManager.activePets }
+    private var pets: [Pet] { petManager.activePets }
 
-    private var currentPet: ActivePet? {
+    private var currentPet: Pet? {
         if let selectedPetId {
             return pets.first { $0.id == selectedPetId }
         }
@@ -68,7 +68,7 @@ struct HomeScreen: View {
         }
         .fullScreenCover(isPresented: $showPetDetail) {
             if let pet = currentPet {
-                petDetailScreen(for: pet)
+                PetDetailScreen(pet: pet)
             }
         }
         .sheet(isPresented: $showBreakSheet) {
@@ -171,7 +171,7 @@ struct HomeScreen: View {
 
     // MARK: - Single Pet Page
 
-    private func petPage(_ pet: ActivePet, geometry: GeometryProxy) -> some View {
+    private func petPage(_ pet: Pet, geometry: GeometryProxy) -> some View {
         ZStack {
             WindLinesView(
                 windProgress: pet.windProgress,
@@ -206,7 +206,7 @@ struct HomeScreen: View {
 
     // MARK: - Home Card
 
-    private func homeCard(for pet: ActivePet) -> some View {
+    private func homeCard(for pet: Pet) -> some View {
         HomeCardView(
             pet: pet,
             streakCount: 7, // TODO: get from streak manager
@@ -215,7 +215,7 @@ struct HomeScreen: View {
         )
     }
 
-    private func handleAction(_ action: HomeCardAction, for pet: ActivePet) {
+    private func handleAction(_ action: HomeCardAction, for pet: Pet) {
         switch action {
         case .detail:
             showPetDetail = true
@@ -228,21 +228,9 @@ struct HomeScreen: View {
         }
     }
 
-    // MARK: - Detail Screen
-
-    @ViewBuilder
-    private func petDetailScreen(for pet: ActivePet) -> some View {
-        switch pet {
-        case .daily(let dailyPet):
-            DailyPetDetailScreen(pet: dailyPet)
-        case .dynamic(let dynamicPet):
-            DynamicPetDetailScreen(pet: dynamicPet)
-        }
-    }
-
     // MARK: - Actions
 
-    private func handleEvolve(_ pet: ActivePet) {
+    private func handleEvolve(_ pet: Pet) {
         if pet.isBlob {
             essenceCoordinator.show(petDropFrame: petDropFrame) { essence in
                 pet.applyEssence(essence)
@@ -252,7 +240,7 @@ struct HomeScreen: View {
         }
     }
 
-    private func handleBreak(_ pet: ActivePet) {
+    private func handleBreak(_ pet: Pet) {
         showBreakSheet = true
     }
 }
