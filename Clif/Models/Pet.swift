@@ -156,12 +156,12 @@ final class Pet: Identifiable, PetPresentable, PetWithSources {
         )
         breakHistory.append(completed)
 
-        // Hardcore penalty: pet blows away
-        if breakSession.type == .hardcore {
+        // Committed penalty: pet blows away
+        if breakSession.type == .committed {
             windPoints = 100
             blowAway()
         }
-        // Free and committed: no wind decrease (windDecreased already set to 0)
+        // Free: no wind decrease (windDecreased already set to 0)
 
         activeBreak = nil
 
@@ -296,10 +296,10 @@ extension CompletedBreak {
         let configs: [(BreakType, Int, Double, Double, Bool)] = [
             (.free, 30, 10, 40, false),
             (.committed, 120, 20, 55, false),
-            (.hardcore, 240, 25, 70, false),
-            (.free, 360, 8, 35, false),
-            (.committed, 480, 15, 60, true),
-            (.hardcore, 600, 30, 85, false),
+            (.free, 240, 25, 70, false),
+            (.committed, 360, 8, 35, false),
+            (.free, 480, 15, 60, false),
+            (.committed, 600, 30, 85, false),
             (.free, 720, 12, 45, false),
             (.committed, 840, 18, 50, false),
         ]

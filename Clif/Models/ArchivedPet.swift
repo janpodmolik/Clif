@@ -121,7 +121,7 @@ extension ArchivedPet {
             let startDate = calendar.date(byAdding: .hour, value: -(i * 4), to: archivedAt) ?? archivedAt
             let endDate = startDate.addingTimeInterval(30 * 60)
             return CompletedBreak(
-                type: [.free, .committed, .hardcore][i % 3],
+                type: [.free, .committed][i % 2],
                 startedAt: startDate,
                 endedAt: endDate,
                 windAtStart: Double(50 + i * 10),

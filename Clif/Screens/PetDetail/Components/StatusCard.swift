@@ -155,8 +155,7 @@ struct StatusCard: View {
     private func breakTypeColor(_ type: BreakType) -> Color {
         switch type {
         case .free: return .green
-        case .committed: return .orange
-        case .hardcore: return .red
+        case .committed: return .red
         }
     }
 
@@ -502,18 +501,6 @@ private extension View {
     .padding()
 }
 
-#Preview("Hardcore Break") {
-    StatusCard(
-        windProgress: 0.80,
-        windLevel: .high,
-        preset: .intense,
-        activeBreak: .mock(type: .hardcore, minutesAgo: 5, durationMinutes: 15),
-        currentWindPoints: 80,
-        onStartBreak: {},
-        onEndBreak: {}
-    )
-    .padding()
-}
 
 #Preview("Blown Away") {
     StatusCard(

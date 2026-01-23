@@ -6,7 +6,7 @@ enum SnapshotEventType: Codable, Equatable {
     /// Usage threshold crossed (cumulative minutes from DeviceActivityMonitor).
     case usageThreshold(cumulativeMinutes: Int)
 
-    /// Break session started. Planned duration is encoded in BreakTypePayload for committed/hardcore.
+    /// Break session started. Planned duration is encoded in BreakTypePayload for committed breaks.
     case breakStarted(type: BreakTypePayload)
 
     /// Break session ended successfully.
@@ -18,7 +18,7 @@ enum SnapshotEventType: Codable, Equatable {
     /// Daily reset occurred (midnight rollover).
     case dailyReset
 
-    /// Pet was blown away (wind reached 100 or hardcore break failed).
+    /// Pet was blown away (wind reached 100 or committed break failed).
     case blowAway
 
     /// System day start marker.
@@ -121,7 +121,6 @@ enum SnapshotEventType: Codable, Equatable {
 enum BreakTypePayload: Codable, Equatable {
     case free
     case committed(plannedMinutes: Int)
-    case hardcore(plannedMinutes: Int)
 
     // MARK: - Codable
 
@@ -137,12 +136,10 @@ enum BreakTypePayload: Codable, Equatable {
         switch type {
         case "free":
             self = .free
-        case "committed":
+        case "committed", "hardcore":
+            // "hardcore" mapped to committed for backwards compatibility
             let minutes = try container.decode(Int.self, forKey: .plannedMinutes)
             self = .committed(plannedMinutes: minutes)
-        case "hardcore":
-            let minutes = try container.decode(Int.self, forKey: .plannedMinutes)
-            self = .hardcore(plannedMinutes: minutes)
         default:
             self = .free // fallback
         }
@@ -156,9 +153,6 @@ enum BreakTypePayload: Codable, Equatable {
             try container.encode("free", forKey: .type)
         case .committed(let minutes):
             try container.encode("committed", forKey: .type)
-            try container.encode(minutes, forKey: .plannedMinutes)
-        case .hardcore(let minutes):
-            try container.encode("hardcore", forKey: .type)
             try container.encode(minutes, forKey: .plannedMinutes)
         }
     }

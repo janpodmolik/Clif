@@ -5,15 +5,13 @@ import Foundation
 enum BreakType: String, Codable, CaseIterable {
     case free
     case committed
-    case hardcore
 
     /// Multiplier applied to base fallRate from WindPreset.
     /// Higher = faster wind decrease during break.
     var fallRateMultiplier: Double {
         switch self {
         case .free: return 1.0
-        case .committed: return 1.25
-        case .hardcore: return 1.5
+        case .committed: return 1.5
         }
     }
 
@@ -22,7 +20,6 @@ enum BreakType: String, Codable, CaseIterable {
         switch self {
         case .free: return "Free"
         case .committed: return "Committed"
-        case .hardcore: return "Hardcore"
         }
     }
 
@@ -30,8 +27,7 @@ enum BreakType: String, Codable, CaseIterable {
     var penaltyDescription: String {
         switch self {
         case .free: return "No penalty"
-        case .committed: return "Wind won't decrease"
-        case .hardcore: return "Pet blows away"
+        case .committed: return "Pet blows away"
         }
     }
 
@@ -40,7 +36,6 @@ enum BreakType: String, Codable, CaseIterable {
         switch self {
         case .free: return "peacesign"
         case .committed: return "exclamationmark.triangle"
-        case .hardcore: return "nosign"
         }
     }
 }

@@ -383,7 +383,6 @@ private extension BreakType {
         switch self {
         case .free: return .cyan
         case .committed: return .blue
-        case .hardcore: return .indigo
         }
     }
 }

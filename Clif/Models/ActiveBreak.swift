@@ -10,7 +10,7 @@ struct ActiveBreak: Codable, Equatable {
 
     /// Creates a new active break.
     /// - Parameters:
-    ///   - type: The break type (free/committed/hardcore)
+    ///   - type: The break type (free/committed)
     ///   - plannedDuration: Optional duration in seconds. Nil for unlimited (free only).
     init(
         id: UUID = UUID(),
@@ -87,8 +87,6 @@ extension ActiveBreak {
             return .free
         case .committed:
             return .committed(plannedMinutes: plannedMinutes ?? 0)
-        case .hardcore:
-            return .hardcore(plannedMinutes: plannedMinutes ?? 0)
         }
     }
 }
