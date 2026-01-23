@@ -52,7 +52,9 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
 
                 // Calculate wind increase directly in extension
                 let lastSeconds = SharedDefaults.monitoredLastThresholdSeconds
-                let riseRatePerSecond = SharedDefaults.monitoredRiseRate
+                let rawRiseRate = SharedDefaults.monitoredRiseRate
+                // Validate riseRate: must be positive, fallback to default (100pts/60sec = ~1.67 pts/sec)
+                let riseRatePerSecond = rawRiseRate > 0 ? rawRiseRate : (100.0 / 60.0)
                 let oldWindPoints = SharedDefaults.monitoredWindPoints
                 let deltaSeconds = currentSeconds - lastSeconds
 
@@ -70,8 +72,8 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
                     logToFile("[Extension] Updated wind: \(oldWindPoints) -> \(windPoints)")
                 }
 
-                // Log snapshot with cumulative seconds (converted to minutes for compatibility)
-                logSnapshot(eventType: .usageThreshold(cumulativeMinutes: currentSeconds / 60))
+                // Log snapshot with cumulative seconds
+                logSnapshot(eventType: .usageThreshold(cumulativeSeconds: currentSeconds))
 
                 // Activate shield when limit reached
                 let limitSeconds = SharedDefaults.integer(forKey: DefaultsKeys.monitoringLimitSeconds)

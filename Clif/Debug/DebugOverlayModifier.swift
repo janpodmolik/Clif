@@ -9,7 +9,7 @@ struct DebugOverlayModifier: ViewModifier {
 
     func body(content: Content) -> some View {
         content
-            .overlay(alignment: .topLeading) {
+            .overlay(alignment: .leading) {
                 Button {
                     showDebugView = true
                 } label: {
@@ -22,7 +22,6 @@ struct DebugOverlayModifier: ViewModifier {
                         .shadow(color: .black.opacity(0.2), radius: 4, x: 0, y: 2)
                 }
                 .padding(.leading, 16)
-                .padding(.top, 8)
             }
             .fullScreenCover(isPresented: $showDebugView) {
                 DebugView()

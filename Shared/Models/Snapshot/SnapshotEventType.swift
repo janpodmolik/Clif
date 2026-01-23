@@ -3,8 +3,8 @@ import Foundation
 /// Event types with associated payload data.
 /// Uses enum with associated values for type-safe payload handling.
 enum SnapshotEventType: Codable, Equatable {
-    /// Usage threshold crossed (cumulative minutes from DeviceActivityMonitor).
-    case usageThreshold(cumulativeMinutes: Int)
+    /// Usage threshold crossed (cumulative seconds from DeviceActivityMonitor).
+    case usageThreshold(cumulativeSeconds: Int)
 
     /// Break session started. Planned duration is encoded in BreakTypePayload for committed breaks.
     case breakStarted(type: BreakTypePayload)
@@ -34,7 +34,7 @@ enum SnapshotEventType: Codable, Equatable {
 
     private enum CodingKeys: String, CodingKey {
         case type = "event_type"
-        case cumulativeMinutes = "cumulative_minutes"
+        case cumulativeSeconds = "cumulative_seconds"
         case breakType = "break_type"
         case actualMinutes = "actual_minutes"
     }
@@ -45,8 +45,8 @@ enum SnapshotEventType: Codable, Equatable {
 
         switch type {
         case "usageThreshold":
-            let minutes = try container.decode(Int.self, forKey: .cumulativeMinutes)
-            self = .usageThreshold(cumulativeMinutes: minutes)
+            let seconds = try container.decode(Int.self, forKey: .cumulativeSeconds)
+            self = .usageThreshold(cumulativeSeconds: seconds)
 
         case "breakStarted":
             let breakType = try container.decode(BreakTypePayload.self, forKey: .breakType)
@@ -81,9 +81,9 @@ enum SnapshotEventType: Codable, Equatable {
         var container = encoder.container(keyedBy: CodingKeys.self)
 
         switch self {
-        case .usageThreshold(let minutes):
+        case .usageThreshold(let seconds):
             try container.encode("usageThreshold", forKey: .type)
-            try container.encode(minutes, forKey: .cumulativeMinutes)
+            try container.encode(seconds, forKey: .cumulativeSeconds)
 
         case .breakStarted(let breakType):
             try container.encode("breakStarted", forKey: .type)

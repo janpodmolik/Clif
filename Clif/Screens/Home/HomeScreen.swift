@@ -185,9 +185,8 @@ struct HomeScreen: View {
         .font(.system(size: 10, design: .monospaced))
         .padding(8)
         .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 8))
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomLeading)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
         .padding(.leading, 16)
-        .padding(.bottom, 200)
     }
     #endif
 
