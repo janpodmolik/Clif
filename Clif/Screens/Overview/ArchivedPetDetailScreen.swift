@@ -87,7 +87,7 @@ struct ArchivedPetDetailScreen: View {
     }
 }
 
-// MARK: - Dynamic App Usage Detail Sheet
+// MARK: - App Usage Detail Sheet
 
 struct AppUsageDetailSheet: View {
     let sources: [LimitedSource]
@@ -182,7 +182,7 @@ struct AppUsageDetailSheet: View {
     ArchivedPetDetailScreen(pet: .mock(name: "Breeze", phase: 4, isBlown: false, totalDays: 14))
 }
 
-#Preview("Dynamic App Usage Sheet") {
+#Preview("App Usage Sheet") {
     AppUsageDetailSheet(
         sources: LimitedSource.mockList(days: 14),
         preset: .balanced,

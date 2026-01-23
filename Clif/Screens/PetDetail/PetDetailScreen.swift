@@ -168,7 +168,7 @@ struct PetDetailScreen: View {
 }
 
 #if DEBUG
-#Preview("Dynamic Pet Detail") {
+#Preview("Pet Detail") {
     Text("Tap to open")
         .fullScreenCover(isPresented: .constant(true)) {
             PetDetailScreen(pet: .mock(name: "Fern", phase: 2, windPoints: 45))

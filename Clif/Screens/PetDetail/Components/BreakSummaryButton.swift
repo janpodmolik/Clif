@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Compact button to access break history for DynamicPet.
+/// Compact button to access break history.
 struct BreakSummaryButton: View {
     let breakHistory: [CompletedBreak]
     var onTap: (() -> Void)?

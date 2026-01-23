@@ -73,10 +73,9 @@ enum WindLevel: Int, CaseIterable {
         }
     }
 
-    // MARK: - Dynamic Wind Mode
+    // MARK: - Wind Points
 
     /// Returns the wind level zone based on wind points (0-100).
-    /// Uses granular thresholds for feedback.
     ///
     /// Zone thresholds:
     /// - none: 0-25 points

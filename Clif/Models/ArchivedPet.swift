@@ -13,7 +13,7 @@ struct ArchivedPet: Codable, Identifiable, Equatable, PetWithSources {
     let dailyStats: [DailyUsageStat]
     let limitedSources: [LimitedSource]
 
-    // MARK: - Dynamic-specific
+    // MARK: - Wind & Breaks
 
     /// Break history from the pet's lifetime.
     let breakHistory: [CompletedBreak]

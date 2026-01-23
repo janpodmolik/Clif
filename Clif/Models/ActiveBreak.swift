@@ -1,6 +1,6 @@
 import Foundation
 
-/// Represents an active break session in Dynamic Wind mode.
+/// Represents an active break session.
 /// Tracks when user is taking a break from blocked apps to decrease wind.
 struct ActiveBreak: Codable, Equatable {
     let id: UUID

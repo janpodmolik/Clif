@@ -1,6 +1,6 @@
 import Foundation
 
-/// Types of breaks available in Dynamic Wind mode.
+/// Types of breaks available.
 /// Each type has different fall rate multipliers and penalties for breaking early.
 enum BreakType: String, Codable, CaseIterable {
     case free
