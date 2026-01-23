@@ -109,13 +109,13 @@ class ShieldActionExtension: ShieldActionDelegate {
         let event = SnapshotEvent(
             petId: petId,
             windPoints: windPoints,
-            eventType: .breakFailed(actualMinutes: actualMinutes)
+            eventType: .breakEnded(actualMinutes: actualMinutes, success: false)
         )
 
         SnapshotStore.shared.appendSync(event)
         SharedDefaults.breakStartedAt = nil
 
-        logger.info("Break violated after \(actualMinutes) minutes - logged breakFailed")
+        logger.info("Break violated after \(actualMinutes) minutes - logged breakEnded(success: false)")
     }
 
     /// Clears all shields and optionally requests monitoring restart.

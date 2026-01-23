@@ -25,11 +25,17 @@ enum SnapshotLogging {
     }
 
     /// Logs a breakEnded event.
-    /// Call this when break timer completes successfully.
+    /// Call this when break timer completes or when break is violated.
+    /// - Parameters:
+    ///   - petId: The pet's ID
+    ///   - windPoints: Current wind points
+    ///   - actualMinutes: How long the break actually lasted
+    ///   - success: Whether the break completed without violation
     static func logBreakEnded(
         petId: UUID,
         windPoints: Double,
-        actualMinutes: Int
+        actualMinutes: Int,
+        success: Bool
     ) {
         // Clear break tracking
         SharedDefaults.breakStartedAt = nil
@@ -38,27 +44,7 @@ enum SnapshotLogging {
         let event = SnapshotEvent(
             petId: petId,
             windPoints: windPoints,
-            eventType: .breakEnded(actualMinutes: actualMinutes)
-        )
-
-        SnapshotStore.shared.append(event)
-    }
-
-    /// Logs a breakFailed event.
-    /// Call this when user violates a break (opens blocked app during break).
-    static func logBreakFailed(
-        petId: UUID,
-        windPoints: Double,
-        actualMinutes: Int
-    ) {
-        // Clear break tracking
-        SharedDefaults.breakStartedAt = nil
-        SharedDefaults.monitoredWindPoints = windPoints
-
-        let event = SnapshotEvent(
-            petId: petId,
-            windPoints: windPoints,
-            eventType: .breakFailed(actualMinutes: actualMinutes)
+            eventType: .breakEnded(actualMinutes: actualMinutes, success: success)
         )
 
         SnapshotStore.shared.append(event)

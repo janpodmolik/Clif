@@ -139,7 +139,8 @@ final class Pet: Identifiable, PetPresentable, PetWithSources {
         SnapshotLogging.logBreakEnded(
             petId: id,
             windPoints: windPoints,
-            actualMinutes: actualMinutes
+            actualMinutes: actualMinutes,
+            success: true
         )
     }
 
@@ -168,10 +169,11 @@ final class Pet: Identifiable, PetPresentable, PetWithSources {
         activeBreak = nil
 
         // Log snapshot
-        SnapshotLogging.logBreakFailed(
+        SnapshotLogging.logBreakEnded(
             petId: id,
             windPoints: windPoints,
-            actualMinutes: actualMinutes
+            actualMinutes: actualMinutes,
+            success: false
         )
     }
 

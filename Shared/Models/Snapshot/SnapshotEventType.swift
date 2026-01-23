@@ -9,11 +9,8 @@ enum SnapshotEventType: Codable, Equatable {
     /// Break session started. Planned duration is encoded in BreakTypePayload for committed breaks.
     case breakStarted(type: BreakTypePayload)
 
-    /// Break session ended successfully.
-    case breakEnded(actualMinutes: Int)
-
-    /// Break session failed (violated).
-    case breakFailed(actualMinutes: Int)
+    /// Break session ended. Success indicates whether the break was completed without violation.
+    case breakEnded(actualMinutes: Int, success: Bool)
 
     /// Daily reset occurred (midnight rollover).
     case dailyReset
@@ -37,6 +34,7 @@ enum SnapshotEventType: Codable, Equatable {
         case cumulativeSeconds = "cumulative_seconds"
         case breakType = "break_type"
         case actualMinutes = "actual_minutes"
+        case success
     }
 
     init(from decoder: Decoder) throws {
@@ -54,11 +52,14 @@ enum SnapshotEventType: Codable, Equatable {
 
         case "breakEnded":
             let minutes = try container.decode(Int.self, forKey: .actualMinutes)
-            self = .breakEnded(actualMinutes: minutes)
+            // New format has success field, old format defaults to true
+            let success = try container.decodeIfPresent(Bool.self, forKey: .success) ?? true
+            self = .breakEnded(actualMinutes: minutes, success: success)
 
         case "breakFailed":
+            // Backwards compatibility: map old breakFailed to breakEnded(success: false)
             let minutes = try container.decode(Int.self, forKey: .actualMinutes)
-            self = .breakFailed(actualMinutes: minutes)
+            self = .breakEnded(actualMinutes: minutes, success: false)
 
         case "dailyReset":
             self = .dailyReset
@@ -89,13 +90,10 @@ enum SnapshotEventType: Codable, Equatable {
             try container.encode("breakStarted", forKey: .type)
             try container.encode(breakType, forKey: .breakType)
 
-        case .breakEnded(let minutes):
+        case .breakEnded(let minutes, let success):
             try container.encode("breakEnded", forKey: .type)
             try container.encode(minutes, forKey: .actualMinutes)
-
-        case .breakFailed(let minutes):
-            try container.encode("breakFailed", forKey: .type)
-            try container.encode(minutes, forKey: .actualMinutes)
+            try container.encode(success, forKey: .success)
 
         case .dailyReset:
             try container.encode("dailyReset", forKey: .type)

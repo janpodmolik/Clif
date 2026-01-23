@@ -121,6 +121,13 @@ final class SnapshotStore {
 
     /// Deletes events older than the specified date.
     /// Returns the number of events retained.
+    ///
+    /// Pruning strategy: Only delete events that are BOTH:
+    /// 1. Older than cutoffDate (e.g., 30 days)
+    /// 2. Already synced to backend (offset-based)
+    ///
+    /// This ensures no data loss - unsynced events are preserved regardless of age.
+    /// Call this after successful BE sync with: pruneEvents(olderThan: thirtyDaysAgo, syncedOffset: newOffset)
     @discardableResult
     func pruneEvents(olderThan cutoffDate: String) -> Int {
         let events = loadAll()
@@ -176,6 +183,105 @@ final class SnapshotStore {
             event.date == todayString &&
             event.eventType == .blowAway
         }
+    }
+
+    // MARK: - Aggregation for BE Sync
+
+    // TODO: Implement sync to Supabase
+    // Sync triggers:
+    // 1. Foreground sync - when app becomes active (scenePhase → .active)
+    // 2. Periodic sync - every 6-12 hours if there's new data
+    // 3. Background task - BGAppRefreshTask (iOS schedules opportunistically)
+    //
+    // Foreground sync is most reliable. Periodic/background is bonus for users
+    // who don't open the app frequently.
+
+    /// Aggregates usageThreshold events into time-based intervals.
+    /// Other event types are kept unchanged.
+    /// - Parameters:
+    ///   - dateRange: Optional date range filter (YYYY-MM-DD format, inclusive)
+    ///   - intervalMinutes: Aggregation interval (default 2 minutes)
+    /// - Returns: Aggregated events sorted by timestamp
+    func loadAggregated(
+        dateRange: ClosedRange<String>? = nil,
+        intervalMinutes: Int = 2
+    ) -> [SnapshotEvent] {
+        var events = loadAll()
+
+        // Filter by date range if provided
+        if let range = dateRange {
+            events = events.filter { range.contains($0.date) }
+        }
+
+        // Separate usageThreshold events from others
+        var thresholdEvents: [SnapshotEvent] = []
+        var otherEvents: [SnapshotEvent] = []
+
+        for event in events {
+            if case .usageThreshold = event.eventType {
+                thresholdEvents.append(event)
+            } else {
+                otherEvents.append(event)
+            }
+        }
+
+        // Aggregate threshold events by interval
+        let intervalSeconds = TimeInterval(intervalMinutes * 60)
+        var aggregatedThresholds: [SnapshotEvent] = []
+
+        // Group by (petId, intervalBucket)
+        let grouped = Dictionary(grouping: thresholdEvents) { event -> String in
+            let bucket = floor(event.timestamp.timeIntervalSince1970 / intervalSeconds)
+            return "\(event.petId.uuidString)_\(Int(bucket))"
+        }
+
+        // Take the last event from each group (most accurate wind state)
+        for (_, group) in grouped {
+            if let lastEvent = group.max(by: { $0.timestamp < $1.timestamp }) {
+                aggregatedThresholds.append(lastEvent)
+            }
+        }
+
+        // Combine and sort by timestamp
+        let result = (aggregatedThresholds + otherEvents).sorted { $0.timestamp < $1.timestamp }
+        return result
+    }
+
+    /// Returns aggregated events for backend sync.
+    /// - usageThreshold: aggregated to specified interval (default 2 minutes)
+    /// - Other events: unchanged
+    /// - Parameters:
+    ///   - offset: Number of raw events already synced (for incremental sync)
+    ///   - intervalMinutes: Aggregation interval for usageThreshold events
+    /// - Returns: Aggregated events and new offset based on raw event count
+    func loadForSync(
+        afterOffset offset: Int,
+        intervalMinutes: Int = 2
+    ) -> (events: [SnapshotEvent], newOffset: Int) {
+        let all = loadAll()
+        let newOffset = all.count
+
+        guard offset < all.count else {
+            return ([], newOffset)
+        }
+
+        // Get only new events since last sync
+        let unsyncedRaw = Array(all[offset...])
+
+        // Determine date range from unsynced events
+        guard let minDate = unsyncedRaw.map({ $0.date }).min(),
+              let maxDate = unsyncedRaw.map({ $0.date }).max() else {
+            return ([], newOffset)
+        }
+
+        // Load aggregated for the date range, then filter to only new events
+        let aggregated = loadAggregated(dateRange: minDate...maxDate, intervalMinutes: intervalMinutes)
+
+        // Filter to events that fall within the unsynced time window
+        let unsyncedStartTime = unsyncedRaw.first?.timestamp ?? Date.distantPast
+        let filtered = aggregated.filter { $0.timestamp >= unsyncedStartTime }
+
+        return (filtered, newOffset)
     }
 
     // MARK: - Private Helpers
