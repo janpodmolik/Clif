@@ -179,14 +179,23 @@ final class CreatePetCoordinator {
     }
 
     func handleBlobDrop(petManager: PetManager) {
+        // Guard: cannot create if pet already exists
+        guard !petManager.hasPet else {
+            dismiss()
+            return
+        }
+
         let limitedSources = createLimitedSources(from: selectedApps)
 
-        let pet = petManager.create(
+        guard let pet = petManager.create(
             name: petName,
             purpose: petPurpose.isEmpty ? nil : petPurpose,
             preset: preset,
             limitedSources: limitedSources
-        )
+        ) else {
+            dismiss()
+            return
+        }
 
         // Start monitoring
         ScreenTimeManager.shared.startMonitoring(

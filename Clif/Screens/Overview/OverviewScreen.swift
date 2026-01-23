@@ -20,8 +20,8 @@ struct OverviewScreen: View {
         archivedPetManager.summaries
     }
 
-    private var activePets: [Pet] {
-        petManager.activePets
+    private var activePet: Pet? {
+        petManager.currentPet
     }
 
     var body: some View {
@@ -73,27 +73,15 @@ struct OverviewScreen: View {
 
     private var activeSection: some View {
         VStack(alignment: .leading, spacing: 14) {
-            HStack {
-                Text("Aktuální")
-                    .font(.headline)
-                Spacer()
-                Text("\(activePets.count)")
-                    .font(.caption)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
-                    .background(.ultraThinMaterial, in: Capsule())
-            }
+            Text("Aktuální")
+                .font(.headline)
 
-            if activePets.isEmpty {
-                emptyActiveState
-            } else {
-                LazyVStack(spacing: 12) {
-                    ForEach(activePets) { pet in
-                        ActivePetRow(pet: pet) {
-                            selectedActivePet = pet
-                        }
-                    }
+            if let pet = activePet {
+                ActivePetRow(pet: pet) {
+                    selectedActivePet = pet
                 }
+            } else {
+                emptyActiveState
             }
         }
     }
@@ -103,7 +91,7 @@ struct OverviewScreen: View {
             Image(systemName: "leaf.fill")
                 .font(.system(size: 40))
                 .foregroundStyle(.secondary)
-            Text("Žádní aktivní peti")
+            Text("Žádný aktivní pet")
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
             Text("Vytvoř si nového peta na homepage.")

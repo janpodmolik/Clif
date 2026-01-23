@@ -9,7 +9,6 @@ struct HomeScreen: View {
     @Environment(\.colorScheme) private var colorScheme
 
     @State private var windRhythm = WindRhythm()
-    @State private var selectedPetId: UUID?
     @State private var showPetDetail = false
     @State private var showBreakSheet = false
     @State private var petFrame: CGRect = .zero
@@ -32,14 +31,7 @@ struct HomeScreen: View {
         return expandedFrame.contains(createPetCoordinator.dragState.dragLocation)
     }
 
-    private var pets: [Pet] { petManager.activePets }
-
-    private var currentPet: Pet? {
-        if let selectedPetId {
-            return pets.first { $0.id == selectedPetId }
-        }
-        return pets.first
-    }
+    private var currentPet: Pet? { petManager.currentPet }
 
     private var petDropFrame: CGRect? {
         // Use drop zone frame during creation, pet frame otherwise
@@ -57,13 +49,12 @@ struct HomeScreen: View {
             ZStack {
                 background
 
-                if isInCreationMode || pets.isEmpty {
-                    // Show empty island during pet creation or when no pets exist
+                if isInCreationMode || currentPet == nil {
+                    // Show empty island during pet creation or when no pet exists
                     emptyIslandPage(geometry: geometry)
-                } else {
-                    petPager(geometry: geometry)
+                } else if let pet = currentPet {
+                    petPage(pet, geometry: geometry)
                 }
-
             }
         }
         .fullScreenCover(isPresented: $showPetDetail) {
@@ -142,30 +133,6 @@ struct HomeScreen: View {
     private var emptyIslandCard: some View {
         EmptyIslandCard {
             createPetCoordinator.show { _ in }
-        }
-    }
-
-    // MARK: - Pet Pager
-
-    private func petPager(geometry: GeometryProxy) -> some View {
-        TabView(selection: $selectedPetId) {
-            ForEach(pets) { pet in
-                petPage(pet, geometry: geometry)
-                    .tag(pet.id as UUID?)
-            }
-        }
-        .tabViewStyle(.page(indexDisplayMode: .automatic))
-        .ignoresSafeArea(.container, edges: .bottom)
-        .onAppear {
-            if selectedPetId == nil || !pets.contains(where: { $0.id == selectedPetId }) {
-                selectedPetId = pets.first?.id
-            }
-        }
-        .onChange(of: pets.count) { _, _ in
-            // Reset selection if current pet no longer exists
-            if !pets.contains(where: { $0.id == selectedPetId }) {
-                selectedPetId = pets.first?.id
-            }
         }
     }
 

@@ -14,10 +14,10 @@ struct ProfileScreen: View {
 
                 #if DEBUG
                 Section(header: Text("Debug")) {
-                    Button("Delete All Active Pets", role: .destructive) {
-                        deleteAllActivePets()
+                    Button("Delete Active Pet", role: .destructive) {
+                        deleteActivePet()
                     }
-                    .disabled(petManager.activePets.isEmpty)
+                    .disabled(!petManager.hasPet)
                 }
                 #endif
             }
@@ -26,8 +26,8 @@ struct ProfileScreen: View {
     }
 
     #if DEBUG
-    private func deleteAllActivePets() {
-        for pet in petManager.activePets {
+    private func deleteActivePet() {
+        if let pet = petManager.currentPet {
             petManager.delete(id: pet.id)
         }
     }

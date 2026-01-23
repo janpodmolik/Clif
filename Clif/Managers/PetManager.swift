@@ -4,99 +4,106 @@ import Foundation
 final class PetManager {
     // MARK: - Private Storage
 
-    private var pets: [Pet] = []
+    private var pet: Pet?
 
     // MARK: - Public API
 
-    /// All active pets, sorted by creation date (newest first).
-    var activePets: [Pet] {
-        pets.sorted { $0.evolutionHistory.createdAt > $1.evolutionHistory.createdAt }
-    }
+    /// Whether a pet currently exists (max one allowed).
+    var hasPet: Bool { pet != nil }
 
-    /// Currently selected pet for display (first in list).
-    var currentPet: Pet? {
-        activePets.first
+    /// The current active pet (max one).
+    var currentPet: Pet? { pet }
+
+    /// Active pets as array for UI compatibility (0 or 1 element).
+    var activePets: [Pet] {
+        pet.map { [$0] } ?? []
     }
 
     // MARK: - Init
 
     init() {
-        loadActivePets()
+        loadActivePet()
 
         #if DEBUG
-        if pets.isEmpty {
-            pets = [Pet.mockBlob(name: "Blob", canUseEssence: true, windPoints: 30)]
+        if pet == nil {
+            pet = Pet.mockBlob(name: "Blob", canUseEssence: true, windPoints: 30)
         }
         #endif
     }
 
     // MARK: - Create
 
-    /// Creates a new pet (starts as blob).
+    /// Creates a new pet (starts as blob). Returns nil if a pet already exists.
     @discardableResult
     func create(
         name: String,
         purpose: String?,
         preset: WindPreset = .default,
         limitedSources: [LimitedSource] = []
-    ) -> Pet {
-        let pet = Pet(
+    ) -> Pet? {
+        guard pet == nil else { return nil }
+
+        let newPet = Pet(
             name: name,
             evolutionHistory: EvolutionHistory(),
             purpose: purpose,
             preset: preset,
             limitedSources: limitedSources
         )
-        pets.append(pet)
-        saveActivePets()
-        return pet
+        pet = newPet
+        saveActivePet()
+        return newPet
     }
 
     // MARK: - Archive
 
-    /// Archives an active pet using ArchivedPetManager.
+    /// Archives the active pet using ArchivedPetManager.
     func archive(id: UUID, using archivedPetManager: ArchivedPetManager) {
-        guard let index = pets.firstIndex(where: { $0.id == id }) else { return }
-        let pet = pets.remove(at: index)
-        archivedPetManager.archive(pet)
-        saveActivePets()
+        guard let currentPet = pet, currentPet.id == id else { return }
+        archivedPetManager.archive(currentPet)
+        pet = nil
+        saveActivePet()
     }
 
-    /// Blows away a pet and archives it.
+    /// Blows away the pet and archives it.
     func blowAway(id: UUID, using archivedPetManager: ArchivedPetManager) {
-        guard let pet = pets.first(where: { $0.id == id }) else { return }
-        pet.blowAway()
+        guard let currentPet = pet, currentPet.id == id else { return }
+        currentPet.blowAway()
         archive(id: id, using: archivedPetManager)
     }
 
     // MARK: - Delete
 
-    /// Removes an active pet without archiving.
+    /// Removes the active pet without archiving.
     func delete(id: UUID) {
-        pets.removeAll { $0.id == id }
-        saveActivePets()
+        guard let currentPet = pet, currentPet.id == id else { return }
+        pet = nil
+        saveActivePet()
     }
 
     // MARK: - Save Trigger
 
-    /// Call after mutating a pet to persist changes.
-    func savePets() {
-        saveActivePets()
+    /// Call after mutating the pet to persist changes.
+    func savePet() {
+        saveActivePet()
     }
 }
 
 // MARK: - Persistence (Active → SharedDefaults)
 
 private extension PetManager {
-    func loadActivePets() {
+    /// Loads the active pet. Supports migration from multi-pet array format.
+    func loadActivePet() {
         if let data = SharedDefaults.data(forKey: DefaultsKeys.activePets),
-           let dtos = try? JSONDecoder().decode([PetDTO].self, from: data) {
-            pets = dtos.map { Pet(from: $0) }
+           let dtos = try? JSONDecoder().decode([PetDTO].self, from: data),
+           let firstDto = dtos.first {
+            pet = Pet(from: firstDto)
         }
     }
 
-    func saveActivePets() {
-        let dtos = pets.map { PetDTO(from: $0) }
+    /// Saves the active pet. Uses array format for extension compatibility.
+    func saveActivePet() {
+        let dtos = pet.map { [PetDTO(from: $0)] } ?? []
         if let data = try? JSONEncoder().encode(dtos) {
             SharedDefaults.setData(data, forKey: DefaultsKeys.activePets)
         }
@@ -106,10 +113,10 @@ private extension PetManager {
 // MARK: - Mock Data
 
 extension PetManager {
-    static func mock(withPets: Bool = true) -> PetManager {
+    static func mock(withPet: Bool = true) -> PetManager {
         let manager = PetManager()
-        if withPets {
-            manager.pets = [Pet.mock(), Pet.mockWithBreak()]
+        if withPet {
+            manager.pet = Pet.mock()
         }
         return manager
     }
