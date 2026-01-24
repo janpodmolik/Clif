@@ -23,12 +23,8 @@ final class PetManager {
 
     init() {
         loadActivePet()
-
-        #if DEBUG
-        if pet == nil {
-            pet = Pet.mockBlob(name: "Blob", canUseEssence: true, windPoints: 30)
-        }
-        #endif
+        syncWindFromSharedDefaults()
+        restoreMonitoringIfNeeded()
     }
 
     // MARK: - Create
@@ -98,11 +94,43 @@ final class PetManager {
 
     // MARK: - Foreground Sync
 
-    /// Syncs pet state from snapshots when app returns to foreground.
-    /// Call this from scenePhase change handler.
+    /// Syncs pet state from SharedDefaults when app returns to foreground.
+    /// SharedDefaults is the source of truth (updated by extensions in real-time).
+    /// This method is idempotent - safe to call multiple times.
     func syncFromSnapshots() {
         pet?.syncFromSnapshots()
         saveActivePet()
+    }
+
+    // MARK: - Monitoring Restore
+
+    /// Restores monitoring for existing pet after app restart/rebuild.
+    /// DeviceActivityCenter schedules don't persist across app terminations,
+    /// so we must re-register monitoring when the app launches.
+    ///
+    /// Uses SharedDefaults values directly (not pet properties) because SharedDefaults
+    /// is the source of truth - extensions update it in real-time.
+    private func restoreMonitoringIfNeeded() {
+        guard let pet = pet,
+              !pet.isBlownAway,
+              !pet.limitedSources.isEmpty,
+              SharedDefaults.monitoredPetId == pet.id else {
+            return
+        }
+
+        // Read directly from SharedDefaults - this is the source of truth
+        let windPoints = SharedDefaults.monitoredWindPoints
+        let lastThresholdSeconds = SharedDefaults.monitoredLastThresholdSeconds
+
+        ScreenTimeManager.shared.startMonitoring(
+            petId: pet.id,
+            limitSeconds: Int(pet.preset.minutesToBlowAway * 60),
+            windPoints: windPoints,
+            riseRatePerSecond: pet.preset.riseRate / 60.0,
+            fallRatePerSecond: pet.preset.fallRate / 60.0,
+            lastThresholdSeconds: lastThresholdSeconds,
+            limitedSources: pet.limitedSources
+        )
     }
 
     // MARK: - Daily Reset
@@ -143,13 +171,22 @@ final class PetManager {
 // MARK: - Persistence (Active → SharedDefaults)
 
 private extension PetManager {
-    /// Loads the active pet. Supports migration from multi-pet array format.
+    /// Loads the active pet from storage. Supports migration from multi-pet array format.
     func loadActivePet() {
-        if let data = SharedDefaults.data(forKey: DefaultsKeys.activePets),
-           let dtos = try? JSONDecoder().decode([PetDTO].self, from: data),
-           let firstDto = dtos.first {
-            pet = Pet(from: firstDto)
+        guard let data = SharedDefaults.data(forKey: DefaultsKeys.activePets),
+              let dtos = try? JSONDecoder().decode([PetDTO].self, from: data),
+              let firstDto = dtos.first else {
+            return
         }
+        pet = Pet(from: firstDto)
+    }
+
+    /// Syncs wind state from SharedDefaults (source of truth updated by extensions).
+    func syncWindFromSharedDefaults() {
+        guard let pet = pet, SharedDefaults.monitoredPetId == pet.id else { return }
+
+        pet.windPoints = SharedDefaults.monitoredWindPoints
+        pet.lastThresholdSeconds = SharedDefaults.monitoredLastThresholdSeconds
     }
 
     /// Saves the active pet. Uses array format for extension compatibility.

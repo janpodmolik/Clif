@@ -16,6 +16,16 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
     override func intervalDidStart(for activity: DeviceActivityName) {
         super.intervalDidStart(for: activity)
 
+        // Check if this is actually a new day or just a monitoring restart (e.g., after rebuild)
+        // If we already have wind points for today, skip the reset
+        let existingWindPoints = SharedDefaults.monitoredWindPoints
+        let existingThreshold = SharedDefaults.monitoredLastThresholdSeconds
+
+        if existingWindPoints > 0 || existingThreshold > 0 {
+            logToFile("[Extension] intervalDidStart skipped reset - existing wind: \(existingWindPoints), threshold: \(existingThreshold)")
+            return
+        }
+
         // Reset wind state for new day
         SharedDefaults.currentProgress = 0
         SharedDefaults.monitoredWindPoints = 0
