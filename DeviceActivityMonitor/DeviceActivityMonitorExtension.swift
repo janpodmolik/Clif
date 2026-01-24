@@ -142,15 +142,17 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
 
         // After unlock + monitoring restart, thresholds start from 0 again
         // but previousThresholdSeconds might be higher (from before unlock).
-        // In this case delta is negative/zero - skip wind update but still log snapshot.
-        guard deltaSeconds > 0 else {
-            logToFile("Skipping wind update - delta <= 0 (monitoring was restarted)")
-            logSnapshot(eventType: .usageThreshold(cumulativeSeconds: currentSeconds))
-            return
+        // In this case, treat currentSeconds as delta from 0 (all usage since restart counts).
+        let effectiveDelta: Int
+        if deltaSeconds <= 0 {
+            logToFile("Monitoring was restarted - using currentSeconds as delta")
+            effectiveDelta = currentSeconds
+        } else {
+            effectiveDelta = deltaSeconds
         }
 
         // Update wind points
-        let newWindPoints = updateWindPoints(oldWindPoints: oldWindPoints, deltaSeconds: deltaSeconds, riseRate: riseRate)
+        let newWindPoints = updateWindPoints(oldWindPoints: oldWindPoints, deltaSeconds: effectiveDelta, riseRate: riseRate)
         SharedDefaults.monitoredWindPoints = newWindPoints
 
         logToFile("riseRate=\(riseRate), Wind: \(oldWindPoints) -> \(newWindPoints)")

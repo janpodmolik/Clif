@@ -237,6 +237,9 @@ struct HomeScreen: View {
             break // TODO: Handle archived pet actions
         case .toggleShield:
             ScreenTimeManager.shared.toggleShield()
+            // Sync pet's windPoints from SharedDefaults after shield toggle
+            // (toggleShield updates SharedDefaults but not the Pet model)
+            petManager.syncFromSnapshots()
             // Force immediate UI refresh
             windRefreshTick += 1
         }
