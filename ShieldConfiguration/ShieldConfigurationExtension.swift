@@ -70,7 +70,7 @@ class ShieldConfigurationExtension: ShieldConfigurationDataSource {
         let backgroundColor: UIColor
 
         if windPoints >= 100 {
-            subtitleText = "Tvůj mazlíček byl odfouknut!"
+            subtitleText = "Další používání pravděpodobně odfoukne mazlíčka!"
             iconName = "wind"
             backgroundColor = UIColor.systemRed.withAlphaComponent(0.1)
         } else {

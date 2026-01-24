@@ -255,8 +255,8 @@ final class ScreenTimeManager: ObservableObject {
     // MARK: - Event Building
 
     /// Builds thresholds for granular windPoints tracking.
-    /// For short limits (< 20 thresholds worth of minutes), uses second-based intervals.
-    /// For longer limits, uses minute-based intervals.
+    /// Generates thresholds up to 105% (buffer zone) to handle DeviceActivity framework delays.
+    /// UI displays progress capped at 100%, blow away happens at 105%.
     private func buildEvents(
         limitSeconds: Int,
         appTokens: Set<ApplicationToken>,
@@ -268,21 +268,25 @@ final class ScreenTimeManager: ObservableObject {
         let maxThresholds = AppConstants.maxThresholds
         let minInterval = AppConstants.minimumThresholdSeconds
 
+        // Buffer zone: generate thresholds up to 105% to handle framework delays
+        let bufferMultiplier = AppConstants.blowAwayBufferMultiplier
+        let effectiveLimitSeconds = Int(Double(limitSeconds) * bufferMultiplier)
+
         #if DEBUG
-        print("DEBUG: buildEvents - limitSeconds=\(limitSeconds), maxThresholds=\(maxThresholds), minInterval=\(minInterval)")
+        print("DEBUG: buildEvents - limitSeconds=\(limitSeconds), effectiveLimit=\(effectiveLimitSeconds), maxThresholds=\(maxThresholds), minInterval=\(minInterval)")
         #endif
 
-        // Calculate optimal interval to fit maxThresholds within limitSeconds
-        // intervalSeconds = limitSeconds / maxThresholds, but at least minInterval
-        let intervalSeconds = max(limitSeconds / maxThresholds, minInterval)
+        // Calculate optimal interval to fit maxThresholds within effective limit
+        // intervalSeconds = effectiveLimitSeconds / maxThresholds, but at least minInterval
+        let intervalSeconds = max(effectiveLimitSeconds / maxThresholds, minInterval)
 
         #if DEBUG
         print("DEBUG: buildEvents - calculated intervalSeconds=\(intervalSeconds)")
         #endif
 
-        // Generate thresholds: interval, 2*interval, 3*interval, ... up to limitSeconds
+        // Generate thresholds: interval, 2*interval, 3*interval, ... up to effectiveLimitSeconds
         var currentSeconds = intervalSeconds
-        while currentSeconds <= limitSeconds && events.count < maxThresholds {
+        while currentSeconds <= effectiveLimitSeconds && events.count < maxThresholds {
             let eventName = DeviceActivityEvent.Name("second_\(currentSeconds)")
 
             // DateComponents supports second precision
@@ -299,9 +303,25 @@ final class ScreenTimeManager: ObservableObject {
             currentSeconds += intervalSeconds
         }
 
+        // Always include the effective limit threshold for blow away detection
+        // This ensures we don't miss the 105% mark due to interval rounding
+        if events.count < maxThresholds {
+            let finalEventName = DeviceActivityEvent.Name("second_\(effectiveLimitSeconds)")
+            if events[finalEventName] == nil {
+                let minutes = effectiveLimitSeconds / 60
+                let seconds = effectiveLimitSeconds % 60
+                events[finalEventName] = DeviceActivityEvent(
+                    applications: appTokens,
+                    categories: catTokens,
+                    webDomains: webTokens,
+                    threshold: DateComponents(minute: minutes, second: seconds)
+                )
+            }
+        }
+
         #if DEBUG
-        print("DEBUG: buildEvents - created \(events.count) events")
-        print("[ScreenTimeManager] Built \(events.count) events with \(intervalSeconds)s interval for \(limitSeconds)s limit")
+        print("DEBUG: buildEvents - created \(events.count) events (up to \(effectiveLimitSeconds)s = \(Int(bufferMultiplier * 100))%)")
+        print("[ScreenTimeManager] Built \(events.count) events with \(intervalSeconds)s interval for \(limitSeconds)s limit (buffer: \(effectiveLimitSeconds)s)")
         #endif
 
         return events

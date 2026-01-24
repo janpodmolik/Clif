@@ -26,6 +26,11 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
         SharedDefaults.windPresetLockedForToday = false
         SharedDefaults.windPresetLockedDate = nil
 
+        // Reset blow away and safety notification state for new day
+        SharedDefaults.set(false, forKey: DefaultsKeys.petBlownAway)
+        SharedDefaults.set(false, forKey: DefaultsKeys.safetyShieldNotificationSent)
+        SharedDefaults.set(false, forKey: DefaultsKeys.bufferLimitReached)
+
         let settings = SharedDefaults.limitSettings
 
         if settings.morningShieldEnabled {
@@ -60,6 +65,31 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
             logToFile("[Extension] eventDidReachThreshold: \(event.rawValue)")
 
             guard let currentSeconds = parseSecondsFromEvent(event) else { return }
+
+            // Log progress even when shield is active
+            let limitSeconds = SharedDefaults.integer(forKey: DefaultsKeys.monitoringLimitSeconds)
+            let bufferMultiplier = AppConstants.blowAwayBufferMultiplier
+            let effectiveLimitSeconds = Int(Double(limitSeconds) * bufferMultiplier)
+            let progressPercent = limitSeconds > 0 ? (Double(currentSeconds) / Double(limitSeconds)) * 100 : 0
+            logToFile("[Extension] limitSeconds=\(limitSeconds), effectiveLimit=\(effectiveLimitSeconds), current=\(currentSeconds) (\(Int(progressPercent))%)")
+
+            // Check blow away at 105% threshold
+            let isShieldActive = SharedDefaults.isShieldActive
+            if limitSeconds > 0 && currentSeconds >= effectiveLimitSeconds {
+                if isShieldActive {
+                    // Shield is active - mark that buffer limit was reached
+                    // ShieldAction will check this flag on unlock and trigger blow away
+                    logToFile("[Extension] 105% reached with shield active - setting bufferLimitReached flag")
+                    SharedDefaults.set(true, forKey: DefaultsKeys.bufferLimitReached)
+                } else {
+                    // No shield - immediate blow away
+                    logToFile("[Extension] BUFFER LIMIT REACHED (105%) - pet blown away")
+                    SharedDefaults.set(true, forKey: DefaultsKeys.petBlownAway)
+                    sendBlowAwayNotification()
+                }
+            }
+
+            // Skip wind updates if shield is active
             guard shouldProcessThreshold() else { return }
 
             processThresholdEvent(currentSeconds: currentSeconds)
@@ -99,37 +129,26 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
         return true
     }
 
+    /// Full threshold processing - wind update, level changes, safety shield, snapshots.
     private func processThresholdEvent(currentSeconds: Int) {
-        let lastSeconds = SharedDefaults.monitoredLastThresholdSeconds
-        let rawRiseRate = SharedDefaults.monitoredRiseRate
-        let riseRatePerSecond = rawRiseRate > 0 ? rawRiseRate : (100.0 / 60.0)
+        // Calculate wind delta from last threshold
+        let lastThresholdSeconds = SharedDefaults.monitoredLastThresholdSeconds
+        let deltaSeconds = currentSeconds - lastThresholdSeconds
+        let riseRate = SharedDefaults.monitoredRiseRate
         let oldWindPoints = SharedDefaults.monitoredWindPoints
-        let deltaSeconds = currentSeconds - lastSeconds
+
+        // Update wind points
+        let newWindPoints = updateWindPoints(oldWindPoints: oldWindPoints, deltaSeconds: deltaSeconds, riseRate: riseRate)
+        SharedDefaults.monitoredWindPoints = newWindPoints
+        SharedDefaults.monitoredLastThresholdSeconds = currentSeconds
 
         logToFile("========== THRESHOLD EVENT ==========")
-        logToFile("Seconds: current=\(currentSeconds), last=\(lastSeconds), delta=\(deltaSeconds)")
-        logToFile("Wind: old=\(oldWindPoints), riseRate=\(riseRatePerSecond)/s")
+        logToFile("Seconds: current=\(currentSeconds), delta=\(deltaSeconds), riseRate=\(riseRate)")
+        logToFile("Wind: \(oldWindPoints) -> \(newWindPoints)")
 
-        if deltaSeconds > 0 {
-            let newWindPoints = updateWindPoints(
-                oldWindPoints: oldWindPoints,
-                deltaSeconds: deltaSeconds,
-                riseRate: riseRatePerSecond
-            )
-
-            SharedDefaults.monitoredWindPoints = newWindPoints
-            SharedDefaults.monitoredLastThresholdSeconds = currentSeconds
-            SharedDefaults.synchronize()
-
-            logToFile("Wind UPDATE: \(oldWindPoints) + \(Double(deltaSeconds) * riseRatePerSecond) = \(newWindPoints)")
-
-            checkWindLevelChange(windPoints: newWindPoints)
-        } else {
-            logToFile("Skipping wind update: deltaSeconds=\(deltaSeconds) <= 0")
-        }
-
+        checkWindLevelChange(windPoints: newWindPoints)
+        checkSafetyShield(windPoints: newWindPoints)
         logSnapshot(eventType: .usageThreshold(cumulativeSeconds: currentSeconds))
-        checkLimitReached(currentSeconds: currentSeconds)
     }
 
     private func updateWindPoints(oldWindPoints: Double, deltaSeconds: Int, riseRate: Double) -> Double {
@@ -150,11 +169,13 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
 
         let settings = SharedDefaults.limitSettings
 
-        // Activate shield if threshold reached (but not at 100% - pet already blown)
+        // Activate shield when we CROSS the activation threshold for the first time
+        // Only activate if: previous level was below threshold AND new level is at/above threshold
         if let activationLevel = settings.shieldActivationLevel,
+           lastKnownLevel.rawValue < activationLevel.rawValue,
            newLevel.rawValue >= activationLevel.rawValue,
            windPoints < 100 {
-            logToFile(">>> ACTIVATING SHIELD at level \(newLevel)")
+            logToFile(">>> ACTIVATING SHIELD - crossed threshold at level \(newLevel)")
             activateShield()
         }
 
@@ -165,14 +186,55 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
         }
     }
 
-    private func checkLimitReached(currentSeconds: Int) {
-        let limitSeconds = SharedDefaults.integer(forKey: DefaultsKeys.monitoringLimitSeconds)
-        logToFile("[Extension] limitSeconds=\(limitSeconds), checking if \(currentSeconds) >= \(limitSeconds)")
+    /// Checks if 100% safety shield should activate and sends warning notification.
+    /// This is a system safeguard that ALWAYS activates at 100%, regardless of user settings.
+    /// Can be disabled via LimitSettings.disableSafetyShield for debug purposes.
+    private func checkSafetyShield(windPoints: Double) {
+        // Safety shield activates at exactly 100 wind points (not in buffer zone yet)
+        guard windPoints >= 100 else { return }
 
-        if currentSeconds >= limitSeconds {
-            logToFile("[Extension] LIMIT REACHED (100%) - pet blown away")
-            sendLimitReachedNotification()
+        // Check debug override
+        let settings = SharedDefaults.limitSettings
+        if settings.disableSafetyShield {
+            logToFile("[SafetyShield] DISABLED via debug settings, skipping")
+            return
         }
+
+        // Always send the critical warning notification at 100%
+        // This warns user even if shield was already activated at lower threshold
+        let alreadySent = SharedDefaults.bool(forKey: DefaultsKeys.safetyShieldNotificationSent)
+        if !alreadySent {
+            logToFile(">>> SENDING 100% WARNING NOTIFICATION")
+            sendSafetyShieldNotification()
+            SharedDefaults.set(true, forKey: DefaultsKeys.safetyShieldNotificationSent)
+        }
+
+        // Activate shield if not already active
+        let isAlreadyActive = SharedDefaults.isShieldActive
+        if !isAlreadyActive {
+            logToFile(">>> SAFETY SHIELD ACTIVATED at 100%")
+            activateShield()
+        } else {
+            logToFile("[SafetyShield] Shield already active, skipping activation")
+        }
+    }
+
+    private func sendSafetyShieldNotification() {
+        sendNotification(
+            title: "Kritický stav!",
+            body: "Jakékoliv další používání velmi pravděpodobně odfoukne tvého mazlíčka.",
+            identifier: "safetyShield",
+            deepLink: DeepLinks.home
+        )
+    }
+
+    private func sendBlowAwayNotification() {
+        sendNotification(
+            title: "Mazlíček odfouknut! 💨",
+            body: "Tvůj mazlíček byl odfouknut větrem. Otevři Clif a podívej se co se stalo.",
+            identifier: "blowAway",
+            deepLink: DeepLinks.home
+        )
     }
 
     private func logToFile(_ message: String) {
@@ -249,16 +311,6 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
         }
     }
 
-    /// Sends notification when screen time limit is reached
-    private func sendLimitReachedNotification() {
-        sendNotification(
-            title: "Screen Time Limit Reached",
-            body: "Your pet is being blown away by the wind!",
-            identifier: "limitReached",
-            deepLink: DeepLinks.shield
-        )
-    }
-
     /// Sends notification when wind level changes
     private func sendWindLevelNotification(level: WindLevel) {
         let (title, body): (String, String)
@@ -283,6 +335,8 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
     }
 
     private func sendNotification(title: String, body: String, identifier: String, deepLink: String) {
+        logToFile("[Notification] Sending: \(identifier) - \(title)")
+
         let content = UNMutableNotificationContent()
         content.title = title
         content.body = body
@@ -290,15 +344,18 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
         content.userInfo = ["deepLink": deepLink]
         content.interruptionLevel = .timeSensitive
 
+        let requestId = "\(identifier)_\(UUID().uuidString)"
         let request = UNNotificationRequest(
-            identifier: "\(identifier)_\(UUID().uuidString)",
+            identifier: requestId,
             content: content,
             trigger: nil
         )
 
         UNUserNotificationCenter.current().add(request) { [weak self] error in
             if let error = error {
-                self?.logToFile("[Extension] Failed to send notification: \(error.localizedDescription)")
+                self?.logToFile("[Notification] FAILED: \(identifier) - \(error.localizedDescription)")
+            } else {
+                self?.logToFile("[Notification] SUCCESS: \(identifier)")
             }
         }
     }

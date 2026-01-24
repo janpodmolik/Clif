@@ -307,4 +307,12 @@ struct SharedDefaults {
     static func setInt(_ value: Int, forKey key: String) {
         defaults?.set(value, forKey: key)
     }
+
+    static func bool(forKey key: String) -> Bool {
+        defaults?.bool(forKey: key) ?? false
+    }
+
+    static func set(_ value: Bool, forKey key: String) {
+        defaults?.set(value, forKey: key)
+    }
 }

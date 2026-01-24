@@ -49,10 +49,24 @@ class ShieldActionExtension: ShieldActionDelegate {
 
     /// Clears all shields - unlocks all limited sources at once.
     /// Called when user taps "Unlock" on any shielded app/category/web domain.
+    /// If wind is OVER 100%, triggers blow away (user ignored safety warning and continued).
     private func clearAllShields() {
         logToFile("clearAllShields() START")
         logToFile("Before: isShieldActive=\(SharedDefaults.isShieldActive), isMorningShieldActive=\(SharedDefaults.isMorningShieldActive)")
         logToFile("Before: windPoints=\(SharedDefaults.monitoredWindPoints), lastThreshold=\(SharedDefaults.monitoredLastThresholdSeconds)")
+
+        // Check if buffer limit (105%) was reached while shield was active
+        // If so, unlocking triggers immediate blow away
+        let bufferLimitReached = SharedDefaults.bool(forKey: DefaultsKeys.bufferLimitReached)
+        let windPoints = SharedDefaults.monitoredWindPoints
+        if bufferLimitReached {
+            logToFile("clearAllShields() - CRITICAL: bufferLimitReached=true, windPoints=\(windPoints) - triggering blow away")
+            SharedDefaults.set(true, forKey: DefaultsKeys.petBlownAway)
+            SharedDefaults.set(false, forKey: DefaultsKeys.bufferLimitReached) // Reset flag
+            sendBlowAwayNotification()
+        } else {
+            logToFile("clearAllShields() - bufferLimitReached=false, windPoints=\(windPoints) - no blow away")
+        }
 
         store.shield.applications = nil
         store.shield.applicationCategories = nil
@@ -63,6 +77,32 @@ class ShieldActionExtension: ShieldActionDelegate {
 
         logToFile("After: isShieldActive=\(SharedDefaults.isShieldActive), isMorningShieldActive=\(SharedDefaults.isMorningShieldActive)")
         logToFile("clearAllShields() END - shields cleared, flags reset")
+    }
+
+    /// Sends blow away notification.
+    private func sendBlowAwayNotification() {
+        logToFile("[Notification] Sending: blowAway")
+
+        let content = UNMutableNotificationContent()
+        content.title = "Mazlíček odfouknut! 💨"
+        content.body = "Tvůj mazlíček byl odfouknut větrem. Otevři Clif a podívej se co se stalo."
+        content.sound = .default
+        content.userInfo = ["deepLink": DeepLinks.home]
+        content.interruptionLevel = .timeSensitive
+
+        let request = UNNotificationRequest(
+            identifier: "blowAway_\(UUID().uuidString)",
+            content: content,
+            trigger: nil
+        )
+
+        UNUserNotificationCenter.current().add(request) { [weak self] error in
+            if let error = error {
+                self?.logToFile("[Notification] FAILED: blowAway - \(error.localizedDescription)")
+            } else {
+                self?.logToFile("[Notification] SUCCESS: blowAway")
+            }
+        }
     }
 
     // MARK: - Morning Shield Handling
@@ -207,7 +247,6 @@ class ShieldActionExtension: ShieldActionDelegate {
             handlePotentialBreakViolation()
 
             clearAllShields()
-            sendNotification(title: "Shields cleared", body: "Tap to track in Clif")
             logToFile("Returning .defer - user should stay in app")
             completionHandler(.defer)
 
@@ -242,7 +281,6 @@ class ShieldActionExtension: ShieldActionDelegate {
 
             handlePotentialBreakViolation()
             clearAllShields()
-            sendNotification(title: "Shields cleared", body: "Tap to track in Clif")
             completionHandler(.defer)
 
         @unknown default:
@@ -275,7 +313,6 @@ class ShieldActionExtension: ShieldActionDelegate {
 
             handlePotentialBreakViolation()
             clearAllShields()
-            sendNotification(title: "Shields cleared", body: "Tap to track in Clif")
             completionHandler(.defer)
 
         @unknown default:
