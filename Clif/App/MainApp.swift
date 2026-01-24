@@ -35,12 +35,13 @@ struct MainApp: App {
     private func handleScenePhaseChange(_ phase: ScenePhase) {
         switch phase {
         case .active:
-            // Sync wind state from snapshots when returning to foreground
+            // Check for blow-away state when returning to foreground
+            // (windPoints is computed from SharedDefaults - no sync needed)
             petManager.performDailyResetIfNeeded()
-            petManager.syncFromSnapshots()
+            petManager.checkBlowAwayState()
 
             #if DEBUG
-            print("🟢 App became active - synced from snapshots")
+            print("🟢 App became active")
             #endif
 
         case .background:

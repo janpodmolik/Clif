@@ -10,10 +10,19 @@ final class Pet: Identifiable, PetPresentable, PetWithSources {
     let purpose: String?
 
     /// Current wind points (0-100). At 100, pet blows away.
-    var windPoints: Double
+    /// Single source of truth: reads/writes directly from SharedDefaults.
+    /// Only valid for the currently monitored pet (SharedDefaults.monitoredPetId == id).
+    var windPoints: Double {
+        get { SharedDefaults.monitoredWindPoints }
+        set { SharedDefaults.monitoredWindPoints = newValue }
+    }
 
     /// Last recorded threshold seconds from DeviceActivityMonitor.
-    var lastThresholdSeconds: Int
+    /// Single source of truth: reads/writes directly from SharedDefaults.
+    var lastThresholdSeconds: Int {
+        get { SharedDefaults.monitoredLastThresholdSeconds }
+        set { SharedDefaults.monitoredLastThresholdSeconds = newValue }
+    }
 
     /// Currently active break session, if any.
     var activeBreak: ActiveBreak?
@@ -224,57 +233,15 @@ final class Pet: Identifiable, PetPresentable, PetWithSources {
         lastThresholdSeconds = 0
     }
 
-    /// Syncs wind state from SharedDefaults (called when app returns to foreground).
-    /// The extension updates SharedDefaults directly, so this is the most accurate source.
-    func syncFromSnapshots() {
-        #if DEBUG
-        print("[Pet.sync] Starting sync for pet \(id)")
-        print("[Pet.sync] SharedDefaults.monitoredPetId = \(SharedDefaults.monitoredPetId?.uuidString ?? "nil")")
-        print("[Pet.sync] DEBUG: isShieldActive=\(SharedDefaults.isShieldActive), isMorningShieldActive=\(SharedDefaults.isMorningShieldActive)")
-        #endif
+    /// Checks if pet was blown away (from snapshots) and updates state.
+    /// Call on app foreground to catch blow-away events from extension.
+    func checkBlowAwayState() {
+        guard SharedDefaults.monitoredPetId == id else { return }
 
-        // Only sync if this is the monitored pet
-        guard SharedDefaults.monitoredPetId == id else {
-            #if DEBUG
-            print("[Pet.sync] Skipping - not the monitored pet")
-            #endif
-            return
-        }
-
-        // Check if blown away today (from snapshots as backup)
-        if SnapshotStore.shared.wasBlownAwayToday(petId: id) {
-            if !isBlownAway {
-                windPoints = 100
-                blowAway()
-            }
-            return
-        }
-
-        // Read wind state from SharedDefaults (updated by extension in real-time)
-        let extensionWindPoints = SharedDefaults.monitoredWindPoints
-        let extensionLastSeconds = SharedDefaults.monitoredLastThresholdSeconds
-
-        #if DEBUG
-        print("[Pet.sync] Extension values: wind=\(extensionWindPoints), lastSec=\(extensionLastSeconds)")
-        print("[Pet.sync] Pet values: wind=\(windPoints), lastSec=\(lastThresholdSeconds)")
-        #endif
-
-        // Always sync from SharedDefaults - wind can go up (usage) or down (shield unlock)
-        // The extension/ShieldAction are the source of truth for wind state
-        if extensionWindPoints != windPoints || extensionLastSeconds != lastThresholdSeconds {
-            #if DEBUG
-            print("[Pet.sync] Updating pet: wind \(windPoints) -> \(extensionWindPoints), lastSec \(lastThresholdSeconds) -> \(extensionLastSeconds)")
-            #endif
-            windPoints = extensionWindPoints
-            lastThresholdSeconds = extensionLastSeconds
-
-            if windPoints >= 100 && !isBlownAway {
-                blowAway()
-            }
-        } else {
-            #if DEBUG
-            print("[Pet.sync] No update needed")
-            #endif
+        if SnapshotStore.shared.wasBlownAwayToday(petId: id) && !isBlownAway {
+            blowAway()
+        } else if windPoints >= 100 && !isBlownAway {
+            blowAway()
         }
     }
 
@@ -285,8 +252,6 @@ final class Pet: Identifiable, PetPresentable, PetWithSources {
         name: String,
         evolutionHistory: EvolutionHistory,
         purpose: String?,
-        windPoints: Double = 0,
-        lastThresholdSeconds: Int = 0,
         activeBreak: ActiveBreak? = nil,
         preset: WindPreset = .default,
         dailyStats: [DailyUsageStat] = [],
@@ -297,8 +262,6 @@ final class Pet: Identifiable, PetPresentable, PetWithSources {
         self.name = name
         self.evolutionHistory = evolutionHistory
         self.purpose = purpose
-        self.windPoints = windPoints
-        self.lastThresholdSeconds = lastThresholdSeconds
         self.activeBreak = activeBreak
         self.preset = preset
         self.dailyStats = dailyStats
@@ -394,6 +357,14 @@ extension CompletedBreak {
 // MARK: - Mock Data
 
 extension Pet {
+    /// Sets up SharedDefaults for mock pet display.
+    /// Call this before creating mock pets to ensure windPoints reads correct values.
+    static func setupMockDefaults(petId: UUID, windPoints: Double, lastThresholdSeconds: Int = 0) {
+        SharedDefaults.monitoredPetId = petId
+        SharedDefaults.monitoredWindPoints = windPoints
+        SharedDefaults.monitoredLastThresholdSeconds = lastThresholdSeconds
+    }
+
     static func mock(
         name: String = "Fern",
         phase: Int = 2,
@@ -403,12 +374,14 @@ extension Pet {
     ) -> Pet {
         let petId = UUID()
 
+        // Setup SharedDefaults so computed windPoints property returns correct value
+        setupMockDefaults(petId: petId, windPoints: windPoints)
+
         return Pet(
             id: petId,
             name: name,
             evolutionHistory: .mock(phase: phase, essence: essence, totalDays: totalDays),
             purpose: "Social Media",
-            windPoints: windPoints,
             dailyStats: DailyUsageStat.mockList(petId: petId, days: totalDays),
             limitedSources: LimitedSource.mockList(days: totalDays),
             breakHistory: totalDays > 3 ? CompletedBreak.mockList(count: min(totalDays, 8)) : []
@@ -422,8 +395,7 @@ extension Pet {
     }
 
     static func mockWithBreakHistory() -> Pet {
-        let pet = mock(windPoints: 45, totalDays: 10)
-        return pet
+        mock(windPoints: 45, totalDays: 10)
     }
 
     static func mockBlob(

@@ -107,11 +107,15 @@ struct PetDetailScreenDebug: View {
     }
 
     private var debugPet: Pet {
+        // Setup SharedDefaults for computed windPoints property
+        let petId = UUID()
+        Pet.setupMockDefaults(petId: petId, windPoints: windPoints)
+
         let pet = Pet(
+            id: petId,
             name: petName,
             evolutionHistory: evolutionHistory,
             purpose: purposeLabel.isEmpty ? nil : purposeLabel,
-            windPoints: windPoints,
             preset: windPreset,
             dailyStats: dailyStats
         )

@@ -368,9 +368,8 @@ struct DebugView: View {
             }
 
             HStack(spacing: 8) {
-                Button("Force Sync") {
-                    petManager.currentPet?.syncFromSnapshots()
-                    petManager.savePet()
+                Button("Check Blow Away") {
+                    petManager.currentPet?.checkBlowAwayState()
                 }
                 .buttonStyle(.bordered)
                 .tint(.purple)
@@ -407,9 +406,9 @@ struct DebugView: View {
 
         print("[SimulateThreshold] seconds \(lastSeconds) -> \(newSeconds), wind -> \(windPoints)")
 
-        // Auto-sync to pet
-        petManager.currentPet?.syncFromSnapshots()
-        petManager.savePet()
+        // Pet.windPoints is computed from SharedDefaults - no sync needed
+        // Just check for blow-away state
+        petManager.currentPet?.checkBlowAwayState()
     }
 
     // MARK: - Debug Tools

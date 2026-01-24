@@ -112,7 +112,12 @@ struct HomeCardDebugView: View {
             effectiveTotalDays = evolutionStage
         }
 
+        // Setup SharedDefaults for computed windPoints property
+        let petId = UUID()
+        Pet.setupMockDefaults(petId: petId, windPoints: windPoints)
+
         let pet = Pet(
+            id: petId,
             name: petName,
             evolutionHistory: .mock(
                 phase: effectivePhase,
@@ -120,7 +125,6 @@ struct HomeCardDebugView: View {
                 totalDays: effectiveTotalDays
             ),
             purpose: purposeLabel.isEmpty ? nil : purposeLabel,
-            windPoints: windPoints,
             activeBreak: isOnBreak ? .mock(type: .committed, minutesAgo: 5, durationMinutes: 30) : nil
         )
         if isBlownAway {

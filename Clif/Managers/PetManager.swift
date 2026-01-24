@@ -18,7 +18,6 @@ final class PetManager {
 
     init() {
         loadActivePet()
-        syncWindFromSharedDefaults()
         restoreMonitoringIfNeeded()
     }
 
@@ -89,12 +88,10 @@ final class PetManager {
 
     // MARK: - Foreground Sync
 
-    /// Syncs pet state from SharedDefaults when app returns to foreground.
-    /// SharedDefaults is the source of truth (updated by extensions in real-time).
-    /// This method is idempotent - safe to call multiple times.
-    func syncFromSnapshots() {
-        pet?.syncFromSnapshots()
-        saveActivePet()
+    /// Checks for blow-away state when app returns to foreground.
+    /// windPoints is computed from SharedDefaults, so no sync needed.
+    func checkBlowAwayState() {
+        pet?.checkBlowAwayState()
     }
 
     // MARK: - Monitoring Restore
@@ -173,14 +170,6 @@ private extension PetManager {
             return
         }
         pet = Pet(from: dto)
-    }
-
-    /// Syncs wind state from SharedDefaults (source of truth updated by extensions).
-    func syncWindFromSharedDefaults() {
-        guard let pet = pet, SharedDefaults.monitoredPetId == pet.id else { return }
-
-        pet.windPoints = SharedDefaults.monitoredWindPoints
-        pet.lastThresholdSeconds = SharedDefaults.monitoredLastThresholdSeconds
     }
 
     /// Saves the active pet to SharedDefaults.

@@ -15,8 +15,9 @@ struct HomeScreen: View {
     @State private var petFrame: CGRect = .zero
     @State private var dropZoneFrame: CGRect = .zero
 
-    /// Timer tick to force UI refresh when shield is active (for real-time wind decrease).
-    @State private var windRefreshTick = 0
+    /// Timer-driven refresh trigger for real-time wind updates during active shield.
+    /// Increments every second to force UI recalculation of effectiveWindPoints.
+    @State private var refreshTick = 0
 
     private let homeCardInset: CGFloat = 16
     private let homeCardCornerRadius: CGFloat = 24
@@ -77,9 +78,9 @@ struct HomeScreen: View {
             showPresetPicker = true
         }
         .onReceive(Timer.publish(every: 1.0, on: .main, in: .common).autoconnect()) { _ in
-            // Only tick when shield is active (wind is decreasing)
+            // Tick every second when shield is active to update effectiveWindPoints display
             if SharedDefaults.isShieldActive {
-                windRefreshTick += 1
+                refreshTick += 1
             }
         }
         .onDisappear {
@@ -188,8 +189,8 @@ struct HomeScreen: View {
             debugWindOverlay(pet)
             #endif
         }
-        // Force view recalculation when windRefreshTick changes (during active shield)
-        .id(windRefreshTick)
+        // Force view recalculation when refreshTick changes (during active shield)
+        .id(refreshTick)
     }
 
     #if DEBUG
@@ -222,7 +223,7 @@ struct HomeScreen: View {
             pet: pet,
             streakCount: 7, // TODO: get from streak manager
             showDetailButton: true,
-            refreshTick: windRefreshTick,
+            refreshTick: refreshTick,
             onAction: { handleAction($0, for: pet) }
         )
     }
@@ -237,11 +238,8 @@ struct HomeScreen: View {
             break // TODO: Handle archived pet actions
         case .toggleShield:
             ScreenTimeManager.shared.toggleShield()
-            // Sync pet's windPoints from SharedDefaults after shield toggle
-            // (toggleShield updates SharedDefaults but not the Pet model)
-            petManager.syncFromSnapshots()
-            // Force immediate UI refresh
-            windRefreshTick += 1
+            // Force immediate UI refresh (windPoints is computed from SharedDefaults)
+            refreshTick += 1
         }
     }
 

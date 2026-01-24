@@ -84,31 +84,13 @@ final class ScreenTimeManager: ObservableObject {
     /// When turning OFF: calculates wind decrease, clears shield.
     func toggleShield() {
         if SharedDefaults.isShieldActive {
-            // Shield is active -> turn OFF (same as processUnlock but without monitoring restart)
+            // Shield is active -> turn OFF
             #if DEBUG
             print("[ScreenTimeManager] toggleShield: OFF")
             #endif
 
-            // Calculate wind decrease from shield time
-            if let activatedAt = SharedDefaults.shieldActivatedAt {
-                let elapsedSeconds = Date().timeIntervalSince(activatedAt)
-                let fallRate = SharedDefaults.monitoredFallRate
-                let decrease = elapsedSeconds * fallRate
-                let oldWind = SharedDefaults.monitoredWindPoints
-                let newWind = max(0, oldWind - decrease)
-
-                #if DEBUG
-                print("  Shield was active for \(Int(elapsedSeconds))s, wind: \(oldWind) -> \(newWind)")
-                #endif
-
-                SharedDefaults.monitoredWindPoints = newWind
-            }
-
-            // Clear shields
-            store.shield.applications = nil
-            store.shield.applicationCategories = nil
-            store.shield.webDomains = nil
-            SharedDefaults.resetShieldFlags()
+            applyWindDecreaseFromShield()
+            deactivateShield()
         } else {
             // Shield is off -> turn ON
             #if DEBUG
@@ -139,6 +121,34 @@ final class ScreenTimeManager: ObservableObject {
         }
     }
 
+    // MARK: - Shield Helpers
+
+    /// Calculates and applies wind decrease based on shield active time.
+    /// Updates SharedDefaults.monitoredWindPoints with the new value.
+    private func applyWindDecreaseFromShield() {
+        guard let activatedAt = SharedDefaults.shieldActivatedAt else { return }
+
+        let elapsedSeconds = Date().timeIntervalSince(activatedAt)
+        let fallRate = SharedDefaults.monitoredFallRate
+        let decrease = elapsedSeconds * fallRate
+        let oldWind = SharedDefaults.monitoredWindPoints
+        let newWind = max(0, oldWind - decrease)
+
+        #if DEBUG
+        print("  Shield was active for \(Int(elapsedSeconds))s, wind: \(oldWind) -> \(newWind)")
+        #endif
+
+        SharedDefaults.monitoredWindPoints = newWind
+    }
+
+    /// Clears shield from ManagedSettingsStore and resets shield flags.
+    private func deactivateShield() {
+        store.shield.applications = nil
+        store.shield.applicationCategories = nil
+        store.shield.webDomains = nil
+        SharedDefaults.resetShieldFlags()
+    }
+
     // MARK: - Unlock Processing
 
     /// Processes unlock request from shield deep link.
@@ -160,29 +170,9 @@ final class ScreenTimeManager: ObservableObject {
             return
         }
 
-        // Calculate wind decrease from shield time
-        var windPoints = SharedDefaults.monitoredWindPoints
-        if let activatedAt = SharedDefaults.shieldActivatedAt {
-            let elapsedSeconds = Date().timeIntervalSince(activatedAt)
-            let fallRate = SharedDefaults.monitoredFallRate
-            let decrease = elapsedSeconds * fallRate
-            let newWindPoints = max(0, windPoints - decrease)
-
-            #if DEBUG
-            print("[ScreenTimeManager] processUnlock: Shield was active for \(Int(elapsedSeconds))s")
-            print("  fallRate=\(fallRate) pts/sec, decrease=\(decrease) pts")
-            print("  Wind: \(windPoints) -> \(newWindPoints)")
-            #endif
-
-            windPoints = newWindPoints
-            SharedDefaults.monitoredWindPoints = newWindPoints
-        }
-
-        // Clear shields
-        store.shield.applications = nil
-        store.shield.applicationCategories = nil
-        store.shield.webDomains = nil
-        SharedDefaults.resetShieldFlags()
+        // Calculate wind decrease and clear shield
+        applyWindDecreaseFromShield()
+        deactivateShield()
 
         // Load tokens for restart
         guard let appTokens = SharedDefaults.loadApplicationTokens(),
@@ -202,16 +192,15 @@ final class ScreenTimeManager: ObservableObject {
             return
         }
 
-        // Get limit and rate from SharedDefaults
+        // Get limit from SharedDefaults
         let limitSeconds = SharedDefaults.integer(forKey: DefaultsKeys.monitoringLimitSeconds)
-        let riseRatePerSecond = SharedDefaults.monitoredRiseRate
-        let fallRatePerSecond = SharedDefaults.monitoredFallRate
 
         // Get current cumulative usage (this is the key!)
         // Thresholds must start from current position, not from 0
         let currentUsageSeconds = SharedDefaults.monitoredLastThresholdSeconds
 
         #if DEBUG
+        let windPoints = SharedDefaults.monitoredWindPoints
         print("[ScreenTimeManager] processUnlock: Restarting monitoring from \(currentUsageSeconds)s")
         print("  petId=\(petId), limit=\(limitSeconds)s, wind=\(windPoints)")
         #endif
