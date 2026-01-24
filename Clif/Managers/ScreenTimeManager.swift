@@ -255,8 +255,7 @@ final class ScreenTimeManager: ObservableObject {
     // MARK: - Event Building
 
     /// Builds thresholds for granular windPoints tracking.
-    /// Generates thresholds up to 105% (buffer zone) to handle DeviceActivity framework delays.
-    /// UI displays progress capped at 100%, blow away happens at 105%.
+    /// Generates thresholds up to 100% of the limit.
     private func buildEvents(
         limitSeconds: Int,
         appTokens: Set<ApplicationToken>,
@@ -268,25 +267,21 @@ final class ScreenTimeManager: ObservableObject {
         let maxThresholds = AppConstants.maxThresholds
         let minInterval = AppConstants.minimumThresholdSeconds
 
-        // Buffer zone: generate thresholds up to 105% to handle framework delays
-        let bufferMultiplier = AppConstants.blowAwayBufferMultiplier
-        let effectiveLimitSeconds = Int(Double(limitSeconds) * bufferMultiplier)
-
         #if DEBUG
-        print("DEBUG: buildEvents - limitSeconds=\(limitSeconds), effectiveLimit=\(effectiveLimitSeconds), maxThresholds=\(maxThresholds), minInterval=\(minInterval)")
+        print("DEBUG: buildEvents - limitSeconds=\(limitSeconds), maxThresholds=\(maxThresholds), minInterval=\(minInterval)")
         #endif
 
-        // Calculate optimal interval to fit maxThresholds within effective limit
-        // intervalSeconds = effectiveLimitSeconds / maxThresholds, but at least minInterval
-        let intervalSeconds = max(effectiveLimitSeconds / maxThresholds, minInterval)
+        // Calculate optimal interval to fit maxThresholds within limit
+        // intervalSeconds = limitSeconds / maxThresholds, but at least minInterval
+        let intervalSeconds = max(limitSeconds / maxThresholds, minInterval)
 
         #if DEBUG
         print("DEBUG: buildEvents - calculated intervalSeconds=\(intervalSeconds)")
         #endif
 
-        // Generate thresholds: interval, 2*interval, 3*interval, ... up to effectiveLimitSeconds
+        // Generate thresholds: interval, 2*interval, 3*interval, ... up to limitSeconds
         var currentSeconds = intervalSeconds
-        while currentSeconds <= effectiveLimitSeconds && events.count < maxThresholds {
+        while currentSeconds <= limitSeconds && events.count < maxThresholds {
             let eventName = DeviceActivityEvent.Name("second_\(currentSeconds)")
 
             // DateComponents supports second precision
@@ -303,13 +298,12 @@ final class ScreenTimeManager: ObservableObject {
             currentSeconds += intervalSeconds
         }
 
-        // Always include the effective limit threshold for blow away detection
-        // This ensures we don't miss the 105% mark due to interval rounding
+        // Always include the limit threshold to ensure we hit exactly 100%
         if events.count < maxThresholds {
-            let finalEventName = DeviceActivityEvent.Name("second_\(effectiveLimitSeconds)")
+            let finalEventName = DeviceActivityEvent.Name("second_\(limitSeconds)")
             if events[finalEventName] == nil {
-                let minutes = effectiveLimitSeconds / 60
-                let seconds = effectiveLimitSeconds % 60
+                let minutes = limitSeconds / 60
+                let seconds = limitSeconds % 60
                 events[finalEventName] = DeviceActivityEvent(
                     applications: appTokens,
                     categories: catTokens,
@@ -320,8 +314,8 @@ final class ScreenTimeManager: ObservableObject {
         }
 
         #if DEBUG
-        print("DEBUG: buildEvents - created \(events.count) events (up to \(effectiveLimitSeconds)s = \(Int(bufferMultiplier * 100))%)")
-        print("[ScreenTimeManager] Built \(events.count) events with \(intervalSeconds)s interval for \(limitSeconds)s limit (buffer: \(effectiveLimitSeconds)s)")
+        print("DEBUG: buildEvents - created \(events.count) events (up to \(limitSeconds)s)")
+        print("[ScreenTimeManager] Built \(events.count) events with \(intervalSeconds)s interval for \(limitSeconds)s limit")
         #endif
 
         return events

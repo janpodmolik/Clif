@@ -29,7 +29,6 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
         // Reset blow away and safety notification state for new day
         SharedDefaults.set(false, forKey: DefaultsKeys.petBlownAway)
         SharedDefaults.set(false, forKey: DefaultsKeys.safetyShieldNotificationSent)
-        SharedDefaults.set(false, forKey: DefaultsKeys.bufferLimitReached)
 
         let settings = SharedDefaults.limitSettings
 
@@ -66,28 +65,10 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
 
             guard let currentSeconds = parseSecondsFromEvent(event) else { return }
 
-            // Log progress even when shield is active
+            // Log progress
             let limitSeconds = SharedDefaults.integer(forKey: DefaultsKeys.monitoringLimitSeconds)
-            let bufferMultiplier = AppConstants.blowAwayBufferMultiplier
-            let effectiveLimitSeconds = Int(Double(limitSeconds) * bufferMultiplier)
             let progressPercent = limitSeconds > 0 ? (Double(currentSeconds) / Double(limitSeconds)) * 100 : 0
-            logToFile("[Extension] limitSeconds=\(limitSeconds), effectiveLimit=\(effectiveLimitSeconds), current=\(currentSeconds) (\(Int(progressPercent))%)")
-
-            // Check blow away at 105% threshold
-            let isShieldActive = SharedDefaults.isShieldActive
-            if limitSeconds > 0 && currentSeconds >= effectiveLimitSeconds {
-                if isShieldActive {
-                    // Shield is active - mark that buffer limit was reached
-                    // ShieldAction will check this flag on unlock and trigger blow away
-                    logToFile("[Extension] 105% reached with shield active - setting bufferLimitReached flag")
-                    SharedDefaults.set(true, forKey: DefaultsKeys.bufferLimitReached)
-                } else {
-                    // No shield - immediate blow away
-                    logToFile("[Extension] BUFFER LIMIT REACHED (105%) - pet blown away")
-                    SharedDefaults.set(true, forKey: DefaultsKeys.petBlownAway)
-                    sendBlowAwayNotification()
-                }
-            }
+            logToFile("[Extension] limitSeconds=\(limitSeconds), current=\(currentSeconds) (\(Int(progressPercent))%)")
 
             // Skip wind updates if shield is active
             guard shouldProcessThreshold() else { return }
@@ -171,10 +152,10 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
 
         // Activate shield when we CROSS the activation threshold for the first time
         // Only activate if: previous level was below threshold AND new level is at/above threshold
+        // Note: Safety shield at 100% is handled separately in checkSafetyShield()
         if let activationLevel = settings.shieldActivationLevel,
            lastKnownLevel.rawValue < activationLevel.rawValue,
-           newLevel.rawValue >= activationLevel.rawValue,
-           windPoints < 100 {
+           newLevel.rawValue >= activationLevel.rawValue {
             logToFile(">>> ACTIVATING SHIELD - crossed threshold at level \(newLevel)")
             activateShield()
         }
@@ -229,12 +210,9 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
     }
 
     private func sendBlowAwayNotification() {
-        sendNotification(
-            title: "Mazlíček odfouknut! 💨",
-            body: "Tvůj mazlíček byl odfouknut větrem. Otevři Clif a podívej se co se stalo.",
-            identifier: "blowAway",
-            deepLink: DeepLinks.home
-        )
+        BlowAwayNotification.send { [weak self] message in
+            self?.logToFile(message)
+        }
     }
 
     private func logToFile(_ message: String) {

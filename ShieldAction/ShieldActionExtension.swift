@@ -55,17 +55,14 @@ class ShieldActionExtension: ShieldActionDelegate {
         logToFile("Before: isShieldActive=\(SharedDefaults.isShieldActive), isMorningShieldActive=\(SharedDefaults.isMorningShieldActive)")
         logToFile("Before: windPoints=\(SharedDefaults.monitoredWindPoints), lastThreshold=\(SharedDefaults.monitoredLastThresholdSeconds)")
 
-        // Check if buffer limit (105%) was reached while shield was active
-        // If so, unlocking triggers immediate blow away
-        let bufferLimitReached = SharedDefaults.bool(forKey: DefaultsKeys.bufferLimitReached)
+        // Check if wind is at or above 100% - if so, unlocking triggers blow away
         let windPoints = SharedDefaults.monitoredWindPoints
-        if bufferLimitReached {
-            logToFile("clearAllShields() - CRITICAL: bufferLimitReached=true, windPoints=\(windPoints) - triggering blow away")
+        if windPoints >= 100 {
+            logToFile("clearAllShields() - CRITICAL: windPoints=\(windPoints) >= 100 - triggering blow away")
             SharedDefaults.set(true, forKey: DefaultsKeys.petBlownAway)
-            SharedDefaults.set(false, forKey: DefaultsKeys.bufferLimitReached) // Reset flag
             sendBlowAwayNotification()
         } else {
-            logToFile("clearAllShields() - bufferLimitReached=false, windPoints=\(windPoints) - no blow away")
+            logToFile("clearAllShields() - windPoints=\(windPoints) < 100 - no blow away")
         }
 
         store.shield.applications = nil
@@ -81,27 +78,8 @@ class ShieldActionExtension: ShieldActionDelegate {
 
     /// Sends blow away notification.
     private func sendBlowAwayNotification() {
-        logToFile("[Notification] Sending: blowAway")
-
-        let content = UNMutableNotificationContent()
-        content.title = "Mazlíček odfouknut! 💨"
-        content.body = "Tvůj mazlíček byl odfouknut větrem. Otevři Clif a podívej se co se stalo."
-        content.sound = .default
-        content.userInfo = ["deepLink": DeepLinks.home]
-        content.interruptionLevel = .timeSensitive
-
-        let request = UNNotificationRequest(
-            identifier: "blowAway_\(UUID().uuidString)",
-            content: content,
-            trigger: nil
-        )
-
-        UNUserNotificationCenter.current().add(request) { [weak self] error in
-            if let error = error {
-                self?.logToFile("[Notification] FAILED: blowAway - \(error.localizedDescription)")
-            } else {
-                self?.logToFile("[Notification] SUCCESS: blowAway")
-            }
+        BlowAwayNotification.send { [weak self] message in
+            self?.logToFile(message)
         }
     }
 

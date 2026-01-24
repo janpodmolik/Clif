@@ -24,11 +24,6 @@ enum AppConstants {
     /// Maximum thresholds per schedule (DeviceActivity API limit is ~20)
     static let maxThresholds = 20
 
-    /// Buffer zone multiplier for blow away (105% = 1.05)
-    /// This provides extra time to account for DeviceActivity framework delays.
-    /// UI caps at 100%, blow away happens at this percentage.
-    static let blowAwayBufferMultiplier: Double = 1.05
-
     // MARK: - UI
 
     /// Maximum apps to display initially in activity report
@@ -102,5 +97,4 @@ enum DefaultsKeys {
 
     static let petBlownAway = "petBlownAway"
     static let safetyShieldNotificationSent = "safetyShieldNotificationSent"
-    static let bufferLimitReached = "bufferLimitReached"
 }

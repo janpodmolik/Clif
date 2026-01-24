@@ -25,6 +25,9 @@
 		B451D2102F24FEF0004C534F /* ExtensionLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = B451D20D2F24FEF0004C534F /* ExtensionLogger.swift */; };
 		B451D2112F24FEF0004C534F /* ExtensionLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = B451D20D2F24FEF0004C534F /* ExtensionLogger.swift */; };
 		B451D2122F24FEF0004C534F /* ExtensionLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = B451D20D2F24FEF0004C534F /* ExtensionLogger.swift */; };
+		B451D2152F2533E6004C534F /* BlowAwayNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = B451D2132F2533E6004C534F /* BlowAwayNotification.swift */; };
+		B451D2162F2533E6004C534F /* BlowAwayNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = B451D2132F2533E6004C534F /* BlowAwayNotification.swift */; };
+		B451D2172F2533E6004C534F /* BlowAwayNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = B451D2132F2533E6004C534F /* BlowAwayNotification.swift */; };
 		B45862152EE5B92C0088CB78 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = B45862142EE5B92C0088CB78 /* Constants.swift */; };
 		B45862162EE5B92C0088CB78 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = B45862142EE5B92C0088CB78 /* Constants.swift */; };
 		B45862172EE5B92C0088CB78 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = B45862142EE5B92C0088CB78 /* Constants.swift */; };
@@ -144,6 +147,7 @@
 		B4167E5E2F1FEF4E00D89B36 /* SnapshotStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SnapshotStore.swift; sourceTree = "<group>"; };
 		B4167E642F1FF93800D89B36 /* SnapshotLogging.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SnapshotLogging.swift; sourceTree = "<group>"; };
 		B451D20D2F24FEF0004C534F /* ExtensionLogger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtensionLogger.swift; sourceTree = "<group>"; };
+		B451D2132F2533E6004C534F /* BlowAwayNotification.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlowAwayNotification.swift; sourceTree = "<group>"; };
 		B45862142EE5B92C0088CB78 /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
 		B45862302EE5F6F80088CB78 /* DeviceActivityReport.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.extensionkit-extension"; includeInIndex = 0; path = DeviceActivityReport.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		B45862422EE5FAF60088CB78 /* ActivityReportContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityReportContext.swift; sourceTree = "<group>"; };
@@ -373,6 +377,14 @@
 			path = Models;
 			sourceTree = "<group>";
 		};
+		B451D2142F2533E6004C534F /* Notifications */ = {
+			isa = PBXGroup;
+			children = (
+				B451D2132F2533E6004C534F /* BlowAwayNotification.swift */,
+			);
+			path = Notifications;
+			sourceTree = "<group>";
+		};
 		B4924ACA2EE57ED90033475C /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
@@ -386,6 +398,7 @@
 		B4924AF62EE5807E0033475C /* Shared */ = {
 			isa = PBXGroup;
 			children = (
+				B451D2142F2533E6004C534F /* Notifications */,
 				B43998442EE9FCD90049445F /* Reports */,
 				B43998452EE9FCE40049445F /* Models */,
 				B43998432EE9FCC80049445F /* Storage */,
@@ -645,6 +658,7 @@
 				B4167E5F2F1FEF4E00D89B36 /* SnapshotStore.swift in Sources */,
 				B4167E652F1FF93800D89B36 /* SnapshotLogging.swift in Sources */,
 				B4167E582F1FE2D800D89B36 /* SnapshotEvent.swift in Sources */,
+				B451D2172F2533E6004C534F /* BlowAwayNotification.swift in Sources */,
 				B4924AFB2EE5807E0033475C /* SharedDefaults.swift in Sources */,
 				B4D351262F123DD00076C09B /* StatType.swift in Sources */,
 				B4D351272F123DD00076C09B /* DailyUsageStat.swift in Sources */,
@@ -687,6 +701,7 @@
 				B45862172EE5B92C0088CB78 /* Constants.swift in Sources */,
 				B4167E552F1FE2D800D89B36 /* SnapshotEvent.swift in Sources */,
 				B451D20B2F24C78E004C534F /* WindLevel.swift in Sources */,
+				B451D2162F2533E6004C534F /* BlowAwayNotification.swift in Sources */,
 				B451D2112F24FEF0004C534F /* ExtensionLogger.swift in Sources */,
 				B4167E5C2F1FE73400D89B36 /* SnapshotEventType.swift in Sources */,
 				B4167E602F1FEF4E00D89B36 /* SnapshotStore.swift in Sources */,
@@ -722,6 +737,7 @@
 				B4C4C0A02EE7FF0900E469E8 /* Constants.swift in Sources */,
 				B4167E612F1FF91200D89B36 /* SnapshotEventType.swift in Sources */,
 				B451D20A2F24C74F004C534F /* WindLevel.swift in Sources */,
+				B451D2152F2533E6004C534F /* BlowAwayNotification.swift in Sources */,
 				B451D20F2F24FEF0004C534F /* ExtensionLogger.swift in Sources */,
 				B4167E622F1FF91800D89B36 /* SnapshotEvent.swift in Sources */,
 				B4167E632F1FF92500D89B36 /* SnapshotStore.swift in Sources */,
