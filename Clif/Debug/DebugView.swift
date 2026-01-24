@@ -536,11 +536,26 @@ struct DebugView: View {
 
     private var extensionLogSection: some View {
         VStack(spacing: 8) {
-            Button("Show Extension Log") {
-                loadExtensionLog()
+            HStack(spacing: 8) {
+                Button("Refresh") {
+                    loadExtensionLog()
+                }
+                .buttonStyle(.bordered)
+                .tint(.gray)
+
+                Button("Copy") {
+                    UIPasteboard.general.string = extensionLog
+                }
+                .buttonStyle(.bordered)
+                .tint(.blue)
+                .disabled(extensionLog.isEmpty)
+
+                Button("Clear") {
+                    clearExtensionLog()
+                }
+                .buttonStyle(.bordered)
+                .tint(.red)
             }
-            .buttonStyle(.bordered)
-            .tint(.gray)
 
             if !extensionLog.isEmpty {
                 ScrollView {
@@ -549,9 +564,14 @@ struct DebugView: View {
                         .foregroundColor(.green)
                         .frame(maxWidth: .infinity, alignment: .leading)
                 }
-                .frame(height: 150)
+                .frame(height: 200)
                 .background(Color.black)
                 .cornerRadius(8)
+            } else {
+                Text("No log data. Tap Refresh to load.")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                    .frame(height: 50)
             }
 
             Text("Apps: \(manager.activitySelection.applicationTokens.count) | Categories: \(manager.activitySelection.categoryTokens.count)")
@@ -561,6 +581,9 @@ struct DebugView: View {
         .padding()
         .background(Color(.secondarySystemBackground))
         .cornerRadius(12)
+        .onAppear {
+            loadExtensionLog()
+        }
     }
 
     // MARK: - Helpers
@@ -608,8 +631,18 @@ struct DebugView: View {
         if FileManager.default.fileExists(atPath: logFileURL.path) {
             extensionLog = (try? String(contentsOf: logFileURL, encoding: .utf8)) ?? "Error reading log"
         } else {
-            extensionLog = "No log file yet"
+            extensionLog = ""
         }
+    }
+
+    private func clearExtensionLog() {
+        guard let containerURL = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: AppConstants.appGroupIdentifier) else {
+            return
+        }
+
+        let logFileURL = containerURL.appendingPathComponent("extension_log.txt")
+        try? FileManager.default.removeItem(at: logFileURL)
+        extensionLog = ""
     }
 }
 

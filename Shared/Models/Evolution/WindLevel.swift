@@ -77,18 +77,64 @@ enum WindLevel: Int, CaseIterable {
 
     /// Returns the wind level zone based on wind points (0-100).
     ///
-    /// Zone thresholds:
-    /// - none: 0-25 points
-    /// - low: 26-50 points
-    /// - medium: 51-75 points
-    /// - high: 76-99 points
-    /// - (100 = blow away, not represented here)
+    /// Zone thresholds (aligned with progress thresholds):
+    /// - none: 0-4 points (<5%)
+    /// - low: 5-49 points (5% to <50%)
+    /// - medium: 50-79 points (50% to <80%)
+    /// - high: 80-100 points (80%+)
     static func from(windPoints: Double) -> WindLevel {
         switch windPoints {
-        case ..<26: return .none
-        case ..<51: return .low
-        case ..<76: return .medium
+        case ..<5: return .none
+        case ..<50: return .low
+        case ..<80: return .medium
         default: return .high
         }
     }
+}
+
+// MARK: - Codable
+
+extension WindLevel: Codable {
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        let rawValue = try container.decode(Int.self)
+        self = WindLevel(rawValue: rawValue) ?? .none
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.singleValueContainer()
+        try container.encode(rawValue)
+    }
+}
+
+// MARK: - Hashable (for Set usage)
+
+extension WindLevel: Hashable {}
+
+// MARK: - LimitSettings
+
+/// User-configurable settings for shield activation and notifications.
+/// Stored in SharedDefaults for access from both app and extensions.
+struct LimitSettings: Codable, Equatable {
+
+    // MARK: - Shield Settings
+
+    /// WindLevel at which shield activates (nil = never automatically).
+    /// Default: .high (activates at 80%+ wind)
+    var shieldActivationLevel: WindLevel? = .high
+
+    // MARK: - Notification Settings
+
+    /// WindLevel changes that trigger notifications.
+    /// Default: all levels except none
+    var notificationLevels: Set<WindLevel> = [.low, .medium, .high]
+
+    // MARK: - Morning Shield
+
+    /// Enable Morning Shield (shield active after day reset until preset selected).
+    var morningShieldEnabled: Bool = true
+
+    // MARK: - Defaults
+
+    static let `default` = LimitSettings()
 }

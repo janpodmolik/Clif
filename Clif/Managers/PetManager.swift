@@ -60,6 +60,10 @@ final class PetManager {
     /// Archives the active pet using ArchivedPetManager.
     func archive(id: UUID, using archivedPetManager: ArchivedPetManager) {
         guard let currentPet = pet, currentPet.id == id else { return }
+
+        // Stop monitoring before archiving
+        ScreenTimeManager.shared.stopMonitoring(petId: id)
+
         archivedPetManager.archive(currentPet)
         pet = nil
         saveActivePet()
@@ -77,6 +81,10 @@ final class PetManager {
     /// Removes the active pet without archiving.
     func delete(id: UUID) {
         guard let currentPet = pet, currentPet.id == id else { return }
+
+        // Stop monitoring before deleting
+        ScreenTimeManager.shared.stopMonitoring(petId: id)
+
         pet = nil
         saveActivePet()
     }

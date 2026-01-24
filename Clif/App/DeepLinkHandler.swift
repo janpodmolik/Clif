@@ -48,6 +48,18 @@ private enum DeepLinkHandler {
                 )
             }
 
+        case "preset-picker":
+            #if DEBUG
+            print("[DeepLink] Opening preset picker from morning shield")
+            #endif
+            NotificationCenter.default.post(name: .showPresetPicker, object: nil)
+
+        case "home":
+            #if DEBUG
+            print("[DeepLink] Navigate to home")
+            #endif
+            // Default behavior - just open app to home
+
         default:
             break
         }
@@ -57,6 +69,7 @@ private enum DeepLinkHandler {
 extension Notification.Name {
     static let deepLinkReceived = Notification.Name("deepLinkReceived")
     static let selectPet = Notification.Name("selectPet")
+    static let showPresetPicker = Notification.Name("showPresetPicker")
     #if DEBUG
     static let showMockSheet = Notification.Name("showMockSheet")
     #endif

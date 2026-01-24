@@ -62,4 +62,14 @@ enum DefaultsKeys {
     // MARK: - Sync
 
     static let snapshotSyncOffset = "snapshotSyncOffset"
+
+    // MARK: - Limit Settings
+
+    static let limitSettings = "limitSettings"
+    static let isMorningShieldActive = "isMorningShieldActive"
+    static let windPresetLockedForToday = "windPresetLockedForToday"
+    static let windPresetLockedDate = "windPresetLockedDate"
+    static let todaySelectedPreset = "todaySelectedPreset"
+    static let lastKnownWindLevel = "lastKnownWindLevel"
+    static let isShieldActive = "isShieldActive"
 }

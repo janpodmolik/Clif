@@ -61,9 +61,15 @@ struct SharedDefaults {
 
     /// Clears tokens for a specific pet.
     static func clearTokens(petId: UUID) {
+        // Clear per-pet keys
         defaults?.removeObject(forKey: tokenKey(petId, "appTokens"))
         defaults?.removeObject(forKey: tokenKey(petId, "catTokens"))
         defaults?.removeObject(forKey: tokenKey(petId, "webTokens"))
+
+        // Also clear legacy "active" keys that extensions use
+        defaults?.removeObject(forKey: "applicationTokens")
+        defaults?.removeObject(forKey: "categoryTokens")
+        defaults?.removeObject(forKey: "webDomainTokens")
     }
 
     /// Loads application tokens for a specific pet.
@@ -88,20 +94,75 @@ struct SharedDefaults {
 
     /// Loads application tokens for the currently monitored pet.
     static func loadApplicationTokens() -> Set<ApplicationToken>? {
-        guard let data = defaults?.data(forKey: "applicationTokens") else { return nil }
-        return try? PropertyListDecoder().decode(Set<ApplicationToken>.self, from: data)
+        // Force fresh read from disk
+        defaults?.synchronize()
+        guard let data = defaults?.data(forKey: "applicationTokens") else {
+            logTokenDebug("loadApplicationTokens: no data found for key 'applicationTokens'")
+            return nil
+        }
+        do {
+            let tokens = try PropertyListDecoder().decode(Set<ApplicationToken>.self, from: data)
+            logTokenDebug("loadApplicationTokens: decoded \(tokens.count) tokens from \(data.count) bytes")
+            return tokens
+        } catch {
+            logTokenDebug("loadApplicationTokens: decode FAILED - \(error)")
+            return nil
+        }
     }
 
     /// Loads category tokens for the currently monitored pet.
     static func loadCategoryTokens() -> Set<ActivityCategoryToken>? {
-        guard let data = defaults?.data(forKey: "categoryTokens") else { return nil }
-        return try? PropertyListDecoder().decode(Set<ActivityCategoryToken>.self, from: data)
+        // Force fresh read from disk
+        defaults?.synchronize()
+        guard let data = defaults?.data(forKey: "categoryTokens") else {
+            logTokenDebug("loadCategoryTokens: no data found for key 'categoryTokens'")
+            return nil
+        }
+        do {
+            let tokens = try PropertyListDecoder().decode(Set<ActivityCategoryToken>.self, from: data)
+            logTokenDebug("loadCategoryTokens: decoded \(tokens.count) tokens from \(data.count) bytes")
+            return tokens
+        } catch {
+            logTokenDebug("loadCategoryTokens: decode FAILED - \(error)")
+            return nil
+        }
     }
 
     /// Loads web domain tokens for the currently monitored pet.
     static func loadWebDomainTokens() -> Set<WebDomainToken>? {
-        guard let data = defaults?.data(forKey: "webDomainTokens") else { return nil }
-        return try? PropertyListDecoder().decode(Set<WebDomainToken>.self, from: data)
+        // Force fresh read from disk
+        defaults?.synchronize()
+        guard let data = defaults?.data(forKey: "webDomainTokens") else {
+            logTokenDebug("loadWebDomainTokens: no data found for key 'webDomainTokens'")
+            return nil
+        }
+        do {
+            let tokens = try PropertyListDecoder().decode(Set<WebDomainToken>.self, from: data)
+            logTokenDebug("loadWebDomainTokens: decoded \(tokens.count) tokens from \(data.count) bytes")
+            return tokens
+        } catch {
+            logTokenDebug("loadWebDomainTokens: decode FAILED - \(error)")
+            return nil
+        }
+    }
+
+    /// Logs token debug info to shared file (works in extensions too)
+    private static func logTokenDebug(_ message: String) {
+        guard let containerURL = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: AppConstants.appGroupIdentifier) else { return }
+        let logURL = containerURL.appendingPathComponent("extension_log.txt")
+        let timestamp = ISO8601DateFormatter().string(from: Date())
+        let line = "[\(timestamp)] [SharedDefaults] \(message)\n"
+        if let data = line.data(using: .utf8) {
+            if FileManager.default.fileExists(atPath: logURL.path) {
+                if let handle = try? FileHandle(forWritingTo: logURL) {
+                    handle.seekToEndOfFile()
+                    handle.write(data)
+                    handle.closeFile()
+                }
+            } else {
+                try? data.write(to: logURL)
+            }
+        }
     }
     
     // MARK: - Monitoring Context (lightweight data for extensions to create snapshots)
@@ -155,6 +216,89 @@ struct SharedDefaults {
     static var snapshotSyncOffset: Int {
         get { defaults?.integer(forKey: DefaultsKeys.snapshotSyncOffset) ?? 0 }
         set { defaults?.set(newValue, forKey: DefaultsKeys.snapshotSyncOffset) }
+    }
+
+    // MARK: - Limit Settings
+
+    /// User-configurable shield and notification settings.
+    static var limitSettings: LimitSettings {
+        get {
+            guard let data = defaults?.data(forKey: DefaultsKeys.limitSettings),
+                  let settings = try? JSONDecoder().decode(LimitSettings.self, from: data) else {
+                return .default
+            }
+            return settings
+        }
+        set {
+            if let data = try? JSONEncoder().encode(newValue) {
+                defaults?.set(data, forKey: DefaultsKeys.limitSettings)
+            }
+        }
+    }
+
+    /// Whether morning shield is currently active (set at day reset, cleared on preset selection).
+    static var isMorningShieldActive: Bool {
+        get { defaults?.bool(forKey: DefaultsKeys.isMorningShieldActive) ?? false }
+        set { defaults?.set(newValue, forKey: DefaultsKeys.isMorningShieldActive) }
+    }
+
+    /// Whether wind preset is locked for today (after first unlock or selection).
+    static var windPresetLockedForToday: Bool {
+        get { defaults?.bool(forKey: DefaultsKeys.windPresetLockedForToday) ?? false }
+        set { defaults?.set(newValue, forKey: DefaultsKeys.windPresetLockedForToday) }
+    }
+
+    /// Date when preset was locked (for day boundary checking).
+    static var windPresetLockedDate: Date? {
+        get { defaults?.object(forKey: DefaultsKeys.windPresetLockedDate) as? Date }
+        set { defaults?.set(newValue, forKey: DefaultsKeys.windPresetLockedDate) }
+    }
+
+    /// Today's selected preset (nil if not yet selected).
+    static var todaySelectedPreset: String? {
+        get { defaults?.string(forKey: DefaultsKeys.todaySelectedPreset) }
+        set { defaults?.set(newValue, forKey: DefaultsKeys.todaySelectedPreset) }
+    }
+
+    /// Last known WindLevel (for detecting level changes in extension).
+    static var lastKnownWindLevel: Int {
+        get { defaults?.integer(forKey: DefaultsKeys.lastKnownWindLevel) ?? 0 }
+        set { defaults?.set(newValue, forKey: DefaultsKeys.lastKnownWindLevel) }
+    }
+
+    /// Whether shield is currently active (wind should not increase while true).
+    /// Note: Uses fresh UserDefaults instance for reads to ensure cross-process sync.
+    static var isShieldActive: Bool {
+        get {
+            // Create fresh instance to bypass caching issues between processes
+            let fresh = UserDefaults(suiteName: AppConstants.appGroupIdentifier)
+            return fresh?.bool(forKey: DefaultsKeys.isShieldActive) ?? false
+        }
+        set {
+            defaults?.set(newValue, forKey: DefaultsKeys.isShieldActive)
+            defaults?.synchronize()
+        }
+    }
+
+    // MARK: - Helpers
+
+    /// Forces synchronization of UserDefaults (important for cross-process communication).
+    static func synchronize() {
+        defaults?.synchronize()
+    }
+
+    /// Resets all shield-related flags to allow wind tracking.
+    /// Call this when starting fresh monitoring or clearing shields.
+    static func resetShieldFlags() {
+        #if DEBUG
+        print("DEBUG: resetShieldFlags() called - before: isShieldActive=\(isShieldActive), isMorningShieldActive=\(isMorningShieldActive)")
+        #endif
+        isShieldActive = false
+        isMorningShieldActive = false
+        synchronize()
+        #if DEBUG
+        print("DEBUG: resetShieldFlags() called - after: isShieldActive=\(isShieldActive), isMorningShieldActive=\(isMorningShieldActive)")
+        #endif
     }
 
     // MARK: - Raw Data Access (for types not available in extensions)

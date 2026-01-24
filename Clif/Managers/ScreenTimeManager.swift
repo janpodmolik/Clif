@@ -68,9 +68,13 @@ final class ScreenTimeManager: ObservableObject {
     }
 
     func clearShield() {
+        #if DEBUG
+        print("DEBUG: clearShield() called")
+        #endif
         store.shield.applications = nil
         store.shield.applicationCategories = nil
         store.shield.webDomains = nil
+        SharedDefaults.resetShieldFlags()
     }
 
     // MARK: - Per-Pet Monitoring
@@ -117,6 +121,15 @@ final class ScreenTimeManager: ObservableObject {
         SharedDefaults.monitoredRiseRate = riseRatePerSecond
         SharedDefaults.setInt(limitSeconds, forKey: DefaultsKeys.monitoringLimitSeconds)
 
+        // Reset all shield flags - fresh monitoring start means no shield blocking wind
+        #if DEBUG
+        print("DEBUG: startMonitoring - about to resetShieldFlags()")
+        #endif
+        SharedDefaults.resetShieldFlags()
+        #if DEBUG
+        print("DEBUG: startMonitoring - after resetShieldFlags(), isShieldActive=\(SharedDefaults.isShieldActive), isMorningShieldActive=\(SharedDefaults.isMorningShieldActive)")
+        #endif
+
         let schedule = DeviceActivitySchedule(
             intervalStart: DateComponents(hour: 0, minute: 0),
             intervalEnd: DateComponents(hour: 23, minute: 59),
@@ -133,14 +146,40 @@ final class ScreenTimeManager: ObservableObject {
         let activityName = DeviceActivityName.forPet(petId)
 
         do {
-            // Stop any existing monitoring for this pet before starting new
-            center.stopMonitoring([activityName])
-            try center.startMonitoring(activityName, during: schedule, events: events)
+            // Stop ALL existing monitoring before starting new (prevents excessiveActivities error)
+            let existingActivities = center.activities
             #if DEBUG
+            print("DEBUG: Existing activities count: \(existingActivities.count)")
+            print("DEBUG: Existing activities: \(existingActivities.map { $0.rawValue })")
+            #endif
+
+            if !existingActivities.isEmpty {
+                center.stopMonitoring(existingActivities)
+                #if DEBUG
+                print("DEBUG: Stopped all existing activities")
+                #endif
+            }
+
+            #if DEBUG
+            print("DEBUG: About to startMonitoring")
+            print("DEBUG: Activity name: \(activityName.rawValue)")
+            print("DEBUG: Schedule: \(schedule)")
+            print("DEBUG: Events count: \(events.count)")
+            print("DEBUG: First 3 event keys: \(Array(events.keys.prefix(3)).map { $0.rawValue })")
+            print("DEBUG: App tokens count: \(appTokens.count)")
+            print("DEBUG: Category tokens count: \(catTokens.count)")
+            print("DEBUG: Web tokens count: \(webTokens.count)")
+            #endif
+
+            try center.startMonitoring(activityName, during: schedule, events: events)
+
+            #if DEBUG
+            print("DEBUG: startMonitoring SUCCESS")
             print("[ScreenTimeManager] Started monitoring with \(events.count) events, limit: \(limitSeconds)s for pet \(petId)")
             #endif
         } catch {
             #if DEBUG
+            print("DEBUG: startMonitoring FAILED: \(error)")
             print("[ScreenTimeManager] Failed to start monitoring for pet \(petId): \(error.localizedDescription)")
             #endif
         }
@@ -151,16 +190,22 @@ final class ScreenTimeManager: ObservableObject {
         let activityName = DeviceActivityName.forPet(petId)
         center.stopMonitoring([activityName])
 
+        // Clear any active shields (prevents stale shield showing after pet deletion)
+        store.shield.applications = nil
+        store.shield.applicationCategories = nil
+        store.shield.webDomains = nil
+
         // Clear tokens for this pet
         SharedDefaults.clearTokens(petId: petId)
 
-        // Clear monitoring context if this was the active pet
+        // Clear monitoring context and shield flags if this was the active pet
         if SharedDefaults.monitoredPetId == petId {
             SharedDefaults.monitoredPetId = nil
+            SharedDefaults.resetShieldFlags()
         }
 
         #if DEBUG
-        print("[ScreenTimeManager] Stopped monitoring for pet \(petId)")
+        print("[ScreenTimeManager] Stopped monitoring for pet \(petId), shields cleared")
         #endif
     }
 
@@ -189,9 +234,17 @@ final class ScreenTimeManager: ObservableObject {
         let maxThresholds = AppConstants.maxThresholds
         let minInterval = AppConstants.minimumThresholdSeconds
 
+        #if DEBUG
+        print("DEBUG: buildEvents - limitSeconds=\(limitSeconds), maxThresholds=\(maxThresholds), minInterval=\(minInterval)")
+        #endif
+
         // Calculate optimal interval to fit maxThresholds within limitSeconds
         // intervalSeconds = limitSeconds / maxThresholds, but at least minInterval
         let intervalSeconds = max(limitSeconds / maxThresholds, minInterval)
+
+        #if DEBUG
+        print("DEBUG: buildEvents - calculated intervalSeconds=\(intervalSeconds)")
+        #endif
 
         // Generate thresholds: interval, 2*interval, 3*interval, ... up to limitSeconds
         var currentSeconds = intervalSeconds
@@ -213,6 +266,7 @@ final class ScreenTimeManager: ObservableObject {
         }
 
         #if DEBUG
+        print("DEBUG: buildEvents - created \(events.count) events")
         print("[ScreenTimeManager] Built \(events.count) events with \(intervalSeconds)s interval for \(limitSeconds)s limit")
         #endif
 

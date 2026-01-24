@@ -214,6 +214,7 @@ final class Pet: Identifiable, PetPresentable, PetWithSources {
         #if DEBUG
         print("[Pet.sync] Starting sync for pet \(id)")
         print("[Pet.sync] SharedDefaults.monitoredPetId = \(SharedDefaults.monitoredPetId?.uuidString ?? "nil")")
+        print("[Pet.sync] DEBUG: isShieldActive=\(SharedDefaults.isShieldActive), isMorningShieldActive=\(SharedDefaults.isMorningShieldActive)")
         #endif
 
         // Only sync if this is the monitored pet

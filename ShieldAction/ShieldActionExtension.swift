@@ -11,6 +11,25 @@ class ShieldActionExtension: ShieldActionDelegate {
     let center = DeviceActivityCenter()
     let logger = Logger(subsystem: "com.janpodmolik.Clif.ShieldAction", category: "ShieldAction")
 
+    /// Logs to shared file for debugging (extension can't print to console reliably)
+    private func logToFile(_ message: String) {
+        guard let containerURL = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: AppConstants.appGroupIdentifier) else { return }
+        let logURL = containerURL.appendingPathComponent("extension_log.txt")
+        let timestamp = ISO8601DateFormatter().string(from: Date())
+        let line = "[\(timestamp)] [ShieldAction] \(message)\n"
+        if let data = line.data(using: .utf8) {
+            if FileManager.default.fileExists(atPath: logURL.path) {
+                if let handle = try? FileHandle(forWritingTo: logURL) {
+                    handle.seekToEndOfFile()
+                    handle.write(data)
+                    handle.closeFile()
+                }
+            } else {
+                try? data.write(to: logURL)
+            }
+        }
+    }
+
     // MARK: - Notifications
 
     /// Sends a notification to open the Clif app.
@@ -43,52 +62,106 @@ class ShieldActionExtension: ShieldActionDelegate {
 
     // MARK: - Unlock Methods
 
-    /// Unlocks an application - removes from shield or adds as exception
-    private func unlockApplication(_ application: ApplicationToken) {
-        logger.info("unlockApplication() called")
+    /// Clears all shields - unlocks all limited sources at once.
+    /// Called when user taps "Unlock" on any shielded app/category/web domain.
+    private func clearAllShields() {
+        logToFile("clearAllShields() START")
+        logToFile("Before: isShieldActive=\(SharedDefaults.isShieldActive), isMorningShieldActive=\(SharedDefaults.isMorningShieldActive)")
+        logToFile("Before: windPoints=\(SharedDefaults.monitoredWindPoints), lastThreshold=\(SharedDefaults.monitoredLastThresholdSeconds)")
 
-        // Method 1: Remove from direct application shield
-        if store.shield.applications != nil {
-            store.shield.applications?.remove(application)
-            logger.info("Removed app from shield.applications")
+        store.shield.applications = nil
+        store.shield.applicationCategories = nil
+        store.shield.webDomains = nil
+
+        SharedDefaults.resetShieldFlags()
+        SharedDefaults.synchronize()
+
+        logToFile("After: isShieldActive=\(SharedDefaults.isShieldActive), isMorningShieldActive=\(SharedDefaults.isMorningShieldActive)")
+        logToFile("clearAllShields() END - shields cleared, flags reset")
+    }
+
+    // MARK: - Morning Shield Handling
+
+    /// Handles Morning Shield unlock - locks preset for the day.
+    /// Returns the ShieldActionResponse to use, or nil if this is not a Morning Shield action.
+    private func handleMorningShieldAction(action: ShieldAction) -> ShieldActionResponse? {
+        guard SharedDefaults.isMorningShieldActive else {
+            return nil
         }
 
-        // Method 2: If blocked via category, add this app as exception
-        if let categories = store.shield.applicationCategories {
-            switch categories {
-            case .specific(let tokens, var exceptions):
-                exceptions.insert(application)
-                store.shield.applicationCategories = .specific(tokens, except: exceptions)
-                logger.info("Added app as exception to specific categories")
-            case .all(var exceptions):
-                exceptions.insert(application)
-                store.shield.applicationCategories = .all(except: exceptions)
-                logger.info("Added app as exception to all categories")
-            @unknown default:
-                break
-            }
+        // Safety check: if wind is not 0, morning shield shouldn't be active
+        // This handles edge cases where state got out of sync
+        if SharedDefaults.monitoredWindPoints > 0 {
+            logger.info("Morning Shield: Wind is \(SharedDefaults.monitoredWindPoints), deactivating morning shield")
+            SharedDefaults.isMorningShieldActive = false
+            return nil // Fall through to normal shield handling
+        }
+
+        switch action {
+        case .primaryButtonPressed:
+            // "Otevřít Clif" - send notification with deeplink to preset picker
+            logger.info("Morning Shield: Primary button - opening app for preset selection")
+            sendNotificationWithDeepLink(
+                title: "Vyber si náročnost dne",
+                body: "Nastav jak náročný den chceš mít",
+                deepLink: "clif://preset-picker"
+            )
+            return .close
+
+        case .secondaryButtonPressed:
+            // "Pokračovat s [preset]" - use yesterday's preset, deactivate morning shield, stay in app
+            logger.info("Morning Shield: Secondary button - continuing with current preset, staying in app")
+            lockPresetForToday()
+            deactivateMorningShield()
+            // No notification needed - user stays in the app they wanted to open
+            return .defer
+
+        @unknown default:
+            return nil
         }
     }
 
-    /// Unlocks a web domain - removes from shield
-    private func unlockWebDomain(_ webDomain: WebDomainToken) {
-        logger.info("unlockWebDomain() called")
-        store.shield.webDomains?.remove(webDomain)
+    /// Locks the wind preset for today (prevents changes).
+    private func lockPresetForToday() {
+        SharedDefaults.windPresetLockedForToday = true
+        SharedDefaults.windPresetLockedDate = Date()
+        logger.info("Wind preset locked for today")
     }
 
-    /// Unlocks a category - removes from shield
-    private func unlockCategory(_ category: ActivityCategoryToken) {
-        logger.info("unlockCategory() called")
-        if let categories = store.shield.applicationCategories {
-            if case .specific(var tokens, let exceptions) = categories {
-                tokens.remove(category)
-                if tokens.isEmpty {
-                    store.shield.applicationCategories = nil
-                    logger.info("Removed last category, set applicationCategories to nil")
-                } else {
-                    store.shield.applicationCategories = .specific(tokens, except: exceptions)
-                    logger.info("Removed category from specific categories")
-                }
+    /// Deactivates morning shield and clears shields.
+    private func deactivateMorningShield() {
+        logToFile("deactivateMorningShield() START")
+        logToFile("Before: isShieldActive=\(SharedDefaults.isShieldActive), isMorningShieldActive=\(SharedDefaults.isMorningShieldActive)")
+
+        store.shield.applications = nil
+        store.shield.applicationCategories = nil
+        store.shield.webDomains = nil
+
+        SharedDefaults.resetShieldFlags()
+        SharedDefaults.synchronize()
+
+        logToFile("After: isShieldActive=\(SharedDefaults.isShieldActive), isMorningShieldActive=\(SharedDefaults.isMorningShieldActive)")
+        logToFile("deactivateMorningShield() END")
+    }
+
+    /// Sends notification with custom deeplink.
+    private func sendNotificationWithDeepLink(title: String, body: String, deepLink: String) {
+        let content = UNMutableNotificationContent()
+        content.title = title
+        content.body = body
+        content.sound = nil
+        content.userInfo = ["deepLink": deepLink]
+        content.interruptionLevel = .timeSensitive
+
+        let request = UNNotificationRequest(
+            identifier: "clif-\(UUID().uuidString)",
+            content: content,
+            trigger: nil
+        )
+
+        UNUserNotificationCenter.current().add(request) { [weak self] error in
+            if let error = error {
+                self?.logger.error("Failed to send notification: \(error.localizedDescription)")
             }
         }
     }
@@ -118,43 +191,43 @@ class ShieldActionExtension: ShieldActionDelegate {
         logger.info("Break violated after \(actualMinutes) minutes - logged breakEnded(success: false)")
     }
 
-    /// Clears all shields and optionally requests monitoring restart.
-    private func clearAllShieldsAndRequestRestart() {
-        store.shield.applications = nil
-        store.shield.applicationCategories = nil
-        store.shield.webDomains = nil
-
-        // Set flag for main app to restart monitoring on next launch
-        SharedDefaults.shouldRestartMonitoring = true
-
-        logger.info("Cleared all shields, set shouldRestartMonitoring flag")
-    }
-
     // MARK: - ShieldActionDelegate
 
     override func handle(action: ShieldAction, for application: ApplicationToken, completionHandler: @escaping (ShieldActionResponse) -> Void) {
-        logger.info("handle(action:for application:) called")
+        logToFile("handle(action:for APPLICATION) - action=\(action == .primaryButtonPressed ? "primary" : "secondary")")
+        logToFile("Current state: wind=\(SharedDefaults.monitoredWindPoints), isShieldActive=\(SharedDefaults.isShieldActive), isMorning=\(SharedDefaults.isMorningShieldActive)")
+
+        // Check if this is Morning Shield
+        if let response = handleMorningShieldAction(action: action) {
+            logToFile("Handled as Morning Shield -> response=\(response == .close ? "close" : "defer")")
+            completionHandler(response)
+            return
+        }
 
         switch action {
         case .primaryButtonPressed:
-            // Close App - closes the blocked app, returns to home screen
-            logger.info("Primary button (Close App) pressed")
+            logToFile("Primary button (Close App) pressed")
             sendNotification(title: "Tap to open Clif")
             completionHandler(.close)
 
         case .secondaryButtonPressed:
-            // Unlock - removes shield from this app, user stays in app
-            logger.info("Secondary button (Unlock) pressed - unlocking app")
+            logToFile("Secondary button (Unlock) pressed - will clear all shields")
+
+            // Lock preset on first unlock of the day
+            if !SharedDefaults.windPresetLockedForToday {
+                lockPresetForToday()
+            }
 
             // Check if this violates an active break
             handlePotentialBreakViolation()
 
-            unlockApplication(application)
-            sendNotification(title: "App unlocked", body: "Tap to track in Clif")
-            completionHandler(.defer) // .defer keeps user in app after unlock
+            clearAllShields()
+            sendNotification(title: "Shields cleared", body: "Tap to track in Clif")
+            logToFile("Returning .defer - user should stay in app")
+            completionHandler(.defer)
 
         @unknown default:
-            logger.info("Unknown action - closing shield")
+            logToFile("Unknown action - closing shield")
             completionHandler(.close)
         }
     }
@@ -162,6 +235,12 @@ class ShieldActionExtension: ShieldActionDelegate {
     override func handle(action: ShieldAction, for webDomain: WebDomainToken, completionHandler: @escaping (ShieldActionResponse) -> Void) {
         logger.info("handle(action:for webDomain:) called")
 
+        // Check if this is Morning Shield
+        if let response = handleMorningShieldAction(action: action) {
+            completionHandler(response)
+            return
+        }
+
         switch action {
         case .primaryButtonPressed:
             logger.info("Primary button (Close App) pressed")
@@ -169,10 +248,16 @@ class ShieldActionExtension: ShieldActionDelegate {
             completionHandler(.close)
 
         case .secondaryButtonPressed:
-            logger.info("Secondary button (Unlock) pressed for web domain")
+            logger.info("Secondary button (Unlock) pressed for web domain - unlocking all")
+
+            // Lock preset on first unlock of the day
+            if !SharedDefaults.windPresetLockedForToday {
+                lockPresetForToday()
+            }
+
             handlePotentialBreakViolation()
-            unlockWebDomain(webDomain)
-            sendNotification(title: "Web domain unlocked", body: "Tap to track in Clif")
+            clearAllShields()
+            sendNotification(title: "Shields cleared", body: "Tap to track in Clif")
             completionHandler(.defer)
 
         @unknown default:
@@ -183,6 +268,12 @@ class ShieldActionExtension: ShieldActionDelegate {
     override func handle(action: ShieldAction, for category: ActivityCategoryToken, completionHandler: @escaping (ShieldActionResponse) -> Void) {
         logger.info("handle(action:for category:) called")
 
+        // Check if this is Morning Shield
+        if let response = handleMorningShieldAction(action: action) {
+            completionHandler(response)
+            return
+        }
+
         switch action {
         case .primaryButtonPressed:
             logger.info("Primary button (Close App) pressed")
@@ -190,10 +281,16 @@ class ShieldActionExtension: ShieldActionDelegate {
             completionHandler(.close)
 
         case .secondaryButtonPressed:
-            logger.info("Secondary button (Unlock) pressed for category")
+            logger.info("Secondary button (Unlock) pressed for category - unlocking all")
+
+            // Lock preset on first unlock of the day
+            if !SharedDefaults.windPresetLockedForToday {
+                lockPresetForToday()
+            }
+
             handlePotentialBreakViolation()
-            unlockCategory(category)
-            sendNotification(title: "Category unlocked", body: "Tap to track in Clif")
+            clearAllShields()
+            sendNotification(title: "Shields cleared", body: "Tap to track in Clif")
             completionHandler(.defer)
 
         @unknown default:

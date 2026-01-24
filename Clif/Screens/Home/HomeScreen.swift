@@ -11,6 +11,7 @@ struct HomeScreen: View {
     @State private var windRhythm = WindRhythm()
     @State private var showPetDetail = false
     @State private var showBreakSheet = false
+    @State private var showPresetPicker = false
     @State private var petFrame: CGRect = .zero
     @State private var dropZoneFrame: CGRect = .zero
 
@@ -67,8 +68,15 @@ struct HomeScreen: View {
             Text("Break Sheet - Coming Soon")
                 .presentationDetents([.medium])
         }
+        .sheet(isPresented: $showPresetPicker) {
+            MorningPresetPicker()
+        }
         .onAppear {
             windRhythm.start()
+            checkMorningShield()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .showPresetPicker)) { _ in
+            showPresetPicker = true
         }
         .onDisappear {
             windRhythm.stop()
@@ -228,6 +236,27 @@ struct HomeScreen: View {
 
     private func handleBreak(_ pet: Pet) {
         showBreakSheet = true
+    }
+
+    // MARK: - Morning Shield
+
+    private func checkMorningShield() {
+        // Show preset picker if:
+        // 1. There is an active pet
+        // 2. Morning shield is active (set at day reset)
+        // 3. Preset not yet selected today
+        // 4. Wind is at 0 (fresh day start - prevents showing dialog mid-day)
+        guard currentPet != nil,
+              SharedDefaults.isMorningShieldActive,
+              !SharedDefaults.windPresetLockedForToday,
+              SharedDefaults.monitoredWindPoints == 0 else {
+            return
+        }
+
+        // Small delay to let view fully appear
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            showPresetPicker = true
+        }
     }
 }
 

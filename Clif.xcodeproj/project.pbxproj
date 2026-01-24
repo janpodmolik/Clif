@@ -17,6 +17,9 @@
 		B4167E622F1FF91800D89B36 /* SnapshotEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4167E532F1FE2D800D89B36 /* SnapshotEvent.swift */; };
 		B4167E632F1FF92500D89B36 /* SnapshotStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4167E5E2F1FEF4E00D89B36 /* SnapshotStore.swift */; };
 		B4167E652F1FF93800D89B36 /* SnapshotLogging.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4167E642F1FF93800D89B36 /* SnapshotLogging.swift */; };
+		B451D20A2F24C74F004C534F /* WindLevel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B49387952F0E428B0090C730 /* WindLevel.swift */; };
+		B451D20B2F24C78E004C534F /* WindLevel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B49387952F0E428B0090C730 /* WindLevel.swift */; };
+		B451D20C2F24C78E004C534F /* WindLevel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B49387952F0E428B0090C730 /* WindLevel.swift */; };
 		B45862152EE5B92C0088CB78 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = B45862142EE5B92C0088CB78 /* Constants.swift */; };
 		B45862162EE5B92C0088CB78 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = B45862142EE5B92C0088CB78 /* Constants.swift */; };
 		B45862172EE5B92C0088CB78 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = B45862142EE5B92C0088CB78 /* Constants.swift */; };
@@ -661,6 +664,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				B4F8F9EC2FEC35C900E9E6D8 /* Constants.swift in Sources */,
+				B451D20C2F24C78E004C534F /* WindLevel.swift in Sources */,
 				B4F8F9EB2FEC35C900E9E6D8 /* SharedDefaults.swift in Sources */,
 				B45862432EE5FAF60088CB78 /* ActivityReportContext.swift in Sources */,
 			);
@@ -673,6 +677,7 @@
 				B4924AF92EE5807E0033475C /* SharedDefaults.swift in Sources */,
 				B45862172EE5B92C0088CB78 /* Constants.swift in Sources */,
 				B4167E552F1FE2D800D89B36 /* SnapshotEvent.swift in Sources */,
+				B451D20B2F24C78E004C534F /* WindLevel.swift in Sources */,
 				B4167E5C2F1FE73400D89B36 /* SnapshotEventType.swift in Sources */,
 				B4167E602F1FEF4E00D89B36 /* SnapshotStore.swift in Sources */,
 			);
@@ -705,6 +710,7 @@
 				B4C4C09F2EE7FEFF00E469E8 /* SharedDefaults.swift in Sources */,
 				B4C4C0A02EE7FF0900E469E8 /* Constants.swift in Sources */,
 				B4167E612F1FF91200D89B36 /* SnapshotEventType.swift in Sources */,
+				B451D20A2F24C74F004C534F /* WindLevel.swift in Sources */,
 				B4167E622F1FF91800D89B36 /* SnapshotEvent.swift in Sources */,
 				B4167E632F1FF92500D89B36 /* SnapshotStore.swift in Sources */,
 			);
