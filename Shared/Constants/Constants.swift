@@ -58,4 +58,8 @@ enum DefaultsKeys {
     static let monitoredRiseRate = "monitoredRiseRate"
     static let breakStartedAt = "breakStartedAt"
     static let shouldRestartMonitoring = "shouldRestartMonitoring"
+
+    // MARK: - Sync
+
+    static let snapshotSyncOffset = "snapshotSyncOffset"
 }

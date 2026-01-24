@@ -120,14 +120,8 @@ final class SnapshotStore {
     }
 
     /// Deletes events older than the specified date.
-    /// Returns the number of events retained.
-    ///
-    /// Pruning strategy: Only delete events that are BOTH:
-    /// 1. Older than cutoffDate (e.g., 30 days)
-    /// 2. Already synced to backend (offset-based)
-    ///
-    /// This ensures no data loss - unsynced events are preserved regardless of age.
-    /// Call this after successful BE sync with: pruneEvents(olderThan: thirtyDaysAgo, syncedOffset: newOffset)
+    /// Call this after successful BE sync to free up space.
+    /// - Returns: Number of events retained.
     @discardableResult
     func pruneEvents(olderThan cutoffDate: String) -> Int {
         let events = loadAll()
@@ -146,6 +140,9 @@ final class SnapshotStore {
     }
 
     // MARK: - Sync Support
+
+    // TODO: Consider removing - loadForSync provides the same functionality with aggregation.
+    // This method returns raw (non-aggregated) events. Keep only if raw access is needed for debugging.
 
     /// Loads events that haven't been synced yet (after the given offset).
     /// Returns events and the new offset (total count after these events).
@@ -213,38 +210,7 @@ final class SnapshotStore {
             events = events.filter { range.contains($0.date) }
         }
 
-        // Separate usageThreshold events from others
-        var thresholdEvents: [SnapshotEvent] = []
-        var otherEvents: [SnapshotEvent] = []
-
-        for event in events {
-            if case .usageThreshold = event.eventType {
-                thresholdEvents.append(event)
-            } else {
-                otherEvents.append(event)
-            }
-        }
-
-        // Aggregate threshold events by interval
-        let intervalSeconds = TimeInterval(intervalMinutes * 60)
-        var aggregatedThresholds: [SnapshotEvent] = []
-
-        // Group by (petId, intervalBucket)
-        let grouped = Dictionary(grouping: thresholdEvents) { event -> String in
-            let bucket = floor(event.timestamp.timeIntervalSince1970 / intervalSeconds)
-            return "\(event.petId.uuidString)_\(Int(bucket))"
-        }
-
-        // Take the last event from each group (most accurate wind state)
-        for (_, group) in grouped {
-            if let lastEvent = group.max(by: { $0.timestamp < $1.timestamp }) {
-                aggregatedThresholds.append(lastEvent)
-            }
-        }
-
-        // Combine and sort by timestamp
-        let result = (aggregatedThresholds + otherEvents).sorted { $0.timestamp < $1.timestamp }
-        return result
+        return aggregateThresholdEvents(events, intervalMinutes: intervalMinutes)
     }
 
     /// Returns aggregated events for backend sync.
@@ -268,20 +234,47 @@ final class SnapshotStore {
         // Get only new events since last sync
         let unsyncedRaw = Array(all[offset...])
 
-        // Determine date range from unsynced events
-        guard let minDate = unsyncedRaw.map({ $0.date }).min(),
-              let maxDate = unsyncedRaw.map({ $0.date }).max() else {
-            return ([], newOffset)
+        // Aggregate only the unsynced events
+        let aggregated = aggregateThresholdEvents(unsyncedRaw, intervalMinutes: intervalMinutes)
+
+        return (aggregated, newOffset)
+    }
+
+    // MARK: - Private Aggregation
+
+    /// Aggregates usageThreshold events into time-based intervals.
+    /// Other event types are kept unchanged.
+    private func aggregateThresholdEvents(_ events: [SnapshotEvent], intervalMinutes: Int) -> [SnapshotEvent] {
+        var thresholdEvents: [SnapshotEvent] = []
+        var otherEvents: [SnapshotEvent] = []
+
+        for event in events {
+            if case .usageThreshold = event.eventType {
+                thresholdEvents.append(event)
+            } else {
+                otherEvents.append(event)
+            }
         }
 
-        // Load aggregated for the date range, then filter to only new events
-        let aggregated = loadAggregated(dateRange: minDate...maxDate, intervalMinutes: intervalMinutes)
+        // Aggregate threshold events by interval
+        let intervalSeconds = TimeInterval(intervalMinutes * 60)
 
-        // Filter to events that fall within the unsynced time window
-        let unsyncedStartTime = unsyncedRaw.first?.timestamp ?? Date.distantPast
-        let filtered = aggregated.filter { $0.timestamp >= unsyncedStartTime }
+        // Group by (petId, intervalBucket)
+        let grouped = Dictionary(grouping: thresholdEvents) { event -> String in
+            let bucket = floor(event.timestamp.timeIntervalSince1970 / intervalSeconds)
+            return "\(event.petId.uuidString)_\(Int(bucket))"
+        }
 
-        return (filtered, newOffset)
+        // Take the last event from each group (most accurate wind state)
+        var aggregatedThresholds: [SnapshotEvent] = []
+        for (_, group) in grouped {
+            if let lastEvent = group.max(by: { $0.timestamp < $1.timestamp }) {
+                aggregatedThresholds.append(lastEvent)
+            }
+        }
+
+        // Combine and sort by timestamp
+        return (aggregatedThresholds + otherEvents).sorted { $0.timestamp < $1.timestamp }
     }
 
     // MARK: - Private Helpers

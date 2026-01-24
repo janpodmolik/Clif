@@ -148,6 +148,15 @@ struct SharedDefaults {
         set { defaults?.set(newValue, forKey: DefaultsKeys.shouldRestartMonitoring) }
     }
 
+    // MARK: - Sync
+
+    /// Number of snapshot events already synced to backend.
+    /// Used for incremental sync - only events after this offset are sent.
+    static var snapshotSyncOffset: Int {
+        get { defaults?.integer(forKey: DefaultsKeys.snapshotSyncOffset) ?? 0 }
+        set { defaults?.set(newValue, forKey: DefaultsKeys.snapshotSyncOffset) }
+    }
+
     // MARK: - Raw Data Access (for types not available in extensions)
 
     static func data(forKey key: String) -> Data? {

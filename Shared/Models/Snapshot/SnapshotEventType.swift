@@ -52,14 +52,8 @@ enum SnapshotEventType: Codable, Equatable {
 
         case "breakEnded":
             let minutes = try container.decode(Int.self, forKey: .actualMinutes)
-            // New format has success field, old format defaults to true
-            let success = try container.decodeIfPresent(Bool.self, forKey: .success) ?? true
+            let success = try container.decode(Bool.self, forKey: .success)
             self = .breakEnded(actualMinutes: minutes, success: success)
-
-        case "breakFailed":
-            // Backwards compatibility: map old breakFailed to breakEnded(success: false)
-            let minutes = try container.decode(Int.self, forKey: .actualMinutes)
-            self = .breakEnded(actualMinutes: minutes, success: false)
 
         case "dailyReset":
             self = .dailyReset
