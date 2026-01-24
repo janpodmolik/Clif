@@ -1,14 +1,17 @@
-import DeviceActivity
 import ManagedSettings
 import UserNotifications
 import os.log
 
 /// Shield Action Extension - handles button taps on the shield.
 /// Based on: https://pedroesli.com/2023-11-13-screen-time-api/
+///
+/// IMPORTANT: Unlock is handled by redirecting user to main app via deep link.
+/// The main app then handles wind decrease calculation and monitoring restart.
+/// This is necessary because DeviceActivity thresholds are cumulative and cannot
+/// be reset from extension - only from main app with full DeviceActivityCenter access.
 class ShieldActionExtension: ShieldActionDelegate {
 
     let store = ManagedSettingsStore()
-    let center = DeviceActivityCenter()
     let logger = Logger(subsystem: "com.janpodmolik.Clif.ShieldAction", category: "ShieldAction")
 
     private func logToFile(_ message: String) {
@@ -17,63 +20,26 @@ class ShieldActionExtension: ShieldActionDelegate {
 
     // MARK: - Notifications
 
-    /// Sends a notification to open the Clif app.
-    /// Note: Direct app opening from ShieldActionDelegate is not supported by Apple.
-    /// See: https://developer.apple.com/forums/thread/719905
-    private func sendNotification(title: String, body: String = "") {
-        logger.info("sendNotification() called - title: \(title)")
-
+    /// Sends notification with custom deeplink.
+    private func sendNotificationWithDeepLink(title: String, body: String, deepLink: String) {
         let content = UNMutableNotificationContent()
         content.title = title
         content.body = body
-        content.sound = nil // Silent - less intrusive
-        content.userInfo = ["deepLink": DeepLinks.shield]
-        content.interruptionLevel = .timeSensitive // Bypass Focus modes
+        content.sound = nil
+        content.userInfo = ["deepLink": deepLink]
+        content.interruptionLevel = .timeSensitive
 
         let request = UNNotificationRequest(
             identifier: "clif-\(UUID().uuidString)",
             content: content,
-            trigger: nil // nil = immediate
+            trigger: nil
         )
 
         UNUserNotificationCenter.current().add(request) { [weak self] error in
             if let error = error {
                 self?.logger.error("Failed to send notification: \(error.localizedDescription)")
-            } else {
-                self?.logger.info("Notification sent successfully")
             }
         }
-    }
-
-    // MARK: - Unlock Methods
-
-    /// Clears all shields - unlocks all limited sources at once.
-    /// Called when user taps "Unlock" on any shielded app/category/web domain.
-    /// If wind is OVER 100%, triggers blow away (user ignored safety warning and continued).
-    private func clearAllShields() {
-        logToFile("clearAllShields() START")
-        logToFile("Before: isShieldActive=\(SharedDefaults.isShieldActive), isMorningShieldActive=\(SharedDefaults.isMorningShieldActive)")
-        logToFile("Before: windPoints=\(SharedDefaults.monitoredWindPoints), lastThreshold=\(SharedDefaults.monitoredLastThresholdSeconds)")
-
-        // Check if wind is at or above 100% - if so, unlocking triggers blow away
-        let windPoints = SharedDefaults.monitoredWindPoints
-        if windPoints >= 100 {
-            logToFile("clearAllShields() - CRITICAL: windPoints=\(windPoints) >= 100 - triggering blow away")
-            SharedDefaults.set(true, forKey: DefaultsKeys.petBlownAway)
-            sendBlowAwayNotification()
-        } else {
-            logToFile("clearAllShields() - windPoints=\(windPoints) < 100 - no blow away")
-        }
-
-        store.shield.applications = nil
-        store.shield.applicationCategories = nil
-        store.shield.webDomains = nil
-
-        SharedDefaults.resetShieldFlags()
-        SharedDefaults.synchronize()
-
-        logToFile("After: isShieldActive=\(SharedDefaults.isShieldActive), isMorningShieldActive=\(SharedDefaults.isMorningShieldActive)")
-        logToFile("clearAllShields() END - shields cleared, flags reset")
     }
 
     /// Sends blow away notification.
@@ -147,28 +113,6 @@ class ShieldActionExtension: ShieldActionDelegate {
         logToFile("deactivateMorningShield() END")
     }
 
-    /// Sends notification with custom deeplink.
-    private func sendNotificationWithDeepLink(title: String, body: String, deepLink: String) {
-        let content = UNMutableNotificationContent()
-        content.title = title
-        content.body = body
-        content.sound = nil
-        content.userInfo = ["deepLink": deepLink]
-        content.interruptionLevel = .timeSensitive
-
-        let request = UNNotificationRequest(
-            identifier: "clif-\(UUID().uuidString)",
-            content: content,
-            trigger: nil
-        )
-
-        UNUserNotificationCenter.current().add(request) { [weak self] error in
-            if let error = error {
-                self?.logger.error("Failed to send notification: \(error.localizedDescription)")
-            }
-        }
-    }
-
     // MARK: - Break Handling
 
     /// Checks if user is currently on a break and logs breakFailed if violated.
@@ -194,6 +138,41 @@ class ShieldActionExtension: ShieldActionDelegate {
         logger.info("Break violated after \(actualMinutes) minutes - logged breakEnded(success: false)")
     }
 
+    // MARK: - Unlock Handling
+
+    /// Handles unlock request by redirecting user to main app.
+    /// Main app will handle wind decrease calculation and monitoring restart.
+    private func handleUnlockRequest() {
+        logToFile("handleUnlockRequest() - redirecting to main app")
+        logToFile("Current state: wind=\(SharedDefaults.monitoredWindPoints), shieldActivatedAt=\(String(describing: SharedDefaults.shieldActivatedAt))")
+
+        // Lock preset on first unlock of the day
+        if !SharedDefaults.windPresetLockedForToday {
+            lockPresetForToday()
+        }
+
+        // Check if this violates an active break
+        handlePotentialBreakViolation()
+
+        // Check if wind is at or above 100% - if so, this is a blow away
+        let windPoints = SharedDefaults.monitoredWindPoints
+        if windPoints >= 100 {
+            logToFile("handleUnlockRequest() - CRITICAL: windPoints=\(windPoints) >= 100 - triggering blow away")
+            SharedDefaults.set(true, forKey: DefaultsKeys.petBlownAway)
+            sendBlowAwayNotification()
+        }
+
+        // Send notification to open app for unlock
+        // The main app will handle wind decrease and monitoring restart
+        sendNotificationWithDeepLink(
+            title: "Odemknout aplikace",
+            body: "Klepni pro odemčení",
+            deepLink: DeepLinks.unlock
+        )
+
+        logToFile("handleUnlockRequest() - notification sent, returning .close")
+    }
+
     // MARK: - ShieldActionDelegate
 
     override func handle(action: ShieldAction, for application: ApplicationToken, completionHandler: @escaping (ShieldActionResponse) -> Void) {
@@ -210,23 +189,17 @@ class ShieldActionExtension: ShieldActionDelegate {
         switch action {
         case .primaryButtonPressed:
             logToFile("Primary button (Close App) pressed")
-            sendNotification(title: "Tap to open Clif")
+            sendNotificationWithDeepLink(
+                title: "Otevřít Clif",
+                body: "Klepni pro zobrazení peta",
+                deepLink: DeepLinks.home
+            )
             completionHandler(.close)
 
         case .secondaryButtonPressed:
-            logToFile("Secondary button (Unlock) pressed - will clear all shields")
-
-            // Lock preset on first unlock of the day
-            if !SharedDefaults.windPresetLockedForToday {
-                lockPresetForToday()
-            }
-
-            // Check if this violates an active break
-            handlePotentialBreakViolation()
-
-            clearAllShields()
-            logToFile("Returning .defer - user should stay in app")
-            completionHandler(.defer)
+            logToFile("Secondary button (Unlock) pressed - redirecting to app")
+            handleUnlockRequest()
+            completionHandler(.close)
 
         @unknown default:
             logToFile("Unknown action - closing shield")
@@ -246,20 +219,17 @@ class ShieldActionExtension: ShieldActionDelegate {
         switch action {
         case .primaryButtonPressed:
             logger.info("Primary button (Close App) pressed")
-            sendNotification(title: "Tap to open Clif")
+            sendNotificationWithDeepLink(
+                title: "Otevřít Clif",
+                body: "Klepni pro zobrazení peta",
+                deepLink: DeepLinks.home
+            )
             completionHandler(.close)
 
         case .secondaryButtonPressed:
-            logger.info("Secondary button (Unlock) pressed for web domain - unlocking all")
-
-            // Lock preset on first unlock of the day
-            if !SharedDefaults.windPresetLockedForToday {
-                lockPresetForToday()
-            }
-
-            handlePotentialBreakViolation()
-            clearAllShields()
-            completionHandler(.defer)
+            logger.info("Secondary button (Unlock) pressed for web domain")
+            handleUnlockRequest()
+            completionHandler(.close)
 
         @unknown default:
             completionHandler(.close)
@@ -278,20 +248,17 @@ class ShieldActionExtension: ShieldActionDelegate {
         switch action {
         case .primaryButtonPressed:
             logger.info("Primary button (Close App) pressed")
-            sendNotification(title: "Tap to open Clif")
+            sendNotificationWithDeepLink(
+                title: "Otevřít Clif",
+                body: "Klepni pro zobrazení peta",
+                deepLink: DeepLinks.home
+            )
             completionHandler(.close)
 
         case .secondaryButtonPressed:
-            logger.info("Secondary button (Unlock) pressed for category - unlocking all")
-
-            // Lock preset on first unlock of the day
-            if !SharedDefaults.windPresetLockedForToday {
-                lockPresetForToday()
-            }
-
-            handlePotentialBreakViolation()
-            clearAllShields()
-            completionHandler(.defer)
+            logger.info("Secondary button (Unlock) pressed for category")
+            handleUnlockRequest()
+            completionHandler(.close)
 
         @unknown default:
             completionHandler(.close)

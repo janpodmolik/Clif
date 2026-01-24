@@ -7,7 +7,7 @@ enum HomeCardAction {
     case evolve
     case replay
     case delete
-    case startBreak
+    case toggleShield
 }
 
 // MARK: - HomeCardView
@@ -16,16 +16,23 @@ struct HomeCardView: View {
     let pet: Pet
     let streakCount: Int
     let showDetailButton: Bool
+    /// Refresh trigger from parent (increments when shield state changes or timer ticks)
+    var refreshTick: Int = 0
     var onAction: (HomeCardAction) -> Void = { _ in }
 
-    // Pulsing for "Calming the wind..." text (when on break)
+    // Pulsing for "Calming the wind..." text (when shield active)
     @State private var isBreakPulsing = false
 
-    // Pulsing for "Calm the Wind" button (when wind > 80% and NOT on break)
+    // Pulsing for "Calm the Wind" button (when wind > 80% and shield NOT active)
     @State private var isButtonPulsing = false
 
+    /// Whether shield is currently active (wind is decreasing).
+    private var isShieldActive: Bool {
+        SharedDefaults.isShieldActive
+    }
+
     private var shouldButtonPulse: Bool {
-        pet.windProgress > 0.8 && !pet.isOnBreak
+        pet.windProgress > 0.8 && !isShieldActive
     }
 
     var body: some View {
@@ -39,20 +46,20 @@ struct HomeCardView: View {
             .contentShape(Rectangle())
             .onTapGesture { onAction(.detail) }
 
-            ProgressBarView(progress: Double(pet.windProgress), isPulsing: pet.isOnBreak)
+            ProgressBarView(progress: Double(pet.windProgress), isPulsing: isShieldActive)
             buttonsRow
         }
         .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
         .onAppear {
-            if pet.isOnBreak {
+            if isShieldActive {
                 isBreakPulsing = true
             }
             if shouldButtonPulse {
                 isButtonPulsing = true
             }
         }
-        .onChange(of: pet.isOnBreak) { _, newValue in
+        .onChange(of: isShieldActive) { _, newValue in
             isBreakPulsing = newValue
         }
         .onChange(of: shouldButtonPulse) { _, newValue in
@@ -129,7 +136,7 @@ struct HomeCardView: View {
 
             Spacer()
 
-            if pet.activeBreak != nil {
+            if isShieldActive {
                 Text("Calming the wind...")
                     .font(.system(size: 14, weight: .medium))
                     .foregroundStyle(.cyan)
@@ -197,18 +204,16 @@ struct HomeCardView: View {
         }
     }
 
-    // MARK: - Break Button
+    // MARK: - Shield Toggle Button
 
     private var breakButton: some View {
-        let isOnBreak = pet.activeBreak != nil
-
-        return Button { onAction(.startBreak) } label: {
-            Text(isOnBreak ? "Release the Wind" : "Calm the Wind")
+        Button { onAction(.toggleShield) } label: {
+            Text(isShieldActive ? "Release the Wind" : "Calm the Wind")
                 .font(.system(size: 14, weight: .semibold))
                 .foregroundStyle(.cyan)
                 .padding(.horizontal, 16)
                 .padding(.vertical, 8)
-                .background(Color.cyan.opacity(isOnBreak ? 0.15 : 0.2), in: Capsule())
+                .background(Color.cyan.opacity(isShieldActive ? 0.15 : 0.2), in: Capsule())
                 .opacity(shouldButtonPulse ? (isButtonPulsing ? 1.0 : 0.7) : 1.0)
                 .scaleEffect(shouldButtonPulse ? (isButtonPulsing ? 1.05 : 1.0) : 1.0)
         }

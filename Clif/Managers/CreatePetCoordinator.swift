@@ -200,6 +200,7 @@ final class CreatePetCoordinator {
         // Start monitoring with wind parameters for extension (all in seconds)
         let limitSeconds = Int(preset.minutesToBlowAway * 60)
         let riseRatePerSecond = preset.riseRate / 60.0  // Convert from pts/min to pts/sec
+        let fallRatePerSecond = preset.fallRate / 60.0  // Convert from pts/min to pts/sec
         #if DEBUG
         print("[CreatePet] Starting monitoring - limit: \(limitSeconds)s, riseRate: \(riseRatePerSecond) pts/sec")
         #endif
@@ -208,6 +209,7 @@ final class CreatePetCoordinator {
             limitSeconds: limitSeconds,
             windPoints: 0,
             riseRatePerSecond: riseRatePerSecond,
+            fallRatePerSecond: fallRatePerSecond,
             lastThresholdSeconds: 0,
             limitedSources: limitedSources
         )

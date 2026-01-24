@@ -1,3 +1,4 @@
+import Combine
 import SwiftUI
 
 /// Main home screen displaying the floating island scene with pet and status card.
@@ -10,10 +11,12 @@ struct HomeScreen: View {
 
     @State private var windRhythm = WindRhythm()
     @State private var showPetDetail = false
-    @State private var showBreakSheet = false
     @State private var showPresetPicker = false
     @State private var petFrame: CGRect = .zero
     @State private var dropZoneFrame: CGRect = .zero
+
+    /// Timer tick to force UI refresh when shield is active (for real-time wind decrease).
+    @State private var windRefreshTick = 0
 
     private let homeCardInset: CGFloat = 16
     private let homeCardCornerRadius: CGFloat = 24
@@ -63,11 +66,6 @@ struct HomeScreen: View {
                 PetDetailScreen(pet: pet)
             }
         }
-        .sheet(isPresented: $showBreakSheet) {
-            // TODO: Replace with BreakSheet
-            Text("Break Sheet - Coming Soon")
-                .presentationDetents([.medium])
-        }
         .sheet(isPresented: $showPresetPicker) {
             MorningPresetPicker()
         }
@@ -77,6 +75,12 @@ struct HomeScreen: View {
         }
         .onReceive(NotificationCenter.default.publisher(for: .showPresetPicker)) { _ in
             showPresetPicker = true
+        }
+        .onReceive(Timer.publish(every: 1.0, on: .main, in: .common).autoconnect()) { _ in
+            // Only tick when shield is active (wind is decreasing)
+            if SharedDefaults.isShieldActive {
+                windRefreshTick += 1
+            }
         }
         .onDisappear {
             windRhythm.stop()
@@ -147,9 +151,12 @@ struct HomeScreen: View {
     // MARK: - Single Pet Page
 
     private func petPage(_ pet: Pet, geometry: GeometryProxy) -> some View {
-        ZStack {
+        // Capture effective wind progress (recalculated each tick when shield active)
+        let effectiveProgress = pet.windProgress
+
+        return ZStack {
             WindLinesView(
-                windProgress: pet.windProgress,
+                windProgress: effectiveProgress,
                 direction: 1.0,
                 windAreaTop: 0.25,
                 windAreaBottom: 0.50,
@@ -161,7 +168,7 @@ struct HomeScreen: View {
                 screenWidth: geometry.size.width,
                 content: .pet(
                     pet.phase ?? Blob.shared,
-                    windProgress: pet.windProgress,
+                    windProgress: effectiveProgress,
                     windDirection: 1.0,
                     windRhythm: windRhythm
                 ),
@@ -181,14 +188,24 @@ struct HomeScreen: View {
             debugWindOverlay(pet)
             #endif
         }
+        // Force view recalculation when windRefreshTick changes (during active shield)
+        .id(windRefreshTick)
     }
 
     #if DEBUG
     private func debugWindOverlay(_ pet: Pet) -> some View {
         VStack(alignment: .leading, spacing: 4) {
             Text("Wind: \(String(format: "%.1f", pet.windPoints)) pts")
+            if SharedDefaults.isShieldActive {
+                Text("Effective: \(String(format: "%.1f", pet.effectiveWindPoints)) pts")
+                    .foregroundStyle(.cyan)
+            }
             Text("Last threshold: \(pet.lastThresholdSeconds)s")
             Text("Rise rate: \(String(format: "%.1f", pet.preset.riseRate)) pts/min")
+            if SharedDefaults.isShieldActive {
+                Text("Shield active")
+                    .foregroundStyle(.green)
+            }
         }
         .font(.system(size: 10, design: .monospaced))
         .padding(8)
@@ -205,6 +222,7 @@ struct HomeScreen: View {
             pet: pet,
             streakCount: 7, // TODO: get from streak manager
             showDetailButton: true,
+            refreshTick: windRefreshTick,
             onAction: { handleAction($0, for: pet) }
         )
     }
@@ -217,8 +235,10 @@ struct HomeScreen: View {
             handleEvolve(pet)
         case .replay, .delete:
             break // TODO: Handle archived pet actions
-        case .startBreak:
-            handleBreak(pet)
+        case .toggleShield:
+            ScreenTimeManager.shared.toggleShield()
+            // Force immediate UI refresh
+            windRefreshTick += 1
         }
     }
 
@@ -232,10 +252,6 @@ struct HomeScreen: View {
         } else {
             pet.evolve()
         }
-    }
-
-    private func handleBreak(_ pet: Pet) {
-        showBreakSheet = true
     }
 
     // MARK: - Morning Shield

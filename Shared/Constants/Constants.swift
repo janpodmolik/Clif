@@ -41,6 +41,7 @@ enum DeepLinks {
     static let shield = "clif://shield"
     static let home = "clif://home"
     static let presetPicker = "clif://preset-picker"
+    static let unlock = "clif://unlock"
 
     /// Creates a pet-specific deep link
     static func pet(_ id: UUID) -> String {
@@ -71,7 +72,6 @@ enum DefaultsKeys {
     static let monitoredLastThresholdSeconds = "monitoredLastThresholdSeconds"
     static let monitoredRiseRate = "monitoredRiseRate"
     static let breakStartedAt = "breakStartedAt"
-    static let shouldRestartMonitoring = "shouldRestartMonitoring"
 
     // MARK: - Sync
 
@@ -97,4 +97,9 @@ enum DefaultsKeys {
 
     static let petBlownAway = "petBlownAway"
     static let safetyShieldNotificationSent = "safetyShieldNotificationSent"
+
+    // MARK: - Shield Wind Decrease
+
+    static let shieldActivatedAt = "shieldActivatedAt"
+    static let monitoredFallRate = "monitoredFallRate"
 }

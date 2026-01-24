@@ -77,6 +77,185 @@ final class ScreenTimeManager: ObservableObject {
         SharedDefaults.resetShieldFlags()
     }
 
+    // MARK: - Shield Toggle (from UI)
+
+    /// Toggles shield on/off from the home screen button.
+    /// When turning ON: activates shield for monitored tokens, records activation time.
+    /// When turning OFF: calculates wind decrease, clears shield.
+    func toggleShield() {
+        if SharedDefaults.isShieldActive {
+            // Shield is active -> turn OFF (same as processUnlock but without monitoring restart)
+            #if DEBUG
+            print("[ScreenTimeManager] toggleShield: OFF")
+            #endif
+
+            // Calculate wind decrease from shield time
+            if let activatedAt = SharedDefaults.shieldActivatedAt {
+                let elapsedSeconds = Date().timeIntervalSince(activatedAt)
+                let fallRate = SharedDefaults.monitoredFallRate
+                let decrease = elapsedSeconds * fallRate
+                let oldWind = SharedDefaults.monitoredWindPoints
+                let newWind = max(0, oldWind - decrease)
+
+                #if DEBUG
+                print("  Shield was active for \(Int(elapsedSeconds))s, wind: \(oldWind) -> \(newWind)")
+                #endif
+
+                SharedDefaults.monitoredWindPoints = newWind
+            }
+
+            // Clear shields
+            store.shield.applications = nil
+            store.shield.applicationCategories = nil
+            store.shield.webDomains = nil
+            SharedDefaults.resetShieldFlags()
+        } else {
+            // Shield is off -> turn ON
+            #if DEBUG
+            print("[ScreenTimeManager] toggleShield: ON")
+            #endif
+
+            // Load tokens
+            guard let appTokens = SharedDefaults.loadApplicationTokens(),
+                  let catTokens = SharedDefaults.loadCategoryTokens() else {
+                #if DEBUG
+                print("  Failed to load tokens")
+                #endif
+                return
+            }
+            let webTokens = SharedDefaults.loadWebDomainTokens() ?? Set()
+
+            // Activate shield
+            activateShield(applications: appTokens, categories: catTokens, webDomains: webTokens)
+
+            // Mark shield as active with timestamp
+            SharedDefaults.isShieldActive = true
+            SharedDefaults.shieldActivatedAt = Date()
+            SharedDefaults.synchronize()
+
+            #if DEBUG
+            print("  Shield activated at \(Date())")
+            #endif
+        }
+    }
+
+    // MARK: - Unlock Processing
+
+    /// Processes unlock request from shield deep link.
+    /// Called when user taps unlock notification from ShieldAction.
+    /// - Calculates wind decrease from shield time
+    /// - Clears shields
+    /// - Restarts monitoring with fresh thresholds from 0
+    func processUnlock() {
+        #if DEBUG
+        print("[ScreenTimeManager] processUnlock() called")
+        print("  Before: wind=\(SharedDefaults.monitoredWindPoints), lastThreshold=\(SharedDefaults.monitoredLastThresholdSeconds)")
+        #endif
+
+        guard let petId = SharedDefaults.monitoredPetId else {
+            #if DEBUG
+            print("[ScreenTimeManager] processUnlock: No monitored pet, just clearing shields")
+            #endif
+            clearShield()
+            return
+        }
+
+        // Calculate wind decrease from shield time
+        var windPoints = SharedDefaults.monitoredWindPoints
+        if let activatedAt = SharedDefaults.shieldActivatedAt {
+            let elapsedSeconds = Date().timeIntervalSince(activatedAt)
+            let fallRate = SharedDefaults.monitoredFallRate
+            let decrease = elapsedSeconds * fallRate
+            let newWindPoints = max(0, windPoints - decrease)
+
+            #if DEBUG
+            print("[ScreenTimeManager] processUnlock: Shield was active for \(Int(elapsedSeconds))s")
+            print("  fallRate=\(fallRate) pts/sec, decrease=\(decrease) pts")
+            print("  Wind: \(windPoints) -> \(newWindPoints)")
+            #endif
+
+            windPoints = newWindPoints
+            SharedDefaults.monitoredWindPoints = newWindPoints
+        }
+
+        // Clear shields
+        store.shield.applications = nil
+        store.shield.applicationCategories = nil
+        store.shield.webDomains = nil
+        SharedDefaults.resetShieldFlags()
+
+        // Load tokens for restart
+        guard let appTokens = SharedDefaults.loadApplicationTokens(),
+              let catTokens = SharedDefaults.loadCategoryTokens() else {
+            #if DEBUG
+            print("[ScreenTimeManager] processUnlock: Failed to load tokens, cannot restart monitoring")
+            #endif
+            return
+        }
+
+        let webTokens = SharedDefaults.loadWebDomainTokens() ?? Set()
+
+        guard !appTokens.isEmpty || !catTokens.isEmpty else {
+            #if DEBUG
+            print("[ScreenTimeManager] processUnlock: No tokens to monitor")
+            #endif
+            return
+        }
+
+        // Get limit and rate from SharedDefaults
+        let limitSeconds = SharedDefaults.integer(forKey: DefaultsKeys.monitoringLimitSeconds)
+        let riseRatePerSecond = SharedDefaults.monitoredRiseRate
+        let fallRatePerSecond = SharedDefaults.monitoredFallRate
+
+        // Get current cumulative usage (this is the key!)
+        // Thresholds must start from current position, not from 0
+        let currentUsageSeconds = SharedDefaults.monitoredLastThresholdSeconds
+
+        #if DEBUG
+        print("[ScreenTimeManager] processUnlock: Restarting monitoring from \(currentUsageSeconds)s")
+        print("  petId=\(petId), limit=\(limitSeconds)s, wind=\(windPoints)")
+        #endif
+
+        let schedule = DeviceActivitySchedule(
+            intervalStart: DateComponents(hour: 0, minute: 0),
+            intervalEnd: DateComponents(hour: 23, minute: 59),
+            repeats: true
+        )
+
+        // Build events starting from current usage position
+        let events = buildEventsFromPosition(
+            startFromSeconds: currentUsageSeconds,
+            limitSeconds: limitSeconds,
+            appTokens: appTokens,
+            catTokens: catTokens,
+            webTokens: webTokens
+        )
+
+        let activityName = DeviceActivityName.forPet(petId)
+
+        do {
+            // Stop existing monitoring
+            let existingActivities = center.activities
+            if !existingActivities.isEmpty {
+                center.stopMonitoring(existingActivities)
+                #if DEBUG
+                print("[ScreenTimeManager] processUnlock: Stopped \(existingActivities.count) existing activities")
+                #endif
+            }
+
+            // Start fresh monitoring
+            try center.startMonitoring(activityName, during: schedule, events: events)
+
+            #if DEBUG
+            print("[ScreenTimeManager] processUnlock: SUCCESS - monitoring restarted with \(events.count) events")
+            #endif
+        } catch {
+            #if DEBUG
+            print("[ScreenTimeManager] processUnlock: FAILED - \(error.localizedDescription)")
+            #endif
+        }
+    }
+
     // MARK: - Morning Preset
 
     /// Applies the selected morning preset for today.
@@ -95,9 +274,11 @@ final class ScreenTimeManager: ObservableObject {
         // Calculate monitoring parameters from preset
         let limitSeconds = Int(preset.minutesToBlowAway * 60)
         let riseRatePerSecond = preset.riseRate / 60.0
+        let fallRatePerSecond = preset.fallRate / 60.0
 
         // Update SharedDefaults for extension
         SharedDefaults.monitoredRiseRate = riseRatePerSecond
+        SharedDefaults.monitoredFallRate = fallRatePerSecond
         SharedDefaults.setInt(limitSeconds, forKey: DefaultsKeys.monitoringLimitSeconds)
 
         // Restart monitoring with new preset
@@ -106,6 +287,7 @@ final class ScreenTimeManager: ObservableObject {
             limitSeconds: limitSeconds,
             windPoints: 0,
             riseRatePerSecond: riseRatePerSecond,
+            fallRatePerSecond: fallRatePerSecond,
             lastThresholdSeconds: 0,
             limitedSources: pet.limitedSources
         )
@@ -119,6 +301,7 @@ final class ScreenTimeManager: ObservableObject {
     ///   - limitSeconds: Screen time limit in seconds (minutesToBlowAway * 60 from config)
     ///   - windPoints: Current wind points for snapshot logging
     ///   - riseRatePerSecond: Wind points per second of usage (from preset, divided by 60)
+    ///   - fallRatePerSecond: Wind points per second of recovery (from preset, divided by 60)
     ///   - lastThresholdSeconds: Last recorded threshold seconds (for resuming mid-day)
     ///   - limitedSources: Pet's limited sources containing tokens to monitor
     func startMonitoring(
@@ -126,6 +309,7 @@ final class ScreenTimeManager: ObservableObject {
         limitSeconds: Int,
         windPoints: Double,
         riseRatePerSecond: Double,
+        fallRatePerSecond: Double,
         lastThresholdSeconds: Int = 0,
         limitedSources: [LimitedSource]
     ) {
@@ -153,6 +337,7 @@ final class ScreenTimeManager: ObservableObject {
         SharedDefaults.monitoredWindPoints = windPoints
         SharedDefaults.monitoredLastThresholdSeconds = lastThresholdSeconds
         SharedDefaults.monitoredRiseRate = riseRatePerSecond
+        SharedDefaults.monitoredFallRate = fallRatePerSecond
         SharedDefaults.setInt(limitSeconds, forKey: DefaultsKeys.monitoringLimitSeconds)
 
         // Reset all shield flags - fresh monitoring start means no shield blocking wind
@@ -253,6 +438,53 @@ final class ScreenTimeManager: ObservableObject {
     }
 
     // MARK: - Event Building
+
+    /// Builds thresholds starting from a specific position.
+    /// Used after unlock to generate fresh thresholds from current usage.
+    private func buildEventsFromPosition(
+        startFromSeconds: Int,
+        limitSeconds: Int,
+        appTokens: Set<ApplicationToken>,
+        catTokens: Set<ActivityCategoryToken>,
+        webTokens: Set<WebDomainToken>
+    ) -> [DeviceActivityEvent.Name: DeviceActivityEvent] {
+        var events: [DeviceActivityEvent.Name: DeviceActivityEvent] = [:]
+
+        let maxThresholds = AppConstants.maxThresholds
+        let minInterval = AppConstants.minimumThresholdSeconds
+
+        // Calculate interval based on remaining time to limit
+        let remainingSeconds = max(limitSeconds - startFromSeconds, minInterval * maxThresholds)
+        let intervalSeconds = max(remainingSeconds / maxThresholds, minInterval)
+
+        #if DEBUG
+        print("DEBUG: buildEventsFromPosition - startFrom=\(startFromSeconds)s, limit=\(limitSeconds)s, interval=\(intervalSeconds)s")
+        #endif
+
+        // Generate thresholds starting from next interval after current position
+        var currentSeconds = ((startFromSeconds / intervalSeconds) + 1) * intervalSeconds
+
+        while events.count < maxThresholds {
+            let eventName = DeviceActivityEvent.Name("second_\(currentSeconds)")
+            let minutes = currentSeconds / 60
+            let seconds = currentSeconds % 60
+
+            events[eventName] = DeviceActivityEvent(
+                applications: appTokens,
+                categories: catTokens,
+                webDomains: webTokens,
+                threshold: DateComponents(minute: minutes, second: seconds)
+            )
+
+            currentSeconds += intervalSeconds
+        }
+
+        #if DEBUG
+        print("DEBUG: buildEventsFromPosition - created \(events.count) events starting from \(startFromSeconds)s")
+        #endif
+
+        return events
+    }
 
     /// Builds thresholds for granular windPoints tracking.
     /// Generates thresholds up to 100% of the limit.

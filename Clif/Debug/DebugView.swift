@@ -153,12 +153,15 @@ struct DebugView: View {
 
         let newLimit = Int(DebugConfig.minutesToBlowAway)
         let riseRate = DebugConfig.riseRate
+        let fallRate = DebugConfig.fallRate
         let limitSeconds = newLimit * 60
         let riseRatePerSecond = riseRate / 60.0
+        let fallRatePerSecond = fallRate / 60.0
         print("[DebugConfig] Restarting monitoring:")
         print("  - petId: \(pet.id)")
         print("  - limit: \(limitSeconds)s (\(newLimit) min)")
         print("  - riseRate: \(riseRatePerSecond) pts/sec")
+        print("  - fallRate: \(fallRatePerSecond) pts/sec")
         print("  - currentWind: \(pet.windPoints)")
         print("  - lastThreshold: \(pet.lastThresholdSeconds)s")
         print("  - limitedSources count: \(pet.limitedSources.count)")
@@ -168,6 +171,7 @@ struct DebugView: View {
             limitSeconds: limitSeconds,
             windPoints: pet.windPoints,
             riseRatePerSecond: riseRatePerSecond,
+            fallRatePerSecond: fallRatePerSecond,
             lastThresholdSeconds: pet.lastThresholdSeconds,
             limitedSources: pet.limitedSources
         )

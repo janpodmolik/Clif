@@ -32,11 +32,11 @@ enum DebugConfig {
 
     /// Debug override: minutes of break to fully recover.
     /// Production: 15-30 minutes depending on preset.
-    /// Debug: 2 minutes for fast testing.
+    /// Debug: 1 minute for fast testing (same as rise for symmetry).
     static var minutesToRecover: Double {
         get {
             let value = defaults.double(forKey: keyPrefix + "minutesToRecover")
-            return value > 0 ? value : 2
+            return value > 0 ? value : 1
         }
         set { defaults.set(newValue, forKey: keyPrefix + "minutesToRecover") }
     }

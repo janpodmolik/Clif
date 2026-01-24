@@ -71,9 +71,19 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
             logToFile("[Extension] limitSeconds=\(limitSeconds), current=\(currentSeconds) (\(Int(progressPercent))%)")
 
             // Skip wind updates if shield is active
-            guard shouldProcessThreshold() else { return }
+            guard shouldProcessThreshold() else {
+                // Still update lastThresholdSeconds so we don't get huge delta after unlock
+                SharedDefaults.monitoredLastThresholdSeconds = currentSeconds
+                return
+            }
 
-            processThresholdEvent(currentSeconds: currentSeconds)
+            // Capture previous threshold for delta calculation
+            let previousThresholdSeconds = SharedDefaults.monitoredLastThresholdSeconds
+
+            // Update lastThresholdSeconds
+            SharedDefaults.monitoredLastThresholdSeconds = currentSeconds
+
+            processThresholdEvent(currentSeconds: currentSeconds, previousThresholdSeconds: previousThresholdSeconds)
         }
     }
 
@@ -111,21 +121,29 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
     }
 
     /// Full threshold processing - wind update, level changes, safety shield, snapshots.
-    private func processThresholdEvent(currentSeconds: Int) {
-        // Calculate wind delta from last threshold
-        let lastThresholdSeconds = SharedDefaults.monitoredLastThresholdSeconds
-        let deltaSeconds = currentSeconds - lastThresholdSeconds
+    private func processThresholdEvent(currentSeconds: Int, previousThresholdSeconds: Int) {
+        // Calculate wind delta from previous threshold
+        let deltaSeconds = currentSeconds - previousThresholdSeconds
         let riseRate = SharedDefaults.monitoredRiseRate
         let oldWindPoints = SharedDefaults.monitoredWindPoints
+
+        logToFile("========== THRESHOLD EVENT ==========")
+        logToFile("Seconds: current=\(currentSeconds), previous=\(previousThresholdSeconds), delta=\(deltaSeconds)")
+
+        // After unlock + monitoring restart, thresholds start from 0 again
+        // but previousThresholdSeconds might be higher (from before unlock).
+        // In this case delta is negative/zero - skip wind update but still log snapshot.
+        guard deltaSeconds > 0 else {
+            logToFile("Skipping wind update - delta <= 0 (monitoring was restarted)")
+            logSnapshot(eventType: .usageThreshold(cumulativeSeconds: currentSeconds))
+            return
+        }
 
         // Update wind points
         let newWindPoints = updateWindPoints(oldWindPoints: oldWindPoints, deltaSeconds: deltaSeconds, riseRate: riseRate)
         SharedDefaults.monitoredWindPoints = newWindPoints
-        SharedDefaults.monitoredLastThresholdSeconds = currentSeconds
 
-        logToFile("========== THRESHOLD EVENT ==========")
-        logToFile("Seconds: current=\(currentSeconds), delta=\(deltaSeconds), riseRate=\(riseRate)")
-        logToFile("Wind: \(oldWindPoints) -> \(newWindPoints)")
+        logToFile("riseRate=\(riseRate), Wind: \(oldWindPoints) -> \(newWindPoints)")
 
         checkWindLevelChange(windPoints: newWindPoints)
         checkSafetyShield(windPoints: newWindPoints)
@@ -283,9 +301,11 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
             }
 
             // Mark shield as active - wind should not increase while shield is shown
+            // Save activation timestamp for wind decrease calculation
             SharedDefaults.isShieldActive = true
+            SharedDefaults.shieldActivatedAt = Date()
             SharedDefaults.synchronize()
-            logToFile("[activateShield] END - isShieldActive = true, shieldApplied = \(shieldApplied)")
+            logToFile("[activateShield] END - isShieldActive = true, shieldActivatedAt = \(Date()), shieldApplied = \(shieldApplied)")
         }
     }
 

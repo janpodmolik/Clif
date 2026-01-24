@@ -183,12 +183,6 @@ struct SharedDefaults {
         set { defaults?.set(newValue, forKey: DefaultsKeys.breakStartedAt) }
     }
 
-    /// Flag set by ShieldAction when it can't restart monitoring directly.
-    /// Main app checks this on launch and restarts monitoring if true.
-    static var shouldRestartMonitoring: Bool {
-        get { defaults?.bool(forKey: DefaultsKeys.shouldRestartMonitoring) ?? false }
-        set { defaults?.set(newValue, forKey: DefaultsKeys.shouldRestartMonitoring) }
-    }
 
     // MARK: - Sync
 
@@ -261,6 +255,19 @@ struct SharedDefaults {
         }
     }
 
+    /// Timestamp when shield was activated (for calculating wind decrease during shield time).
+    static var shieldActivatedAt: Date? {
+        get { defaults?.object(forKey: DefaultsKeys.shieldActivatedAt) as? Date }
+        set { defaults?.set(newValue, forKey: DefaultsKeys.shieldActivatedAt) }
+    }
+
+    /// Fall rate in points per second (set by main app from preset).
+    /// Used to calculate wind decrease while shield is active.
+    static var monitoredFallRate: Double {
+        get { defaults?.double(forKey: DefaultsKeys.monitoredFallRate) ?? 0 }
+        set { defaults?.set(newValue, forKey: DefaultsKeys.monitoredFallRate) }
+    }
+
     // MARK: - Helpers
 
     /// Forces synchronization of UserDefaults (important for cross-process communication).
@@ -276,6 +283,7 @@ struct SharedDefaults {
         #endif
         isShieldActive = false
         isMorningShieldActive = false
+        shieldActivatedAt = nil
         synchronize()
         #if DEBUG
         print("DEBUG: resetShieldFlags() called - after: isShieldActive=\(isShieldActive), isMorningShieldActive=\(isMorningShieldActive)")

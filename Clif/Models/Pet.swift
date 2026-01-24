@@ -36,12 +36,28 @@ final class Pet: Identifiable, PetPresentable, PetWithSources {
 
     // MARK: - Wind Progress
 
+    /// Effective wind points accounting for real-time shield recovery.
+    /// When shield is active, wind decreases over time based on fallRate.
+    var effectiveWindPoints: Double {
+        guard SharedDefaults.isShieldActive,
+              let activatedAt = SharedDefaults.shieldActivatedAt else {
+            return windPoints
+        }
+
+        let elapsedSeconds = Date().timeIntervalSince(activatedAt)
+        let fallRate = SharedDefaults.monitoredFallRate
+        let decrease = elapsedSeconds * fallRate
+        return max(0, windPoints - decrease)
+    }
+
     /// Wind progress for UI (0-1), clamped.
+    /// Uses effectiveWindPoints to show real-time decrease during active shield.
     var windProgress: CGFloat {
-        CGFloat(min(max(windPoints / 100.0, 0), 1.0))
+        CGFloat(min(max(effectiveWindPoints / 100.0, 0), 1.0))
     }
 
     /// Whether pet has been blown away.
+    /// Uses stored windPoints (not effective) since blow-away is a permanent state.
     var isBlownAway: Bool {
         windPoints >= 100
     }
@@ -243,10 +259,11 @@ final class Pet: Identifiable, PetPresentable, PetWithSources {
         print("[Pet.sync] Pet values: wind=\(windPoints), lastSec=\(lastThresholdSeconds)")
         #endif
 
-        // Sync if extension has newer data
-        if extensionLastSeconds > lastThresholdSeconds || extensionWindPoints > windPoints {
+        // Always sync from SharedDefaults - wind can go up (usage) or down (shield unlock)
+        // The extension/ShieldAction are the source of truth for wind state
+        if extensionWindPoints != windPoints || extensionLastSeconds != lastThresholdSeconds {
             #if DEBUG
-            print("[Pet.sync] Updating pet: \(windPoints) -> \(extensionWindPoints)")
+            print("[Pet.sync] Updating pet: wind \(windPoints) -> \(extensionWindPoints), lastSec \(lastThresholdSeconds) -> \(extensionLastSeconds)")
             #endif
             windPoints = extensionWindPoints
             lastThresholdSeconds = extensionLastSeconds
