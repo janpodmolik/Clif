@@ -14,11 +14,6 @@ final class PetManager {
     /// The current active pet (max one).
     var currentPet: Pet? { pet }
 
-    /// Active pets as array for UI compatibility (0 or 1 element).
-    var activePets: [Pet] {
-        pet.map { [$0] } ?? []
-    }
-
     // MARK: - Init
 
     init() {
@@ -171,14 +166,13 @@ final class PetManager {
 // MARK: - Persistence (Active → SharedDefaults)
 
 private extension PetManager {
-    /// Loads the active pet from storage. Supports migration from multi-pet array format.
+    /// Loads the active pet from storage.
     func loadActivePet() {
-        guard let data = SharedDefaults.data(forKey: DefaultsKeys.activePets),
-              let dtos = try? JSONDecoder().decode([PetDTO].self, from: data),
-              let firstDto = dtos.first else {
+        guard let data = SharedDefaults.data(forKey: DefaultsKeys.activePet),
+              let dto = try? JSONDecoder().decode(PetDTO.self, from: data) else {
             return
         }
-        pet = Pet(from: firstDto)
+        pet = Pet(from: dto)
     }
 
     /// Syncs wind state from SharedDefaults (source of truth updated by extensions).
@@ -189,11 +183,13 @@ private extension PetManager {
         pet.lastThresholdSeconds = SharedDefaults.monitoredLastThresholdSeconds
     }
 
-    /// Saves the active pet. Uses array format for extension compatibility.
+    /// Saves the active pet to SharedDefaults.
     func saveActivePet() {
-        let dtos = pet.map { [PetDTO(from: $0)] } ?? []
-        if let data = try? JSONEncoder().encode(dtos) {
-            SharedDefaults.setData(data, forKey: DefaultsKeys.activePets)
+        if let pet = pet,
+           let data = try? JSONEncoder().encode(PetDTO(from: pet)) {
+            SharedDefaults.setData(data, forKey: DefaultsKeys.activePet)
+        } else {
+            SharedDefaults.removeObject(forKey: DefaultsKeys.activePet)
         }
     }
 }

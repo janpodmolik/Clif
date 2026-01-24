@@ -62,7 +62,7 @@ enum DefaultsKeys {
 
     // MARK: - Pet Persistence
 
-    static let activePets = "activePets"
+    static let activePet = "activePet"
 
     // MARK: - Monitoring Context (lightweight data for extensions)
 
