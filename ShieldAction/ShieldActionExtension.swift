@@ -11,23 +11,8 @@ class ShieldActionExtension: ShieldActionDelegate {
     let center = DeviceActivityCenter()
     let logger = Logger(subsystem: "com.janpodmolik.Clif.ShieldAction", category: "ShieldAction")
 
-    /// Logs to shared file for debugging (extension can't print to console reliably)
     private func logToFile(_ message: String) {
-        guard let containerURL = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: AppConstants.appGroupIdentifier) else { return }
-        let logURL = containerURL.appendingPathComponent("extension_log.txt")
-        let timestamp = ISO8601DateFormatter().string(from: Date())
-        let line = "[\(timestamp)] [ShieldAction] \(message)\n"
-        if let data = line.data(using: .utf8) {
-            if FileManager.default.fileExists(atPath: logURL.path) {
-                if let handle = try? FileHandle(forWritingTo: logURL) {
-                    handle.seekToEndOfFile()
-                    handle.write(data)
-                    handle.closeFile()
-                }
-            } else {
-                try? data.write(to: logURL)
-            }
-        }
+        ExtensionLogger.log(message, prefix: "[ShieldAction]")
     }
 
     // MARK: - Notifications
@@ -42,7 +27,7 @@ class ShieldActionExtension: ShieldActionDelegate {
         content.title = title
         content.body = body
         content.sound = nil // Silent - less intrusive
-        content.userInfo = ["deepLink": "clif://shield"]
+        content.userInfo = ["deepLink": DeepLinks.shield]
         content.interruptionLevel = .timeSensitive // Bypass Focus modes
 
         let request = UNNotificationRequest(
@@ -104,7 +89,7 @@ class ShieldActionExtension: ShieldActionDelegate {
             sendNotificationWithDeepLink(
                 title: "Vyber si náročnost dne",
                 body: "Nastav jak náročný den chceš mít",
-                deepLink: "clif://preset-picker"
+                deepLink: DeepLinks.presetPicker
             )
             return .close
 

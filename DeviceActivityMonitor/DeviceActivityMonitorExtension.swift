@@ -56,127 +56,127 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
     override func eventDidReachThreshold(_ event: DeviceActivityEvent.Name, activity: DeviceActivityName) {
         super.eventDidReachThreshold(event, activity: activity)
 
-        // Use autoreleasepool to immediately free memory in this memory-constrained extension
         autoreleasepool {
-            let eventName = event.rawValue
+            logToFile("[Extension] eventDidReachThreshold: \(event.rawValue)")
 
-            // Force read latest values from disk (cross-process sync)
-            SharedDefaults.synchronize()
+            guard let currentSeconds = parseSecondsFromEvent(event) else { return }
+            guard shouldProcessThreshold() else { return }
 
-            let isShieldActive = SharedDefaults.isShieldActive
-            let isMorningShieldActive = SharedDefaults.isMorningShieldActive
-            logToFile("[Extension] eventDidReachThreshold: \(eventName)")
-            logToFile("DEBUG: isShieldActive=\(isShieldActive), isMorningShieldActive=\(isMorningShieldActive)")
-
-            // Don't increase wind while shield is active - user can't actually use the app
-            if isShieldActive {
-                logToFile("DEBUG: Skipping wind - shield is active")
-                return
-            }
-
-            // Don't process wind during morning shield - user hasn't selected preset yet
-            if isMorningShieldActive {
-                logToFile("DEBUG: Skipping wind - morning shield is active")
-                return
-            }
-
-            // Parse seconds from event name "second_X"
-            if eventName.hasPrefix("second_"),
-               let valueString = eventName.split(separator: "_").last,
-               let currentSeconds = Int(valueString) {
-
-                // Calculate wind increase directly in extension
-                let lastSeconds = SharedDefaults.monitoredLastThresholdSeconds
-                let rawRiseRate = SharedDefaults.monitoredRiseRate
-                // Validate riseRate: must be positive, fallback to default (100pts/60sec = ~1.67 pts/sec)
-                let riseRatePerSecond = rawRiseRate > 0 ? rawRiseRate : (100.0 / 60.0)
-                let oldWindPoints = SharedDefaults.monitoredWindPoints
-                let deltaSeconds = currentSeconds - lastSeconds
-
-                logToFile("========== THRESHOLD EVENT ==========")
-                logToFile("Event: \(eventName)")
-                logToFile("Seconds: current=\(currentSeconds), last=\(lastSeconds), delta=\(deltaSeconds)")
-                logToFile("Wind: old=\(oldWindPoints), riseRate=\(riseRatePerSecond)/s")
-                logToFile("Flags: isShieldActive=\(isShieldActive), isMorningShieldActive=\(isMorningShieldActive)")
-
-                if deltaSeconds > 0 {
-                    var windPoints = oldWindPoints
-                    let windIncrease = Double(deltaSeconds) * riseRatePerSecond
-                    windPoints += windIncrease
-                    windPoints = min(windPoints, 100)
-
-                    // Update SharedDefaults so main app can read it
-                    SharedDefaults.monitoredWindPoints = windPoints
-                    SharedDefaults.monitoredLastThresholdSeconds = currentSeconds
-                    SharedDefaults.synchronize()
-
-                    logToFile("Wind UPDATE: \(oldWindPoints) + \(windIncrease) = \(windPoints)")
-
-                    // Check for WindLevel change
-                    let newLevel = WindLevel.from(windPoints: windPoints)
-                    let lastKnownLevel = WindLevel(rawValue: SharedDefaults.lastKnownWindLevel) ?? .none
-
-                    logToFile("WindLevel: current=\(newLevel) (raw=\(newLevel.rawValue)), last=\(lastKnownLevel) (raw=\(lastKnownLevel.rawValue))")
-
-                    if newLevel != lastKnownLevel {
-                        SharedDefaults.lastKnownWindLevel = newLevel.rawValue
-                        logToFile("WindLevel CHANGED: \(lastKnownLevel) -> \(newLevel)")
-
-                        // Check if should activate shield based on settings
-                        // Don't activate if pet is already blown (100%)
-                        let settings = SharedDefaults.limitSettings
-                        let activationLevel = settings.shieldActivationLevel
-                        logToFile("Settings: activationLevel=\(activationLevel?.rawValue ?? -1), notificationLevels=\(settings.notificationLevels.map { $0.rawValue })")
-
-                        if let activationLevel = activationLevel,
-                           newLevel.rawValue >= activationLevel.rawValue,
-                           windPoints < 100 {
-                            logToFile(">>> ACTIVATING SHIELD at level \(newLevel) (threshold: \(activationLevel))")
-                            activateShield()
-                        }
-
-                        // Check if should send notification
-                        if settings.notificationLevels.contains(newLevel) {
-                            logToFile(">>> SENDING NOTIFICATION for level \(newLevel)")
-                            sendWindLevelNotification(level: newLevel)
-                        }
-                    }
-                } else {
-                    logToFile("Skipping wind update: deltaSeconds=\(deltaSeconds) <= 0")
-                }
-
-                // Log snapshot with cumulative seconds
-                logSnapshot(eventType: .usageThreshold(cumulativeSeconds: currentSeconds))
-
-                // Final check: notify when absolute limit reached (100%)
-                // Don't activate shield - pet is blown, no point blocking anymore
-                let limitSeconds = SharedDefaults.integer(forKey: DefaultsKeys.monitoringLimitSeconds)
-                logToFile("[Extension] limitSeconds=\(limitSeconds), checking if \(currentSeconds) >= \(limitSeconds)")
-                if currentSeconds >= limitSeconds {
-                    logToFile("[Extension] LIMIT REACHED (100%) - pet blown away")
-                    sendLimitReachedNotification()
-                }
-            }
+            processThresholdEvent(currentSeconds: currentSeconds)
         }
     }
 
-    /// Logs to shared file for debugging (extension can't print to console)
-    private func logToFile(_ message: String) {
-        guard let containerURL = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: AppConstants.appGroupIdentifier) else { return }
-        let logURL = containerURL.appendingPathComponent("extension_log.txt")
-        let timestamp = ISO8601DateFormatter().string(from: Date())
-        let line = "[\(timestamp)] \(message)\n"
-        if let data = line.data(using: .utf8) {
-            if FileManager.default.fileExists(atPath: logURL.path) {
-                if let handle = try? FileHandle(forWritingTo: logURL) {
-                    handle.seekToEndOfFile()
-                    handle.write(data)
-                    handle.closeFile()
-                }
-            } else {
-                try? data.write(to: logURL)
-            }
+    // MARK: - Threshold Processing
+
+    private func parseSecondsFromEvent(_ event: DeviceActivityEvent.Name) -> Int? {
+        let eventName = event.rawValue
+        guard eventName.hasPrefix(EventNames.secondPrefix),
+              let valueString = eventName.split(separator: "_").last,
+              let seconds = Int(valueString) else {
+            return nil
         }
+        return seconds
+    }
+
+    private func shouldProcessThreshold() -> Bool {
+        SharedDefaults.synchronize()
+
+        let isShieldActive = SharedDefaults.isShieldActive
+        let isMorningShieldActive = SharedDefaults.isMorningShieldActive
+
+        logToFile("DEBUG: isShieldActive=\(isShieldActive), isMorningShieldActive=\(isMorningShieldActive)")
+
+        if isShieldActive {
+            logToFile("DEBUG: Skipping wind - shield is active")
+            return false
+        }
+
+        if isMorningShieldActive {
+            logToFile("DEBUG: Skipping wind - morning shield is active")
+            return false
+        }
+
+        return true
+    }
+
+    private func processThresholdEvent(currentSeconds: Int) {
+        let lastSeconds = SharedDefaults.monitoredLastThresholdSeconds
+        let rawRiseRate = SharedDefaults.monitoredRiseRate
+        let riseRatePerSecond = rawRiseRate > 0 ? rawRiseRate : (100.0 / 60.0)
+        let oldWindPoints = SharedDefaults.monitoredWindPoints
+        let deltaSeconds = currentSeconds - lastSeconds
+
+        logToFile("========== THRESHOLD EVENT ==========")
+        logToFile("Seconds: current=\(currentSeconds), last=\(lastSeconds), delta=\(deltaSeconds)")
+        logToFile("Wind: old=\(oldWindPoints), riseRate=\(riseRatePerSecond)/s")
+
+        if deltaSeconds > 0 {
+            let newWindPoints = updateWindPoints(
+                oldWindPoints: oldWindPoints,
+                deltaSeconds: deltaSeconds,
+                riseRate: riseRatePerSecond
+            )
+
+            SharedDefaults.monitoredWindPoints = newWindPoints
+            SharedDefaults.monitoredLastThresholdSeconds = currentSeconds
+            SharedDefaults.synchronize()
+
+            logToFile("Wind UPDATE: \(oldWindPoints) + \(Double(deltaSeconds) * riseRatePerSecond) = \(newWindPoints)")
+
+            checkWindLevelChange(windPoints: newWindPoints)
+        } else {
+            logToFile("Skipping wind update: deltaSeconds=\(deltaSeconds) <= 0")
+        }
+
+        logSnapshot(eventType: .usageThreshold(cumulativeSeconds: currentSeconds))
+        checkLimitReached(currentSeconds: currentSeconds)
+    }
+
+    private func updateWindPoints(oldWindPoints: Double, deltaSeconds: Int, riseRate: Double) -> Double {
+        let windIncrease = Double(deltaSeconds) * riseRate
+        return min(oldWindPoints + windIncrease, 100)
+    }
+
+    private func checkWindLevelChange(windPoints: Double) {
+        let newLevel = WindLevel.from(windPoints: windPoints)
+        let lastKnownLevel = WindLevel(rawValue: SharedDefaults.lastKnownWindLevel) ?? .none
+
+        logToFile("WindLevel: current=\(newLevel), last=\(lastKnownLevel)")
+
+        guard newLevel != lastKnownLevel else { return }
+
+        SharedDefaults.lastKnownWindLevel = newLevel.rawValue
+        logToFile("WindLevel CHANGED: \(lastKnownLevel) -> \(newLevel)")
+
+        let settings = SharedDefaults.limitSettings
+
+        // Activate shield if threshold reached (but not at 100% - pet already blown)
+        if let activationLevel = settings.shieldActivationLevel,
+           newLevel.rawValue >= activationLevel.rawValue,
+           windPoints < 100 {
+            logToFile(">>> ACTIVATING SHIELD at level \(newLevel)")
+            activateShield()
+        }
+
+        // Send notification if enabled for this level
+        if settings.notificationLevels.contains(newLevel) {
+            logToFile(">>> SENDING NOTIFICATION for level \(newLevel)")
+            sendWindLevelNotification(level: newLevel)
+        }
+    }
+
+    private func checkLimitReached(currentSeconds: Int) {
+        let limitSeconds = SharedDefaults.integer(forKey: DefaultsKeys.monitoringLimitSeconds)
+        logToFile("[Extension] limitSeconds=\(limitSeconds), checking if \(currentSeconds) >= \(limitSeconds)")
+
+        if currentSeconds >= limitSeconds {
+            logToFile("[Extension] LIMIT REACHED (100%) - pet blown away")
+            sendLimitReachedNotification()
+        }
+    }
+
+    private func logToFile(_ message: String) {
+        ExtensionLogger.log(message)
     }
 
     // MARK: - Snapshot Logging
@@ -251,55 +251,54 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
 
     /// Sends notification when screen time limit is reached
     private func sendLimitReachedNotification() {
-        let content = UNMutableNotificationContent()
-        content.title = "Screen Time Limit Reached"
-        content.body = "Your pet is being blown away by the wind!"
-        content.sound = .default
-        content.userInfo = ["deepLink": "clif://shield"]
-        content.interruptionLevel = .timeSensitive
-
-        let request = UNNotificationRequest(
-            identifier: "limitReached_\(UUID().uuidString)",
-            content: content,
-            trigger: nil // Immediate
+        sendNotification(
+            title: "Screen Time Limit Reached",
+            body: "Your pet is being blown away by the wind!",
+            identifier: "limitReached",
+            deepLink: DeepLinks.shield
         )
-
-        UNUserNotificationCenter.current().add(request) { _ in }
     }
 
     /// Sends notification when wind level changes
     private func sendWindLevelNotification(level: WindLevel) {
-        let content = UNMutableNotificationContent()
+        let (title, body): (String, String)
 
         switch level {
         case .none:
-            return // Don't notify for none
+            return
         case .low:
-            content.title = "Vítr se zvedá"
-            content.body = "Tvůj mazlíček cítí mírný vánek. Možná čas na přestávku?"
+            (title, body) = ("Vítr se zvedá", "Tvůj mazlíček cítí mírný vánek. Možná čas na přestávku?")
         case .medium:
-            content.title = "Silnější vítr!"
-            content.body = "Tvůj mazlíček se drží. Zvažuj zpomalení."
+            (title, body) = ("Silnější vítr!", "Tvůj mazlíček se drží. Zvažuj zpomalení.")
         case .high:
-            content.title = "Nebezpečný vítr!"
-            content.body = "Tvůj mazlíček je v ohrožení! Zastav se než bude pozdě."
+            (title, body) = ("Nebezpečný vítr!", "Tvůj mazlíček je v ohrožení! Zastav se než bude pozdě.")
         }
 
+        sendNotification(
+            title: title,
+            body: body,
+            identifier: "windLevel_\(level.rawValue)",
+            deepLink: DeepLinks.home
+        )
+    }
+
+    private func sendNotification(title: String, body: String, identifier: String, deepLink: String) {
+        let content = UNMutableNotificationContent()
+        content.title = title
+        content.body = body
         content.sound = .default
-        content.userInfo = ["deepLink": "clif://home"]
+        content.userInfo = ["deepLink": deepLink]
         content.interruptionLevel = .timeSensitive
 
         let request = UNNotificationRequest(
-            identifier: "windLevel_\(level.rawValue)_\(UUID().uuidString)",
+            identifier: "\(identifier)_\(UUID().uuidString)",
             content: content,
-            trigger: nil // Immediate
+            trigger: nil
         )
 
         UNUserNotificationCenter.current().add(request) { [weak self] error in
             if let error = error {
                 self?.logToFile("[Extension] Failed to send notification: \(error.localizedDescription)")
-            } else {
-                self?.logToFile("[Extension] WindLevel notification sent for level \(level)")
             }
         }
     }

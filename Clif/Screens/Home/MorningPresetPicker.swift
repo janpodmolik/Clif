@@ -1,5 +1,4 @@
 import SwiftUI
-import ManagedSettings
 
 struct MorningPresetPicker: View {
     @Environment(PetManager.self) private var petManager
@@ -76,45 +75,10 @@ struct MorningPresetPicker: View {
     }
 
     private func confirmSelection() {
-        // Save selected preset
-        SharedDefaults.todaySelectedPreset = selectedPreset.rawValue
-        SharedDefaults.windPresetLockedForToday = true
-        SharedDefaults.windPresetLockedDate = Date()
-
-        // Clear shields and reset all shield flags
-        let store = ManagedSettingsStore()
-        store.shield.applications = nil
-        store.shield.applicationCategories = nil
-        store.shield.webDomains = nil
-        SharedDefaults.resetShieldFlags()
-
-        // Update pet's preset for today (will affect rate calculations)
-        // Note: This doesn't change the pet's stored preset, just today's behavior
         if let pet = currentPet {
-            // Restart monitoring with new preset
-            restartMonitoringWithPreset(pet: pet, preset: selectedPreset)
+            ScreenTimeManager.shared.applyMorningPreset(selectedPreset, for: pet)
         }
-
         dismiss()
-    }
-
-    private func restartMonitoringWithPreset(pet: Pet, preset: WindPreset) {
-        let limitSeconds = Int(preset.minutesToBlowAway * 60)
-        let riseRatePerSecond = preset.riseRate / 60.0
-
-        // Update SharedDefaults for extension
-        SharedDefaults.monitoredRiseRate = riseRatePerSecond
-        SharedDefaults.setInt(limitSeconds, forKey: DefaultsKeys.monitoringLimitSeconds)
-
-        // Restart monitoring
-        ScreenTimeManager.shared.startMonitoring(
-            petId: pet.id,
-            limitSeconds: limitSeconds,
-            windPoints: 0,
-            riseRatePerSecond: riseRatePerSecond,
-            lastThresholdSeconds: 0,
-            limitedSources: pet.limitedSources
-        )
     }
 }
 

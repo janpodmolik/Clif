@@ -179,7 +179,7 @@ struct OverviewScreen: View {
         switch action {
         case .showOnHomepage:
             selectedActivePet = nil
-            if let url = URL(string: "clif://pet/\(pet.id.uuidString)") {
+            if let url = URL(string: DeepLinks.pet(pet.id)) {
                 UIApplication.shared.open(url)
             }
         case .blowAway, .replay, .delete, .limitedApps, .progress, .startBreak, .endBreak, .breakHistory:

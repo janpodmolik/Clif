@@ -36,18 +36,32 @@ enum LogCategories {
     static let shieldSubsystem = "com.janpodmolik.Clif.ShieldConfiguration"
 }
 
+/// Deep link URLs for navigation
+enum DeepLinks {
+    static let shield = "clif://shield"
+    static let home = "clif://home"
+    static let presetPicker = "clif://preset-picker"
+
+    /// Creates a pet-specific deep link
+    static func pet(_ id: UUID) -> String {
+        "clif://pet/\(id.uuidString)"
+    }
+}
+
+/// Event name patterns for DeviceActivity
+enum EventNames {
+    static let secondPrefix = "second_"
+}
+
 /// UserDefaults keys
 enum DefaultsKeys {
     static let currentProgress = "currentProgress"
     static let selection = "selection"
     static let lastMonitorUpdate = "lastMonitorUpdate"
 
-    // MARK: - Pet Persistence (Active in SharedDefaults for extension access)
+    // MARK: - Pet Persistence
 
     static let activePets = "activePets"
-
-    // Legacy key - now using separate keys above
-    static let archivedPets = "archivedPets"
 
     // MARK: - Monitoring Context (lightweight data for extensions)
 
@@ -62,6 +76,12 @@ enum DefaultsKeys {
     // MARK: - Sync
 
     static let snapshotSyncOffset = "snapshotSyncOffset"
+
+    // MARK: - Token Storage
+
+    static let applicationTokens = "applicationTokens"
+    static let categoryTokens = "categoryTokens"
+    static let webDomainTokens = "webDomainTokens"
 
     // MARK: - Limit Settings
 

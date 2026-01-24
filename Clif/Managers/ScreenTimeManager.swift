@@ -77,6 +77,40 @@ final class ScreenTimeManager: ObservableObject {
         SharedDefaults.resetShieldFlags()
     }
 
+    // MARK: - Morning Preset
+
+    /// Applies the selected morning preset for today.
+    /// - Saves preset selection to SharedDefaults
+    /// - Clears any existing shields
+    /// - Restarts monitoring with new preset parameters
+    func applyMorningPreset(_ preset: WindPreset, for pet: Pet) {
+        // Save selected preset
+        SharedDefaults.todaySelectedPreset = preset.rawValue
+        SharedDefaults.windPresetLockedForToday = true
+        SharedDefaults.windPresetLockedDate = Date()
+
+        // Clear shields and reset all shield flags
+        clearShield()
+
+        // Calculate monitoring parameters from preset
+        let limitSeconds = Int(preset.minutesToBlowAway * 60)
+        let riseRatePerSecond = preset.riseRate / 60.0
+
+        // Update SharedDefaults for extension
+        SharedDefaults.monitoredRiseRate = riseRatePerSecond
+        SharedDefaults.setInt(limitSeconds, forKey: DefaultsKeys.monitoringLimitSeconds)
+
+        // Restart monitoring with new preset
+        startMonitoring(
+            petId: pet.id,
+            limitSeconds: limitSeconds,
+            windPoints: 0,
+            riseRatePerSecond: riseRatePerSecond,
+            lastThresholdSeconds: 0,
+            limitedSources: pet.limitedSources
+        )
+    }
+
     // MARK: - Per-Pet Monitoring
 
     /// Starts monitoring for a specific pet using its limitedSources.

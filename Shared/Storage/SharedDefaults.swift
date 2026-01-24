@@ -52,11 +52,10 @@ struct SharedDefaults {
         defaults?.set(try? PropertyListEncoder().encode(categories), forKey: tokenKey(petId, "catTokens"))
         defaults?.set(try? PropertyListEncoder().encode(webDomains), forKey: tokenKey(petId, "webTokens"))
 
-        // Also save to current "active" keys for extension access
-        // (extension reads from monitoredPetId, then loads tokens)
-        defaults?.set(try? PropertyListEncoder().encode(applications), forKey: "applicationTokens")
-        defaults?.set(try? PropertyListEncoder().encode(categories), forKey: "categoryTokens")
-        defaults?.set(try? PropertyListEncoder().encode(webDomains), forKey: "webDomainTokens")
+        // Also save to active keys for extension access
+        defaults?.set(try? PropertyListEncoder().encode(applications), forKey: DefaultsKeys.applicationTokens)
+        defaults?.set(try? PropertyListEncoder().encode(categories), forKey: DefaultsKeys.categoryTokens)
+        defaults?.set(try? PropertyListEncoder().encode(webDomains), forKey: DefaultsKeys.webDomainTokens)
     }
 
     /// Clears tokens for a specific pet.
@@ -66,10 +65,10 @@ struct SharedDefaults {
         defaults?.removeObject(forKey: tokenKey(petId, "catTokens"))
         defaults?.removeObject(forKey: tokenKey(petId, "webTokens"))
 
-        // Also clear legacy "active" keys that extensions use
-        defaults?.removeObject(forKey: "applicationTokens")
-        defaults?.removeObject(forKey: "categoryTokens")
-        defaults?.removeObject(forKey: "webDomainTokens")
+        // Also clear active token keys used by extensions
+        defaults?.removeObject(forKey: DefaultsKeys.applicationTokens)
+        defaults?.removeObject(forKey: DefaultsKeys.categoryTokens)
+        defaults?.removeObject(forKey: DefaultsKeys.webDomainTokens)
     }
 
     /// Loads application tokens for a specific pet.
@@ -90,14 +89,13 @@ struct SharedDefaults {
         return try? PropertyListDecoder().decode(Set<WebDomainToken>.self, from: data)
     }
 
-    // MARK: - Legacy Token Access (for extensions using monitoredPetId)
+    // MARK: - Active Token Access (used by extensions)
 
     /// Loads application tokens for the currently monitored pet.
     static func loadApplicationTokens() -> Set<ApplicationToken>? {
-        // Force fresh read from disk
         defaults?.synchronize()
-        guard let data = defaults?.data(forKey: "applicationTokens") else {
-            logTokenDebug("loadApplicationTokens: no data found for key 'applicationTokens'")
+        guard let data = defaults?.data(forKey: DefaultsKeys.applicationTokens) else {
+            logTokenDebug("loadApplicationTokens: no data found")
             return nil
         }
         do {
@@ -112,10 +110,9 @@ struct SharedDefaults {
 
     /// Loads category tokens for the currently monitored pet.
     static func loadCategoryTokens() -> Set<ActivityCategoryToken>? {
-        // Force fresh read from disk
         defaults?.synchronize()
-        guard let data = defaults?.data(forKey: "categoryTokens") else {
-            logTokenDebug("loadCategoryTokens: no data found for key 'categoryTokens'")
+        guard let data = defaults?.data(forKey: DefaultsKeys.categoryTokens) else {
+            logTokenDebug("loadCategoryTokens: no data found")
             return nil
         }
         do {
@@ -130,10 +127,9 @@ struct SharedDefaults {
 
     /// Loads web domain tokens for the currently monitored pet.
     static func loadWebDomainTokens() -> Set<WebDomainToken>? {
-        // Force fresh read from disk
         defaults?.synchronize()
-        guard let data = defaults?.data(forKey: "webDomainTokens") else {
-            logTokenDebug("loadWebDomainTokens: no data found for key 'webDomainTokens'")
+        guard let data = defaults?.data(forKey: DefaultsKeys.webDomainTokens) else {
+            logTokenDebug("loadWebDomainTokens: no data found")
             return nil
         }
         do {
@@ -146,23 +142,8 @@ struct SharedDefaults {
         }
     }
 
-    /// Logs token debug info to shared file (works in extensions too)
     private static func logTokenDebug(_ message: String) {
-        guard let containerURL = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: AppConstants.appGroupIdentifier) else { return }
-        let logURL = containerURL.appendingPathComponent("extension_log.txt")
-        let timestamp = ISO8601DateFormatter().string(from: Date())
-        let line = "[\(timestamp)] [SharedDefaults] \(message)\n"
-        if let data = line.data(using: .utf8) {
-            if FileManager.default.fileExists(atPath: logURL.path) {
-                if let handle = try? FileHandle(forWritingTo: logURL) {
-                    handle.seekToEndOfFile()
-                    handle.write(data)
-                    handle.closeFile()
-                }
-            } else {
-                try? data.write(to: logURL)
-            }
-        }
+        ExtensionLogger.log(message, prefix: "[SharedDefaults]")
     }
     
     // MARK: - Monitoring Context (lightweight data for extensions to create snapshots)
