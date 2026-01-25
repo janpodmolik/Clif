@@ -1,15 +1,15 @@
 import Foundation
 import ManagedSettings
 import FamilyControls
-import DeviceActivity
 
 /// Manages shield activation, deactivation, breaks, and cooldown logic.
 /// Single source of truth for all shield-related operations.
+///
+/// Monitoring is delegated to ScreenTimeManager.
 final class ShieldManager {
     static let shared = ShieldManager()
 
     private let store = ManagedSettingsStore()
-    private let center = DeviceActivityCenter()
 
     private init() {}
 
@@ -97,6 +97,9 @@ final class ShieldManager {
         print("[ShieldManager] toggle: ON")
         #endif
 
+        // Stop monitoring while shield is active (no need to track time during break)
+        ScreenTimeManager.shared.stopMonitoring()
+
         guard activateFromStoredTokens() else { return }
     }
 
@@ -110,7 +113,9 @@ final class ShieldManager {
         SharedDefaults.resetShieldFlags()
 
         startCooldown()
-        restartMonitoring()
+
+        // Restart monitoring to resume wind tracking
+        ScreenTimeManager.shared.restartMonitoring()
     }
 
     // MARK: - Break Reduction
@@ -182,138 +187,7 @@ final class ShieldManager {
         print("  After break reduction: wind=\(SharedDefaults.monitoredWindPoints)")
         #endif
 
-        restartMonitoring()
-    }
-
-    // MARK: - Monitoring Restart
-
-    /// Restarts monitoring with new thresholds after break.
-    /// Called after shield deactivation to regenerate thresholds that account for
-    /// the updated totalBreakReduction value.
-    private func restartMonitoring() {
-        guard let petId = SharedDefaults.monitoredPetId else {
-            #if DEBUG
-            print("[ShieldManager] restartMonitoring: No monitored pet")
-            #endif
-            return
-        }
-
-        guard let appTokens = SharedDefaults.loadApplicationTokens(),
-              let catTokens = SharedDefaults.loadCategoryTokens() else {
-            #if DEBUG
-            print("[ShieldManager] restartMonitoring: Failed to load tokens")
-            #endif
-            return
-        }
-
-        let webTokens = SharedDefaults.loadWebDomainTokens() ?? Set()
-
-        guard !appTokens.isEmpty || !catTokens.isEmpty else {
-            #if DEBUG
-            print("[ShieldManager] restartMonitoring: No tokens to monitor")
-            #endif
-            return
-        }
-
-        let limitSeconds = SharedDefaults.integer(forKey: DefaultsKeys.monitoringLimitSeconds)
-
-        let schedule = DeviceActivitySchedule(
-            intervalStart: DateComponents(hour: 0, minute: 0),
-            intervalEnd: DateComponents(hour: 23, minute: 59),
-            repeats: true
-        )
-
-        let events = MonitoringEventBuilder.buildEvents(
-            limitSeconds: limitSeconds,
-            appTokens: appTokens,
-            catTokens: catTokens,
-            webTokens: webTokens
-        )
-
-        let activityName = DeviceActivityName.forPet(petId)
-
-        do {
-            let existingActivities = center.activities
-            if !existingActivities.isEmpty {
-                center.stopMonitoring(existingActivities)
-            }
-
-            try center.startMonitoring(activityName, during: schedule, events: events)
-
-            #if DEBUG
-            print("[ShieldManager] restartMonitoring: SUCCESS - \(events.count) events")
-            #endif
-        } catch {
-            #if DEBUG
-            print("[ShieldManager] restartMonitoring: FAILED - \(error.localizedDescription)")
-            #endif
-        }
-    }
-}
-
-// MARK: - Monitoring Event Builder
-
-/// Helper for building DeviceActivity threshold events.
-/// Extracted to be reusable by both ShieldManager and ScreenTimeManager.
-enum MonitoringEventBuilder {
-
-    /// Builds threshold events for monitoring.
-    ///
-    /// Always generates thresholds from 0s to limit+buffer.
-    /// iOS automatically ignores thresholds that have already been passed.
-    static func buildEvents(
-        limitSeconds: Int,
-        appTokens: Set<ApplicationToken>,
-        catTokens: Set<ActivityCategoryToken>,
-        webTokens: Set<WebDomainToken>
-    ) -> [DeviceActivityEvent.Name: DeviceActivityEvent] {
-        var events: [DeviceActivityEvent.Name: DeviceActivityEvent] = [:]
-
-        let maxThresholds = AppConstants.maxThresholds
-        let minInterval = AppConstants.minimumThresholdSeconds
-
-        // Add 10% buffer for blow-away detection (110%)
-        let targetSeconds = limitSeconds + max(limitSeconds / 10, minInterval)
-
-        // Calculate interval to spread thresholds evenly across full range
-        let intervalSeconds = max(targetSeconds / maxThresholds, minInterval)
-
-        #if DEBUG
-        print("[MonitoringEventBuilder] buildEvents:")
-        print("  limitSeconds: \(limitSeconds)s")
-        print("  targetSeconds (with buffer): \(targetSeconds)s")
-        print("  intervalSeconds: \(intervalSeconds)s")
-        #endif
-
-        // Generate thresholds from first interval to cover full range
-        // iOS ignores already-passed thresholds automatically
-        var currentSeconds = intervalSeconds
-
-        while events.count < maxThresholds {
-            let eventName = DeviceActivityEvent.Name("second_\(currentSeconds)")
-            let minutes = currentSeconds / 60
-            let seconds = currentSeconds % 60
-
-            events[eventName] = DeviceActivityEvent(
-                applications: appTokens,
-                categories: catTokens,
-                webDomains: webTokens,
-                threshold: DateComponents(minute: minutes, second: seconds)
-            )
-
-            currentSeconds += intervalSeconds
-        }
-
-        #if DEBUG
-        print("  Created \(events.count) events")
-        if let firstKey = events.keys.min(by: { $0.rawValue < $1.rawValue }) {
-            print("  First threshold: \(firstKey.rawValue)")
-        }
-        if let lastKey = events.keys.max(by: { $0.rawValue < $1.rawValue }) {
-            print("  Last threshold: \(lastKey.rawValue)")
-        }
-        #endif
-
-        return events
+        // Restart monitoring to resume wind tracking
+        ScreenTimeManager.shared.restartMonitoring()
     }
 }
