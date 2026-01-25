@@ -156,4 +156,11 @@ extension SharedDefaults {
         let elapsed = Date().timeIntervalSince(activatedAt)
         return max(0, calculatedWind - elapsed * monitoredFallRate)
     }
+
+    /// Buffer time in seconds (5% of limit).
+    /// Used for cooldown calculation after shield unlock.
+    static var bufferSeconds: Int {
+        let limitSeconds = integer(forKey: DefaultsKeys.monitoringLimitSeconds)
+        return limitSeconds / 20 // 5%
+    }
 }

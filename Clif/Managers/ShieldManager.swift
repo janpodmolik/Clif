@@ -153,11 +153,14 @@ final class ShieldManager {
     // MARK: - Cooldown
 
     /// Starts shield cooldown - shield won't auto-activate for specified duration.
-    /// This allows wind to rise to 105%+ for blow-away if user continues using apps.
-    func startCooldown(seconds: TimeInterval = 30) {
-        SharedDefaults.shieldCooldownUntil = Date().addingTimeInterval(seconds)
+    /// Duration is 2× buffer time (10% of limit) to allow wind to rise from ~95% to 105%+ for blow-away.
+    /// After unlock, wind is typically around 95% (due to fallRate during shield).
+    /// User needs to gain ~10% wind to reach blow-away threshold.
+    func startCooldown() {
+        let cooldownSeconds = TimeInterval(SharedDefaults.bufferSeconds * 2)
+        SharedDefaults.shieldCooldownUntil = Date().addingTimeInterval(cooldownSeconds)
         #if DEBUG
-        print("[ShieldManager] Cooldown set for \(seconds)s")
+        print("[ShieldManager] Cooldown set for \(cooldownSeconds)s (2× buffer)")
         #endif
     }
 
