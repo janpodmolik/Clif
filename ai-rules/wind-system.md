@@ -51,6 +51,15 @@ MAIN APP                              EXTENSIONS (separate processes, ~6MB limit
 
 ## Wind Calculation
 
+**Absolute formula (current):**
+```swift
+wind = (cumulativeSeconds - totalBreakReduction) / limitSeconds * 100
+```
+
+- `cumulativeSeconds` = cumulative app usage from DeviceActivity threshold
+- `totalBreakReduction` = sum of seconds "forgiven" by breaks (reset at day start)
+- `limitSeconds` = daily limit from preset (minutesToBlowAway * 60)
+
 **Presets:**
 | Preset | minutesToBlowAway | riseRate (pts/min) | fallRate (pts/min) |
 |--------|-------------------|--------------------|--------------------|
@@ -58,14 +67,7 @@ MAIN APP                              EXTENSIONS (separate processes, ~6MB limit
 | balanced | 8 | 12.5 | 5 |
 | intense | 5 | 20 | 6.67 |
 
-**Threshold events:** DeviceActivity API allows max 20 thresholds. For 8-min limit → threshold every 24s.
-
-**Wind update in extension:**
-```swift
-let deltaSeconds = currentThreshold - previousThreshold
-let windIncrease = Double(deltaSeconds) * (riseRate / 60.0)
-newWindPoints = min(oldWindPoints + windIncrease, 100)
-```
+**Threshold events:** DeviceActivity API allows max 20 thresholds. After unlock, thresholds project ~2x limit for buffer zone.
 
 **WindLevel zones:**
 - none: 0-4 pts
@@ -82,20 +84,30 @@ newWindPoints = min(oldWindPoints + windIncrease, 100)
 5. **Unlock:** Deep link from ShieldAction → ScreenTimeManager.processUnlock() → applies wind decrease
 6. **Blow away:** At 100% wind when unlocking OR committed break violation
 
-## Break System
+## Break System (Break Reduction)
+
+When shield is deactivated (unlock or toggle off), break reduction is calculated and added to `totalBreakReduction`:
+
+```swift
+secondsForgiven = elapsedSeconds * fallRate * limitSeconds / 100
+```
+
+This "forgives" usage time, effectively lowering wind on the next threshold calculation.
 
 | Type | fallRateMultiplier | Violation penalty |
 |------|-------------------|-------------------|
 | free | 1.0x | None |
 | committed | 1.5x | Pet blows away |
 
-Wind decrease: `elapsedMinutes * preset.fallRate * type.fallRateMultiplier`
+**Key files:**
+- `ScreenTimeManager.applyBreakReduction()` - calculates and adds to totalBreakReduction
+- `SharedDefaults.totalBreakReduction` - accumulated forgiven seconds (reset at day start)
 
 ## Cross-Process Communication
 
 All state shared via `SharedDefaults` (App Group UserDefaults). Extensions have fresh UserDefaults instance on each read for sync.
 
-Key flags: `isShieldActive`, `isMorningShieldActive`, `shieldActivatedAt`, `breakStartedAt`, `petBlownAway`, `lastUnlockAt`
+Key flags: `isShieldActive`, `isMorningShieldActive`, `shieldActivatedAt`, `breakStartedAt`, `petBlownAway`, `lastUnlockAt`, `totalBreakReduction`
 
 ## Shield Cooldown
 

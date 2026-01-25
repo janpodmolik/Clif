@@ -289,6 +289,19 @@ struct SharedDefaults {
         set { defaults?.set(newValue, forKey: DefaultsKeys.monitoredFallRate) }
     }
 
+    /// Total seconds "forgiven" by breaks today. Reset at day start.
+    /// Used for absolute wind calculation: wind = (cumulative - breakReduction) / limit * 100
+    static var totalBreakReduction: Int {
+        get {
+            let fresh = UserDefaults(suiteName: AppConstants.appGroupIdentifier)
+            return fresh?.integer(forKey: DefaultsKeys.totalBreakReduction) ?? 0
+        }
+        set {
+            defaults?.set(newValue, forKey: DefaultsKeys.totalBreakReduction)
+            defaults?.synchronize()
+        }
+    }
+
     /// Timestamp of last unlock (for shield cooldown).
     /// Set by main app when user unlocks shield.
     static var lastUnlockAt: Date? {

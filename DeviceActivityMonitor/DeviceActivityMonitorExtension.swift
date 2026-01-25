@@ -30,6 +30,7 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
         SharedDefaults.currentProgress = 0
         SharedDefaults.monitoredWindPoints = 0
         SharedDefaults.monitoredLastThresholdSeconds = 0
+        SharedDefaults.totalBreakReduction = 0
 
         // Reset preset lock for new day
         SharedDefaults.windPresetLockedForToday = false
@@ -130,40 +131,31 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
     }
 
     /// Full threshold processing - wind update, level changes, safety shield, snapshots.
+    /// Uses absolute calculation: wind = (cumulativeSeconds - breakReduction) / limitSeconds * 100
     private func processThresholdEvent(currentSeconds: Int, previousThresholdSeconds: Int) {
-        // Calculate wind delta from previous threshold
-        let deltaSeconds = currentSeconds - previousThresholdSeconds
-        let riseRate = SharedDefaults.monitoredRiseRate
         let oldWindPoints = SharedDefaults.monitoredWindPoints
+        let limitSeconds = SharedDefaults.integer(forKey: DefaultsKeys.monitoringLimitSeconds)
+        let breakReduction = SharedDefaults.totalBreakReduction
 
         logToFile("========== THRESHOLD EVENT ==========")
-        logToFile("Seconds: current=\(currentSeconds), previous=\(previousThresholdSeconds), delta=\(deltaSeconds)")
+        logToFile("Cumulative: \(currentSeconds)s, BreakReduction: \(breakReduction)s, Limit: \(limitSeconds)s")
 
-        // After unlock + monitoring restart, thresholds start from 0 again
-        // but previousThresholdSeconds might be higher (from before unlock).
-        // In this case, treat currentSeconds as delta from 0 (all usage since restart counts).
-        let effectiveDelta: Int
-        if deltaSeconds <= 0 {
-            logToFile("Monitoring was restarted - using currentSeconds as delta")
-            effectiveDelta = currentSeconds
+        // Absolute wind calculation
+        let effectiveSeconds = max(0, currentSeconds - breakReduction)
+        let newWindPoints: Double
+        if limitSeconds > 0 {
+            newWindPoints = min(Double(effectiveSeconds) / Double(limitSeconds) * 100, 100)
         } else {
-            effectiveDelta = deltaSeconds
+            newWindPoints = 0
         }
 
-        // Update wind points
-        let newWindPoints = updateWindPoints(oldWindPoints: oldWindPoints, deltaSeconds: effectiveDelta, riseRate: riseRate)
         SharedDefaults.monitoredWindPoints = newWindPoints
 
-        logToFile("riseRate=\(riseRate), Wind: \(oldWindPoints) -> \(newWindPoints)")
+        logToFile("Effective: \(effectiveSeconds)s, Wind: \(String(format: "%.1f", oldWindPoints)) -> \(String(format: "%.1f", newWindPoints))%")
 
         checkWindLevelChange(oldWindPoints: oldWindPoints, newWindPoints: newWindPoints)
         checkSafetyShield(windPoints: newWindPoints)
         logSnapshot(eventType: .usageThreshold(cumulativeSeconds: currentSeconds))
-    }
-
-    private func updateWindPoints(oldWindPoints: Double, deltaSeconds: Int, riseRate: Double) -> Double {
-        let windIncrease = Double(deltaSeconds) * riseRate
-        return min(oldWindPoints + windIncrease, 100)
     }
 
     /// Checks if wind crossed any level thresholds and triggers shield/notifications.

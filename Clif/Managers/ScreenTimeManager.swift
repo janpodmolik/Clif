@@ -89,7 +89,7 @@ final class ScreenTimeManager: ObservableObject {
             print("[ScreenTimeManager] toggleShield: OFF")
             #endif
 
-            applyWindDecreaseFromShield()
+            applyBreakReduction()
             deactivateShield()
         } else {
             // Shield is off -> turn ON
@@ -123,22 +123,26 @@ final class ScreenTimeManager: ObservableObject {
 
     // MARK: - Shield Helpers
 
-    /// Calculates and applies wind decrease based on shield active time.
-    /// Updates SharedDefaults.monitoredWindPoints with the new value.
-    private func applyWindDecreaseFromShield() {
+    /// Calculates break reduction based on shield duration and adds to totalBreakReduction.
+    /// Wind will be recalculated on the next threshold using the absolute formula:
+    /// wind = (cumulativeSeconds - totalBreakReduction) / limitSeconds * 100
+    private func applyBreakReduction() {
         guard let activatedAt = SharedDefaults.shieldActivatedAt else { return }
 
-        let elapsedSeconds = Date().timeIntervalSince(activatedAt)
+        let elapsedSeconds = Int(Date().timeIntervalSince(activatedAt))
+        let limitSeconds = SharedDefaults.integer(forKey: DefaultsKeys.monitoringLimitSeconds)
         let fallRate = SharedDefaults.monitoredFallRate
-        let decrease = elapsedSeconds * fallRate
-        let oldWind = SharedDefaults.monitoredWindPoints
-        let newWind = max(0, oldWind - decrease)
+
+        // fallRate is in pts/sec, limit is 100 pts
+        // secondsForgiven = elapsedSeconds * fallRate * limitSeconds / 100
+        let secondsForgiven = Int(Double(elapsedSeconds) * fallRate * Double(limitSeconds) / 100.0)
+
+        let oldReduction = SharedDefaults.totalBreakReduction
+        SharedDefaults.totalBreakReduction = oldReduction + secondsForgiven
 
         #if DEBUG
-        print("  Shield was active for \(Int(elapsedSeconds))s, wind: \(oldWind) -> \(newWind)")
+        print("[ScreenTimeManager] Break reduction: +\(secondsForgiven)s (elapsed: \(elapsedSeconds)s, fallRate: \(fallRate), total: \(oldReduction + secondsForgiven)s)")
         #endif
-
-        SharedDefaults.monitoredWindPoints = newWind
     }
 
     /// Clears shield from ManagedSettingsStore and resets shield flags.
@@ -170,8 +174,8 @@ final class ScreenTimeManager: ObservableObject {
             return
         }
 
-        // Calculate wind decrease and clear shield
-        applyWindDecreaseFromShield()
+        // Calculate break reduction and clear shield
+        applyBreakReduction()
         deactivateShield()
 
         // Set unlock timestamp for shield cooldown
@@ -436,6 +440,7 @@ final class ScreenTimeManager: ObservableObject {
 
     /// Builds thresholds starting from a specific position.
     /// Used after unlock to generate fresh thresholds from current usage.
+    /// Target is dynamically calculated based on totalBreakReduction.
     private func buildEventsFromPosition(
         startFromSeconds: Int,
         limitSeconds: Int,
@@ -448,12 +453,20 @@ final class ScreenTimeManager: ObservableObject {
         let maxThresholds = AppConstants.maxThresholds
         let minInterval = AppConstants.minimumThresholdSeconds
 
-        // Calculate interval based on remaining time to limit
-        let remainingSeconds = max(limitSeconds - startFromSeconds, minInterval * maxThresholds)
+        // Dynamic target: cumulative seconds needed for 100% wind
+        // wind = (cumulative - breakReduction) / limit * 100 = 100
+        // => cumulative = breakReduction + limit
+        let breakReduction = SharedDefaults.totalBreakReduction
+        let targetSeconds = breakReduction + limitSeconds
+
+        // Buffer 10% for safety margin
+        let targetWithBuffer = targetSeconds + max(limitSeconds / 10, minInterval)
+
+        let remainingSeconds = max(targetWithBuffer - startFromSeconds, minInterval * maxThresholds)
         let intervalSeconds = max(remainingSeconds / maxThresholds, minInterval)
 
         #if DEBUG
-        print("DEBUG: buildEventsFromPosition - startFrom=\(startFromSeconds)s, limit=\(limitSeconds)s, interval=\(intervalSeconds)s")
+        print("DEBUG: buildEventsFromPosition - startFrom=\(startFromSeconds)s, limit=\(limitSeconds)s, breakReduction=\(breakReduction)s, target=\(targetWithBuffer)s, interval=\(intervalSeconds)s")
         #endif
 
         // Generate thresholds starting from next interval after current position
@@ -482,7 +495,7 @@ final class ScreenTimeManager: ObservableObject {
     }
 
     /// Builds thresholds for granular windPoints tracking.
-    /// Generates thresholds up to 100% of the limit.
+    /// Target is dynamically calculated based on totalBreakReduction.
     private func buildEvents(
         limitSeconds: Int,
         appTokens: Set<ApplicationToken>,
@@ -494,21 +507,29 @@ final class ScreenTimeManager: ObservableObject {
         let maxThresholds = AppConstants.maxThresholds
         let minInterval = AppConstants.minimumThresholdSeconds
 
+        // Dynamic target: cumulative seconds needed for 100% wind
+        // wind = (cumulative - breakReduction) / limit * 100 = 100
+        // => cumulative = breakReduction + limit
+        let breakReduction = SharedDefaults.totalBreakReduction
+        let targetSeconds = breakReduction + limitSeconds
+
+        // Buffer 10% for safety margin
+        let targetWithBuffer = targetSeconds + max(limitSeconds / 10, minInterval)
+
         #if DEBUG
-        print("DEBUG: buildEvents - limitSeconds=\(limitSeconds), maxThresholds=\(maxThresholds), minInterval=\(minInterval)")
+        print("DEBUG: buildEvents - limitSeconds=\(limitSeconds), breakReduction=\(breakReduction)s, target=\(targetWithBuffer)s, maxThresholds=\(maxThresholds)")
         #endif
 
-        // Calculate optimal interval to fit maxThresholds within limit
-        // intervalSeconds = limitSeconds / maxThresholds, but at least minInterval
-        let intervalSeconds = max(limitSeconds / maxThresholds, minInterval)
+        // Calculate optimal interval to fit maxThresholds within target
+        let intervalSeconds = max(targetWithBuffer / maxThresholds, minInterval)
 
         #if DEBUG
         print("DEBUG: buildEvents - calculated intervalSeconds=\(intervalSeconds)")
         #endif
 
-        // Generate thresholds: interval, 2*interval, 3*interval, ... up to limitSeconds
+        // Generate thresholds: interval, 2*interval, 3*interval, ... up to target
         var currentSeconds = intervalSeconds
-        while currentSeconds <= limitSeconds && events.count < maxThresholds {
+        while currentSeconds <= targetWithBuffer && events.count < maxThresholds {
             let eventName = DeviceActivityEvent.Name("second_\(currentSeconds)")
 
             // DateComponents supports second precision
@@ -525,24 +546,9 @@ final class ScreenTimeManager: ObservableObject {
             currentSeconds += intervalSeconds
         }
 
-        // Always include the limit threshold to ensure we hit exactly 100%
-        if events.count < maxThresholds {
-            let finalEventName = DeviceActivityEvent.Name("second_\(limitSeconds)")
-            if events[finalEventName] == nil {
-                let minutes = limitSeconds / 60
-                let seconds = limitSeconds % 60
-                events[finalEventName] = DeviceActivityEvent(
-                    applications: appTokens,
-                    categories: catTokens,
-                    webDomains: webTokens,
-                    threshold: DateComponents(minute: minutes, second: seconds)
-                )
-            }
-        }
-
         #if DEBUG
-        print("DEBUG: buildEvents - created \(events.count) events (up to \(limitSeconds)s)")
-        print("[ScreenTimeManager] Built \(events.count) events with \(intervalSeconds)s interval for \(limitSeconds)s limit")
+        print("DEBUG: buildEvents - created \(events.count) events (up to \(targetWithBuffer)s)")
+        print("[ScreenTimeManager] Built \(events.count) events with \(intervalSeconds)s interval for target \(targetWithBuffer)s (limit: \(limitSeconds)s, breakReduction: \(breakReduction)s)")
         #endif
 
         return events
