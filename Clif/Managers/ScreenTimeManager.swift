@@ -13,6 +13,8 @@ extension DeviceActivityName {
 
 /// Manages Screen Time authorization and per-pet device activity monitoring.
 /// Each pet can have its own set of monitored apps/categories with independent schedules.
+///
+/// Shield-related operations are delegated to ShieldManager.
 final class ScreenTimeManager: ObservableObject {
     static let shared = ScreenTimeManager()
 
@@ -48,7 +50,7 @@ final class ScreenTimeManager: ObservableObject {
         self.isAuthorized = AuthorizationCenter.shared.authorizationStatus == .approved
     }
 
-    // MARK: - Shield Management
+    // MARK: - Shield Delegation
 
     /// Activates shield for specific tokens.
     func activateShield(
@@ -56,272 +58,19 @@ final class ScreenTimeManager: ObservableObject {
         categories: Set<ActivityCategoryToken>,
         webDomains: Set<WebDomainToken>
     ) {
-        if !applications.isEmpty {
-            store.shield.applications = applications
-        }
-        if !categories.isEmpty {
-            store.shield.applicationCategories = .specific(categories, except: Set())
-        }
-        if !webDomains.isEmpty {
-            store.shield.webDomains = webDomains
-        }
+        ShieldManager.shared.activate(applications: applications, categories: categories, webDomains: webDomains)
     }
 
     func clearShield() {
-        #if DEBUG
-        print("DEBUG: clearShield() called")
-        #endif
-        store.shield.applications = nil
-        store.shield.applicationCategories = nil
-        store.shield.webDomains = nil
-        SharedDefaults.resetShieldFlags()
+        ShieldManager.shared.clear()
     }
 
-    // MARK: - Shield Toggle (from UI)
-
-    /// Toggles shield on/off from the home screen button.
-    /// When turning ON: activates shield for monitored tokens, records activation time.
-    /// When turning OFF: calculates wind decrease, clears shield.
     func toggleShield() {
-        if SharedDefaults.isShieldActive {
-            // Shield is active -> turn OFF
-            #if DEBUG
-            print("[ScreenTimeManager] toggleShield: OFF")
-            #endif
-
-            applyBreakReduction()
-            deactivateShield()
-
-            // Start cooldown - shield won't auto-activate for 30 seconds
-            // This allows wind to rise to 105%+ for blow-away if user continues using apps
-            let cooldownSeconds: TimeInterval = 30
-            SharedDefaults.shieldCooldownUntil = Date().addingTimeInterval(cooldownSeconds)
-            #if DEBUG
-            print("  Cooldown set for \(cooldownSeconds)s")
-            #endif
-
-            // IMPORTANT: Restart monitoring with new thresholds
-            // After break, totalBreakReduction changed, so we need new thresholds
-            // that cover the extended range needed to reach 105% wind
-            restartMonitoringAfterBreak()
-        } else {
-            // Shield is off -> turn ON
-            #if DEBUG
-            print("[ScreenTimeManager] toggleShield: ON")
-            #endif
-
-            // Load tokens
-            guard let appTokens = SharedDefaults.loadApplicationTokens(),
-                  let catTokens = SharedDefaults.loadCategoryTokens() else {
-                #if DEBUG
-                print("  Failed to load tokens")
-                #endif
-                return
-            }
-            let webTokens = SharedDefaults.loadWebDomainTokens() ?? Set()
-
-            // Activate shield
-            activateShield(applications: appTokens, categories: catTokens, webDomains: webTokens)
-
-            // Mark shield as active with timestamp
-            SharedDefaults.isShieldActive = true
-            SharedDefaults.shieldActivatedAt = Date()
-            SharedDefaults.synchronize()
-
-            #if DEBUG
-            print("  Shield activated at \(Date())")
-            #endif
-        }
+        ShieldManager.shared.toggle()
     }
 
-    // MARK: - Shield Helpers
-
-    /// Calculates break reduction based on shield duration, adds to totalBreakReduction,
-    /// and immediately recalculates wind using WindCalculator.
-    private func applyBreakReduction() {
-        guard let activatedAt = SharedDefaults.shieldActivatedAt else { return }
-
-        let elapsedSeconds = Int(Date().timeIntervalSince(activatedAt))
-        let limitSeconds = SharedDefaults.integer(forKey: DefaultsKeys.monitoringLimitSeconds)
-        let fallRate = SharedDefaults.monitoredFallRate
-
-        // fallRate is in pts/sec, limit is 100 pts
-        // secondsForgiven = elapsedSeconds * fallRate * limitSeconds / 100
-        let secondsForgiven = Int(Double(elapsedSeconds) * fallRate * Double(limitSeconds) / 100.0)
-
-        let oldReduction = SharedDefaults.totalBreakReduction
-        let newReduction = oldReduction + secondsForgiven
-        SharedDefaults.totalBreakReduction = newReduction
-
-        // Recalculate wind using WindCalculator
-        let oldWind = SharedDefaults.monitoredWindPoints
-        let newWind = WindCalculator.currentWind()
-        SharedDefaults.monitoredWindPoints = newWind
-
-        #if DEBUG
-        let cumulativeSeconds = SharedDefaults.monitoredLastThresholdSeconds
-        let effectiveSeconds = max(0, cumulativeSeconds - newReduction)
-        print("[ScreenTimeManager] Break reduction: +\(secondsForgiven)s (elapsed: \(elapsedSeconds)s, fallRate: \(fallRate), total: \(newReduction)s)")
-        print("[ScreenTimeManager] Wind recalculated: \(String(format: "%.1f", oldWind)) -> \(String(format: "%.1f", newWind))% (cumulative: \(cumulativeSeconds)s, effective: \(effectiveSeconds)s)")
-        #endif
-    }
-
-    /// Clears shield from ManagedSettingsStore and resets shield flags.
-    private func deactivateShield() {
-        store.shield.applications = nil
-        store.shield.applicationCategories = nil
-        store.shield.webDomains = nil
-        SharedDefaults.resetShieldFlags()
-    }
-
-    /// Restarts monitoring with new thresholds after break.
-    /// Called after toggleShield OFF to regenerate thresholds that account for
-    /// the updated totalBreakReduction value.
-    private func restartMonitoringAfterBreak() {
-        guard let petId = SharedDefaults.monitoredPetId else {
-            #if DEBUG
-            print("[ScreenTimeManager] restartMonitoringAfterBreak: No monitored pet")
-            #endif
-            return
-        }
-
-        guard let appTokens = SharedDefaults.loadApplicationTokens(),
-              let catTokens = SharedDefaults.loadCategoryTokens() else {
-            #if DEBUG
-            print("[ScreenTimeManager] restartMonitoringAfterBreak: Failed to load tokens")
-            #endif
-            return
-        }
-
-        let webTokens = SharedDefaults.loadWebDomainTokens() ?? Set()
-
-        guard !appTokens.isEmpty || !catTokens.isEmpty else {
-            #if DEBUG
-            print("[ScreenTimeManager] restartMonitoringAfterBreak: No tokens to monitor")
-            #endif
-            return
-        }
-
-        let limitSeconds = SharedDefaults.integer(forKey: DefaultsKeys.monitoringLimitSeconds)
-
-        let schedule = DeviceActivitySchedule(
-            intervalStart: DateComponents(hour: 0, minute: 0),
-            intervalEnd: DateComponents(hour: 23, minute: 59),
-            repeats: true
-        )
-
-        let events = buildEvents(
-            limitSeconds: limitSeconds,
-            appTokens: appTokens,
-            catTokens: catTokens,
-            webTokens: webTokens
-        )
-
-        let activityName = DeviceActivityName.forPet(petId)
-
-        do {
-            let existingActivities = center.activities
-            if !existingActivities.isEmpty {
-                center.stopMonitoring(existingActivities)
-            }
-
-            try center.startMonitoring(activityName, during: schedule, events: events)
-
-            #if DEBUG
-            print("[ScreenTimeManager] restartMonitoringAfterBreak: SUCCESS - \(events.count) events")
-            #endif
-        } catch {
-            #if DEBUG
-            print("[ScreenTimeManager] restartMonitoringAfterBreak: FAILED - \(error.localizedDescription)")
-            #endif
-        }
-    }
-
-    // MARK: - Unlock Processing
-
-    /// Processes unlock request from shield deep link.
-    /// Called when user taps unlock notification from ShieldAction.
-    /// - Calculates wind decrease from shield time
-    /// - Clears shields
-    /// - Restarts monitoring with fresh thresholds
     func processUnlock() {
-        #if DEBUG
-        print("[ScreenTimeManager] processUnlock() called")
-        print("  Before: wind=\(SharedDefaults.monitoredWindPoints), lastThreshold=\(SharedDefaults.monitoredLastThresholdSeconds)")
-        #endif
-
-        guard let petId = SharedDefaults.monitoredPetId else {
-            #if DEBUG
-            print("[ScreenTimeManager] processUnlock: No monitored pet, just clearing shields")
-            #endif
-            clearShield()
-            return
-        }
-
-        // Calculate break reduction and clear shield
-        applyBreakReduction()
-        deactivateShield()
-
-        #if DEBUG
-        print("  After break reduction: wind=\(SharedDefaults.monitoredWindPoints)")
-        #endif
-
-        // Load tokens for restart
-        guard let appTokens = SharedDefaults.loadApplicationTokens(),
-              let catTokens = SharedDefaults.loadCategoryTokens() else {
-            #if DEBUG
-            print("[ScreenTimeManager] processUnlock: Failed to load tokens, cannot restart monitoring")
-            #endif
-            return
-        }
-
-        let webTokens = SharedDefaults.loadWebDomainTokens() ?? Set()
-
-        guard !appTokens.isEmpty || !catTokens.isEmpty else {
-            #if DEBUG
-            print("[ScreenTimeManager] processUnlock: No tokens to monitor")
-            #endif
-            return
-        }
-
-        let limitSeconds = SharedDefaults.integer(forKey: DefaultsKeys.monitoringLimitSeconds)
-
-        #if DEBUG
-        print("[ScreenTimeManager] processUnlock: Restarting monitoring")
-        print("  petId=\(petId), limit=\(limitSeconds)s")
-        #endif
-
-        let schedule = DeviceActivitySchedule(
-            intervalStart: DateComponents(hour: 0, minute: 0),
-            intervalEnd: DateComponents(hour: 23, minute: 59),
-            repeats: true
-        )
-
-        let events = buildEvents(
-            limitSeconds: limitSeconds,
-            appTokens: appTokens,
-            catTokens: catTokens,
-            webTokens: webTokens
-        )
-
-        let activityName = DeviceActivityName.forPet(petId)
-
-        do {
-            let existingActivities = center.activities
-            if !existingActivities.isEmpty {
-                center.stopMonitoring(existingActivities)
-            }
-
-            try center.startMonitoring(activityName, during: schedule, events: events)
-
-            #if DEBUG
-            print("[ScreenTimeManager] processUnlock: SUCCESS - \(events.count) events")
-            #endif
-        } catch {
-            #if DEBUG
-            print("[ScreenTimeManager] processUnlock: FAILED - \(error.localizedDescription)")
-            #endif
-        }
+        ShieldManager.shared.processUnlock()
     }
 
     // MARK: - Morning Preset
@@ -410,7 +159,7 @@ final class ScreenTimeManager: ObservableObject {
             repeats: true
         )
 
-        let events = buildEvents(
+        let events = MonitoringEventBuilder.buildEvents(
             limitSeconds: limitSeconds,
             appTokens: appTokens,
             catTokens: catTokens,
@@ -469,74 +218,6 @@ final class ScreenTimeManager: ObservableObject {
         #if DEBUG
         print("[ScreenTimeManager] Stopped all monitoring")
         #endif
-    }
-
-    // MARK: - Event Building
-
-    /// Builds threshold events for monitoring.
-    ///
-    /// Always generates thresholds from 0s to limit+buffer.
-    /// iOS automatically ignores thresholds that have already been passed.
-    ///
-    /// - Parameters:
-    ///   - limitSeconds: Total screen time limit in seconds
-    ///   - appTokens: Application tokens to monitor
-    ///   - catTokens: Category tokens to monitor
-    ///   - webTokens: Web domain tokens to monitor
-    private func buildEvents(
-        limitSeconds: Int,
-        appTokens: Set<ApplicationToken>,
-        catTokens: Set<ActivityCategoryToken>,
-        webTokens: Set<WebDomainToken>
-    ) -> [DeviceActivityEvent.Name: DeviceActivityEvent] {
-        var events: [DeviceActivityEvent.Name: DeviceActivityEvent] = [:]
-
-        let maxThresholds = AppConstants.maxThresholds
-        let minInterval = AppConstants.minimumThresholdSeconds
-
-        // Add 10% buffer for blow-away detection (110%)
-        let targetSeconds = limitSeconds + max(limitSeconds / 10, minInterval)
-
-    // Calculate interval to spread thresholds evenly across full range
-        let intervalSeconds = max(targetSeconds / maxThresholds, minInterval)
-
-        #if DEBUG
-        print("[ScreenTimeManager] buildEvents:")
-        print("  limitSeconds: \(limitSeconds)s")
-        print("  targetSeconds (with buffer): \(targetSeconds)s")
-        print("  intervalSeconds: \(intervalSeconds)s")
-        #endif
-
-        // Generate thresholds from first interval to cover full range
-        // iOS ignores already-passed thresholds automatically
-        var currentSeconds = intervalSeconds
-
-        while events.count < maxThresholds {
-            let eventName = DeviceActivityEvent.Name("second_\(currentSeconds)")
-            let minutes = currentSeconds / 60
-            let seconds = currentSeconds % 60
-
-            events[eventName] = DeviceActivityEvent(
-                applications: appTokens,
-                categories: catTokens,
-                webDomains: webTokens,
-                threshold: DateComponents(minute: minutes, second: seconds)
-            )
-
-            currentSeconds += intervalSeconds
-        }
-
-        #if DEBUG
-        print("  Created \(events.count) events")
-        if let firstKey = events.keys.min(by: { $0.rawValue < $1.rawValue }) {
-            print("  First threshold: \(firstKey.rawValue)")
-        }
-        if let lastKey = events.keys.max(by: { $0.rawValue < $1.rawValue }) {
-            print("  Last threshold: \(lastKey.rawValue)")
-        }
-        #endif
-
-        return events
     }
 
     // MARK: - Debug Methods
