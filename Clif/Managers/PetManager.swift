@@ -121,7 +121,7 @@ final class PetManager {
     /// Performs daily reset if needed (new day since last activity).
     /// Call this on app launch and foreground return.
     func performDailyResetIfNeeded() {
-        guard let pet = pet, !pet.isBlownAway else { return }
+        guard let pet = pet, pet.windPoints.isZero, !pet.isBlownAway else { return }
 
         let today = SnapshotEvent.dateString(from: Date())
         let lastResetKey = "lastDailyReset_\(pet.id.uuidString)"

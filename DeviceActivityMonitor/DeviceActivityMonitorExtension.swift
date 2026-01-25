@@ -1,9 +1,12 @@
 import DeviceActivity
 import Foundation
+import ManagedSettings
 
 /// Background extension that monitors device activity and updates wind.
 /// Runs in a separate process with limited memory (~6MB).
 class DeviceActivityMonitorExtension: DeviceActivityMonitor {
+
+    private let store = ManagedSettingsStore()
 
     // MARK: - DeviceActivityMonitor Overrides
 
@@ -130,6 +133,67 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
 
         let effectiveSeconds = max(0, trueCumulative - breakReduction)
         logToFile("effective=\(effectiveSeconds)s")
+
+        // Check for safety shield at 100%
+        if newWindPoints >= 100 {
+            checkSafetyShield()
+        }
+    }
+
+    // MARK: - Safety Shield
+
+    /// Activates safety shield when wind reaches 100%.
+    /// Respects cooldown (after unlock) and debug disable flag.
+    private func checkSafetyShield() {
+        logToFile("[SafetyShield] Wind >= 100%, checking conditions...")
+
+        // Sync to get fresh data
+        SharedDefaults.synchronize()
+
+        // Already active?
+        if SharedDefaults.isShieldActive {
+            logToFile("[SafetyShield] Shield already active, skipping")
+            return
+        }
+
+        // Debug disable?
+        let settings = SharedDefaults.limitSettings
+        if settings.disableSafetyShield {
+            logToFile("[SafetyShield] Disabled via debug settings, skipping")
+            return
+        }
+
+        // Cooldown active? (after unlock, user has 30s window for blow-away)
+        if let cooldownUntil = SharedDefaults.shieldCooldownUntil, Date() < cooldownUntil {
+            logToFile("[SafetyShield] Cooldown active until \(cooldownUntil), skipping")
+            return
+        }
+
+        // Load tokens
+        guard let appTokens = SharedDefaults.loadApplicationTokens(),
+              let catTokens = SharedDefaults.loadCategoryTokens() else {
+            logToFile("[SafetyShield] Failed to load tokens")
+            return
+        }
+        let webTokens = SharedDefaults.loadWebDomainTokens() ?? Set()
+
+        // Activate shield
+        if !appTokens.isEmpty {
+            store.shield.applications = appTokens
+        }
+        if !catTokens.isEmpty {
+            store.shield.applicationCategories = .specific(catTokens, except: Set())
+        }
+        if !webTokens.isEmpty {
+            store.shield.webDomains = webTokens
+        }
+
+        // Set flags
+        SharedDefaults.isShieldActive = true
+        SharedDefaults.shieldActivatedAt = Date()
+        SharedDefaults.synchronize()
+
+        logToFile("[SafetyShield] Shield activated at 100%")
     }
 
     private func logToFile(_ message: String) {
