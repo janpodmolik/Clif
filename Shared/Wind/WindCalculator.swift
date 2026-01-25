@@ -16,7 +16,7 @@ enum WindCalculator {
     ///   - cumulativeSeconds: Total usage seconds from DeviceActivity threshold
     ///   - breakReduction: Total seconds "forgiven" by breaks today
     ///   - limitSeconds: Daily limit in seconds (from preset)
-    /// - Returns: Wind points (0-100)
+    /// - Returns: Wind points (0+, can exceed 100 for blow-away detection)
     static func calculate(
         cumulativeSeconds: Int,
         breakReduction: Int,
@@ -24,7 +24,8 @@ enum WindCalculator {
     ) -> Double {
         guard limitSeconds > 0 else { return 0 }
         let effectiveSeconds = max(0, cumulativeSeconds - breakReduction)
-        return min(Double(effectiveSeconds) / Double(limitSeconds) * 100, 100)
+        // Note: Wind can exceed 100% to allow blow-away detection at 105%
+        return Double(effectiveSeconds) / Double(limitSeconds) * 100
     }
 
     // MARK: - Convenience Methods

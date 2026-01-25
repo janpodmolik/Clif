@@ -164,6 +164,7 @@ struct SharedDefaults {
     static var monitoredWindPoints: Double {
         get {
             let fresh = UserDefaults(suiteName: AppConstants.appGroupIdentifier)
+            fresh?.synchronize() // Force read from disk before reading value
             return fresh?.double(forKey: DefaultsKeys.monitoredWindPoints) ?? 0
         }
         set {
@@ -177,6 +178,7 @@ struct SharedDefaults {
     static var monitoredLastThresholdSeconds: Int {
         get {
             let fresh = UserDefaults(suiteName: AppConstants.appGroupIdentifier)
+            fresh?.synchronize() // Force read from disk before reading value
             return fresh?.integer(forKey: DefaultsKeys.monitoredLastThresholdSeconds) ?? 0
         }
         set {
@@ -230,6 +232,7 @@ struct SharedDefaults {
     static var isMorningShieldActive: Bool {
         get {
             let fresh = UserDefaults(suiteName: AppConstants.appGroupIdentifier)
+            fresh?.synchronize() // Force read from disk before reading value
             return fresh?.bool(forKey: DefaultsKeys.isMorningShieldActive) ?? false
         }
         set {
@@ -268,6 +271,7 @@ struct SharedDefaults {
         get {
             // Create fresh instance to bypass caching issues between processes
             let fresh = UserDefaults(suiteName: AppConstants.appGroupIdentifier)
+            fresh?.synchronize() // Force read from disk before reading value
             return fresh?.bool(forKey: DefaultsKeys.isShieldActive) ?? false
         }
         set {
@@ -289,11 +293,33 @@ struct SharedDefaults {
         set { defaults?.set(newValue, forKey: DefaultsKeys.monitoredFallRate) }
     }
 
+    /// Timestamp until which shield cooldown is active.
+    /// During cooldown, safety shield will NOT auto-activate at 100%.
+    /// Note: Uses fresh UserDefaults instance for reads to ensure cross-process sync.
+    static var shieldCooldownUntil: Date? {
+        get {
+            let fresh = UserDefaults(suiteName: AppConstants.appGroupIdentifier)
+            fresh?.synchronize()
+            return fresh?.object(forKey: DefaultsKeys.shieldCooldownUntil) as? Date
+        }
+        set {
+            defaults?.set(newValue, forKey: DefaultsKeys.shieldCooldownUntil)
+            defaults?.synchronize()
+        }
+    }
+
+    /// Checks if shield is currently on cooldown.
+    static var isShieldOnCooldown: Bool {
+        guard let cooldownUntil = shieldCooldownUntil else { return false }
+        return Date() < cooldownUntil
+    }
+
     /// Total seconds "forgiven" by breaks today. Reset at day start.
     /// Used for absolute wind calculation: wind = (cumulative - breakReduction) / limit * 100
     static var totalBreakReduction: Int {
         get {
             let fresh = UserDefaults(suiteName: AppConstants.appGroupIdentifier)
+            fresh?.synchronize() // Force read from disk before reading value
             return fresh?.integer(forKey: DefaultsKeys.totalBreakReduction) ?? 0
         }
         set {

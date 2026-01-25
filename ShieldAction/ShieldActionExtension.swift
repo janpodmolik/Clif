@@ -154,13 +154,22 @@ class ShieldActionExtension: ShieldActionDelegate {
         // Check if this violates an active break
         handlePotentialBreakViolation()
 
-        // Check if wind is at or above 100% - if so, this is a blow away
-        let windPoints = SharedDefaults.monitoredWindPoints
-        if windPoints >= 100 {
-            logToFile("handleUnlockRequest() - CRITICAL: windPoints=\(windPoints) >= 100 - triggering blow away")
-            SharedDefaults.set(true, forKey: DefaultsKeys.petBlownAway)
-            sendBlowAwayNotification()
-        }
+        // Start cooldown - shield won't auto-activate for 30 seconds after unlock
+        // This allows user to go back to app and wind to rise to 105%+ for blow-away
+        let cooldownSeconds: TimeInterval = 30
+        SharedDefaults.shieldCooldownUntil = Date().addingTimeInterval(cooldownSeconds)
+        logToFile("handleUnlockRequest() - cooldown set for \(cooldownSeconds)s")
+
+        // Clear shield state immediately (don't wait for main app)
+        // This ensures extension sees isShieldActive=false correctly
+        SharedDefaults.isShieldActive = false
+        SharedDefaults.synchronize()
+        logToFile("handleUnlockRequest() - shield deactivated, isShieldActive=\(SharedDefaults.isShieldActive)")
+
+        // Clear actual shield from store
+        store.shield.applications = nil
+        store.shield.applicationCategories = nil
+        store.shield.webDomains = nil
 
         // Send notification to open app for unlock
         // The main app will handle wind decrease and monitoring restart

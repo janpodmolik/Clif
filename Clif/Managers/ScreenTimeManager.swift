@@ -91,6 +91,19 @@ final class ScreenTimeManager: ObservableObject {
 
             applyBreakReduction()
             deactivateShield()
+
+            // Start cooldown - shield won't auto-activate for 30 seconds
+            // This allows wind to rise to 105%+ for blow-away if user continues using apps
+            let cooldownSeconds: TimeInterval = 30
+            SharedDefaults.shieldCooldownUntil = Date().addingTimeInterval(cooldownSeconds)
+            #if DEBUG
+            print("  Cooldown set for \(cooldownSeconds)s")
+            #endif
+
+            // IMPORTANT: Restart monitoring with new thresholds
+            // After break, totalBreakReduction changed, so we need new thresholds
+            // that cover the extended range needed to reach 105% wind
+            restartMonitoringAfterBreak()
         } else {
             // Shield is off -> turn ON
             #if DEBUG
@@ -161,6 +174,71 @@ final class ScreenTimeManager: ObservableObject {
         SharedDefaults.resetShieldFlags()
     }
 
+    /// Restarts monitoring with new thresholds after break.
+    /// Called after toggleShield OFF to regenerate thresholds that account for
+    /// the updated totalBreakReduction value.
+    private func restartMonitoringAfterBreak() {
+        guard let petId = SharedDefaults.monitoredPetId else {
+            #if DEBUG
+            print("[ScreenTimeManager] restartMonitoringAfterBreak: No monitored pet")
+            #endif
+            return
+        }
+
+        guard let appTokens = SharedDefaults.loadApplicationTokens(),
+              let catTokens = SharedDefaults.loadCategoryTokens() else {
+            #if DEBUG
+            print("[ScreenTimeManager] restartMonitoringAfterBreak: Failed to load tokens")
+            #endif
+            return
+        }
+
+        let webTokens = SharedDefaults.loadWebDomainTokens() ?? Set()
+
+        guard !appTokens.isEmpty || !catTokens.isEmpty else {
+            #if DEBUG
+            print("[ScreenTimeManager] restartMonitoringAfterBreak: No tokens to monitor")
+            #endif
+            return
+        }
+
+        let limitSeconds = SharedDefaults.integer(forKey: DefaultsKeys.monitoringLimitSeconds)
+        let currentUsageSeconds = SharedDefaults.monitoredLastThresholdSeconds
+
+        let schedule = DeviceActivitySchedule(
+            intervalStart: DateComponents(hour: 0, minute: 0),
+            intervalEnd: DateComponents(hour: 23, minute: 59),
+            repeats: true
+        )
+
+        let events = buildEventsFromPosition(
+            startFromSeconds: currentUsageSeconds,
+            limitSeconds: limitSeconds,
+            appTokens: appTokens,
+            catTokens: catTokens,
+            webTokens: webTokens
+        )
+
+        let activityName = DeviceActivityName.forPet(petId)
+
+        do {
+            let existingActivities = center.activities
+            if !existingActivities.isEmpty {
+                center.stopMonitoring(existingActivities)
+            }
+
+            try center.startMonitoring(activityName, during: schedule, events: events)
+
+            #if DEBUG
+            print("[ScreenTimeManager] restartMonitoringAfterBreak: SUCCESS - \(events.count) events from \(currentUsageSeconds)s")
+            #endif
+        } catch {
+            #if DEBUG
+            print("[ScreenTimeManager] restartMonitoringAfterBreak: FAILED - \(error.localizedDescription)")
+            #endif
+        }
+    }
+
     // MARK: - Unlock Processing
 
     /// Processes unlock request from shield deep link.
@@ -172,6 +250,7 @@ final class ScreenTimeManager: ObservableObject {
         #if DEBUG
         print("[ScreenTimeManager] processUnlock() called")
         print("  Before: wind=\(SharedDefaults.monitoredWindPoints), lastThreshold=\(SharedDefaults.monitoredLastThresholdSeconds)")
+        print("  cooldownUntil=\(String(describing: SharedDefaults.shieldCooldownUntil)), isOnCooldown=\(SharedDefaults.isShieldOnCooldown)")
         #endif
 
         guard let petId = SharedDefaults.monitoredPetId else {
@@ -185,6 +264,12 @@ final class ScreenTimeManager: ObservableObject {
         // Calculate break reduction and clear shield
         applyBreakReduction()
         deactivateShield()
+
+        // Note: Cooldown is already set by ShieldActionExtension.handleUnlockRequest()
+        // This ensures cooldown is active even before user taps the notification
+        #if DEBUG
+        print("  After break reduction: wind=\(SharedDefaults.monitoredWindPoints), cooldown=\(SharedDefaults.isShieldOnCooldown)")
+        #endif
 
         // Load tokens for restart
         guard let appTokens = SharedDefaults.loadApplicationTokens(),

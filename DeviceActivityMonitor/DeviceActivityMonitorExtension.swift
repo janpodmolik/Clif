@@ -40,6 +40,9 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
         SharedDefaults.set(false, forKey: DefaultsKeys.petBlownAway)
         SharedDefaults.set(false, forKey: DefaultsKeys.safetyShieldNotificationSent)
 
+        // Clear any stale cooldown from previous day
+        SharedDefaults.shieldCooldownUntil = nil
+
         let settings = SharedDefaults.limitSettings
 
         if settings.morningShieldEnabled {
@@ -189,6 +192,7 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
     /// Checks if 100% safety shield should activate and sends warning notification.
     /// This is a system safeguard that ALWAYS activates at 100%, regardless of user settings.
     /// Can be disabled via LimitSettings.disableSafetyShield for debug purposes.
+    /// Respects cooldown period after unlock to allow blow-away at 105%.
     private func checkSafetyShield(windPoints: Double) {
         // Safety shield activates at exactly 100 wind points (not in buffer zone yet)
         guard windPoints >= 100 else { return }
@@ -198,6 +202,24 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
         // Check debug override
         if settings.disableSafetyShield {
             logToFile("[SafetyShield] DISABLED via debug settings, skipping")
+            return
+        }
+
+        // Check if wind reached 105% - this triggers blow away regardless of cooldown
+        if windPoints >= 105 {
+            logToFile(">>> BLOW AWAY TRIGGERED at \(String(format: "%.1f", windPoints))%")
+            SharedDefaults.set(true, forKey: DefaultsKeys.petBlownAway)
+            sendBlowAwayNotification()
+            // Don't activate shield after blow away
+            return
+        }
+
+        // Check cooldown - if on cooldown, don't activate shield (allow wind to rise to 105%)
+        if SharedDefaults.isShieldOnCooldown {
+            if let cooldownUntil = SharedDefaults.shieldCooldownUntil {
+                let remaining = cooldownUntil.timeIntervalSinceNow
+                logToFile("[SafetyShield] On cooldown (\(String(format: "%.1f", remaining))s remaining), skipping activation")
+            }
             return
         }
 
