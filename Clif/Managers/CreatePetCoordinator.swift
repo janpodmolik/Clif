@@ -202,10 +202,7 @@ final class CreatePetCoordinator {
         let fallRatePerSecond = preset.fallRate / 60.0
 
         // Initialize wind state for new pet
-        SharedDefaults.monitoredWindPoints = 0
-        SharedDefaults.monitoredLastThresholdSeconds = 0
-        SharedDefaults.totalBreakReduction = 0
-        SharedDefaults.cumulativeBaseline = 0
+        SharedDefaults.resetWindState()
         SharedDefaults.monitoredFallRate = fallRatePerSecond
 
         #if DEBUG

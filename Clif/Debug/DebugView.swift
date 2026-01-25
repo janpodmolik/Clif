@@ -10,9 +10,6 @@ struct DebugView: View {
     @State private var isPickerPresented = false
     @State private var extensionLog = ""
 
-    @AppStorage(DefaultsKeys.currentProgress, store: UserDefaults(suiteName: AppConstants.appGroupIdentifier))
-    private var currentProgress = 0
-
     @AppStorage(DefaultsKeys.monitoringLimitSeconds, store: UserDefaults(suiteName: AppConstants.appGroupIdentifier))
     private var monitoringLimitSeconds = AppConstants.defaultMonitoringLimitMinutes * 60
 
@@ -306,7 +303,7 @@ struct DebugView: View {
             Text("Current Progress")
                 .font(.headline)
 
-            Text("\(currentProgress)%")
+            Text("\(windProgress)%")
                 .font(.system(size: 48, weight: .bold, design: .rounded))
                 .foregroundColor(progressColor)
 
@@ -314,7 +311,7 @@ struct DebugView: View {
                 .font(.subheadline)
                 .foregroundColor(.orange)
 
-            ProgressView(value: Double(min(currentProgress, 100)), total: 100)
+            ProgressView(value: Double(min(windProgress, 100)), total: 100)
                 .progressViewStyle(LinearProgressViewStyle(tint: progressColor))
                 .scaleEffect(x: 1, y: 2, anchor: .center)
                 .padding(.horizontal)
@@ -585,18 +582,22 @@ struct DebugView: View {
 
     // MARK: - Helpers
 
+    private var windProgress: Int {
+        Int(SharedDefaults.monitoredWindPoints)
+    }
+
     private var progressColor: Color {
-        if currentProgress >= 100 { return .red }
-        if currentProgress >= 80 { return .orange }
+        if windProgress >= 100 { return .red }
+        if windProgress >= 80 { return .orange }
         return .blue
     }
 
     private var timeSpentText: String {
-        let totalSeconds = (monitoringLimitSeconds * currentProgress) / 100
+        let totalSeconds = SharedDefaults.monitoredLastThresholdSeconds
         let minutes = totalSeconds / 60
         let seconds = totalSeconds % 60
         let limitMinutes = monitoringLimitSeconds / 60
-        return "~\(minutes)m \(seconds)s / \(limitMinutes)m"
+        return "\(minutes)m \(seconds)s / \(limitMinutes)m"
     }
 
     private func createFilter() -> DeviceActivityFilter {

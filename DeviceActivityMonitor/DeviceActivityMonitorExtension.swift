@@ -31,10 +31,7 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
         }
 
         // Reset wind state for new day
-        SharedDefaults.monitoredWindPoints = 0
-        SharedDefaults.monitoredLastThresholdSeconds = 0
-        SharedDefaults.totalBreakReduction = 0
-        SharedDefaults.cumulativeBaseline = 0
+        SharedDefaults.resetWindState()
 
         logToFile("[Extension] Day reset complete")
     }

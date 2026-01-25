@@ -56,8 +56,6 @@ enum EventNames {
 
 /// UserDefaults keys
 enum DefaultsKeys {
-    static let currentProgress = "currentProgress"
-    static let selection = "selection"
     static let lastMonitorUpdate = "lastMonitorUpdate"
 
     // MARK: - Pet Persistence
@@ -72,10 +70,6 @@ enum DefaultsKeys {
     static let monitoredLastThresholdSeconds = "monitoredLastThresholdSeconds"
     static let monitoredRiseRate = "monitoredRiseRate"
     static let breakStartedAt = "breakStartedAt"
-
-    // MARK: - Sync
-
-    static let snapshotSyncOffset = "snapshotSyncOffset"
 
     // MARK: - Token Storage
 
@@ -92,11 +86,6 @@ enum DefaultsKeys {
     static let todaySelectedPreset = "todaySelectedPreset"
     static let lastKnownWindLevel = "lastKnownWindLevel"
     static let isShieldActive = "isShieldActive"
-
-    // MARK: - Blow Away State
-
-    static let petBlownAway = "petBlownAway"
-    static let safetyShieldNotificationSent = "safetyShieldNotificationSent"
 
     // MARK: - Shield Wind Decrease
 

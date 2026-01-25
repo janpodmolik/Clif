@@ -348,10 +348,7 @@ final class ScreenTimeManager: ObservableObject {
         SharedDefaults.setInt(limitSeconds, forKey: DefaultsKeys.monitoringLimitSeconds)
 
         // Reset wind state for new preset
-        SharedDefaults.monitoredWindPoints = 0
-        SharedDefaults.monitoredLastThresholdSeconds = 0
-        SharedDefaults.totalBreakReduction = 0
-        SharedDefaults.cumulativeBaseline = 0
+        SharedDefaults.resetWindState()
 
         // Restart monitoring with new preset
         startMonitoring(
@@ -500,7 +497,7 @@ final class ScreenTimeManager: ObservableObject {
         // Add 10% buffer for blow-away detection (110%)
         let targetSeconds = limitSeconds + max(limitSeconds / 10, minInterval)
 
-        // Calculate interval to spread thresholds evenly across full range
+    // Calculate interval to spread thresholds evenly across full range
         let intervalSeconds = max(targetSeconds / maxThresholds, minInterval)
 
         #if DEBUG

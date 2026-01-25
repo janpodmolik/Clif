@@ -30,6 +30,31 @@
 		B451D2172F2533E6004C534F /* BlowAwayNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = B451D2132F2533E6004C534F /* BlowAwayNotification.swift */; };
 		B451D3512F262A74004C534F /* WindCalculator.swift in Sources */ = {isa = PBXBuildFile; fileRef = B451D34F2F262A74004C534F /* WindCalculator.swift */; };
 		B451D3522F262A74004C534F /* WindCalculator.swift in Sources */ = {isa = PBXBuildFile; fileRef = B451D34F2F262A74004C534F /* WindCalculator.swift */; };
+		B451D37A2F26856C004C534F /* SharedDefaults.swift in Sources */ = {isa = PBXBuildFile; fileRef = B451D3742F26856C004C534F /* SharedDefaults.swift */; };
+		B451D37B2F26856C004C534F /* SharedDefaults+DayState.swift in Sources */ = {isa = PBXBuildFile; fileRef = B451D3752F26856C004C534F /* SharedDefaults+DayState.swift */; };
+		B451D37C2F26856C004C534F /* SharedDefaults+Shield.swift in Sources */ = {isa = PBXBuildFile; fileRef = B451D3762F26856C004C534F /* SharedDefaults+Shield.swift */; };
+		B451D37D2F26856C004C534F /* SharedDefaults+Tokens.swift in Sources */ = {isa = PBXBuildFile; fileRef = B451D3772F26856C004C534F /* SharedDefaults+Tokens.swift */; };
+		B451D37E2F26856C004C534F /* SharedDefaults+Wind.swift in Sources */ = {isa = PBXBuildFile; fileRef = B451D3782F26856C004C534F /* SharedDefaults+Wind.swift */; };
+		B451D37F2F26856C004C534F /* SharedDefaults.swift in Sources */ = {isa = PBXBuildFile; fileRef = B451D3742F26856C004C534F /* SharedDefaults.swift */; };
+		B451D3802F26856C004C534F /* SharedDefaults+DayState.swift in Sources */ = {isa = PBXBuildFile; fileRef = B451D3752F26856C004C534F /* SharedDefaults+DayState.swift */; };
+		B451D3812F26856C004C534F /* SharedDefaults+Shield.swift in Sources */ = {isa = PBXBuildFile; fileRef = B451D3762F26856C004C534F /* SharedDefaults+Shield.swift */; };
+		B451D3822F26856C004C534F /* SharedDefaults+Tokens.swift in Sources */ = {isa = PBXBuildFile; fileRef = B451D3772F26856C004C534F /* SharedDefaults+Tokens.swift */; };
+		B451D3832F26856C004C534F /* SharedDefaults+Wind.swift in Sources */ = {isa = PBXBuildFile; fileRef = B451D3782F26856C004C534F /* SharedDefaults+Wind.swift */; };
+		B451D3842F26856C004C534F /* SharedDefaults.swift in Sources */ = {isa = PBXBuildFile; fileRef = B451D3742F26856C004C534F /* SharedDefaults.swift */; };
+		B451D3852F26856C004C534F /* SharedDefaults+DayState.swift in Sources */ = {isa = PBXBuildFile; fileRef = B451D3752F26856C004C534F /* SharedDefaults+DayState.swift */; };
+		B451D3862F26856C004C534F /* SharedDefaults+Shield.swift in Sources */ = {isa = PBXBuildFile; fileRef = B451D3762F26856C004C534F /* SharedDefaults+Shield.swift */; };
+		B451D3872F26856C004C534F /* SharedDefaults+Tokens.swift in Sources */ = {isa = PBXBuildFile; fileRef = B451D3772F26856C004C534F /* SharedDefaults+Tokens.swift */; };
+		B451D3882F26856C004C534F /* SharedDefaults+Wind.swift in Sources */ = {isa = PBXBuildFile; fileRef = B451D3782F26856C004C534F /* SharedDefaults+Wind.swift */; };
+		B451D3892F26856C004C534F /* SharedDefaults.swift in Sources */ = {isa = PBXBuildFile; fileRef = B451D3742F26856C004C534F /* SharedDefaults.swift */; };
+		B451D38A2F26856C004C534F /* SharedDefaults+DayState.swift in Sources */ = {isa = PBXBuildFile; fileRef = B451D3752F26856C004C534F /* SharedDefaults+DayState.swift */; };
+		B451D38B2F26856C004C534F /* SharedDefaults+Shield.swift in Sources */ = {isa = PBXBuildFile; fileRef = B451D3762F26856C004C534F /* SharedDefaults+Shield.swift */; };
+		B451D38C2F26856C004C534F /* SharedDefaults+Tokens.swift in Sources */ = {isa = PBXBuildFile; fileRef = B451D3772F26856C004C534F /* SharedDefaults+Tokens.swift */; };
+		B451D38D2F26856C004C534F /* SharedDefaults+Wind.swift in Sources */ = {isa = PBXBuildFile; fileRef = B451D3782F26856C004C534F /* SharedDefaults+Wind.swift */; };
+		B451D38E2F26856C004C534F /* SharedDefaults.swift in Sources */ = {isa = PBXBuildFile; fileRef = B451D3742F26856C004C534F /* SharedDefaults.swift */; };
+		B451D38F2F26856C004C534F /* SharedDefaults+DayState.swift in Sources */ = {isa = PBXBuildFile; fileRef = B451D3752F26856C004C534F /* SharedDefaults+DayState.swift */; };
+		B451D3902F26856C004C534F /* SharedDefaults+Shield.swift in Sources */ = {isa = PBXBuildFile; fileRef = B451D3762F26856C004C534F /* SharedDefaults+Shield.swift */; };
+		B451D3912F26856C004C534F /* SharedDefaults+Tokens.swift in Sources */ = {isa = PBXBuildFile; fileRef = B451D3772F26856C004C534F /* SharedDefaults+Tokens.swift */; };
+		B451D3922F26856C004C534F /* SharedDefaults+Wind.swift in Sources */ = {isa = PBXBuildFile; fileRef = B451D3782F26856C004C534F /* SharedDefaults+Wind.swift */; };
 		B45862152EE5B92C0088CB78 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = B45862142EE5B92C0088CB78 /* Constants.swift */; };
 		B45862162EE5B92C0088CB78 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = B45862142EE5B92C0088CB78 /* Constants.swift */; };
 		B45862172EE5B92C0088CB78 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = B45862142EE5B92C0088CB78 /* Constants.swift */; };
@@ -45,9 +70,6 @@
 		B4924AE02EE57EEE0033475C /* ManagedSettings.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B4924ADF2EE57EEE0033475C /* ManagedSettings.framework */; };
 		B4924AE22EE57EEE0033475C /* ManagedSettingsUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B4924AE12EE57EEE0033475C /* ManagedSettingsUI.framework */; };
 		B4924AEA2EE57EEE0033475C /* ShieldConfiguration.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = B4924ADE2EE57EEE0033475C /* ShieldConfiguration.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
-		B4924AF72EE5807E0033475C /* SharedDefaults.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4924AF52EE5807E0033475C /* SharedDefaults.swift */; };
-		B4924AF92EE5807E0033475C /* SharedDefaults.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4924AF52EE5807E0033475C /* SharedDefaults.swift */; };
-		B4924AFB2EE5807E0033475C /* SharedDefaults.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4924AF52EE5807E0033475C /* SharedDefaults.swift */; };
 		B493878D2F0E39F40090C730 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B493878C2F0E39F40090C730 /* Assets.xcassets */; };
 		B493878E2F0E39F40090C730 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B493878C2F0E39F40090C730 /* Assets.xcassets */; };
 		B493878F2F0E39F40090C730 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B493878C2F0E39F40090C730 /* Assets.xcassets */; };
@@ -65,7 +87,6 @@
 		B4ANI2032F0E00010001B003 /* TapConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4ANI0032F0E00010001B003 /* TapConfig.swift */; };
 		B4C4C0922EE7FECE00E469E8 /* ManagedSettings.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B4924ADF2EE57EEE0033475C /* ManagedSettings.framework */; };
 		B4C4C09A2EE7FECE00E469E8 /* ShieldAction.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = B4C4C0912EE7FECE00E469E8 /* ShieldAction.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
-		B4C4C09F2EE7FEFF00E469E8 /* SharedDefaults.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4924AF52EE5807E0033475C /* SharedDefaults.swift */; };
 		B4C4C0A02EE7FF0900E469E8 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = B45862142EE5B92C0088CB78 /* Constants.swift */; };
 		B4D351222F123D620076C09B /* EvolutionHistory.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4D351212F123D620076C09B /* EvolutionHistory.swift */; };
 		B4D351232F123D620076C09B /* Essence.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4D351202F123D620076C09B /* Essence.swift */; };
@@ -80,7 +101,6 @@
 		B4EVO2022F0E00010001A002 /* EvolutionPhase.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4EVO0022F0E00010001A002 /* EvolutionPhase.swift */; };
 		B4EVO2032F0E00010001A003 /* EvolutionPath.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4EVO0032F0E00010001A003 /* EvolutionPath.swift */; };
 		B4EVO2042F0E00010001A004 /* PetDisplayable.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4EVO0042F0E00010001A004 /* PetDisplayable.swift */; };
-		B4F8F9EB2FEC35C900E9E6D8 /* SharedDefaults.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4924AF52EE5807E0033475C /* SharedDefaults.swift */; };
 		B4F8F9EC2FEC35C900E9E6D8 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = B45862142EE5B92C0088CB78 /* Constants.swift */; };
 /* End PBXBuildFile section */
 
@@ -151,6 +171,11 @@
 		B451D20D2F24FEF0004C534F /* ExtensionLogger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtensionLogger.swift; sourceTree = "<group>"; };
 		B451D2132F2533E6004C534F /* BlowAwayNotification.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlowAwayNotification.swift; sourceTree = "<group>"; };
 		B451D34F2F262A74004C534F /* WindCalculator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindCalculator.swift; sourceTree = "<group>"; };
+		B451D3742F26856C004C534F /* SharedDefaults.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedDefaults.swift; sourceTree = "<group>"; };
+		B451D3752F26856C004C534F /* SharedDefaults+DayState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SharedDefaults+DayState.swift"; sourceTree = "<group>"; };
+		B451D3762F26856C004C534F /* SharedDefaults+Shield.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SharedDefaults+Shield.swift"; sourceTree = "<group>"; };
+		B451D3772F26856C004C534F /* SharedDefaults+Tokens.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SharedDefaults+Tokens.swift"; sourceTree = "<group>"; };
+		B451D3782F26856C004C534F /* SharedDefaults+Wind.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SharedDefaults+Wind.swift"; sourceTree = "<group>"; };
 		B45862142EE5B92C0088CB78 /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
 		B45862302EE5F6F80088CB78 /* DeviceActivityReport.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.extensionkit-extension"; includeInIndex = 0; path = DeviceActivityReport.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		B45862422EE5FAF60088CB78 /* ActivityReportContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityReportContext.swift; sourceTree = "<group>"; };
@@ -161,7 +186,6 @@
 		B4924ADE2EE57EEE0033475C /* ShieldConfiguration.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = ShieldConfiguration.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		B4924ADF2EE57EEE0033475C /* ManagedSettings.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ManagedSettings.framework; path = System/Library/Frameworks/ManagedSettings.framework; sourceTree = SDKROOT; };
 		B4924AE12EE57EEE0033475C /* ManagedSettingsUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ManagedSettingsUI.framework; path = Library/Frameworks/ManagedSettingsUI.framework; sourceTree = DEVELOPER_DIR; };
-		B4924AF52EE5807E0033475C /* SharedDefaults.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedDefaults.swift; sourceTree = "<group>"; };
 		B493878C2F0E39F40090C730 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		B49387952F0E428B0090C730 /* WindLevel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindLevel.swift; sourceTree = "<group>"; };
 		B49387972F0E428B0090C730 /* WindConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindConfig.swift; sourceTree = "<group>"; };
@@ -350,10 +374,10 @@
 		B43998432EE9FCC80049445F /* Storage */ = {
 			isa = PBXGroup;
 			children = (
+				B451D3792F26856C004C534F /* SharedDefaults */,
 				B451D20D2F24FEF0004C534F /* ExtensionLogger.swift */,
 				B4167E642F1FF93800D89B36 /* SnapshotLogging.swift */,
 				B4167E5E2F1FEF4E00D89B36 /* SnapshotStore.swift */,
-				B4924AF52EE5807E0033475C /* SharedDefaults.swift */,
 			);
 			path = Storage;
 			sourceTree = "<group>";
@@ -394,6 +418,18 @@
 				B451D34F2F262A74004C534F /* WindCalculator.swift */,
 			);
 			path = Wind;
+			sourceTree = "<group>";
+		};
+		B451D3792F26856C004C534F /* SharedDefaults */ = {
+			isa = PBXGroup;
+			children = (
+				B451D3742F26856C004C534F /* SharedDefaults.swift */,
+				B451D3752F26856C004C534F /* SharedDefaults+DayState.swift */,
+				B451D3762F26856C004C534F /* SharedDefaults+Shield.swift */,
+				B451D3772F26856C004C534F /* SharedDefaults+Tokens.swift */,
+				B451D3782F26856C004C534F /* SharedDefaults+Wind.swift */,
+			);
+			path = SharedDefaults;
 			sourceTree = "<group>";
 		};
 		B4924ACA2EE57ED90033475C /* Frameworks */ = {
@@ -666,12 +702,16 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B451D37F2F26856C004C534F /* SharedDefaults.swift in Sources */,
+				B451D3802F26856C004C534F /* SharedDefaults+DayState.swift in Sources */,
+				B451D3812F26856C004C534F /* SharedDefaults+Shield.swift in Sources */,
+				B451D3822F26856C004C534F /* SharedDefaults+Tokens.swift in Sources */,
+				B451D3832F26856C004C534F /* SharedDefaults+Wind.swift in Sources */,
 				B4167E5D2F1FE73400D89B36 /* SnapshotEventType.swift in Sources */,
 				B4167E5F2F1FEF4E00D89B36 /* SnapshotStore.swift in Sources */,
 				B4167E652F1FF93800D89B36 /* SnapshotLogging.swift in Sources */,
 				B4167E582F1FE2D800D89B36 /* SnapshotEvent.swift in Sources */,
 				B451D2172F2533E6004C534F /* BlowAwayNotification.swift in Sources */,
-				B4924AFB2EE5807E0033475C /* SharedDefaults.swift in Sources */,
 				B4D351262F123DD00076C09B /* StatType.swift in Sources */,
 				B4D351272F123DD00076C09B /* DailyUsageStat.swift in Sources */,
 				B451D3522F262A74004C534F /* WindCalculator.swift in Sources */,
@@ -701,8 +741,12 @@
 				B4F8F9EC2FEC35C900E9E6D8 /* Constants.swift in Sources */,
 				B451D20C2F24C78E004C534F /* WindLevel.swift in Sources */,
 				B451D20E2F24FEF0004C534F /* ExtensionLogger.swift in Sources */,
-				B4F8F9EB2FEC35C900E9E6D8 /* SharedDefaults.swift in Sources */,
 				B45862432EE5FAF60088CB78 /* ActivityReportContext.swift in Sources */,
+				B451D3842F26856C004C534F /* SharedDefaults.swift in Sources */,
+				B451D3852F26856C004C534F /* SharedDefaults+DayState.swift in Sources */,
+				B451D3862F26856C004C534F /* SharedDefaults+Shield.swift in Sources */,
+				B451D3872F26856C004C534F /* SharedDefaults+Tokens.swift in Sources */,
+				B451D3882F26856C004C534F /* SharedDefaults+Wind.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -710,9 +754,13 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				B4924AF92EE5807E0033475C /* SharedDefaults.swift in Sources */,
 				B45862172EE5B92C0088CB78 /* Constants.swift in Sources */,
 				B4167E552F1FE2D800D89B36 /* SnapshotEvent.swift in Sources */,
+				B451D37A2F26856C004C534F /* SharedDefaults.swift in Sources */,
+				B451D37B2F26856C004C534F /* SharedDefaults+DayState.swift in Sources */,
+				B451D37C2F26856C004C534F /* SharedDefaults+Shield.swift in Sources */,
+				B451D37D2F26856C004C534F /* SharedDefaults+Tokens.swift in Sources */,
+				B451D37E2F26856C004C534F /* SharedDefaults+Wind.swift in Sources */,
 				B451D3512F262A74004C534F /* WindCalculator.swift in Sources */,
 				B451D20B2F24C78E004C534F /* WindLevel.swift in Sources */,
 				B451D2162F2533E6004C534F /* BlowAwayNotification.swift in Sources */,
@@ -727,12 +775,16 @@
 			buildActionMask = 2147483647;
 			files = (
 				B46F91282F0EF01C002738FD /* Mood.swift in Sources */,
-				B4924AF72EE5807E0033475C /* SharedDefaults.swift in Sources */,
 				B49387992F0E428B0090C730 /* WindConfig.swift in Sources */,
 				B493879B2F0E428B0090C730 /* WindLevel.swift in Sources */,
 				B45862152EE5B92C0088CB78 /* Constants.swift in Sources */,
 				B4EVO2012F0E00010001A001 /* Blob.swift in Sources */,
 				B4EVO2022F0E00010001A002 /* EvolutionPhase.swift in Sources */,
+				B451D38E2F26856C004C534F /* SharedDefaults.swift in Sources */,
+				B451D38F2F26856C004C534F /* SharedDefaults+DayState.swift in Sources */,
+				B451D3902F26856C004C534F /* SharedDefaults+Shield.swift in Sources */,
+				B451D3912F26856C004C534F /* SharedDefaults+Tokens.swift in Sources */,
+				B451D3922F26856C004C534F /* SharedDefaults+Wind.swift in Sources */,
 				B4EVO2032F0E00010001A003 /* EvolutionPath.swift in Sources */,
 				B451D2122F24FEF0004C534F /* ExtensionLogger.swift in Sources */,
 				B4EVO2042F0E00010001A004 /* PetDisplayable.swift in Sources */,
@@ -747,11 +799,15 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				B4C4C09F2EE7FEFF00E469E8 /* SharedDefaults.swift in Sources */,
 				B4C4C0A02EE7FF0900E469E8 /* Constants.swift in Sources */,
 				B4167E612F1FF91200D89B36 /* SnapshotEventType.swift in Sources */,
 				B451D20A2F24C74F004C534F /* WindLevel.swift in Sources */,
 				B451D2152F2533E6004C534F /* BlowAwayNotification.swift in Sources */,
+				B451D3892F26856C004C534F /* SharedDefaults.swift in Sources */,
+				B451D38A2F26856C004C534F /* SharedDefaults+DayState.swift in Sources */,
+				B451D38B2F26856C004C534F /* SharedDefaults+Shield.swift in Sources */,
+				B451D38C2F26856C004C534F /* SharedDefaults+Tokens.swift in Sources */,
+				B451D38D2F26856C004C534F /* SharedDefaults+Wind.swift in Sources */,
 				B451D20F2F24FEF0004C534F /* ExtensionLogger.swift in Sources */,
 				B4167E622F1FF91800D89B36 /* SnapshotEvent.swift in Sources */,
 				B4167E632F1FF92500D89B36 /* SnapshotStore.swift in Sources */,
