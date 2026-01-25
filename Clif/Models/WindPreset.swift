@@ -22,9 +22,9 @@ enum WindPreset: String, Codable, CaseIterable {
         }
         #endif
         switch self {
-        case .gentle: return 15
-        case .balanced: return 8
-        case .intense: return 5
+        case .gentle: return 20
+        case .balanced: return 12
+        case .intense: return 8
         }
     }
 
