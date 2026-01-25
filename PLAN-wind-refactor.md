@@ -118,7 +118,7 @@ wind = (cumulativeSeconds - totalBreakReduction) / limitSeconds * 100
 
 ---
 
-## Fáze 5: WindCalculator - Single Source of Truth
+## Fáze 5: WindCalculator - Single Source of Truth ✅
 
 **Cíl:** Konsolidovat wind výpočet na jedno místo. Teď je roztříštěný:
 - Extension `processThresholdEvent()` - počítá wind při thresholdech
@@ -126,10 +126,10 @@ wind = (cumulativeSeconds - totalBreakReduction) / limitSeconds * 100
 - Pet `effectiveWindPoints` - počítá real-time wind během aktivního shieldu
 
 ### 5.1 Vytvořit WindCalculator
-- [ ] Vytvořit `Shared/Wind/WindCalculator.swift`
-- [ ] Implementovat `calculate(cumulativeSeconds:breakReduction:limitSeconds:) -> Double`
-- [ ] Implementovat `currentWind() -> Double` (convenience z SharedDefaults)
-- [ ] Implementovat `effectiveWind(shieldActivatedAt:fallRate:) -> Double` (real-time během shieldu)
+- [x] Vytvořit `Shared/Wind/WindCalculator.swift`
+- [x] Implementovat `calculate(cumulativeSeconds:breakReduction:limitSeconds:) -> Double`
+- [x] Implementovat `currentWind() -> Double` (convenience z SharedDefaults)
+- [x] Implementovat `effectiveWind(shieldActivatedAt:fallRate:) -> Double` (real-time během shieldu)
 
 ```swift
 struct WindCalculator {
@@ -164,44 +164,77 @@ struct WindCalculator {
 ```
 
 ### 5.2 Refaktorovat Extension
-- [ ] Nahradit inline výpočet v `processThresholdEvent()` voláním `WindCalculator.calculate()`
+- [x] Nahradit inline výpočet v `processThresholdEvent()` voláním `WindCalculator.calculate()`
 
 ### 5.3 Refaktorovat ScreenTimeManager
-- [ ] Nahradit inline výpočet v `applyBreakReduction()` voláním `WindCalculator.currentWind()`
+- [x] Nahradit inline výpočet v `applyBreakReduction()` voláním `WindCalculator.currentWind()`
 
 ### 5.4 Refaktorovat Pet
-- [ ] Nahradit `effectiveWindPoints` computed property voláním `WindCalculator.effectiveWind()`
-- [ ] Zvážit odstranění `windPoints` getter/setter (použít přímo `WindCalculator.currentWind()`)
+- [x] Nahradit `effectiveWindPoints` computed property voláním `WindCalculator.effectiveWind()`
+- [x] Ponechat `windPoints` getter/setter (stále potřeba pro write operace a @Observable)
 
 ### 5.5 Aktualizovat dokumentaci
 - [ ] Aktualizovat `ai-rules/wind-system.md` s novým WindCalculator
 
 ---
 
-## Fáze 6: Testování
+## Fáze 6: Testování a opravy z logů ⏳
 
-### 6.1 Základní použití
+**Status:** Analýza logů odhalila problémy, které je třeba opravit.
+
+### 6.0 Identifikované problémy z logů
+Z analýzy logu (2026-01-25 10:40-10:41) byly identifikovány tyto problémy:
+
+#### Problém 1: `isShieldActive=false` hned po aktivaci
+- Shield aktivován v 10:41:24 (`isShieldActive = true`)
+- O 7 sekund později (10:41:31) extension čte `isShieldActive=false`
+- Někdo zavolal deaktivaci bez explicitní user akce
+- **TODO:** Zjistit co způsobuje nechtěnou deaktivaci
+
+#### Problém 2: Shield se znovu aktivoval při 100% místo blow-away
+- Po deaktivaci wind dosáhl znovu 100%
+- Místo blow-away se aktivoval další shield
+- Chybí ochrana před opakovanou aktivací po unlocku
+
+#### Problém 3: Chybí cooldown po unlocku
+- Po unlock by neměl být shield znovu aktivován určitou dobu
+- Nebo po dosažení 100%+ by měl být pet rovnou blown away
+- **TODO:** Implementovat cooldown nebo změnit logiku blow-away
+
+#### Problém 4: Wind skočil na 0
+- Pravděpodobně souvisí s nějakým nechtěným resetem
+- **TODO:** Prozkoumat všechna místa kde se nastavuje `monitoredWindPoints = 0`
+
+### 6.1 Opravy
+- [ ] Opravit problém 1: nechtěná deaktivace shieldu
+- [ ] Opravit problém 2: opakovaná aktivace shieldu při 100%
+- [ ] Opravit problém 3: implementovat cooldown nebo změnit blow-away logiku
+- [ ] Opravit problém 4: nechtěný reset wind na 0
+
+### 6.2 Základní použití
 - [ ] Start monitoring, použít apps, ověřit že wind dosáhne 100% při limitu
 
-### 6.2 Notifikace
+### 6.3 Notifikace
 - [ ] Ověřit že notifikace přijdou při low/medium/high (bez dvojitého triggeru)
 
-### 6.3 Manuální break
+### 6.4 Manuální break
 - [ ] Zapnout break v app, ověřit že shield se aktivuje
 - [ ] Počkat, unlock, ověřit že wind se redukoval správně
 
-### 6.4 Více breaků
+### 6.5 Více breaků
 - [ ] Ověřit že `totalBreakReduction` se kumuluje správně
 
-### 6.5 Safety shield při 100%
+### 6.6 Safety shield při 100%
 - [ ] Ověřit že volitelný shield při 100% funguje
+- [ ] Ověřit že po unlocku při 100%+ je pet blown away (ne další shield)
 
-### 6.6 Hranice dne
+### 6.7 Hranice dne
 - [ ] Ověřit že `totalBreakReduction` se resetuje o půlnoci
 
-### 6.7 Edge cases
+### 6.8 Edge cases
 - [ ] Break delší než zbývající wind (wind by měl být min 0)
 - [ ] Použití přesahující limit (wind by měl být max 100)
+- [ ] Unlock při 100%+ wind → blow away notifikace + pet blown
 
 ---
 
@@ -222,10 +255,12 @@ struct WindCalculator {
 | `Shared/Constants/Constants.swift` | + `DefaultsKeys.totalBreakReduction`, - `lastUnlockAt` | ✅ |
 | `Shared/Storage/SharedDefaults.swift` | + `totalBreakReduction`, - `lastUnlockAt` | ✅ |
 | `Shared/Models/Evolution/WindLevel.swift` | LimitSettings: - `shieldActivationLevel`, - `shieldCooldownSeconds` | ✅ |
-| `DeviceActivityMonitor/DeviceActivityMonitorExtension.swift` | Absolutní výpočet, pouze notifikace, - `isShieldOnCooldown()` | ✅ |
-| `Clif/Managers/ScreenTimeManager.swift` | + `applyBreakReduction()`, dynamický target, - `lastUnlockAt` | ✅ |
+| `Shared/Wind/WindCalculator.swift` | + Nový soubor - single source of truth pro wind výpočty | ✅ |
+| `DeviceActivityMonitor/DeviceActivityMonitorExtension.swift` | Absolutní výpočet via WindCalculator, pouze notifikace | ✅ |
+| `Clif/Managers/ScreenTimeManager.swift` | + `applyBreakReduction()` via WindCalculator, dynamický target | ✅ |
+| `Clif/Models/Pet.swift` | `effectiveWindPoints` via WindCalculator | ✅ |
 | `ShieldAction/ShieldActionExtension.swift` | - `lastUnlockAt` nastavování | ✅ |
-| `ai-rules/wind-system.md` | Aktualizovat dokumentaci | ✅ |
+| `ai-rules/wind-system.md` | Aktualizovat dokumentaci | ⏳ |
 
 ## Co zůstane
 - `monitoredLastThresholdSeconds` - pro určení odkud generovat nové thresholdy

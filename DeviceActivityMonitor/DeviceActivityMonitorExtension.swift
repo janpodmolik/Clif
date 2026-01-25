@@ -131,7 +131,7 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
     }
 
     /// Full threshold processing - wind update, level changes, safety shield, snapshots.
-    /// Uses absolute calculation: wind = (cumulativeSeconds - breakReduction) / limitSeconds * 100
+    /// Uses WindCalculator for absolute formula: wind = (cumulativeSeconds - breakReduction) / limitSeconds * 100
     private func processThresholdEvent(currentSeconds: Int, previousThresholdSeconds: Int) {
         let oldWindPoints = SharedDefaults.monitoredWindPoints
         let limitSeconds = SharedDefaults.integer(forKey: DefaultsKeys.monitoringLimitSeconds)
@@ -140,17 +140,16 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
         logToFile("========== THRESHOLD EVENT ==========")
         logToFile("Cumulative: \(currentSeconds)s, BreakReduction: \(breakReduction)s, Limit: \(limitSeconds)s")
 
-        // Absolute wind calculation
-        let effectiveSeconds = max(0, currentSeconds - breakReduction)
-        let newWindPoints: Double
-        if limitSeconds > 0 {
-            newWindPoints = min(Double(effectiveSeconds) / Double(limitSeconds) * 100, 100)
-        } else {
-            newWindPoints = 0
-        }
+        // Use WindCalculator for consistent wind calculation
+        let newWindPoints = WindCalculator.calculate(
+            cumulativeSeconds: currentSeconds,
+            breakReduction: breakReduction,
+            limitSeconds: limitSeconds
+        )
 
         SharedDefaults.monitoredWindPoints = newWindPoints
 
+        let effectiveSeconds = max(0, currentSeconds - breakReduction)
         logToFile("Effective: \(effectiveSeconds)s, Wind: \(String(format: "%.1f", oldWindPoints)) -> \(String(format: "%.1f", newWindPoints))%")
 
         checkWindLevelChange(oldWindPoints: oldWindPoints, newWindPoints: newWindPoints)

@@ -124,8 +124,7 @@ final class ScreenTimeManager: ObservableObject {
     // MARK: - Shield Helpers
 
     /// Calculates break reduction based on shield duration, adds to totalBreakReduction,
-    /// and immediately recalculates wind using the absolute formula:
-    /// wind = (cumulativeSeconds - totalBreakReduction) / limitSeconds * 100
+    /// and immediately recalculates wind using WindCalculator.
     private func applyBreakReduction() {
         guard let activatedAt = SharedDefaults.shieldActivatedAt else { return }
 
@@ -141,20 +140,14 @@ final class ScreenTimeManager: ObservableObject {
         let newReduction = oldReduction + secondsForgiven
         SharedDefaults.totalBreakReduction = newReduction
 
-        // Immediately recalculate wind using absolute formula
-        let cumulativeSeconds = SharedDefaults.monitoredLastThresholdSeconds
-        let effectiveSeconds = max(0, cumulativeSeconds - newReduction)
-        let newWind: Double
-        if limitSeconds > 0 {
-            newWind = min(Double(effectiveSeconds) / Double(limitSeconds) * 100, 100)
-        } else {
-            newWind = 0
-        }
-
+        // Recalculate wind using WindCalculator
         let oldWind = SharedDefaults.monitoredWindPoints
+        let newWind = WindCalculator.currentWind()
         SharedDefaults.monitoredWindPoints = newWind
 
         #if DEBUG
+        let cumulativeSeconds = SharedDefaults.monitoredLastThresholdSeconds
+        let effectiveSeconds = max(0, cumulativeSeconds - newReduction)
         print("[ScreenTimeManager] Break reduction: +\(secondsForgiven)s (elapsed: \(elapsedSeconds)s, fallRate: \(fallRate), total: \(newReduction)s)")
         print("[ScreenTimeManager] Wind recalculated: \(String(format: "%.1f", oldWind)) -> \(String(format: "%.1f", newWind))% (cumulative: \(cumulativeSeconds)s, effective: \(effectiveSeconds)s)")
         #endif
