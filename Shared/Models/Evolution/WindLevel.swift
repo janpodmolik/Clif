@@ -141,6 +141,13 @@ struct LimitSettings: Codable, Equatable {
     /// Default: false (safety shield always active)
     var disableSafetyShield: Bool = false
 
+    // MARK: - Shield Cooldown
+
+    /// Cooldown period after unlock during which shield cannot re-activate.
+    /// Prevents immediate re-triggering when wind is still above threshold.
+    /// Default: 30 seconds (use lower values for debug/testing)
+    var shieldCooldownSeconds: Int = 30
+
     // MARK: - Defaults
 
     static let `default` = LimitSettings()

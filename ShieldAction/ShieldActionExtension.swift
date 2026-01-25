@@ -146,6 +146,11 @@ class ShieldActionExtension: ShieldActionDelegate {
         logToFile("handleUnlockRequest() - redirecting to main app")
         logToFile("Current state: wind=\(SharedDefaults.monitoredWindPoints), shieldActivatedAt=\(String(describing: SharedDefaults.shieldActivatedAt))")
 
+        // Set unlock timestamp for shield cooldown
+        // This prevents immediate re-triggering of shield after unlock
+        SharedDefaults.lastUnlockAt = Date()
+        logToFile("Set lastUnlockAt for cooldown")
+
         // Lock preset on first unlock of the day
         if !SharedDefaults.windPresetLockedForToday {
             lockPresetForToday()

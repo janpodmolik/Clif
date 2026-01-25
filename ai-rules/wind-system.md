@@ -95,4 +95,19 @@ Wind decrease: `elapsedMinutes * preset.fallRate * type.fallRateMultiplier`
 
 All state shared via `SharedDefaults` (App Group UserDefaults). Extensions have fresh UserDefaults instance on each read for sync.
 
-Key flags: `isShieldActive`, `isMorningShieldActive`, `shieldActivatedAt`, `breakStartedAt`, `petBlownAway`
+Key flags: `isShieldActive`, `isMorningShieldActive`, `shieldActivatedAt`, `breakStartedAt`, `petBlownAway`, `lastUnlockAt`
+
+## Shield Cooldown
+
+After unlock, shield cannot re-activate for `shieldCooldownSeconds` (default 30s, configurable in LimitSettings).
+
+**Purpose:** Prevents immediate re-triggering when wind is still above threshold after unlock.
+
+**Flow:**
+1. User unlocks shield → `lastUnlockAt = Date()` saved
+2. Monitoring restarts, wind may still be at 80%+
+3. Next threshold event crosses 80% again
+4. Extension checks: `Date() - lastUnlockAt < cooldownSeconds` → skip shield activation
+5. After cooldown expires, shield can activate normally
+
+**Note:** Safety shield at 100% respects cooldown too - notification is still sent, but shield won't activate during cooldown

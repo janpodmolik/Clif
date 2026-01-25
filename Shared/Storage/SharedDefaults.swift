@@ -160,15 +160,29 @@ struct SharedDefaults {
     }
 
     /// Current wind points for the monitored pet (updated by extension on each threshold).
+    /// Note: Uses fresh UserDefaults instance for reads to ensure cross-process sync.
     static var monitoredWindPoints: Double {
-        get { defaults?.double(forKey: DefaultsKeys.monitoredWindPoints) ?? 0 }
-        set { defaults?.set(newValue, forKey: DefaultsKeys.monitoredWindPoints) }
+        get {
+            let fresh = UserDefaults(suiteName: AppConstants.appGroupIdentifier)
+            return fresh?.double(forKey: DefaultsKeys.monitoredWindPoints) ?? 0
+        }
+        set {
+            defaults?.set(newValue, forKey: DefaultsKeys.monitoredWindPoints)
+            defaults?.synchronize()
+        }
     }
 
     /// Last threshold seconds recorded (for calculating wind delta in extension).
+    /// Note: Uses fresh UserDefaults instance for reads to ensure cross-process sync.
     static var monitoredLastThresholdSeconds: Int {
-        get { defaults?.integer(forKey: DefaultsKeys.monitoredLastThresholdSeconds) ?? 0 }
-        set { defaults?.set(newValue, forKey: DefaultsKeys.monitoredLastThresholdSeconds) }
+        get {
+            let fresh = UserDefaults(suiteName: AppConstants.appGroupIdentifier)
+            return fresh?.integer(forKey: DefaultsKeys.monitoredLastThresholdSeconds) ?? 0
+        }
+        set {
+            defaults?.set(newValue, forKey: DefaultsKeys.monitoredLastThresholdSeconds)
+            defaults?.synchronize()
+        }
     }
 
     /// Rise rate in points per second (set by main app from preset).
@@ -212,9 +226,16 @@ struct SharedDefaults {
     }
 
     /// Whether morning shield is currently active (set at day reset, cleared on preset selection).
+    /// Note: Uses fresh UserDefaults instance for reads to ensure cross-process sync.
     static var isMorningShieldActive: Bool {
-        get { defaults?.bool(forKey: DefaultsKeys.isMorningShieldActive) ?? false }
-        set { defaults?.set(newValue, forKey: DefaultsKeys.isMorningShieldActive) }
+        get {
+            let fresh = UserDefaults(suiteName: AppConstants.appGroupIdentifier)
+            return fresh?.bool(forKey: DefaultsKeys.isMorningShieldActive) ?? false
+        }
+        set {
+            defaults?.set(newValue, forKey: DefaultsKeys.isMorningShieldActive)
+            defaults?.synchronize()
+        }
     }
 
     /// Whether wind preset is locked for today (after first unlock or selection).
@@ -266,6 +287,20 @@ struct SharedDefaults {
     static var monitoredFallRate: Double {
         get { defaults?.double(forKey: DefaultsKeys.monitoredFallRate) ?? 0 }
         set { defaults?.set(newValue, forKey: DefaultsKeys.monitoredFallRate) }
+    }
+
+    /// Timestamp of last unlock (for shield cooldown).
+    /// Set by main app when user unlocks shield.
+    static var lastUnlockAt: Date? {
+        get {
+            // Create fresh instance to bypass caching issues between processes
+            let fresh = UserDefaults(suiteName: AppConstants.appGroupIdentifier)
+            return fresh?.object(forKey: DefaultsKeys.lastUnlockAt) as? Date
+        }
+        set {
+            defaults?.set(newValue, forKey: DefaultsKeys.lastUnlockAt)
+            defaults?.synchronize()
+        }
     }
 
     // MARK: - Helpers

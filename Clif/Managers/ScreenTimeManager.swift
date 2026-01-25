@@ -174,6 +174,12 @@ final class ScreenTimeManager: ObservableObject {
         applyWindDecreaseFromShield()
         deactivateShield()
 
+        // Set unlock timestamp for shield cooldown
+        SharedDefaults.lastUnlockAt = Date()
+        #if DEBUG
+        print("  Set lastUnlockAt for cooldown")
+        #endif
+
         // Load tokens for restart
         guard let appTokens = SharedDefaults.loadApplicationTokens(),
               let catTokens = SharedDefaults.loadCategoryTokens() else {

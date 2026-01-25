@@ -30,7 +30,6 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
         SharedDefaults.currentProgress = 0
         SharedDefaults.monitoredWindPoints = 0
         SharedDefaults.monitoredLastThresholdSeconds = 0
-        SharedDefaults.lastKnownWindLevel = WindLevel.none.rawValue
 
         // Reset preset lock for new day
         SharedDefaults.windPresetLockedForToday = false
@@ -157,7 +156,7 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
 
         logToFile("riseRate=\(riseRate), Wind: \(oldWindPoints) -> \(newWindPoints)")
 
-        checkWindLevelChange(windPoints: newWindPoints)
+        checkWindLevelChange(oldWindPoints: oldWindPoints, newWindPoints: newWindPoints)
         checkSafetyShield(windPoints: newWindPoints)
         logSnapshot(eventType: .usageThreshold(cumulativeSeconds: currentSeconds))
     }
@@ -167,34 +166,60 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
         return min(oldWindPoints + windIncrease, 100)
     }
 
-    private func checkWindLevelChange(windPoints: Double) {
-        let newLevel = WindLevel.from(windPoints: windPoints)
-        let lastKnownLevel = WindLevel(rawValue: SharedDefaults.lastKnownWindLevel) ?? .none
-
-        logToFile("WindLevel: current=\(newLevel), last=\(lastKnownLevel)")
-
-        guard newLevel != lastKnownLevel else { return }
-
-        SharedDefaults.lastKnownWindLevel = newLevel.rawValue
-        logToFile("WindLevel CHANGED: \(lastKnownLevel) -> \(newLevel)")
-
+    /// Checks if wind crossed any level thresholds and triggers shield/notifications.
+    /// Uses threshold crossing logic: only triggers when wind goes FROM below TO at/above threshold.
+    private func checkWindLevelChange(oldWindPoints: Double, newWindPoints: Double) {
         let settings = SharedDefaults.limitSettings
 
-        // Activate shield when we CROSS the activation threshold for the first time
-        // Only activate if: previous level was below threshold AND new level is at/above threshold
-        // Note: Safety shield at 100% is handled separately in checkSafetyShield()
-        if let activationLevel = settings.shieldActivationLevel,
-           lastKnownLevel.rawValue < activationLevel.rawValue,
-           newLevel.rawValue >= activationLevel.rawValue {
-            logToFile(">>> ACTIVATING SHIELD - crossed threshold at level \(newLevel)")
-            activateShield()
+        // Define thresholds for each level (matching WindLevel.from(windPoints:))
+        let thresholds: [(level: WindLevel, threshold: Double)] = [
+            (.low, 5),
+            (.medium, 50),
+            (.high, 80)
+        ]
+
+        for (level, threshold) in thresholds {
+            // Check if we crossed this threshold from below
+            let crossedThreshold = oldWindPoints < threshold && newWindPoints >= threshold
+
+            guard crossedThreshold else { continue }
+
+            logToFile(">>> CROSSED \(level) threshold (\(threshold)) - old=\(oldWindPoints), new=\(newWindPoints)")
+
+            // Activate shield if this level triggers it
+            // Note: Safety shield at 100% is handled separately in checkSafetyShield()
+            if let activationLevel = settings.shieldActivationLevel,
+               level == activationLevel {
+                // Check cooldown before activating
+                if isShieldOnCooldown(settings: settings) {
+                    logToFile(">>> SHIELD ON COOLDOWN - skipping activation at level \(level)")
+                } else {
+                    logToFile(">>> ACTIVATING SHIELD at level \(level)")
+                    activateShield()
+                }
+            }
+
+            // Send notification if enabled for this level
+            if settings.notificationLevels.contains(level) {
+                logToFile(">>> SENDING NOTIFICATION for level \(level)")
+                sendWindLevelNotification(level: level)
+            }
+        }
+    }
+
+    /// Checks if shield is currently on cooldown after recent unlock.
+    private func isShieldOnCooldown(settings: LimitSettings) -> Bool {
+        guard let lastUnlock = SharedDefaults.lastUnlockAt else {
+            return false
         }
 
-        // Send notification if enabled for this level
-        if settings.notificationLevels.contains(newLevel) {
-            logToFile(">>> SENDING NOTIFICATION for level \(newLevel)")
-            sendWindLevelNotification(level: newLevel)
-        }
+        let elapsed = Date().timeIntervalSince(lastUnlock)
+        let cooldown = Double(settings.shieldCooldownSeconds)
+        let onCooldown = elapsed < cooldown
+
+        logToFile("DEBUG: Shield cooldown check - elapsed=\(Int(elapsed))s, cooldown=\(Int(cooldown))s, onCooldown=\(onCooldown)")
+
+        return onCooldown
     }
 
     /// Checks if 100% safety shield should activate and sends warning notification.
@@ -204,8 +229,9 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
         // Safety shield activates at exactly 100 wind points (not in buffer zone yet)
         guard windPoints >= 100 else { return }
 
-        // Check debug override
         let settings = SharedDefaults.limitSettings
+
+        // Check debug override
         if settings.disableSafetyShield {
             logToFile("[SafetyShield] DISABLED via debug settings, skipping")
             return
@@ -218,6 +244,12 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
             logToFile(">>> SENDING 100% WARNING NOTIFICATION")
             sendSafetyShieldNotification()
             SharedDefaults.set(true, forKey: DefaultsKeys.safetyShieldNotificationSent)
+        }
+
+        // Check cooldown before activating
+        if isShieldOnCooldown(settings: settings) {
+            logToFile("[SafetyShield] ON COOLDOWN - skipping activation")
+            return
         }
 
         // Activate shield if not already active

@@ -102,4 +102,8 @@ enum DefaultsKeys {
 
     static let shieldActivatedAt = "shieldActivatedAt"
     static let monitoredFallRate = "monitoredFallRate"
+
+    // MARK: - Shield Cooldown
+
+    static let lastUnlockAt = "lastUnlockAt"
 }
