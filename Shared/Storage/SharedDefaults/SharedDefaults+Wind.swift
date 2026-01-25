@@ -110,4 +110,50 @@ extension SharedDefaults {
         lastKnownWindLevel = 0
         synchronize()
     }
+
+    // MARK: - Wind Calculation
+
+    /// Total cumulative seconds = baseline (from before restart) + current threshold.
+    /// This is the true total usage time for today.
+    static var totalCumulativeSeconds: Int {
+        cumulativeBaseline + monitoredLastThresholdSeconds
+    }
+
+    /// Calculates wind from explicit values.
+    /// Formula: wind = (cumulativeSeconds - breakReduction) / limitSeconds * 100
+    ///
+    /// - Parameters:
+    ///   - cumulativeSeconds: Total usage seconds (baseline + current threshold)
+    ///   - breakReduction: Total seconds "forgiven" by breaks today
+    ///   - limitSeconds: Daily limit in seconds
+    /// - Returns: Wind points (0+, can exceed 100 for blow-away detection)
+    static func calculateWind(
+        cumulativeSeconds: Int,
+        breakReduction: Int,
+        limitSeconds: Int
+    ) -> Double {
+        guard limitSeconds > 0 else { return 0 }
+        let effectiveSeconds = max(0, cumulativeSeconds - breakReduction)
+        return Double(effectiveSeconds) / Double(limitSeconds) * 100
+    }
+
+    /// Current wind calculated from stored values.
+    /// Uses totalCumulativeSeconds (baseline + lastThreshold) for correct calculation after monitoring restart.
+    static var calculatedWind: Double {
+        calculateWind(
+            cumulativeSeconds: totalCumulativeSeconds,
+            breakReduction: totalBreakReduction,
+            limitSeconds: integer(forKey: DefaultsKeys.monitoringLimitSeconds)
+        )
+    }
+
+    /// Effective wind during active shield - decreases over time based on fallRate.
+    /// When shield is not active, returns calculatedWind.
+    static var effectiveWind: Double {
+        guard let activatedAt = shieldActivatedAt else {
+            return calculatedWind
+        }
+        let elapsed = Date().timeIntervalSince(activatedAt)
+        return max(0, calculatedWind - elapsed * monitoredFallRate)
+    }
 }

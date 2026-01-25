@@ -47,12 +47,11 @@ final class Pet: Identifiable, PetPresentable, PetWithSources {
 
     /// Effective wind points accounting for real-time shield recovery.
     /// When shield is active, wind decreases over time based on fallRate.
-    /// Uses WindCalculator for consistent calculation across the app.
     var effectiveWindPoints: Double {
         guard SharedDefaults.isShieldActive else {
             return windPoints
         }
-        return WindCalculator.effectiveWind()
+        return SharedDefaults.effectiveWind
     }
 
     /// Wind progress for UI (0-1), clamped.

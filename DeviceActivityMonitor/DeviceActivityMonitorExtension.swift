@@ -98,7 +98,7 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
     }
 
     /// Threshold processing - calculate wind and log.
-    /// Uses WindCalculator for absolute formula: wind = (cumulativeSeconds - breakReduction) / limitSeconds * 100
+    /// Uses SharedDefaults.calculateWind for absolute formula: wind = (cumulativeSeconds - breakReduction) / limitSeconds * 100
     private func processThresholdEvent(currentSeconds: Int, previousThresholdSeconds: Int) {
         let oldWindPoints = SharedDefaults.monitoredWindPoints
         let limitSeconds = SharedDefaults.integer(forKey: DefaultsKeys.monitoringLimitSeconds)
@@ -112,8 +112,8 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
         logToFile("baseline=\(baseline)s, current=\(currentSeconds)s, trueCumulative=\(trueCumulative)s")
         logToFile("breakReduction=\(breakReduction)s, limit=\(limitSeconds)s")
 
-        // Use WindCalculator for consistent wind calculation
-        let newWindPoints = WindCalculator.calculate(
+        // Use SharedDefaults for consistent wind calculation
+        let newWindPoints = SharedDefaults.calculateWind(
             cumulativeSeconds: trueCumulative,
             breakReduction: breakReduction,
             limitSeconds: limitSeconds

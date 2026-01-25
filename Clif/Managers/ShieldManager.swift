@@ -121,7 +121,7 @@ final class ShieldManager {
     // MARK: - Break Reduction
 
     /// Calculates break reduction based on shield duration and adds to totalBreakReduction.
-    /// Also recalculates wind using WindCalculator.
+    /// Also recalculates wind using SharedDefaults.calculatedWind.
     private func applyBreakReduction() {
         guard let activatedAt = SharedDefaults.shieldActivatedAt else { return }
 
@@ -137,13 +137,13 @@ final class ShieldManager {
         let newReduction = oldReduction + secondsForgiven
         SharedDefaults.totalBreakReduction = newReduction
 
-        // Recalculate wind using WindCalculator
+        // Recalculate wind using SharedDefaults
         let oldWind = SharedDefaults.monitoredWindPoints
-        let newWind = WindCalculator.currentWind()
+        let newWind = SharedDefaults.calculatedWind
         SharedDefaults.monitoredWindPoints = newWind
 
         #if DEBUG
-        let cumulativeSeconds = SharedDefaults.monitoredLastThresholdSeconds
+        let cumulativeSeconds = SharedDefaults.totalCumulativeSeconds
         let effectiveSeconds = max(0, cumulativeSeconds - newReduction)
         print("[ShieldManager] Break reduction: +\(secondsForgiven)s (elapsed: \(elapsedSeconds)s, fallRate: \(fallRate), total: \(newReduction)s)")
         print("[ShieldManager] Wind recalculated: \(String(format: "%.1f", oldWind)) -> \(String(format: "%.1f", newWind))% (cumulative: \(cumulativeSeconds)s, effective: \(effectiveSeconds)s)")

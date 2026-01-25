@@ -28,8 +28,6 @@
 		B451D2152F2533E6004C534F /* BlowAwayNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = B451D2132F2533E6004C534F /* BlowAwayNotification.swift */; };
 		B451D2162F2533E6004C534F /* BlowAwayNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = B451D2132F2533E6004C534F /* BlowAwayNotification.swift */; };
 		B451D2172F2533E6004C534F /* BlowAwayNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = B451D2132F2533E6004C534F /* BlowAwayNotification.swift */; };
-		B451D3512F262A74004C534F /* WindCalculator.swift in Sources */ = {isa = PBXBuildFile; fileRef = B451D34F2F262A74004C534F /* WindCalculator.swift */; };
-		B451D3522F262A74004C534F /* WindCalculator.swift in Sources */ = {isa = PBXBuildFile; fileRef = B451D34F2F262A74004C534F /* WindCalculator.swift */; };
 		B451D37A2F26856C004C534F /* SharedDefaults.swift in Sources */ = {isa = PBXBuildFile; fileRef = B451D3742F26856C004C534F /* SharedDefaults.swift */; };
 		B451D37B2F26856C004C534F /* SharedDefaults+DayState.swift in Sources */ = {isa = PBXBuildFile; fileRef = B451D3752F26856C004C534F /* SharedDefaults+DayState.swift */; };
 		B451D37C2F26856C004C534F /* SharedDefaults+Shield.swift in Sources */ = {isa = PBXBuildFile; fileRef = B451D3762F26856C004C534F /* SharedDefaults+Shield.swift */; };
@@ -170,7 +168,6 @@
 		B4167E642F1FF93800D89B36 /* SnapshotLogging.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SnapshotLogging.swift; sourceTree = "<group>"; };
 		B451D20D2F24FEF0004C534F /* ExtensionLogger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtensionLogger.swift; sourceTree = "<group>"; };
 		B451D2132F2533E6004C534F /* BlowAwayNotification.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlowAwayNotification.swift; sourceTree = "<group>"; };
-		B451D34F2F262A74004C534F /* WindCalculator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindCalculator.swift; sourceTree = "<group>"; };
 		B451D3742F26856C004C534F /* SharedDefaults.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedDefaults.swift; sourceTree = "<group>"; };
 		B451D3752F26856C004C534F /* SharedDefaults+DayState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SharedDefaults+DayState.swift"; sourceTree = "<group>"; };
 		B451D3762F26856C004C534F /* SharedDefaults+Shield.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SharedDefaults+Shield.swift"; sourceTree = "<group>"; };
@@ -412,14 +409,6 @@
 			path = Notifications;
 			sourceTree = "<group>";
 		};
-		B451D3502F262A74004C534F /* Wind */ = {
-			isa = PBXGroup;
-			children = (
-				B451D34F2F262A74004C534F /* WindCalculator.swift */,
-			);
-			path = Wind;
-			sourceTree = "<group>";
-		};
 		B451D3792F26856C004C534F /* SharedDefaults */ = {
 			isa = PBXGroup;
 			children = (
@@ -445,7 +434,6 @@
 		B4924AF62EE5807E0033475C /* Shared */ = {
 			isa = PBXGroup;
 			children = (
-				B451D3502F262A74004C534F /* Wind */,
 				B451D2142F2533E6004C534F /* Notifications */,
 				B43998442EE9FCD90049445F /* Reports */,
 				B43998452EE9FCE40049445F /* Models */,
@@ -714,7 +702,6 @@
 				B451D2172F2533E6004C534F /* BlowAwayNotification.swift in Sources */,
 				B4D351262F123DD00076C09B /* StatType.swift in Sources */,
 				B4D351272F123DD00076C09B /* DailyUsageStat.swift in Sources */,
-				B451D3522F262A74004C534F /* WindCalculator.swift in Sources */,
 				B4D351222F123D620076C09B /* EvolutionHistory.swift in Sources */,
 				B4D351232F123D620076C09B /* Essence.swift in Sources */,
 				B45862442EE5FAF60088CB78 /* ActivityReportContext.swift in Sources */,
@@ -761,7 +748,6 @@
 				B451D37C2F26856C004C534F /* SharedDefaults+Shield.swift in Sources */,
 				B451D37D2F26856C004C534F /* SharedDefaults+Tokens.swift in Sources */,
 				B451D37E2F26856C004C534F /* SharedDefaults+Wind.swift in Sources */,
-				B451D3512F262A74004C534F /* WindCalculator.swift in Sources */,
 				B451D20B2F24C78E004C534F /* WindLevel.swift in Sources */,
 				B451D2162F2533E6004C534F /* BlowAwayNotification.swift in Sources */,
 				B451D2112F24FEF0004C534F /* ExtensionLogger.swift in Sources */,
