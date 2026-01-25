@@ -8,19 +8,8 @@ struct ProfileScreen: View {
     var body: some View {
         NavigationView {
             Form {
-                // MARK: - Limits & Notifications
+                // MARK: - Notifications & Shield
                 Section {
-                    NavigationLink {
-                        ShieldSettingsView(settings: $limitSettings)
-                    } label: {
-                        HStack {
-                            Label("Aktivace shieldu", systemImage: "shield.fill")
-                            Spacer()
-                            Text(shieldLevelDescription)
-                                .foregroundStyle(.secondary)
-                        }
-                    }
-
                     NavigationLink {
                         NotificationSettingsView(settings: $limitSettings)
                     } label: {
@@ -37,7 +26,7 @@ struct ProfileScreen: View {
                     }
                     .tint(.blue)
                 } header: {
-                    Text("Limity a upozornění")
+                    Text("Upozornění")
                 } footer: {
                     Text("Ranní shield ti umožní vybrat si náročnost dne před prvním použitím blokovaných aplikací.")
                 }
@@ -77,13 +66,6 @@ struct ProfileScreen: View {
                 SharedDefaults.limitSettings = newValue
             }
         }
-    }
-
-    private var shieldLevelDescription: String {
-        guard let level = limitSettings.shieldActivationLevel else {
-            return "Vypnuto"
-        }
-        return level.label
     }
 
     #if DEBUG

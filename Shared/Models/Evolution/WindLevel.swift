@@ -113,15 +113,10 @@ extension WindLevel: Hashable {}
 
 // MARK: - LimitSettings
 
-/// User-configurable settings for shield activation and notifications.
+/// User-configurable settings for notifications and safety shield.
 /// Stored in SharedDefaults for access from both app and extensions.
+/// Note: Shields are activated manually (break button) or at 100% (safety shield).
 struct LimitSettings: Codable, Equatable {
-
-    // MARK: - Shield Settings
-
-    /// WindLevel at which shield activates (nil = never automatically).
-    /// Default: .high (activates at 80%+ wind)
-    var shieldActivationLevel: WindLevel? = .high
 
     // MARK: - Notification Settings
 
@@ -140,13 +135,6 @@ struct LimitSettings: Codable, Equatable {
     /// When true, no shield activates at 100% - pet can blow away without warning.
     /// Default: false (safety shield always active)
     var disableSafetyShield: Bool = false
-
-    // MARK: - Shield Cooldown
-
-    /// Cooldown period after unlock during which shield cannot re-activate.
-    /// Prevents immediate re-triggering when wind is still above threshold.
-    /// Default: 30 seconds (use lower values for debug/testing)
-    var shieldCooldownSeconds: Int = 30
 
     // MARK: - Defaults
 

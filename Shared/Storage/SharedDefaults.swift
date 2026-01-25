@@ -302,20 +302,6 @@ struct SharedDefaults {
         }
     }
 
-    /// Timestamp of last unlock (for shield cooldown).
-    /// Set by main app when user unlocks shield.
-    static var lastUnlockAt: Date? {
-        get {
-            // Create fresh instance to bypass caching issues between processes
-            let fresh = UserDefaults(suiteName: AppConstants.appGroupIdentifier)
-            return fresh?.object(forKey: DefaultsKeys.lastUnlockAt) as? Date
-        }
-        set {
-            defaults?.set(newValue, forKey: DefaultsKeys.lastUnlockAt)
-            defaults?.synchronize()
-        }
-    }
-
     // MARK: - Helpers
 
     /// Forces synchronization of UserDefaults (important for cross-process communication).

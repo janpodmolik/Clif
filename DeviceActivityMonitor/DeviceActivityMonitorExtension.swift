@@ -158,8 +158,9 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
         logSnapshot(eventType: .usageThreshold(cumulativeSeconds: currentSeconds))
     }
 
-    /// Checks if wind crossed any level thresholds and triggers shield/notifications.
+    /// Checks if wind crossed any level thresholds and sends notifications.
     /// Uses threshold crossing logic: only triggers when wind goes FROM below TO at/above threshold.
+    /// Note: Shields are NOT activated here - only manually from the app (break button).
     private func checkWindLevelChange(oldWindPoints: Double, newWindPoints: Double) {
         let settings = SharedDefaults.limitSettings
 
@@ -178,40 +179,12 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
 
             logToFile(">>> CROSSED \(level) threshold (\(threshold)) - old=\(oldWindPoints), new=\(newWindPoints)")
 
-            // Activate shield if this level triggers it
-            // Note: Safety shield at 100% is handled separately in checkSafetyShield()
-            if let activationLevel = settings.shieldActivationLevel,
-               level == activationLevel {
-                // Check cooldown before activating
-                if isShieldOnCooldown(settings: settings) {
-                    logToFile(">>> SHIELD ON COOLDOWN - skipping activation at level \(level)")
-                } else {
-                    logToFile(">>> ACTIVATING SHIELD at level \(level)")
-                    activateShield()
-                }
-            }
-
             // Send notification if enabled for this level
             if settings.notificationLevels.contains(level) {
                 logToFile(">>> SENDING NOTIFICATION for level \(level)")
                 sendWindLevelNotification(level: level)
             }
         }
-    }
-
-    /// Checks if shield is currently on cooldown after recent unlock.
-    private func isShieldOnCooldown(settings: LimitSettings) -> Bool {
-        guard let lastUnlock = SharedDefaults.lastUnlockAt else {
-            return false
-        }
-
-        let elapsed = Date().timeIntervalSince(lastUnlock)
-        let cooldown = Double(settings.shieldCooldownSeconds)
-        let onCooldown = elapsed < cooldown
-
-        logToFile("DEBUG: Shield cooldown check - elapsed=\(Int(elapsed))s, cooldown=\(Int(cooldown))s, onCooldown=\(onCooldown)")
-
-        return onCooldown
     }
 
     /// Checks if 100% safety shield should activate and sends warning notification.
@@ -236,12 +209,6 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
             logToFile(">>> SENDING 100% WARNING NOTIFICATION")
             sendSafetyShieldNotification()
             SharedDefaults.set(true, forKey: DefaultsKeys.safetyShieldNotificationSent)
-        }
-
-        // Check cooldown before activating
-        if isShieldOnCooldown(settings: settings) {
-            logToFile("[SafetyShield] ON COOLDOWN - skipping activation")
-            return
         }
 
         // Activate shield if not already active
