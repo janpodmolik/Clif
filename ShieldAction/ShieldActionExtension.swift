@@ -140,11 +140,11 @@ class ShieldActionExtension: ShieldActionDelegate {
 
     // MARK: - Unlock Handling
 
-    /// Handles unlock request by redirecting user to main app.
-    /// Main app will handle wind decrease calculation and monitoring restart.
+    /// Handles unlock request by sending notification to open main app.
+    /// Shield stays active - user must explicitly unlock in the app.
     private func handleUnlockRequest() {
-        logToFile("handleUnlockRequest() - redirecting to main app")
-        logToFile("Current state: wind=\(SharedDefaults.monitoredWindPoints), shieldActivatedAt=\(String(describing: SharedDefaults.shieldActivatedAt))")
+        logToFile("handleUnlockRequest() - sending notification to open app")
+        logToFile("Current state: wind=\(SharedDefaults.monitoredWindPoints), isShieldActive=\(SharedDefaults.isShieldActive)")
 
         // Lock preset on first unlock of the day
         if !SharedDefaults.windPresetLockedForToday {
@@ -154,32 +154,14 @@ class ShieldActionExtension: ShieldActionDelegate {
         // Check if this violates an active break
         handlePotentialBreakViolation()
 
-        // Start cooldown - shield won't auto-activate for 30 seconds after unlock
-        // This allows user to go back to app and wind to rise to 105%+ for blow-away
-        let cooldownSeconds: TimeInterval = 30
-        SharedDefaults.shieldCooldownUntil = Date().addingTimeInterval(cooldownSeconds)
-        logToFile("handleUnlockRequest() - cooldown set for \(cooldownSeconds)s")
-
-        // Clear shield state immediately (don't wait for main app)
-        // This ensures extension sees isShieldActive=false correctly
-        SharedDefaults.isShieldActive = false
-        SharedDefaults.synchronize()
-        logToFile("handleUnlockRequest() - shield deactivated, isShieldActive=\(SharedDefaults.isShieldActive)")
-
-        // Clear actual shield from store
-        store.shield.applications = nil
-        store.shield.applicationCategories = nil
-        store.shield.webDomains = nil
-
-        // Send notification to open app for unlock
-        // The main app will handle wind decrease and monitoring restart
+        // Send notification to open app - shield stays active until user unlocks in app
         sendNotificationWithDeepLink(
             title: "Odemknout aplikace",
-            body: "Klepni pro odemčení",
-            deepLink: DeepLinks.unlock
+            body: "Klepni pro otevření Clif a odemčení",
+            deepLink: DeepLinks.home
         )
 
-        logToFile("handleUnlockRequest() - notification sent, returning .close")
+        logToFile("handleUnlockRequest() - notification sent, shield stays active")
     }
 
     // MARK: - ShieldActionDelegate
