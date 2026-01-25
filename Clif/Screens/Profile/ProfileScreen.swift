@@ -54,6 +54,8 @@ struct ProfileScreen: View {
                     Button("Simulate Day Reset") {
                         SharedDefaults.monitoredWindPoints = 0
                         SharedDefaults.monitoredLastThresholdSeconds = 0
+                        SharedDefaults.totalBreakReduction = 0
+                        SharedDefaults.cumulativeBaseline = 0
                         SharedDefaults.lastKnownWindLevel = 0
                         SharedDefaults.windPresetLockedForToday = false
                         SharedDefaults.isMorningShieldActive = limitSettings.morningShieldEnabled

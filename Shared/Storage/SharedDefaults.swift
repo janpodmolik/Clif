@@ -95,55 +95,27 @@ struct SharedDefaults {
     static func loadApplicationTokens() -> Set<ApplicationToken>? {
         defaults?.synchronize()
         guard let data = defaults?.data(forKey: DefaultsKeys.applicationTokens) else {
-            logTokenDebug("loadApplicationTokens: no data found")
             return nil
         }
-        do {
-            let tokens = try PropertyListDecoder().decode(Set<ApplicationToken>.self, from: data)
-            logTokenDebug("loadApplicationTokens: decoded \(tokens.count) tokens from \(data.count) bytes")
-            return tokens
-        } catch {
-            logTokenDebug("loadApplicationTokens: decode FAILED - \(error)")
-            return nil
-        }
+        return try? PropertyListDecoder().decode(Set<ApplicationToken>.self, from: data)
     }
 
     /// Loads category tokens for the currently monitored pet.
     static func loadCategoryTokens() -> Set<ActivityCategoryToken>? {
         defaults?.synchronize()
         guard let data = defaults?.data(forKey: DefaultsKeys.categoryTokens) else {
-            logTokenDebug("loadCategoryTokens: no data found")
             return nil
         }
-        do {
-            let tokens = try PropertyListDecoder().decode(Set<ActivityCategoryToken>.self, from: data)
-            logTokenDebug("loadCategoryTokens: decoded \(tokens.count) tokens from \(data.count) bytes")
-            return tokens
-        } catch {
-            logTokenDebug("loadCategoryTokens: decode FAILED - \(error)")
-            return nil
-        }
+        return try? PropertyListDecoder().decode(Set<ActivityCategoryToken>.self, from: data)
     }
 
     /// Loads web domain tokens for the currently monitored pet.
     static func loadWebDomainTokens() -> Set<WebDomainToken>? {
         defaults?.synchronize()
         guard let data = defaults?.data(forKey: DefaultsKeys.webDomainTokens) else {
-            logTokenDebug("loadWebDomainTokens: no data found")
             return nil
         }
-        do {
-            let tokens = try PropertyListDecoder().decode(Set<WebDomainToken>.self, from: data)
-            logTokenDebug("loadWebDomainTokens: decoded \(tokens.count) tokens from \(data.count) bytes")
-            return tokens
-        } catch {
-            logTokenDebug("loadWebDomainTokens: decode FAILED - \(error)")
-            return nil
-        }
-    }
-
-    private static func logTokenDebug(_ message: String) {
-        ExtensionLogger.log(message, prefix: "[SharedDefaults]")
+        return try? PropertyListDecoder().decode(Set<WebDomainToken>.self, from: data)
     }
     
     // MARK: - Monitoring Context (lightweight data for extensions to create snapshots)
@@ -330,16 +302,27 @@ struct SharedDefaults {
         }
     }
 
+    /// Total cumulative seconds spent in monitored apps today.
+    /// Combines baseline (from previous monitoring sessions) with current session threshold.
+    static var totalCumulativeSeconds: Int {
+        cumulativeBaseline + monitoredLastThresholdSeconds
+    }
+
     /// Total seconds "forgiven" by breaks today. Reset at day start.
     /// Used for absolute wind calculation: wind = (cumulative - breakReduction) / limit * 100
+    /// Note: Clamped to never exceed totalCumulativeSeconds (can't save up break time in advance).
     static var totalBreakReduction: Int {
         get {
             let fresh = UserDefaults(suiteName: AppConstants.appGroupIdentifier)
-            fresh?.synchronize() // Force read from disk before reading value
-            return fresh?.integer(forKey: DefaultsKeys.totalBreakReduction) ?? 0
+            fresh?.synchronize()
+            let stored = fresh?.integer(forKey: DefaultsKeys.totalBreakReduction) ?? 0
+            // Clamp to never exceed total cumulative time
+            return min(stored, totalCumulativeSeconds)
         }
         set {
-            defaults?.set(newValue, forKey: DefaultsKeys.totalBreakReduction)
+            // Clamp value before storing
+            let clamped = min(newValue, totalCumulativeSeconds)
+            defaults?.set(clamped, forKey: DefaultsKeys.totalBreakReduction)
             defaults?.synchronize()
         }
     }
