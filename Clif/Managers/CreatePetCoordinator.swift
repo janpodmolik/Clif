@@ -197,20 +197,24 @@ final class CreatePetCoordinator {
             return
         }
 
-        // Start monitoring with wind parameters for extension (all in seconds)
+        // Start monitoring
         let limitSeconds = Int(preset.minutesToBlowAway * 60)
-        let riseRatePerSecond = preset.riseRate / 60.0  // Convert from pts/min to pts/sec
-        let fallRatePerSecond = preset.fallRate / 60.0  // Convert from pts/min to pts/sec
+        let fallRatePerSecond = preset.fallRate / 60.0
+
+        // Initialize wind state for new pet
+        SharedDefaults.monitoredWindPoints = 0
+        SharedDefaults.monitoredLastThresholdSeconds = 0
+        SharedDefaults.totalBreakReduction = 0
+        SharedDefaults.cumulativeBaseline = 0
+        SharedDefaults.monitoredFallRate = fallRatePerSecond
+
         #if DEBUG
-        print("[CreatePet] Starting monitoring - limit: \(limitSeconds)s, riseRate: \(riseRatePerSecond) pts/sec")
+        print("[CreatePet] Starting monitoring - limit: \(limitSeconds)s")
         #endif
+
         ScreenTimeManager.shared.startMonitoring(
             petId: pet.id,
             limitSeconds: limitSeconds,
-            windPoints: 0,
-            riseRatePerSecond: riseRatePerSecond,
-            fallRatePerSecond: fallRatePerSecond,
-            lastThresholdSeconds: 0,
             limitedSources: limitedSources
         )
 

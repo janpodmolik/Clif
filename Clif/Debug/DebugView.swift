@@ -152,34 +152,28 @@ struct DebugView: View {
         }
 
         let newLimit = Int(DebugConfig.minutesToBlowAway)
-        let riseRate = DebugConfig.riseRate
         let fallRate = DebugConfig.fallRate
         let limitSeconds = newLimit * 60
-        let riseRatePerSecond = riseRate / 60.0
         let fallRatePerSecond = fallRate / 60.0
+
+        // Update fallRate in SharedDefaults
+        SharedDefaults.monitoredFallRate = fallRatePerSecond
+
         print("[DebugConfig] Restarting monitoring:")
         print("  - petId: \(pet.id)")
         print("  - limit: \(limitSeconds)s (\(newLimit) min)")
-        print("  - riseRate: \(riseRatePerSecond) pts/sec")
         print("  - fallRate: \(fallRatePerSecond) pts/sec")
-        print("  - currentWind: \(pet.windPoints)")
-        print("  - lastThreshold: \(pet.lastThresholdSeconds)s")
         print("  - limitedSources count: \(pet.limitedSources.count)")
 
         ScreenTimeManager.shared.startMonitoring(
             petId: pet.id,
             limitSeconds: limitSeconds,
-            windPoints: pet.windPoints,
-            riseRatePerSecond: riseRatePerSecond,
-            fallRatePerSecond: fallRatePerSecond,
-            lastThresholdSeconds: pet.lastThresholdSeconds,
             limitedSources: pet.limitedSources
         )
 
         // Verify SharedDefaults were set
         print("[DebugConfig] After startMonitoring:")
         print("  - SharedDefaults.monitoredPetId: \(SharedDefaults.monitoredPetId?.uuidString ?? "nil")")
-        print("  - SharedDefaults.monitoredRiseRate: \(SharedDefaults.monitoredRiseRate) pts/sec")
         print("  - SharedDefaults.monitoringLimitSeconds: \(SharedDefaults.integer(forKey: DefaultsKeys.monitoringLimitSeconds))")
     }
 

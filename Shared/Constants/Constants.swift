@@ -107,4 +107,8 @@ enum DefaultsKeys {
     // MARK: - Shield Cooldown
 
     static let shieldCooldownUntil = "shieldCooldownUntil"
+
+    // MARK: - Cumulative Tracking
+
+    static let cumulativeBaseline = "cumulativeBaseline"
 }

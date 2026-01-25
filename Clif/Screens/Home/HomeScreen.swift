@@ -73,15 +73,20 @@ struct HomeScreen: View {
         .onAppear {
             windRhythm.start()
             checkMorningShield()
+            // Force immediate refresh to read latest wind from SharedDefaults
+            refreshTick += 1
         }
         .onReceive(NotificationCenter.default.publisher(for: .showPresetPicker)) { _ in
             showPresetPicker = true
         }
+        .onReceive(NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)) { _ in
+            // Force refresh when returning from background to read latest wind
+            refreshTick += 1
+        }
         .onReceive(Timer.publish(every: 1.0, on: .main, in: .common).autoconnect()) { _ in
-            // Tick every second when shield is active to update effectiveWindPoints display
-            if SharedDefaults.isShieldActive {
-                refreshTick += 1
-            }
+            // Tick every second to update wind display from SharedDefaults
+            // This forces SwiftUI to re-read pet.windProgress which reads from UserDefaults
+            refreshTick += 1
         }
         .onDisappear {
             windRhythm.stop()
@@ -152,6 +157,8 @@ struct HomeScreen: View {
     // MARK: - Single Pet Page
 
     private func petPage(_ pet: Pet, geometry: GeometryProxy) -> some View {
+        // Force recalculation when refreshTick changes (used to trigger SwiftUI update)
+        let _ = refreshTick
         // Capture effective wind progress (recalculated each tick when shield active)
         let effectiveProgress = pet.windProgress
 
@@ -184,37 +191,15 @@ struct HomeScreen: View {
                 .modifier(HomeCardBackgroundModifier(cornerRadius: homeCardCornerRadius))
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
                 .padding(homeCardInset)
+                .id(refreshTick) // Force re-read of windProgress from SharedDefaults
 
             #if DEBUG
-            debugWindOverlay(pet)
+            EventLogOverlay()
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
             #endif
         }
-        // Force view recalculation when refreshTick changes (during active shield)
-        .id(refreshTick)
     }
 
-    #if DEBUG
-    private func debugWindOverlay(_ pet: Pet) -> some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text("Wind: \(String(format: "%.1f", pet.windPoints)) pts")
-            if SharedDefaults.isShieldActive {
-                Text("Effective: \(String(format: "%.1f", pet.effectiveWindPoints)) pts")
-                    .foregroundStyle(.cyan)
-            }
-            Text("Last threshold: \(pet.lastThresholdSeconds)s")
-            Text("Rise rate: \(String(format: "%.1f", pet.preset.riseRate)) pts/min")
-            if SharedDefaults.isShieldActive {
-                Text("Shield active")
-                    .foregroundStyle(.green)
-            }
-        }
-        .font(.system(size: 10, design: .monospaced))
-        .padding(8)
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 8))
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
-        .padding(.leading, 16)
-    }
-    #endif
 
     // MARK: - Home Card
 

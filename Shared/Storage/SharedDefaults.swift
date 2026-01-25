@@ -314,6 +314,22 @@ struct SharedDefaults {
         return Date() < cooldownUntil
     }
 
+    /// Baseline cumulative seconds from before monitoring restart.
+    /// When iOS restarts monitoring (intervalDidStart), it resets its internal counter to 0.
+    /// We save the previous cumulative value here so we can add it to new threshold values.
+    /// Note: Uses fresh UserDefaults instance for reads to ensure cross-process sync.
+    static var cumulativeBaseline: Int {
+        get {
+            let fresh = UserDefaults(suiteName: AppConstants.appGroupIdentifier)
+            fresh?.synchronize()
+            return fresh?.integer(forKey: DefaultsKeys.cumulativeBaseline) ?? 0
+        }
+        set {
+            defaults?.set(newValue, forKey: DefaultsKeys.cumulativeBaseline)
+            defaults?.synchronize()
+        }
+    }
+
     /// Total seconds "forgiven" by breaks today. Reset at day start.
     /// Used for absolute wind calculation: wind = (cumulative - breakReduction) / limit * 100
     static var totalBreakReduction: Int {

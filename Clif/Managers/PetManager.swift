@@ -99,9 +99,6 @@ final class PetManager {
     /// Restores monitoring for existing pet after app restart/rebuild.
     /// DeviceActivityCenter schedules don't persist across app terminations,
     /// so we must re-register monitoring when the app launches.
-    ///
-    /// Uses SharedDefaults values directly (not pet properties) because SharedDefaults
-    /// is the source of truth - extensions update it in real-time.
     private func restoreMonitoringIfNeeded() {
         guard let pet = pet,
               !pet.isBlownAway,
@@ -110,17 +107,11 @@ final class PetManager {
             return
         }
 
-        // Read directly from SharedDefaults - this is the source of truth
-        let windPoints = SharedDefaults.monitoredWindPoints
-        let lastThresholdSeconds = SharedDefaults.monitoredLastThresholdSeconds
+        let limitSeconds = Int(pet.preset.minutesToBlowAway * 60)
 
         ScreenTimeManager.shared.startMonitoring(
             petId: pet.id,
-            limitSeconds: Int(pet.preset.minutesToBlowAway * 60),
-            windPoints: windPoints,
-            riseRatePerSecond: pet.preset.riseRate / 60.0,
-            fallRatePerSecond: pet.preset.fallRate / 60.0,
-            lastThresholdSeconds: lastThresholdSeconds,
+            limitSeconds: limitSeconds,
             limitedSources: pet.limitedSources
         )
     }
