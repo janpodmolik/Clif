@@ -7,6 +7,16 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		B4153D3E2F27417F0006FEE3 /* LimitSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4153D3D2F27417F0006FEE3 /* LimitSettings.swift */; };
+		B4153D3F2F27417F0006FEE3 /* LimitSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4153D3D2F27417F0006FEE3 /* LimitSettings.swift */; };
+		B4153D412F2741A40006FEE3 /* WindNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4153D402F2741A40006FEE3 /* WindNotification.swift */; };
+		B4153D422F2741A40006FEE3 /* WindNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4153D402F2741A40006FEE3 /* WindNotification.swift */; };
+		B4153D432F2741C30006FEE3 /* LimitSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4153D3D2F27417F0006FEE3 /* LimitSettings.swift */; };
+		B4153D442F2741C30006FEE3 /* LimitSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4153D3D2F27417F0006FEE3 /* LimitSettings.swift */; };
+		B4153D452F2741C30006FEE3 /* LimitSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4153D3D2F27417F0006FEE3 /* LimitSettings.swift */; };
+		B4153D462F2741D10006FEE3 /* WindNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4153D402F2741A40006FEE3 /* WindNotification.swift */; };
+		B4153D472F2741D10006FEE3 /* WindNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4153D402F2741A40006FEE3 /* WindNotification.swift */; };
+		B4153D482F2741D10006FEE3 /* WindNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4153D402F2741A40006FEE3 /* WindNotification.swift */; };
 		B4167E552F1FE2D800D89B36 /* SnapshotEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4167E532F1FE2D800D89B36 /* SnapshotEvent.swift */; };
 		B4167E582F1FE2D800D89B36 /* SnapshotEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4167E532F1FE2D800D89B36 /* SnapshotEvent.swift */; };
 		B4167E5C2F1FE73400D89B36 /* SnapshotEventType.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4167E5B2F1FE73400D89B36 /* SnapshotEventType.swift */; };
@@ -161,6 +171,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		B4153D3D2F27417F0006FEE3 /* LimitSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LimitSettings.swift; sourceTree = "<group>"; };
+		B4153D402F2741A40006FEE3 /* WindNotification.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindNotification.swift; sourceTree = "<group>"; };
 		B4159A322EE56ED700BAE49D /* Clif.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Clif.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B4167E532F1FE2D800D89B36 /* SnapshotEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SnapshotEvent.swift; sourceTree = "<group>"; };
 		B4167E5B2F1FE73400D89B36 /* SnapshotEventType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SnapshotEventType.swift; sourceTree = "<group>"; };
@@ -390,6 +402,7 @@
 		B43998452EE9FCE40049445F /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				B4153D3D2F27417F0006FEE3 /* LimitSettings.swift */,
 				B4167E542F1FE2D800D89B36 /* Snapshot */,
 				B47A5F2A2F152D850068232C /* FullUsageStats.swift */,
 				B4ANI0002F0E00010001B000 /* Animation */,
@@ -404,6 +417,7 @@
 		B451D2142F2533E6004C534F /* Notifications */ = {
 			isa = PBXGroup;
 			children = (
+				B4153D402F2741A40006FEE3 /* WindNotification.swift */,
 				B451D2132F2533E6004C534F /* BlowAwayNotification.swift */,
 			);
 			path = Notifications;
@@ -694,6 +708,8 @@
 				B451D3802F26856C004C534F /* SharedDefaults+DayState.swift in Sources */,
 				B451D3812F26856C004C534F /* SharedDefaults+Shield.swift in Sources */,
 				B451D3822F26856C004C534F /* SharedDefaults+Tokens.swift in Sources */,
+				B4153D3F2F27417F0006FEE3 /* LimitSettings.swift in Sources */,
+				B4153D422F2741A40006FEE3 /* WindNotification.swift in Sources */,
 				B451D3832F26856C004C534F /* SharedDefaults+Wind.swift in Sources */,
 				B4167E5D2F1FE73400D89B36 /* SnapshotEventType.swift in Sources */,
 				B4167E5F2F1FEF4E00D89B36 /* SnapshotStore.swift in Sources */,
@@ -725,11 +741,13 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B4153D442F2741C30006FEE3 /* LimitSettings.swift in Sources */,
 				B4F8F9EC2FEC35C900E9E6D8 /* Constants.swift in Sources */,
 				B451D20C2F24C78E004C534F /* WindLevel.swift in Sources */,
 				B451D20E2F24FEF0004C534F /* ExtensionLogger.swift in Sources */,
 				B45862432EE5FAF60088CB78 /* ActivityReportContext.swift in Sources */,
 				B451D3842F26856C004C534F /* SharedDefaults.swift in Sources */,
+				B4153D472F2741D10006FEE3 /* WindNotification.swift in Sources */,
 				B451D3852F26856C004C534F /* SharedDefaults+DayState.swift in Sources */,
 				B451D3862F26856C004C534F /* SharedDefaults+Shield.swift in Sources */,
 				B451D3872F26856C004C534F /* SharedDefaults+Tokens.swift in Sources */,
@@ -741,6 +759,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B4153D3E2F27417F0006FEE3 /* LimitSettings.swift in Sources */,
 				B45862172EE5B92C0088CB78 /* Constants.swift in Sources */,
 				B4167E552F1FE2D800D89B36 /* SnapshotEvent.swift in Sources */,
 				B451D37A2F26856C004C534F /* SharedDefaults.swift in Sources */,
@@ -748,6 +767,7 @@
 				B451D37C2F26856C004C534F /* SharedDefaults+Shield.swift in Sources */,
 				B451D37D2F26856C004C534F /* SharedDefaults+Tokens.swift in Sources */,
 				B451D37E2F26856C004C534F /* SharedDefaults+Wind.swift in Sources */,
+				B4153D412F2741A40006FEE3 /* WindNotification.swift in Sources */,
 				B451D20B2F24C78E004C534F /* WindLevel.swift in Sources */,
 				B451D2162F2533E6004C534F /* BlowAwayNotification.swift in Sources */,
 				B451D2112F24FEF0004C534F /* ExtensionLogger.swift in Sources */,
@@ -767,6 +787,7 @@
 				B4EVO2012F0E00010001A001 /* Blob.swift in Sources */,
 				B4EVO2022F0E00010001A002 /* EvolutionPhase.swift in Sources */,
 				B451D38E2F26856C004C534F /* SharedDefaults.swift in Sources */,
+				B4153D462F2741D10006FEE3 /* WindNotification.swift in Sources */,
 				B451D38F2F26856C004C534F /* SharedDefaults+DayState.swift in Sources */,
 				B451D3902F26856C004C534F /* SharedDefaults+Shield.swift in Sources */,
 				B451D3912F26856C004C534F /* SharedDefaults+Tokens.swift in Sources */,
@@ -777,6 +798,7 @@
 				B4ESS2012F0E00010001A001 /* Essence.swift in Sources */,
 				B4ANI2012F0E00010001B001 /* IdleConfig.swift in Sources */,
 				B4ANI2022F0E00010001B002 /* TapAnimationType.swift in Sources */,
+				B4153D432F2741C30006FEE3 /* LimitSettings.swift in Sources */,
 				B4ANI2032F0E00010001B003 /* TapConfig.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -785,6 +807,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B4153D452F2741C30006FEE3 /* LimitSettings.swift in Sources */,
 				B4C4C0A02EE7FF0900E469E8 /* Constants.swift in Sources */,
 				B4167E612F1FF91200D89B36 /* SnapshotEventType.swift in Sources */,
 				B451D20A2F24C74F004C534F /* WindLevel.swift in Sources */,
@@ -792,6 +815,7 @@
 				B451D3892F26856C004C534F /* SharedDefaults.swift in Sources */,
 				B451D38A2F26856C004C534F /* SharedDefaults+DayState.swift in Sources */,
 				B451D38B2F26856C004C534F /* SharedDefaults+Shield.swift in Sources */,
+				B4153D482F2741D10006FEE3 /* WindNotification.swift in Sources */,
 				B451D38C2F26856C004C534F /* SharedDefaults+Tokens.swift in Sources */,
 				B451D38D2F26856C004C534F /* SharedDefaults+Wind.swift in Sources */,
 				B451D20F2F24FEF0004C534F /* ExtensionLogger.swift in Sources */,

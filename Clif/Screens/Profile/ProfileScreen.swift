@@ -16,7 +16,7 @@ struct ProfileScreen: View {
                         HStack {
                             Label("Notifikace", systemImage: "bell.fill")
                             Spacer()
-                            Text("\(limitSettings.notificationLevels.count) aktivních")
+                            Text("\(limitSettings.enabledNotifications.count) aktivních")
                                 .foregroundStyle(.secondary)
                         }
                     }

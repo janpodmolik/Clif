@@ -157,10 +157,16 @@ final class ShieldManager {
     /// After unlock, wind is typically around 95% (due to fallRate during shield).
     /// User needs to gain ~10% wind to reach blow-away threshold.
     func startCooldown() {
+        #if DEBUG
+        // Debug: fixed 30s cooldown for testing with short limits
+        let cooldownSeconds: TimeInterval = 30
+        #else
+        // Production: 10% of limit (2× buffer)
         let cooldownSeconds = TimeInterval(SharedDefaults.bufferSeconds * 2)
+        #endif
         SharedDefaults.shieldCooldownUntil = Date().addingTimeInterval(cooldownSeconds)
         #if DEBUG
-        print("[ShieldManager] Cooldown set for \(cooldownSeconds)s (2× buffer)")
+        print("[ShieldManager] Cooldown set for \(cooldownSeconds)s")
         #endif
     }
 
@@ -185,6 +191,8 @@ final class ShieldManager {
         applyBreakReduction()
         deactivateStore()
         SharedDefaults.resetShieldFlags()
+
+        startCooldown()
 
         #if DEBUG
         print("  After break reduction: wind=\(SharedDefaults.monitoredWindPoints)")

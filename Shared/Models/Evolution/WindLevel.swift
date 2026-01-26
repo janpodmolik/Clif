@@ -61,18 +61,6 @@ enum WindLevel: Int, CaseIterable {
         }
     }
 
-    /// Representative progress value for this wind level.
-    /// Use this when you need to convert a discrete WindLevel back to a progress value
-    /// (e.g., for debug pickers that select WindLevel but need to pass progress to animations).
-    var representativeProgress: CGFloat {
-        switch self {
-        case .none: return 0
-        case .low: return 0.25
-        case .medium: return 0.60
-        case .high: return 0.90
-        }
-    }
-
     // MARK: - Wind Points
 
     /// Returns the wind level zone based on wind points (0-100).
@@ -110,33 +98,3 @@ extension WindLevel: Codable {
 // MARK: - Hashable (for Set usage)
 
 extension WindLevel: Hashable {}
-
-// MARK: - LimitSettings
-
-/// User-configurable settings for notifications and safety shield.
-/// Stored in SharedDefaults for access from both app and extensions.
-/// Note: Shields are activated manually (break button) or at 100% (safety shield).
-struct LimitSettings: Codable, Equatable {
-
-    // MARK: - Notification Settings
-
-    /// WindLevel changes that trigger notifications.
-    /// Default: all levels except none
-    var notificationLevels: Set<WindLevel> = [.low, .medium, .high]
-
-    // MARK: - Morning Shield
-
-    /// Enable Morning Shield (shield active after day reset until preset selected).
-    var morningShieldEnabled: Bool = true
-
-    // MARK: - Debug Settings
-
-    /// DEBUG ONLY: Disable the 100% safety shield.
-    /// When true, no shield activates at 100% - pet can blow away without warning.
-    /// Default: false (safety shield always active)
-    var disableSafetyShield: Bool = false
-
-    // MARK: - Defaults
-
-    static let `default` = LimitSettings()
-}

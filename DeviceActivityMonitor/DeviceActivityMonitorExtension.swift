@@ -134,9 +134,32 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
         let effectiveSeconds = max(0, trueCumulative - breakReduction)
         logToFile("effective=\(effectiveSeconds)s")
 
+        // Check for wind notification
+        checkWindNotification(oldWind: oldWindPoints, newWind: newWindPoints)
+
         // Check for safety shield at 100%
         if newWindPoints >= 100 {
             checkSafetyShield()
+        }
+    }
+
+    // MARK: - Wind Notifications
+
+    /// Checks if a wind notification should be sent based on threshold crossing.
+    private func checkWindNotification(oldWind: Double, newWind: Double) {
+        guard let notification = WindNotification.notificationFor(oldWind: oldWind, newWind: newWind) else {
+            return
+        }
+
+        // Check if this notification is enabled in settings
+        let settings = SharedDefaults.limitSettings
+        guard settings.enabledNotifications.contains(notification) else {
+            logToFile("[Notification] Skipped wind_\(notification.percentage)% - disabled in settings")
+            return
+        }
+
+        notification.send { [weak self] message in
+            self?.logToFile(message)
         }
     }
 
@@ -163,7 +186,7 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
             return
         }
 
-        // Cooldown active? (after unlock, user has 30s window for blow-away)
+        // Cooldown active? (10% of limit to allow wind rise for potential blow-away)
         if let cooldownUntil = SharedDefaults.shieldCooldownUntil, Date() < cooldownUntil {
             logToFile("[SafetyShield] Cooldown active until \(cooldownUntil), skipping")
             return
