@@ -189,10 +189,14 @@ struct HomeScreen: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
             .ignoresSafeArea(.container, edges: .bottom)
 
-            homeCard(for: pet)
-                .modifier(HomeCardBackgroundModifier(cornerRadius: homeCardCornerRadius))
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
-                .padding(homeCardInset)
+            VStack(spacing: 12) {
+                homeCard(for: pet)
+                    .modifier(HomeCardBackgroundModifier(cornerRadius: homeCardCornerRadius))
+
+                actionButtons(for: pet)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
+            .padding(homeCardInset)
                 .id(refreshTick) // Force re-read of windProgress from SharedDefaults
 
             #if DEBUG
@@ -223,11 +227,44 @@ struct HomeScreen: View {
             handleEvolve(pet)
         case .replay, .delete:
             break // TODO: Handle archived pet actions
-        case .toggleShield:
-            ScreenTimeManager.shared.toggleShield()
-            // Force immediate UI refresh (windPoints is computed from SharedDefaults)
-            refreshTick += 1
         }
+    }
+
+    // MARK: - Action Buttons
+
+    @ViewBuilder
+    private func actionButtons(for pet: Pet) -> some View {
+        if pet.isBlown {
+            HStack(spacing: 12) {
+                ActionButton(icon: "memories", label: "Replay", color: .blue) {
+                    handleAction(.replay, for: pet)
+                }
+                Spacer()
+                ActionButton(icon: "trash", label: "Delete", color: .red) {
+                    handleAction(.delete, for: pet)
+                }
+            }
+        } else if pet.isEvolutionAvailable {
+            HStack {
+                Spacer()
+                evolveButton(for: pet)
+            }
+        }
+    }
+
+    private func evolveButton(for pet: Pet) -> some View {
+        Button { handleEvolve(pet) } label: {
+            HStack(spacing: 6) {
+                Image(systemName: pet.isBlob ? "leaf.fill" : "sparkles")
+                Text(pet.isBlob ? "Use Essence" : "Evolve!")
+            }
+            .font(.system(size: 14, weight: .semibold))
+            .foregroundStyle(.white)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 8)
+            .background(.green, in: Capsule())
+        }
+        .buttonStyle(.plain)
     }
 
     // MARK: - Actions
