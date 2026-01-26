@@ -35,6 +35,9 @@ struct MainApp: App {
     private func handleScenePhaseChange(_ phase: ScenePhase) {
         switch phase {
         case .active:
+            // Refresh shield state (may have been activated by extension at 100%)
+            ShieldState.shared.refresh()
+
             // Check for blow-away state when returning to foreground
             // (windPoints is computed from SharedDefaults - no sync needed)
             petManager.performDailyResetIfNeeded()

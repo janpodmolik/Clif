@@ -2,6 +2,31 @@ import Foundation
 import ManagedSettings
 import FamilyControls
 
+/// Observable state wrapper for shield status.
+/// Use this in SwiftUI views to reactively update when shield state changes.
+@Observable
+final class ShieldState {
+    static let shared = ShieldState()
+
+    private(set) var isActive: Bool = SharedDefaults.isShieldActive
+    private(set) var currentBreakType: BreakType? = {
+        guard let raw = SharedDefaults.currentBreakType else { return nil }
+        return BreakType(rawValue: raw)
+    }()
+
+    private init() {}
+
+    /// Call this after any shield state change to update observers.
+    func refresh() {
+        isActive = SharedDefaults.isShieldActive
+        if let raw = SharedDefaults.currentBreakType {
+            currentBreakType = BreakType(rawValue: raw)
+        } else {
+            currentBreakType = nil
+        }
+    }
+}
+
 /// Manages shield activation, deactivation, breaks, and cooldown logic.
 /// Single source of truth for all shield-related operations.
 ///
@@ -73,6 +98,7 @@ final class ShieldManager {
         store.shield.applicationCategories = nil
         store.shield.webDomains = nil
         SharedDefaults.resetShieldFlags()
+        ShieldState.shared.refresh()
     }
 
     /// Deactivates shield (clears store) without resetting other flags.
@@ -113,7 +139,8 @@ final class ShieldManager {
         // Store break type and duration
         SharedDefaults.currentBreakType = breakType.rawValue
         SharedDefaults.committedBreakDuration = durationMinutes
-        SharedDefaults.synchronize()
+
+        ShieldState.shared.refresh()
     }
 
     private func turnOff() {
@@ -129,6 +156,8 @@ final class ShieldManager {
 
         // Restart monitoring to resume wind tracking
         ScreenTimeManager.shared.restartMonitoring()
+
+        ShieldState.shared.refresh()
     }
 
     // MARK: - Break Reduction
@@ -216,5 +245,7 @@ final class ShieldManager {
 
         // Restart monitoring to resume wind tracking
         ScreenTimeManager.shared.restartMonitoring()
+
+        ShieldState.shared.refresh()
     }
 }

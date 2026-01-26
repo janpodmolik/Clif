@@ -48,10 +48,7 @@ extension SharedDefaults {
     /// Current break type (free or committed). Nil when no break is active.
     static var currentBreakType: String? {
         get { defaults?.string(forKey: DefaultsKeys.currentBreakType) }
-        set {
-            defaults?.set(newValue, forKey: DefaultsKeys.currentBreakType)
-            defaults?.synchronize()
-        }
+        set { defaults?.set(newValue, forKey: DefaultsKeys.currentBreakType) }
     }
 
     /// Duration for committed break in minutes.
@@ -60,17 +57,13 @@ extension SharedDefaults {
     /// -2 = until end of day
     /// nil = not set (free break or no break)
     static var committedBreakDuration: Int? {
-        get {
-            let value = defaults?.integer(forKey: DefaultsKeys.committedBreakDuration)
-            return value == 0 ? nil : value
-        }
+        get { defaults?.object(forKey: DefaultsKeys.committedBreakDuration) as? Int }
         set {
             if let value = newValue {
                 defaults?.set(value, forKey: DefaultsKeys.committedBreakDuration)
             } else {
                 defaults?.removeObject(forKey: DefaultsKeys.committedBreakDuration)
             }
-            defaults?.synchronize()
         }
     }
 
@@ -81,8 +74,8 @@ extension SharedDefaults {
     static func resetShieldFlags() {
         isShieldActive = false
         shieldActivatedAt = nil
+        breakStartedAt = nil
         currentBreakType = nil
         committedBreakDuration = nil
-        synchronize()
     }
 }

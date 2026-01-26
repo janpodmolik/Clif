@@ -89,9 +89,9 @@ struct BreakTypePicker: View {
     private var freeContent: some View {
         VStack(spacing: 16) {
             VStack(spacing: 8) {
-                Image(systemName: "leaf.fill")
+                Image(systemName: BreakType.free.icon)
                     .font(.system(size: 44))
-                    .foregroundStyle(.green)
+                    .foregroundStyle(BreakType.free.color)
 
                 Text("Neomezená pauza")
                     .font(.title3.weight(.semibold))
@@ -122,7 +122,7 @@ struct BreakTypePicker: View {
         let minutes = isUntilEndOfDay ? calculateMinutesToMidnight() : selectedMinutes
         return Text("\(minutes) min")
             .font(.system(size: 48, weight: .bold, design: .rounded))
-            .foregroundStyle(.orange)
+            .foregroundStyle(BreakType.committed.color)
             .contentTransition(.numericText())
     }
 
@@ -131,6 +131,7 @@ struct BreakTypePicker: View {
             SnappingSlider(
                 value: $selectedMinutes,
                 steps: durationSteps,
+                tintColor: BreakType.committed.color,
                 onInteraction: {
                     withAnimation(.snappy) {
                         isUntilEndOfDay = false
@@ -177,11 +178,11 @@ struct BreakTypePicker: View {
             .padding(.vertical, 12)
             .background(
                 Capsule()
-                    .fill(isUntilEndOfDay ? Color.orange : Color.clear)
+                    .fill(isUntilEndOfDay ? BreakType.committed.color : Color.clear)
             )
             .overlay(
                 Capsule()
-                    .strokeBorder(isUntilEndOfDay ? Color.clear : Color.orange.opacity(0.5), lineWidth: 1.5)
+                    .strokeBorder(isUntilEndOfDay ? Color.clear : BreakType.committed.color.opacity(0.5), lineWidth: 1.5)
             )
         }
         .buttonStyle(.plain)
@@ -238,6 +239,7 @@ struct BreakTypePicker: View {
 private struct SnappingSlider: View {
     @Binding var value: Int
     let steps: [Int]
+    let tintColor: Color
     var onInteraction: (() -> Void)? = nil
 
     @State private var lastStepIndex: Int = 0
@@ -258,13 +260,13 @@ private struct SnappingSlider: View {
                     .frame(height: 8)
 
                 Capsule()
-                    .fill(Color.orange)
+                    .fill(tintColor)
                     .frame(width: thumbPosition, height: 8)
 
                 HStack(spacing: 0) {
                     ForEach(0..<steps.count, id: \.self) { index in
                         Circle()
-                            .fill(index <= currentIndex ? Color.orange : Color(.quaternarySystemFill))
+                            .fill(index <= currentIndex ? tintColor : Color(.quaternarySystemFill))
                             .frame(width: 6, height: 6)
 
                         if index < steps.count - 1 {
@@ -282,43 +284,35 @@ private struct SnappingSlider: View {
                     .gesture(
                         DragGesture(minimumDistance: 0)
                             .onChanged { gesture in
-                                onInteraction?()
-
-                                let newPosition = gesture.location.x - 12
-                                let index = Int(round(newPosition / stepWidth))
-                                let clampedIndex = max(0, min(steps.count - 1, index))
-
-                                if clampedIndex != lastStepIndex {
-                                    lastStepIndex = clampedIndex
-                                    withAnimation(.snappy(duration: 0.15)) {
-                                        value = steps[clampedIndex]
-                                    }
-                                    UIImpactFeedbackGenerator(style: .light).impactOccurred()
-                                }
+                                handlePositionChange(gesture.location.x, stepWidth: stepWidth)
                             }
                     )
             }
             .frame(height: 28)
             .contentShape(Rectangle())
             .onTapGesture { location in
-                onInteraction?()
-
-                let newPosition = location.x - 12
-                let index = Int(round(newPosition / stepWidth))
-                let clampedIndex = max(0, min(steps.count - 1, index))
-
-                if clampedIndex != lastStepIndex {
-                    lastStepIndex = clampedIndex
-                    withAnimation(.snappy(duration: 0.15)) {
-                        value = steps[clampedIndex]
-                    }
-                    UIImpactFeedbackGenerator(style: .light).impactOccurred()
-                }
+                handlePositionChange(location.x, stepWidth: stepWidth)
             }
         }
         .frame(height: 28)
         .onAppear {
             lastStepIndex = currentIndex
+        }
+    }
+
+    private func handlePositionChange(_ xPosition: CGFloat, stepWidth: CGFloat) {
+        onInteraction?()
+
+        let newPosition = xPosition - 12
+        let index = Int(round(newPosition / stepWidth))
+        let clampedIndex = max(0, min(steps.count - 1, index))
+
+        if clampedIndex != lastStepIndex {
+            lastStepIndex = clampedIndex
+            withAnimation(.snappy(duration: 0.15)) {
+                value = steps[clampedIndex]
+            }
+            UIImpactFeedbackGenerator(style: .light).impactOccurred()
         }
     }
 }

@@ -43,7 +43,8 @@ struct ContentView: View {
     // Break picker states
     @State private var showBreakTypePicker = false
     @State private var showCommittedUnlockConfirmation = false
-    @State private var shieldRefreshTick = 0
+
+    private var shieldState: ShieldState { ShieldState.shared }
 
     @Namespace private var tabIndicatorNamespace
 
@@ -210,8 +211,7 @@ struct ContentView: View {
         case .home:
             // Show lock if pet exists, otherwise plus for creation
             if petManager.currentPet != nil {
-                let _ = shieldRefreshTick // Force refresh when shield changes
-                Image(systemName: SharedDefaults.isShieldActive ? "lock.fill" : "lock.open.fill")
+                Image(systemName: shieldState.isActive ? "lock.fill" : "lock.open.fill")
             } else {
                 Image(systemName: "plus")
             }
@@ -247,7 +247,7 @@ struct ContentView: View {
         }
 
         // Toggle lock/unlock
-        if SharedDefaults.isShieldActive {
+        if shieldState.isActive {
             handleUnlock()
         } else {
             showBreakTypePicker = true
@@ -255,15 +255,12 @@ struct ContentView: View {
     }
 
     private func handleUnlock() {
-        let breakTypeRaw = SharedDefaults.currentBreakType
-
-        if breakTypeRaw == BreakType.committed.rawValue {
+        if shieldState.currentBreakType == .committed {
             // Show confirmation for committed break
             showCommittedUnlockConfirmation = true
         } else {
             // Free break - unlock immediately
             ShieldManager.shared.toggle()
-            shieldRefreshTick += 1
         }
     }
 
@@ -273,12 +270,10 @@ struct ContentView: View {
             pet.blowAway()
         }
         ShieldManager.shared.toggle()
-        shieldRefreshTick += 1
     }
 
     private func startBreak(type: BreakType, durationMinutes: Int?) {
         ShieldManager.shared.turnOn(breakType: type, durationMinutes: durationMinutes)
-        shieldRefreshTick += 1
     }
 
     @ViewBuilder
