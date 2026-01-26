@@ -80,7 +80,7 @@ enum DefaultsKeys {
     // MARK: - Limit Settings
 
     static let limitSettings = "limitSettings"
-    static let isMorningShieldActive = "isMorningShieldActive"
+    static let isDayStartShieldActive = "isDayStartShieldActive"
     static let windPresetLockedForToday = "windPresetLockedForToday"
     static let windPresetLockedDate = "windPresetLockedDate"
     static let todaySelectedPreset = "todaySelectedPreset"
@@ -100,4 +100,8 @@ enum DefaultsKeys {
     // MARK: - Cumulative Tracking
 
     static let cumulativeBaseline = "cumulativeBaseline"
+
+    // MARK: - Daily Reset
+
+    static let lastDayResetDate = "lastDayResetDate"
 }

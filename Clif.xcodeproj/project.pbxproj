@@ -67,6 +67,8 @@
 		B458623C2EE5F6F80088CB78 /* DeviceActivityReport.appex in Embed ExtensionKit Extensions */ = {isa = PBXBuildFile; fileRef = B45862302EE5F6F80088CB78 /* DeviceActivityReport.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		B45862432EE5FAF60088CB78 /* ActivityReportContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = B45862422EE5FAF60088CB78 /* ActivityReportContext.swift */; };
 		B45862442EE5FAF60088CB78 /* ActivityReportContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = B45862422EE5FAF60088CB78 /* ActivityReportContext.swift */; };
+		B45CF5A52F279E83009B4F06 /* DayStartGreeting.swift in Sources */ = {isa = PBXBuildFile; fileRef = B45CF5A42F279E83009B4F06 /* DayStartGreeting.swift */; };
+		B45CF5A62F279E83009B4F06 /* DayStartGreeting.swift in Sources */ = {isa = PBXBuildFile; fileRef = B45CF5A42F279E83009B4F06 /* DayStartGreeting.swift */; };
 		B46F91272F0EF01C002738FD /* Mood.swift in Sources */ = {isa = PBXBuildFile; fileRef = B46F91262F0EF01C002738FD /* Mood.swift */; };
 		B46F91282F0EF01C002738FD /* Mood.swift in Sources */ = {isa = PBXBuildFile; fileRef = B46F91262F0EF01C002738FD /* Mood.swift */; };
 		B47A5F2B2F152D850068232C /* FullUsageStats.swift in Sources */ = {isa = PBXBuildFile; fileRef = B47A5F2A2F152D850068232C /* FullUsageStats.swift */; };
@@ -184,6 +186,7 @@
 		B45862142EE5B92C0088CB78 /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
 		B45862302EE5F6F80088CB78 /* DeviceActivityReport.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.extensionkit-extension"; includeInIndex = 0; path = DeviceActivityReport.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		B45862422EE5FAF60088CB78 /* ActivityReportContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityReportContext.swift; sourceTree = "<group>"; };
+		B45CF5A42F279E83009B4F06 /* DayStartGreeting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayStartGreeting.swift; sourceTree = "<group>"; };
 		B46F91262F0EF01C002738FD /* Mood.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Mood.swift; sourceTree = "<group>"; };
 		B47A5F2A2F152D850068232C /* FullUsageStats.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FullUsageStats.swift; sourceTree = "<group>"; };
 		B4924AC92EE57ED90033475C /* DeviceActivityMonitor.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = DeviceActivityMonitor.appex; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -398,6 +401,7 @@
 		B43998452EE9FCE40049445F /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				B45CF5A42F279E83009B4F06 /* DayStartGreeting.swift */,
 				B4153D3D2F27417F0006FEE3 /* LimitSettings.swift */,
 				B4167E542F1FE2D800D89B36 /* Snapshot */,
 				B47A5F2A2F152D850068232C /* FullUsageStats.swift */,
@@ -704,6 +708,7 @@
 				B451D3812F26856C004C534F /* SharedDefaults+Shield.swift in Sources */,
 				B451D3822F26856C004C534F /* SharedDefaults+Tokens.swift in Sources */,
 				B4153D3F2F27417F0006FEE3 /* LimitSettings.swift in Sources */,
+				B45CF5A62F279E83009B4F06 /* DayStartGreeting.swift in Sources */,
 				B4153D422F2741A40006FEE3 /* WindNotification.swift in Sources */,
 				B451D3832F26856C004C534F /* SharedDefaults+Wind.swift in Sources */,
 				B4167E5D2F1FE73400D89B36 /* SnapshotEventType.swift in Sources */,
@@ -788,6 +793,7 @@
 				B4EVO2032F0E00010001A003 /* EvolutionPath.swift in Sources */,
 				B451D2122F24FEF0004C534F /* ExtensionLogger.swift in Sources */,
 				B4EVO2042F0E00010001A004 /* PetDisplayable.swift in Sources */,
+				B45CF5A52F279E83009B4F06 /* DayStartGreeting.swift in Sources */,
 				B4ESS2012F0E00010001A001 /* Essence.swift in Sources */,
 				B4ANI2012F0E00010001B001 /* IdleConfig.swift in Sources */,
 				B4ANI2022F0E00010001B002 /* TapAnimationType.swift in Sources */,

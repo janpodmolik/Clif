@@ -77,7 +77,7 @@ wind = (cumulativeSeconds - totalBreakReduction) / limitSeconds * 100
 
 ## Lifecycle
 
-1. **Day start (midnight):** Reset wind to 0, activate Morning Shield
+1. **Day start (midnight):** Reset wind to 0, activate Day Start Shield
 2. **Preset selection:** User picks difficulty → stores rates in SharedDefaults → starts monitoring
 3. **App usage:** Thresholds fire → extension calculates wind increase → checks notifications/shield activation
 4. **Shield activation:** When wind crosses `shieldActivationLevel` → blocks apps via ManagedSettingsStore
@@ -107,7 +107,7 @@ This "forgives" usage time, effectively lowering wind on the next threshold calc
 
 All state shared via `SharedDefaults` (App Group UserDefaults). Extensions have fresh UserDefaults instance on each read for sync.
 
-Key flags: `isShieldActive`, `isMorningShieldActive`, `shieldActivatedAt`, `breakStartedAt`, `petBlownAway`, `lastUnlockAt`, `totalBreakReduction`
+Key flags: `isShieldActive`, `isDayStartShieldActive`, `shieldActivatedAt`, `breakStartedAt`, `petBlownAway`, `lastUnlockAt`, `totalBreakReduction`
 
 ## Shield Cooldown
 

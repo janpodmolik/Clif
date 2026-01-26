@@ -49,45 +49,24 @@ class ShieldActionExtension: ShieldActionDelegate {
         }
     }
 
-    // MARK: - Morning Shield Handling
+    // MARK: - Day Start Shield Handling
 
-    /// Handles Morning Shield unlock - locks preset for the day.
-    /// Returns the ShieldActionResponse to use, or nil if this is not a Morning Shield action.
-    private func handleMorningShieldAction(action: ShieldAction) -> ShieldActionResponse? {
-        guard SharedDefaults.isMorningShieldActive else {
+    /// Handles Day Start Shield - always redirects to app for preset selection.
+    /// Returns the ShieldActionResponse to use, or nil if this is not a Day Start Shield action.
+    private func handleDayStartShieldAction(action: ShieldAction) -> ShieldActionResponse? {
+        guard SharedDefaults.isDayStartShieldActive else {
             return nil
         }
 
-        // Safety check: if wind is not 0, morning shield shouldn't be active
-        // This handles edge cases where state got out of sync
-        if SharedDefaults.monitoredWindPoints > 0 {
-            logger.info("Morning Shield: Wind is \(SharedDefaults.monitoredWindPoints), deactivating morning shield")
-            SharedDefaults.isMorningShieldActive = false
-            return nil // Fall through to normal shield handling
-        }
-
-        switch action {
-        case .primaryButtonPressed:
-            // "Otevřít Clif" - send notification with deeplink to preset picker
-            logger.info("Morning Shield: Primary button - opening app for preset selection")
-            sendNotificationWithDeepLink(
-                title: "Vyber si náročnost dne",
-                body: "Nastav jak náročný den chceš mít",
-                deepLink: DeepLinks.presetPicker
-            )
-            return .close
-
-        case .secondaryButtonPressed:
-            // "Pokračovat s [preset]" - use yesterday's preset, deactivate morning shield, stay in app
-            logger.info("Morning Shield: Secondary button - continuing with current preset, staying in app")
-            lockPresetForToday()
-            deactivateMorningShield()
-            // No notification needed - user stays in the app they wanted to open
-            return .defer
-
-        @unknown default:
-            return nil
-        }
+        // Day Start Shield is active - user must select preset in app
+        // Wind cannot increase while isDayStartShieldActive is true (checked in DeviceActivityMonitor)
+        logger.info("Day Start Shield: Redirecting to app for preset selection")
+        sendNotificationWithDeepLink(
+            title: "Vyber si náročnost dne",
+            body: "Nastav jak náročný den chceš mít",
+            deepLink: DeepLinks.presetPicker
+        )
+        return .close
     }
 
     /// Locks the wind preset for today (prevents changes).
@@ -95,22 +74,6 @@ class ShieldActionExtension: ShieldActionDelegate {
         SharedDefaults.windPresetLockedForToday = true
         SharedDefaults.windPresetLockedDate = Date()
         logger.info("Wind preset locked for today")
-    }
-
-    /// Deactivates morning shield and clears shields.
-    private func deactivateMorningShield() {
-        logToFile("deactivateMorningShield() START")
-        logToFile("Before: isShieldActive=\(SharedDefaults.isShieldActive), isMorningShieldActive=\(SharedDefaults.isMorningShieldActive)")
-
-        store.shield.applications = nil
-        store.shield.applicationCategories = nil
-        store.shield.webDomains = nil
-
-        SharedDefaults.resetShieldFlags()
-        SharedDefaults.synchronize()
-
-        logToFile("After: isShieldActive=\(SharedDefaults.isShieldActive), isMorningShieldActive=\(SharedDefaults.isMorningShieldActive)")
-        logToFile("deactivateMorningShield() END")
     }
 
     // MARK: - Break Handling
@@ -168,11 +131,11 @@ class ShieldActionExtension: ShieldActionDelegate {
 
     override func handle(action: ShieldAction, for application: ApplicationToken, completionHandler: @escaping (ShieldActionResponse) -> Void) {
         logToFile("handle(action:for APPLICATION) - action=\(action == .primaryButtonPressed ? "primary" : "secondary")")
-        logToFile("Current state: wind=\(SharedDefaults.monitoredWindPoints), isShieldActive=\(SharedDefaults.isShieldActive), isMorning=\(SharedDefaults.isMorningShieldActive)")
+        logToFile("Current state: wind=\(SharedDefaults.monitoredWindPoints), isShieldActive=\(SharedDefaults.isShieldActive), isDayStart=\(SharedDefaults.isDayStartShieldActive)")
 
-        // Check if this is Morning Shield
-        if let response = handleMorningShieldAction(action: action) {
-            logToFile("Handled as Morning Shield -> response=\(response == .close ? "close" : "defer")")
+        // Check if this is Day Start Shield
+        if let response = handleDayStartShieldAction(action: action) {
+            logToFile("Handled as Day Start Shield -> response=\(response == .close ? "close" : "defer")")
             completionHandler(response)
             return
         }
@@ -201,8 +164,8 @@ class ShieldActionExtension: ShieldActionDelegate {
     override func handle(action: ShieldAction, for webDomain: WebDomainToken, completionHandler: @escaping (ShieldActionResponse) -> Void) {
         logger.info("handle(action:for webDomain:) called")
 
-        // Check if this is Morning Shield
-        if let response = handleMorningShieldAction(action: action) {
+        // Check if this is Day Start Shield
+        if let response = handleDayStartShieldAction(action: action) {
             completionHandler(response)
             return
         }
@@ -230,8 +193,8 @@ class ShieldActionExtension: ShieldActionDelegate {
     override func handle(action: ShieldAction, for category: ActivityCategoryToken, completionHandler: @escaping (ShieldActionResponse) -> Void) {
         logger.info("handle(action:for category:) called")
 
-        // Check if this is Morning Shield
-        if let response = handleMorningShieldAction(action: action) {
+        // Check if this is Day Start Shield
+        if let response = handleDayStartShieldAction(action: action) {
             completionHandler(response)
             return
         }

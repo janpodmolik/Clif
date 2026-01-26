@@ -50,7 +50,7 @@ private enum DeepLinkHandler {
 
         case "preset-picker":
             #if DEBUG
-            print("[DeepLink] Opening preset picker from morning shield")
+            print("[DeepLink] Opening preset picker from day start shield")
             #endif
             NotificationCenter.default.post(name: .showPresetPicker, object: nil)
 

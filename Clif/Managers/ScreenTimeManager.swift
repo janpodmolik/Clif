@@ -73,20 +73,21 @@ final class ScreenTimeManager: ObservableObject {
         ShieldManager.shared.processUnlock()
     }
 
-    // MARK: - Morning Preset
+    // MARK: - Daily Preset
 
-    /// Applies the selected morning preset for today.
+    /// Applies the selected daily preset for today.
     /// - Saves preset selection to SharedDefaults
     /// - Clears any existing shields
     /// - Restarts monitoring with new preset parameters
-    func applyMorningPreset(_ preset: WindPreset, for pet: Pet) {
+    func applyDailyPreset(_ preset: WindPreset, for pet: Pet) {
         // Save selected preset
         SharedDefaults.todaySelectedPreset = preset.rawValue
         SharedDefaults.windPresetLockedForToday = true
         SharedDefaults.windPresetLockedDate = Date()
 
-        // Clear shields and reset all shield flags
+        // Clear shields and deactivate day start shield (user selected preset)
         clearShield()
+        SharedDefaults.isDayStartShieldActive = false
 
         // Calculate monitoring parameters from preset
         let limitSeconds = Int(preset.minutesToBlowAway * 60)

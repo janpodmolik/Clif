@@ -11,10 +11,10 @@ struct LimitSettings: Codable, Equatable {
     /// Default: all configurable thresholds (25%, 60%, 85%) - blowAway is always enabled
     var enabledNotifications: Set<WindNotification> = Set(WindNotification.configurableNotifications)
 
-    // MARK: - Morning Shield
+    // MARK: - Day Start Shield
 
-    /// Enable Morning Shield (shield active after day reset until preset selected).
-    var morningShieldEnabled: Bool = true
+    /// Enable Day Start Shield (shield active after day reset until preset selected).
+    var dayStartShieldEnabled: Bool = true
 
     // MARK: - Debug Settings
 

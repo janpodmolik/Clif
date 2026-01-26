@@ -7,7 +7,7 @@ import Foundation
 /// - SharedDefaults+Tokens.swift - Token storage for FamilyControls
 /// - SharedDefaults+Shield.swift - Shield state and cooldown
 /// - SharedDefaults+Wind.swift - Wind points and monitoring context
-/// - SharedDefaults+DayState.swift - Daily presets and morning shield
+/// - SharedDefaults+DayState.swift - Daily presets and day start shield
 struct SharedDefaults {
 
     // MARK: - Shared Storage

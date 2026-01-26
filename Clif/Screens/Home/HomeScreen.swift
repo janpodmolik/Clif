@@ -68,11 +68,13 @@ struct HomeScreen: View {
             }
         }
         .sheet(isPresented: $showPresetPicker) {
-            MorningPresetPicker()
+            DailyPresetPicker()
+                .interactiveDismissDisabled()
         }
         .onAppear {
             windRhythm.start()
-            checkMorningShield()
+            // Fallback: check if new day and perform reset if extension missed it
+            checkDayResetAndShowPicker()
             // Force immediate refresh to read latest wind from SharedDefaults
             refreshTick += 1
         }
@@ -240,18 +242,22 @@ struct HomeScreen: View {
         }
     }
 
-    // MARK: - Morning Shield
+    // MARK: - Daily Reset & Preset Picker
 
-    private func checkMorningShield() {
+    private func checkDayResetAndShowPicker() {
+        // Fallback: if extension didn't catch the new day, perform reset here
+        if SharedDefaults.isNewDay {
+            SharedDefaults.performDailyResetIfNeeded()
+            ShieldManager.shared.activateFromStoredTokens(setUsageFlags: false)
+        }
+
         // Show preset picker if:
         // 1. There is an active pet
-        // 2. Morning shield is active (set at day reset)
+        // 2. Day start shield is active (set at day reset)
         // 3. Preset not yet selected today
-        // 4. Wind is at 0 (fresh day start - prevents showing dialog mid-day)
         guard currentPet != nil,
-              SharedDefaults.isMorningShieldActive,
-              !SharedDefaults.windPresetLockedForToday,
-              SharedDefaults.monitoredWindPoints == 0 else {
+              SharedDefaults.isDayStartShieldActive,
+              !SharedDefaults.windPresetLockedForToday else {
             return
         }
 

@@ -33,9 +33,11 @@ final class ShieldManager {
     }
 
     /// Activates shield using currently stored tokens.
-    /// Returns false if tokens couldn't be loaded.
+    /// - Parameter setUsageFlags: If true, sets isShieldActive and shieldActivatedAt for break tracking.
+    ///   Set to false for Day Start Shield (no break tracking needed).
+    /// - Returns: false if tokens couldn't be loaded.
     @discardableResult
-    func activateFromStoredTokens() -> Bool {
+    func activateFromStoredTokens(setUsageFlags: Bool = true) -> Bool {
         guard let appTokens = SharedDefaults.loadApplicationTokens(),
               let catTokens = SharedDefaults.loadCategoryTokens() else {
             #if DEBUG
@@ -47,12 +49,14 @@ final class ShieldManager {
 
         activate(applications: appTokens, categories: catTokens, webDomains: webTokens)
 
-        SharedDefaults.isShieldActive = true
-        SharedDefaults.shieldActivatedAt = Date()
-        SharedDefaults.synchronize()
+        if setUsageFlags {
+            SharedDefaults.isShieldActive = true
+            SharedDefaults.shieldActivatedAt = Date()
+            SharedDefaults.synchronize()
+        }
 
         #if DEBUG
-        print("[ShieldManager] Shield activated at \(Date())")
+        print("[ShieldManager] Shield activated (usageFlags: \(setUsageFlags))")
         #endif
 
         return true

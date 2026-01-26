@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct MorningPresetPicker: View {
+struct DailyPresetPicker: View {
     @Environment(PetManager.self) private var petManager
     @Environment(\.dismiss) private var dismiss
 
@@ -13,11 +13,11 @@ struct MorningPresetPicker: View {
             VStack(spacing: 24) {
                 // Header
                 VStack(spacing: 8) {
-                    Image(systemName: "sun.horizon.fill")
+                    Image(systemName: DayStartGreeting.iconName)
                         .font(.system(size: 48))
-                        .foregroundStyle(.orange.gradient)
+                        .foregroundStyle(DayStartGreeting.isMorning ? Color.orange.gradient : Color.blue.gradient)
 
-                    Text("Dobré ráno!")
+                    Text(DayStartGreeting.text)
                         .font(.title.bold())
 
                     Text("Jak náročný den chceš mít?")
@@ -58,13 +58,6 @@ struct MorningPresetPicker: View {
                 .padding(.bottom, 24)
             }
             .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button("Zrušit") {
-                        dismiss()
-                    }
-                }
-            }
         }
         .onAppear {
             // Pre-select current pet's preset if available
@@ -76,7 +69,7 @@ struct MorningPresetPicker: View {
 
     private func confirmSelection() {
         if let pet = currentPet {
-            ScreenTimeManager.shared.applyMorningPreset(selectedPreset, for: pet)
+            ScreenTimeManager.shared.applyDailyPreset(selectedPreset, for: pet)
         }
         dismiss()
     }
@@ -139,6 +132,6 @@ private struct PresetOptionRow: View {
 }
 
 #Preview {
-    MorningPresetPicker()
+    DailyPresetPicker()
         .environment(PetManager.mock())
 }

@@ -21,14 +21,14 @@ struct ProfileScreen: View {
                         }
                     }
 
-                    Toggle(isOn: $limitSettings.morningShieldEnabled) {
-                        Label("Ranní shield", systemImage: "sun.horizon.fill")
+                    Toggle(isOn: $limitSettings.dayStartShieldEnabled) {
+                        Label("Denní shield", systemImage: "calendar")
                     }
                     .tint(.blue)
                 } header: {
                     Text("Upozornění")
                 } footer: {
-                    Text("Ranní shield ti umožní vybrat si náročnost dne před prvním použitím blokovaných aplikací.")
+                    Text("Denní shield ti umožní vybrat si náročnost dne před prvním použitím blokovaných aplikací.")
                 }
 
                 // MARK: - Appearance
@@ -46,13 +46,9 @@ struct ProfileScreen: View {
                     }
                     .disabled(!petManager.hasPet)
 
-                    Button("Reset Morning Shield") {
-                        SharedDefaults.isMorningShieldActive = true
-                        SharedDefaults.windPresetLockedForToday = false
-                    }
-
-                    Button("Simulate Day Reset") {
-                        SharedDefaults.resetForNewDay(morningShieldEnabled: limitSettings.morningShieldEnabled)
+                    Button("Simulate Daily Reset") {
+                        SharedDefaults.resetForNewDay(dayStartShieldEnabled: limitSettings.dayStartShieldEnabled)
+                        ShieldManager.shared.activateFromStoredTokens(setUsageFlags: false)
                     }
                 }
                 #endif

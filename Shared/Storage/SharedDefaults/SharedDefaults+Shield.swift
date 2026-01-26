@@ -47,18 +47,11 @@ extension SharedDefaults {
 
     // MARK: - Shield Helpers
 
-    /// Resets all shield-related flags to allow wind tracking.
-    /// Call this when starting fresh monitoring or clearing shields.
+    /// Resets usage shield flags to allow wind tracking.
+    /// Does NOT reset isDayStartShieldActive - that's only cleared when user selects a preset.
     static func resetShieldFlags() {
-        #if DEBUG
-        print("DEBUG: resetShieldFlags() called - before: isShieldActive=\(isShieldActive), isMorningShieldActive=\(isMorningShieldActive)")
-        #endif
         isShieldActive = false
-        isMorningShieldActive = false
         shieldActivatedAt = nil
         synchronize()
-        #if DEBUG
-        print("DEBUG: resetShieldFlags() called - after: isShieldActive=\(isShieldActive), isMorningShieldActive=\(isMorningShieldActive)")
-        #endif
     }
 }

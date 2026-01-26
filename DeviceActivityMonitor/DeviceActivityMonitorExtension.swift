@@ -15,28 +15,60 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
 
         logToFile("[Extension] intervalDidStart")
 
-        // Check if this is actually a new day or just a monitoring restart
-        let existingWindPoints = SharedDefaults.monitoredWindPoints
-        let existingThreshold = SharedDefaults.monitoredLastThresholdSeconds
+        // Check if this is a new calendar day
+        let isNewDay = SharedDefaults.isNewDay
+        logToFile("[Extension] isNewDay=\(isNewDay), lastResetDate=\(String(describing: SharedDefaults.lastDayResetDate))")
 
-        if existingWindPoints > 0 || existingThreshold > 0 {
-            // Monitoring restart (not new day) - save current cumulative as baseline
-            // iOS resets its internal counter to 0 on restart, so we need to remember
-            // how much time was already accumulated before the restart
-            let oldBaseline = SharedDefaults.cumulativeBaseline
-            let newBaseline = oldBaseline + existingThreshold
-            SharedDefaults.cumulativeBaseline = newBaseline
-            SharedDefaults.monitoredLastThresholdSeconds = 0
+        if isNewDay {
+            // NEW DAY - perform full reset
+            logToFile("[Extension] NEW DAY - performing daily reset")
 
-            logToFile("[Extension] Skipped reset - existing wind: \(existingWindPoints), threshold: \(existingThreshold)")
-            logToFile("[Extension] Baseline updated: \(oldBaseline) + \(existingThreshold) = \(newBaseline)")
+            // Reset wind and activate day start shield
+            let didReset = SharedDefaults.performDailyResetIfNeeded()
+            logToFile("[Extension] Daily reset performed: \(didReset)")
+
+            // Also activate shield on blocked apps
+            activateDayStartShield()
+
+            logToFile("[Extension] Day reset complete - day start shield active")
+        } else {
+            // Same day - this is monitoring restart (e.g., after app update, reboot)
+            // Preserve cumulative baseline so we don't lose tracked time
+            let existingThreshold = SharedDefaults.monitoredLastThresholdSeconds
+
+            if existingThreshold > 0 {
+                let oldBaseline = SharedDefaults.cumulativeBaseline
+                let newBaseline = oldBaseline + existingThreshold
+                SharedDefaults.cumulativeBaseline = newBaseline
+                SharedDefaults.monitoredLastThresholdSeconds = 0
+
+                logToFile("[Extension] Monitoring restart - baseline updated: \(oldBaseline) + \(existingThreshold) = \(newBaseline)")
+            } else {
+                logToFile("[Extension] Monitoring restart - no baseline update needed")
+            }
+        }
+    }
+
+    /// Activates shield on all monitored apps for day start flow.
+    private func activateDayStartShield() {
+        guard let appTokens = SharedDefaults.loadApplicationTokens(),
+              let catTokens = SharedDefaults.loadCategoryTokens() else {
+            logToFile("[Extension] Failed to load tokens for day start shield")
             return
         }
+        let webTokens = SharedDefaults.loadWebDomainTokens() ?? Set()
 
-        // Reset wind state for new day
-        SharedDefaults.resetWindState()
+        if !appTokens.isEmpty {
+            store.shield.applications = appTokens
+        }
+        if !catTokens.isEmpty {
+            store.shield.applicationCategories = .specific(catTokens, except: Set())
+        }
+        if !webTokens.isEmpty {
+            store.shield.webDomains = webTokens
+        }
 
-        logToFile("[Extension] Day reset complete")
+        logToFile("[Extension] Day start shield activated on apps")
     }
 
     override func intervalDidEnd(for activity: DeviceActivityName) {
@@ -90,10 +122,16 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
         SharedDefaults.synchronize()
 
         let isShieldActive = SharedDefaults.isShieldActive
-        logToFile("isShieldActive=\(isShieldActive)")
+        let isDayStartShieldActive = SharedDefaults.isDayStartShieldActive
+        logToFile("isShieldActive=\(isShieldActive), isDayStartShieldActive=\(isDayStartShieldActive)")
 
         if isShieldActive {
-            logToFile("Skipping wind - shield active")
+            logToFile("Skipping wind - usage shield active")
+            return false
+        }
+
+        if isDayStartShieldActive {
+            logToFile("Skipping wind - day start shield active (preset not selected)")
             return false
         }
 

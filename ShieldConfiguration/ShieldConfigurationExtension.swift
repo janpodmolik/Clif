@@ -19,11 +19,11 @@ class ShieldConfigurationExtension: ShieldConfigurationDataSource {
 
     private func getShieldConfiguration() -> ShieldConfiguration {
         logToFile("getShieldConfiguration() called")
-        // Check if this is Morning Shield
-        logToFile("isMorningShieldActive=\(SharedDefaults.isMorningShieldActive)")
-        if SharedDefaults.isMorningShieldActive {
-            logToFile("Returning MORNING shield config")
-            return getMorningShieldConfiguration()
+        // Check if this is Day Start Shield (first use of the day, before preset selected)
+        logToFile("isDayStartShieldActive=\(SharedDefaults.isDayStartShieldActive)")
+        if SharedDefaults.isDayStartShieldActive {
+            logToFile("Returning DAY START shield config")
+            return getDayStartShieldConfiguration()
         }
 
         // Regular shield during usage
@@ -31,30 +31,19 @@ class ShieldConfigurationExtension: ShieldConfigurationDataSource {
         return getUsageShieldConfiguration()
     }
 
-    private func getMorningShieldConfiguration() -> ShieldConfiguration {
-        // Get current/yesterday's preset name
-        let presetName: String
-        if let savedPreset = SharedDefaults.todaySelectedPreset {
-            presetName = savedPreset.capitalized
-        } else {
-            presetName = "Balanced" // Default
-        }
-
+    private func getDayStartShieldConfiguration() -> ShieldConfiguration {
         return ShieldConfiguration(
             backgroundBlurStyle: .systemMaterial,
             backgroundColor: UIColor.systemBackground,
-            icon: UIImage(systemName: "sun.horizon.fill"),
-            title: ShieldConfiguration.Label(text: "Dobré ráno!", color: .label),
+            icon: UIImage(systemName: DayStartGreeting.iconName),
+            title: ShieldConfiguration.Label(text: DayStartGreeting.text, color: .label),
             subtitle: ShieldConfiguration.Label(
-                text: "Jak náročný den chceš mít? Aktuálně: \(presetName)",
+                text: "Jak náročný den chceš mít?",
                 color: .secondaryLabel
             ),
             primaryButtonLabel: ShieldConfiguration.Label(text: "Otevřít Clif", color: .white),
             primaryButtonBackgroundColor: .systemBlue,
-            secondaryButtonLabel: ShieldConfiguration.Label(
-                text: "Pokračovat s \(presetName)",
-                color: .systemBlue
-            )
+            secondaryButtonLabel: nil
         )
     }
 
