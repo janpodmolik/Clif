@@ -44,7 +44,7 @@ class ShieldActionExtension: ShieldActionDelegate {
 
     /// Sends blow away notification.
     private func sendBlowAwayNotification() {
-        BlowAwayNotification.send { [weak self] message in
+        WindNotification.blowAway.send { [weak self] message in
             self?.logToFile(message)
         }
     }

@@ -8,8 +8,8 @@ struct LimitSettings: Codable, Equatable {
     // MARK: - Notification Settings
 
     /// Wind notification thresholds that are enabled.
-    /// Default: all thresholds (25%, 60%, 85%)
-    var enabledNotifications: Set<WindNotification> = Set(WindNotification.allCases)
+    /// Default: all configurable thresholds (25%, 60%, 85%) - blowAway is always enabled
+    var enabledNotifications: Set<WindNotification> = Set(WindNotification.configurableNotifications)
 
     // MARK: - Morning Shield
 

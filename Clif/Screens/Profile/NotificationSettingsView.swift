@@ -6,7 +6,7 @@ struct NotificationSettingsView: View {
     var body: some View {
         Form {
             Section {
-                ForEach(WindNotification.allCases, id: \.self) { notification in
+                ForEach(WindNotification.configurableNotifications, id: \.self) { notification in
                     Toggle(isOn: binding(for: notification)) {
                         VStack(alignment: .leading, spacing: 4) {
                             HStack {
@@ -29,7 +29,7 @@ struct NotificationSettingsView: View {
 
             Section {
                 Button("Zapnout všechny") {
-                    settings.enabledNotifications = Set(WindNotification.allCases)
+                    settings.enabledNotifications = Set(WindNotification.configurableNotifications)
                 }
 
                 Button("Vypnout všechny") {

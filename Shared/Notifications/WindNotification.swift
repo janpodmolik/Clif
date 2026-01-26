@@ -7,9 +7,20 @@ enum WindNotification: Int, CaseIterable, Codable, Hashable {
     case light = 25
     case strong = 60
     case critical = 85
+    case blowAway = 105
 
     /// All threshold values as percentages.
     static let thresholds: [Int] = allCases.map(\.rawValue)
+
+    /// Notifications that can be configured in settings (excludes always-enabled ones).
+    static var configurableNotifications: [WindNotification] {
+        allCases.filter { !$0.isAlwaysEnabled }
+    }
+
+    /// True for notifications that cannot be disabled.
+    var isAlwaysEnabled: Bool {
+        self == .blowAway
+    }
 
     var percentage: Int { rawValue }
 
@@ -18,6 +29,7 @@ enum WindNotification: Int, CaseIterable, Codable, Hashable {
         case .light: return "🍃"
         case .strong: return "💨"
         case .critical: return "🌪️"
+        case .blowAway: return "💨"
         }
     }
 
@@ -29,6 +41,8 @@ enum WindNotification: Int, CaseIterable, Codable, Hashable {
             return "Tohle už je pořádnej vítr. Nešlo by s tím něco dělat?"
         case .critical:
             return "HALOOO?! Začíná to tu bejt dost nebezpečný, pomoc prosím!"
+        case .blowAway:
+            return "Tvůj mazlíček byl odfouknut větrem. Otevři Clif a podívej se co se stalo."
         }
     }
 
@@ -37,6 +51,7 @@ enum WindNotification: Int, CaseIterable, Codable, Hashable {
         case .light: return "Lehký vítr (25%)"
         case .strong: return "Silný vítr (60%)"
         case .critical: return "Kritický vítr (85%)"
+        case .blowAway: return "Odfouknutí (105%)"
         }
     }
 
@@ -49,6 +64,7 @@ enum WindNotification: Int, CaseIterable, Codable, Hashable {
         case .light: return .green
         case .strong: return .orange
         case .critical: return .red
+        case .blowAway: return .red
         }
     }
 

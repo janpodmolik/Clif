@@ -35,9 +35,6 @@
 		B451D2102F24FEF0004C534F /* ExtensionLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = B451D20D2F24FEF0004C534F /* ExtensionLogger.swift */; };
 		B451D2112F24FEF0004C534F /* ExtensionLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = B451D20D2F24FEF0004C534F /* ExtensionLogger.swift */; };
 		B451D2122F24FEF0004C534F /* ExtensionLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = B451D20D2F24FEF0004C534F /* ExtensionLogger.swift */; };
-		B451D2152F2533E6004C534F /* BlowAwayNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = B451D2132F2533E6004C534F /* BlowAwayNotification.swift */; };
-		B451D2162F2533E6004C534F /* BlowAwayNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = B451D2132F2533E6004C534F /* BlowAwayNotification.swift */; };
-		B451D2172F2533E6004C534F /* BlowAwayNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = B451D2132F2533E6004C534F /* BlowAwayNotification.swift */; };
 		B451D37A2F26856C004C534F /* SharedDefaults.swift in Sources */ = {isa = PBXBuildFile; fileRef = B451D3742F26856C004C534F /* SharedDefaults.swift */; };
 		B451D37B2F26856C004C534F /* SharedDefaults+DayState.swift in Sources */ = {isa = PBXBuildFile; fileRef = B451D3752F26856C004C534F /* SharedDefaults+DayState.swift */; };
 		B451D37C2F26856C004C534F /* SharedDefaults+Shield.swift in Sources */ = {isa = PBXBuildFile; fileRef = B451D3762F26856C004C534F /* SharedDefaults+Shield.swift */; };
@@ -179,7 +176,6 @@
 		B4167E5E2F1FEF4E00D89B36 /* SnapshotStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SnapshotStore.swift; sourceTree = "<group>"; };
 		B4167E642F1FF93800D89B36 /* SnapshotLogging.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SnapshotLogging.swift; sourceTree = "<group>"; };
 		B451D20D2F24FEF0004C534F /* ExtensionLogger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtensionLogger.swift; sourceTree = "<group>"; };
-		B451D2132F2533E6004C534F /* BlowAwayNotification.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlowAwayNotification.swift; sourceTree = "<group>"; };
 		B451D3742F26856C004C534F /* SharedDefaults.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedDefaults.swift; sourceTree = "<group>"; };
 		B451D3752F26856C004C534F /* SharedDefaults+DayState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SharedDefaults+DayState.swift"; sourceTree = "<group>"; };
 		B451D3762F26856C004C534F /* SharedDefaults+Shield.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SharedDefaults+Shield.swift"; sourceTree = "<group>"; };
@@ -418,7 +414,6 @@
 			isa = PBXGroup;
 			children = (
 				B4153D402F2741A40006FEE3 /* WindNotification.swift */,
-				B451D2132F2533E6004C534F /* BlowAwayNotification.swift */,
 			);
 			path = Notifications;
 			sourceTree = "<group>";
@@ -715,7 +710,6 @@
 				B4167E5F2F1FEF4E00D89B36 /* SnapshotStore.swift in Sources */,
 				B4167E652F1FF93800D89B36 /* SnapshotLogging.swift in Sources */,
 				B4167E582F1FE2D800D89B36 /* SnapshotEvent.swift in Sources */,
-				B451D2172F2533E6004C534F /* BlowAwayNotification.swift in Sources */,
 				B4D351262F123DD00076C09B /* StatType.swift in Sources */,
 				B4D351272F123DD00076C09B /* DailyUsageStat.swift in Sources */,
 				B4D351222F123D620076C09B /* EvolutionHistory.swift in Sources */,
@@ -769,7 +763,6 @@
 				B451D37E2F26856C004C534F /* SharedDefaults+Wind.swift in Sources */,
 				B4153D412F2741A40006FEE3 /* WindNotification.swift in Sources */,
 				B451D20B2F24C78E004C534F /* WindLevel.swift in Sources */,
-				B451D2162F2533E6004C534F /* BlowAwayNotification.swift in Sources */,
 				B451D2112F24FEF0004C534F /* ExtensionLogger.swift in Sources */,
 				B4167E5C2F1FE73400D89B36 /* SnapshotEventType.swift in Sources */,
 				B4167E602F1FEF4E00D89B36 /* SnapshotStore.swift in Sources */,
@@ -811,7 +804,6 @@
 				B4C4C0A02EE7FF0900E469E8 /* Constants.swift in Sources */,
 				B4167E612F1FF91200D89B36 /* SnapshotEventType.swift in Sources */,
 				B451D20A2F24C74F004C534F /* WindLevel.swift in Sources */,
-				B451D2152F2533E6004C534F /* BlowAwayNotification.swift in Sources */,
 				B451D3892F26856C004C534F /* SharedDefaults.swift in Sources */,
 				B451D38A2F26856C004C534F /* SharedDefaults+DayState.swift in Sources */,
 				B451D38B2F26856C004C534F /* SharedDefaults+Shield.swift in Sources */,

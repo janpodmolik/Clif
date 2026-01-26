@@ -151,11 +151,13 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
             return
         }
 
-        // Check if this notification is enabled in settings
-        let settings = SharedDefaults.limitSettings
-        guard settings.enabledNotifications.contains(notification) else {
-            logToFile("[Notification] Skipped wind_\(notification.percentage)% - disabled in settings")
-            return
+        // Blow away is always sent, others respect settings
+        if !notification.isAlwaysEnabled {
+            let settings = SharedDefaults.limitSettings
+            guard settings.enabledNotifications.contains(notification) else {
+                logToFile("[Notification] Skipped wind_\(notification.percentage)% - disabled in settings")
+                return
+            }
         }
 
         notification.send { [weak self] message in
