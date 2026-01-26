@@ -92,19 +92,28 @@ final class ShieldManager {
         if SharedDefaults.isShieldActive {
             turnOff()
         } else {
-            turnOn()
+            turnOn(breakType: .free, durationMinutes: nil)
         }
     }
 
-    private func turnOn() {
+    /// Turns on shield with specified break type and optional duration.
+    /// - Parameters:
+    ///   - breakType: The type of break (free or committed)
+    ///   - durationMinutes: For committed breaks: positive = minutes, -1 = until 0%, -2 = until end of day. Nil for free.
+    func turnOn(breakType: BreakType, durationMinutes: Int?) {
         #if DEBUG
-        print("[ShieldManager] toggle: ON")
+        print("[ShieldManager] turnOn: breakType=\(breakType), duration=\(String(describing: durationMinutes))")
         #endif
 
         // Stop monitoring while shield is active (no need to track time during break)
         ScreenTimeManager.shared.stopMonitoring()
 
         guard activateFromStoredTokens() else { return }
+
+        // Store break type and duration
+        SharedDefaults.currentBreakType = breakType.rawValue
+        SharedDefaults.committedBreakDuration = durationMinutes
+        SharedDefaults.synchronize()
     }
 
     private func turnOff() {

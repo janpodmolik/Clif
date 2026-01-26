@@ -29,9 +29,9 @@ struct ActiveBreak: Codable, Equatable {
         Date().timeIntervalSince(startedAt) / 60
     }
 
-    /// Calculates wind decrease based on preset's fallRate and break type's multiplier.
+    /// Calculates wind decrease based on preset's fallRate.
     func windDecreased(for preset: WindPreset) -> Double {
-        elapsedMinutes * preset.fallRate * type.fallRateMultiplier
+        elapsedMinutes * preset.fallRate
     }
 
     /// Remaining time in seconds, if duration is set.

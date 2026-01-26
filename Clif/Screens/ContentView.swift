@@ -31,12 +31,19 @@ struct ContentView: View {
     @AppStorage("isDarkModeEnabled")
     private var isDarkModeEnabled: Bool = false
 
+    @Environment(PetManager.self) private var petManager
+
     @State private var activeTab: AppTab = .home
     @State private var showSearch = false
     @State private var showPremium = false
     @State private var essenceCoordinator = EssencePickerCoordinator()
     @State private var createPetCoordinator = CreatePetCoordinator()
     @State private var showMockSheet = false
+
+    // Break picker states
+    @State private var showBreakTypePicker = false
+    @State private var showCommittedUnlockConfirmation = false
+    @State private var shieldRefreshTick = 0
 
     @Namespace private var tabIndicatorNamespace
 
@@ -101,6 +108,29 @@ struct ContentView: View {
         }
         .withDebugOverlay()
         #endif
+        // Break picker
+        .sheet(isPresented: $showBreakTypePicker) {
+            BreakTypePicker(
+                onSelectFree: {
+                    startBreak(type: .free, durationMinutes: nil)
+                },
+                onConfirmCommitted: { durationMinutes in
+                    startBreak(type: .committed, durationMinutes: durationMinutes)
+                }
+            )
+        }
+        .confirmationDialog(
+            "Ukončit Committed Break?",
+            isPresented: $showCommittedUnlockConfirmation,
+            titleVisibility: .visible
+        ) {
+            Button("Ukončit a ztratit peta", role: .destructive) {
+                confirmCommittedUnlock()
+            }
+            Button("Pokračovat v pauze", role: .cancel) {}
+        } message: {
+            Text("Ukončení committed breaku předčasně způsobí okamžitou ztrátu tvého peta. Tato akce je nevratná.")
+        }
     }
 
     // MARK: - Tab Bar
@@ -178,7 +208,13 @@ struct ContentView: View {
     private var actionButtonIcon: some View {
         switch activeTab {
         case .home:
-            Image(systemName: "plus")
+            // Show lock if pet exists, otherwise plus for creation
+            if petManager.currentPet != nil {
+                let _ = shieldRefreshTick // Force refresh when shield changes
+                Image(systemName: SharedDefaults.isShieldActive ? "lock.fill" : "lock.open.fill")
+            } else {
+                Image(systemName: "plus")
+            }
         case .overview:
             Image(systemName: "magnifyingglass")
         case .profile:
@@ -191,20 +227,58 @@ struct ContentView: View {
         UIImpactFeedbackGenerator(style: .light).impactOccurred()
         switch activeTab {
         case .home:
-            #if DEBUG
-            createPetCoordinator.showDropOnly { _ in
-                // Pet created - could navigate or show success
-            }
-            #else
-            createPetCoordinator.show { _ in
-                // Pet created - could navigate or show success
-            }
-            #endif
+            handleHomeActionTap()
         case .overview:
             showSearch = true
         case .profile:
             showPremium = true
         }
+    }
+
+    private func handleHomeActionTap() {
+        // No pet = pet creation flow
+        guard petManager.currentPet != nil else {
+            #if DEBUG
+            createPetCoordinator.showDropOnly { _ in }
+            #else
+            createPetCoordinator.show { _ in }
+            #endif
+            return
+        }
+
+        // Toggle lock/unlock
+        if SharedDefaults.isShieldActive {
+            handleUnlock()
+        } else {
+            showBreakTypePicker = true
+        }
+    }
+
+    private func handleUnlock() {
+        let breakTypeRaw = SharedDefaults.currentBreakType
+
+        if breakTypeRaw == BreakType.committed.rawValue {
+            // Show confirmation for committed break
+            showCommittedUnlockConfirmation = true
+        } else {
+            // Free break - unlock immediately
+            ShieldManager.shared.toggle()
+            shieldRefreshTick += 1
+        }
+    }
+
+    private func confirmCommittedUnlock() {
+        // Pet will be blown away
+        if let pet = petManager.currentPet {
+            pet.blowAway()
+        }
+        ShieldManager.shared.toggle()
+        shieldRefreshTick += 1
+    }
+
+    private func startBreak(type: BreakType, durationMinutes: Int?) {
+        ShieldManager.shared.turnOn(breakType: type, durationMinutes: durationMinutes)
+        shieldRefreshTick += 1
     }
 
     @ViewBuilder

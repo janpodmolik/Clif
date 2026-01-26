@@ -1,19 +1,10 @@
-import Foundation
+import SwiftUI
 
 /// Types of breaks available.
-/// Each type has different fall rate multipliers and penalties for breaking early.
+/// Free breaks have no penalty, committed breaks blow away the pet if ended early.
 enum BreakType: String, Codable, CaseIterable {
     case free
     case committed
-
-    /// Multiplier applied to base fallRate from WindPreset.
-    /// Higher = faster wind decrease during break.
-    var fallRateMultiplier: Double {
-        switch self {
-        case .free: return 1.0
-        case .committed: return 1.5
-        }
-    }
 
     /// Display name for UI.
     var displayName: String {
@@ -34,8 +25,16 @@ enum BreakType: String, Codable, CaseIterable {
     /// Icon for UI display.
     var icon: String {
         switch self {
-        case .free: return "peacesign"
-        case .committed: return "exclamationmark.triangle"
+        case .free: return "leaf.fill"
+        case .committed: return "flame.fill"
+        }
+    }
+
+    /// Color for UI display.
+    var color: Color {
+        switch self {
+        case .free: return .green
+        case .committed: return .orange
         }
     }
 }

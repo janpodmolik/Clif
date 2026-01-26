@@ -97,6 +97,11 @@ enum DefaultsKeys {
 
     static let shieldCooldownUntil = "shieldCooldownUntil"
 
+    // MARK: - Break Type
+
+    static let currentBreakType = "currentBreakType"
+    static let committedBreakDuration = "committedBreakDuration"
+
     // MARK: - Cumulative Tracking
 
     static let cumulativeBaseline = "cumulativeBaseline"

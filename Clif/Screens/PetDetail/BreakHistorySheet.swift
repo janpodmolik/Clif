@@ -376,17 +376,6 @@ private struct BreakPieChart: View {
     }
 }
 
-// MARK: - BreakType Color Extension
-
-private extension BreakType {
-    var color: Color {
-        switch self {
-        case .free: return .cyan
-        case .committed: return .blue
-        }
-    }
-}
-
 // MARK: - Preview
 
 #if DEBUG

@@ -146,17 +146,10 @@ struct StatusCard: View {
     private func breakTypeBadge(_ type: BreakType) -> some View {
         Text(type.displayName)
             .font(.caption.weight(.medium))
-            .foregroundStyle(breakTypeColor(type))
+            .foregroundStyle(type.color)
             .padding(.horizontal, 10)
             .padding(.vertical, 5)
-            .background(breakTypeColor(type).opacity(0.15), in: Capsule())
-    }
-
-    private func breakTypeColor(_ type: BreakType) -> Color {
-        switch type {
-        case .free: return .green
-        case .committed: return .red
-        }
+            .background(type.color.opacity(0.15), in: Capsule())
     }
 
     private func breakInfoRow(_ activeBreak: ActiveBreak) -> some View {
@@ -209,11 +202,10 @@ struct StatusCard: View {
 
     private func minutesToZeroWind(_ activeBreak: ActiveBreak) -> Int? {
         guard activeBreak.type == .free else { return nil }
-        let effectiveRate = preset.fallRate * activeBreak.type.fallRateMultiplier
-        guard effectiveRate > 0 else { return nil }
+        guard preset.fallRate > 0 else { return nil }
         let remainingWind = currentWindPoints - activeBreak.windDecreased(for: preset)
         guard remainingWind > 0 else { return 0 }
-        return Int(ceil(remainingWind / effectiveRate))
+        return Int(ceil(remainingWind / preset.fallRate))
     }
 
     // MARK: - Formatters

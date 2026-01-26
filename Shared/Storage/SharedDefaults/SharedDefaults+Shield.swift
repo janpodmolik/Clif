@@ -45,6 +45,35 @@ extension SharedDefaults {
         set { defaults?.set(newValue, forKey: DefaultsKeys.breakStartedAt) }
     }
 
+    /// Current break type (free or committed). Nil when no break is active.
+    static var currentBreakType: String? {
+        get { defaults?.string(forKey: DefaultsKeys.currentBreakType) }
+        set {
+            defaults?.set(newValue, forKey: DefaultsKeys.currentBreakType)
+            defaults?.synchronize()
+        }
+    }
+
+    /// Duration for committed break in minutes.
+    /// Positive values = minutes (5-120)
+    /// -1 = until wind reaches 0%
+    /// -2 = until end of day
+    /// nil = not set (free break or no break)
+    static var committedBreakDuration: Int? {
+        get {
+            let value = defaults?.integer(forKey: DefaultsKeys.committedBreakDuration)
+            return value == 0 ? nil : value
+        }
+        set {
+            if let value = newValue {
+                defaults?.set(value, forKey: DefaultsKeys.committedBreakDuration)
+            } else {
+                defaults?.removeObject(forKey: DefaultsKeys.committedBreakDuration)
+            }
+            defaults?.synchronize()
+        }
+    }
+
     // MARK: - Shield Helpers
 
     /// Resets usage shield flags to allow wind tracking.
@@ -52,6 +81,8 @@ extension SharedDefaults {
     static func resetShieldFlags() {
         isShieldActive = false
         shieldActivatedAt = nil
+        currentBreakType = nil
+        committedBreakDuration = nil
         synchronize()
     }
 }
