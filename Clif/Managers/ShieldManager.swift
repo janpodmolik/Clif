@@ -167,13 +167,14 @@ final class ShieldManager {
     private func applyBreakReduction() {
         guard let activatedAt = SharedDefaults.shieldActivatedAt else { return }
 
-        let elapsedSeconds = Int(Date().timeIntervalSince(activatedAt))
+        let elapsedSeconds = Date().timeIntervalSince(activatedAt)
         let limitSeconds = SharedDefaults.integer(forKey: DefaultsKeys.monitoringLimitSeconds)
         let fallRate = SharedDefaults.monitoredFallRate
 
         // fallRate is in pts/sec, limit is 100 pts
         // secondsForgiven = elapsedSeconds * fallRate * limitSeconds / 100
-        let secondsForgiven = Int(Double(elapsedSeconds) * fallRate * Double(limitSeconds) / 100.0)
+        // Use ceil to ensure even short breaks reduce wind (matches effectiveWind display)
+        let secondsForgiven = Int(ceil(elapsedSeconds * fallRate * Double(limitSeconds) / 100.0))
 
         let oldReduction = SharedDefaults.totalBreakReduction
         let cumulativeSeconds = SharedDefaults.totalCumulativeSeconds
@@ -190,7 +191,7 @@ final class ShieldManager {
         #if DEBUG
         let effectiveSeconds = max(0, cumulativeSeconds - newReduction)
         let wasCapped = oldReduction + secondsForgiven > cumulativeSeconds
-        print("[ShieldManager] Break reduction: +\(secondsForgiven)s (elapsed: \(elapsedSeconds)s, fallRate: \(fallRate), total: \(newReduction)s\(wasCapped ? " [CAPPED]" : ""))")
+        print("[ShieldManager] Break reduction: +\(secondsForgiven)s (elapsed: \(String(format: "%.1f", elapsedSeconds))s, fallRate: \(fallRate), total: \(newReduction)s\(wasCapped ? " [CAPPED]" : ""))")
         print("[ShieldManager] Wind recalculated: \(String(format: "%.1f", oldWind)) -> \(String(format: "%.1f", newWind))% (cumulative: \(cumulativeSeconds)s, effective: \(effectiveSeconds)s)")
         #endif
     }
