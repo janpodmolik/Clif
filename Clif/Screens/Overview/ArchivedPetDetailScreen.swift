@@ -38,7 +38,7 @@ struct ArchivedPetDetailScreen: View {
                         showPulse: false
                     )
 
-                    DayByDayUsageCard(stats: pet.fullStats)
+                    DayByDayUsageCard(stats: pet.fullStats, sources: pet.limitedSources)
 
                     TrendMiniChart(stats: pet.fullStats)
 

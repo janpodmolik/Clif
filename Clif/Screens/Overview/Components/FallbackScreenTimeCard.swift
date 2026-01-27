@@ -37,7 +37,7 @@ struct FallbackScreenTimeCard: View {
         .padding(18)
         .glassCard()
         .sheet(item: $selectedDay) { day in
-            DayDetailSheet(day: day)
+            DayDetailSheet(day: day, sources: [])
         }
     }
 

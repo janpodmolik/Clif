@@ -7,6 +7,7 @@ enum UsageViewMode: String, CaseIterable {
 
 struct DayByDayUsageCard: View {
     let stats: FullUsageStats
+    let sources: [LimitedSource]
 
     @State private var viewMode: UsageViewMode = .week
     @State private var selectedDay: DailyUsageStat?
@@ -46,7 +47,7 @@ struct DayByDayUsageCard: View {
         .padding(.vertical)
         .glassCard()
         .sheet(item: $selectedDay) { day in
-            DayDetailSheet(day: day)
+            DayDetailSheet(day: day, sources: sources)
         }
     }
 
@@ -104,85 +105,19 @@ struct DayByDayUsageCard: View {
     }
 }
 
-// MARK: - Day Detail Sheet
-
-struct DayDetailSheet: View {
-    let day: DailyUsageStat
-
-    @Environment(\.dismiss) private var dismiss
-
-    private let dateFormatter: DateFormatter = {
-        let f = DateFormatter()
-        f.locale = Locale(identifier: "cs_CZ")
-        f.dateStyle = .full
-        return f
-    }()
-
-    var body: some View {
-        NavigationStack {
-            List {
-                Section {
-                    HStack {
-                        Label("Celkový čas", systemImage: "clock.fill")
-                        Spacer()
-                        Text(formatMinutes(day.totalMinutes))
-                            .foregroundStyle(.secondary)
-                    }
-                }
-
-                Section {
-                    ContentUnavailableView {
-                        Label("Detail aplikací", systemImage: "app.badge")
-                    } description: {
-                        Text("Detailní využití aplikací bude dostupné po připojení k Family Controls.")
-                    }
-                }
-            }
-            .navigationTitle(dateFormatter.string(from: day.date))
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button {
-                        dismiss()
-                    } label: {
-                        Image(systemName: "xmark")
-                            .font(.system(size: 14))
-                            .foregroundStyle(.secondary)
-                    }
-                }
-            }
-        }
-        .presentationDetents([.medium])
-        .presentationDragIndicator(.visible)
-    }
-
-    private func formatMinutes(_ minutes: Int) -> String {
-        let h = minutes / 60
-        let m = minutes % 60
-        if h > 0 {
-            return m > 0 ? "\(h)h \(m)m" : "\(h)h"
-        }
-        return "\(m)m"
-    }
-}
-
 #if DEBUG
 #Preview("Short history (no toggle)") {
-    DayByDayUsageCard(stats: FullUsageStats.mock(days: 5))
+    DayByDayUsageCard(stats: FullUsageStats.mock(days: 5), sources: LimitedSource.mockList(days: 5))
         .padding()
 }
 
 #Preview("Week+ history (with toggle)") {
-    DayByDayUsageCard(stats: FullUsageStats.mock(days: 14))
+    DayByDayUsageCard(stats: FullUsageStats.mock(days: 14), sources: LimitedSource.mockList(days: 14))
         .padding()
 }
 
 #Preview("Long history") {
-    DayByDayUsageCard(stats: FullUsageStats.mock(days: 30))
+    DayByDayUsageCard(stats: FullUsageStats.mock(days: 30), sources: LimitedSource.mockList(days: 30))
         .padding()
-}
-
-#Preview("Day Detail") {
-    DayDetailSheet(day: DailyUsageStat(petId: UUID(), date: Date(), totalMinutes: 127))
 }
 #endif
