@@ -8,8 +8,6 @@ struct ArchivedPetHeaderCard: View {
     let isBlown: Bool
     let archivedAt: Date
     var purpose: String? = nil
-    var preset: WindPreset? = nil
-    var limitedSources: [LimitedSource] = []
 
     private var statusText: String {
         isBlown ? "Odfouknut" : "Plně evolvován"
@@ -83,10 +81,6 @@ struct ArchivedPetHeaderCard: View {
                 }
             }
             .padding()
-
-            if let preset {
-                WindPresetInfoSection(preset: preset, limitedSources: limitedSources)
-            }
         }
         .clipShape(RoundedRectangle(cornerRadius: 32))
         .glassCard()
@@ -142,9 +136,7 @@ struct ArchivedPetHeaderCard: View {
         createdAt: Calendar.current.date(byAdding: .day, value: -12, to: Date())!,
         isBlown: false,
         archivedAt: Date(),
-        purpose: "Social Media",
-        preset: .default,
-        limitedSources: LimitedSource.mockList()
+        purpose: "Social Media"
     )
     .padding()
 }
@@ -157,14 +149,12 @@ struct ArchivedPetHeaderCard: View {
         createdAt: Calendar.current.date(byAdding: .day, value: -5, to: Date())!,
         isBlown: true,
         archivedAt: Date(),
-        purpose: "Gaming",
-        preset: .intense,
-        limitedSources: LimitedSource.mockList()
+        purpose: "Gaming"
     )
     .padding()
 }
 
-#Preview("Without Config") {
+#Preview("Without Purpose") {
     ArchivedPetHeaderCard(
         petName: "Sprout",
         totalDays: 3,

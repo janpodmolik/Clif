@@ -18,9 +18,7 @@ struct ArchivedPetDetailScreen: View {
                         createdAt: pet.evolutionHistory.createdAt,
                         isBlown: pet.isBlown,
                         archivedAt: pet.archivedAt,
-                        purpose: pet.purpose,
-                        preset: pet.preset,
-                        limitedSources: pet.limitedSources
+                        purpose: pet.purpose
                     )
 
                     EssenceInfoCard(evolutionHistory: pet.evolutionHistory)

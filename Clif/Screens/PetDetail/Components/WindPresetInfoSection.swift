@@ -1,38 +1,11 @@
-import FamilyControls
-import ManagedSettings
 import SwiftUI
 
-/// A section displaying wind preset configuration and limited sources.
-/// Designed to be placed below the pet header content within the same card.
-/// This is a read-only informational section.
+/// A section displaying today's wind preset configuration.
+/// Shows rise/fall rates and provides access to preset comparison.
 struct WindPresetInfoSection: View {
     let preset: WindPreset
-    let limitedSources: [LimitedSource]
 
-    private var applicationTokens: Set<ApplicationToken> {
-        Set(limitedSources.compactMap {
-            if case .app(let source) = $0 { return source.applicationToken }
-            return nil
-        })
-    }
-
-    private var categoryTokens: Set<ActivityCategoryToken> {
-        Set(limitedSources.compactMap {
-            if case .category(let source) = $0 { return source.categoryToken }
-            return nil
-        })
-    }
-
-    private var webDomainTokens: Set<WebDomainToken> {
-        Set(limitedSources.compactMap {
-            if case .website(let source) = $0 { return source.webDomainToken }
-            return nil
-        })
-    }
-
-    private var hasValidTokens: Bool {
-        !applicationTokens.isEmpty || !categoryTokens.isEmpty || !webDomainTokens.isEmpty
-    }
+    @State private var showPresetInfo = false
 
     var body: some View {
         VStack(spacing: 0) {
@@ -40,34 +13,29 @@ struct WindPresetInfoSection: View {
                 .padding(.horizontal)
 
             HStack(spacing: 12) {
-                modeIcon
+                presetIcon
 
                 VStack(alignment: .leading, spacing: 2) {
                     Text(preset.displayName)
                         .font(.subheadline.weight(.semibold))
 
-                    Text("\(Int(preset.minutesToBlowAway)) min to blow away")
+                    Text("Today's settings")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
 
                 Spacer()
 
-                if hasValidTokens {
-                    LimitedSourcesPreview(
-                        applicationTokens: applicationTokens,
-                        categoryTokens: categoryTokens,
-                        webDomainTokens: webDomainTokens
-                    )
-                } else {
-                    sourcesCountBadge
-                }
+                infoButton
             }
             .padding()
         }
+        .sheet(isPresented: $showPresetInfo) {
+            WindPresetComparisonSheet(currentPreset: preset)
+        }
     }
 
-    private var modeIcon: some View {
+    private var presetIcon: some View {
         Image(systemName: preset.iconName)
             .font(.system(size: 16, weight: .medium))
             .foregroundStyle(preset.themeColor)
@@ -75,43 +43,138 @@ struct WindPresetInfoSection: View {
             .background(preset.themeColor.opacity(0.15), in: Circle())
     }
 
-    /// Fallback when no valid tokens are available (e.g. archived pets without tokens)
-    private var sourcesCountBadge: some View {
-        let count = limitedSources.count
-        return HStack(spacing: 4) {
-            Image(systemName: "app.badge.fill")
-                .font(.caption)
-            Text("\(count)")
-                .fontWeight(.medium)
+    private var infoButton: some View {
+        Button {
+            showPresetInfo = true
+        } label: {
+            Image(systemName: "info.circle")
+                .font(.system(size: 18))
+                .foregroundStyle(.primary)
         }
-        .font(.caption)
-        .foregroundStyle(.secondary)
-        .padding(.horizontal, 10)
-        .padding(.vertical, 6)
-        .background(Color.secondary.opacity(0.1), in: Capsule())
+    }
+}
+
+// MARK: - Preset Comparison Sheet
+
+struct WindPresetComparisonSheet: View {
+    let currentPreset: WindPreset
+
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                VStack(spacing: 16) {
+                    ForEach(WindPreset.allCases, id: \.self) { preset in
+                        PresetComparisonCard(
+                            preset: preset,
+                            isCurrent: preset == currentPreset
+                        )
+                    }
+
+                    explanationSection
+                }
+                .padding()
+            }
+            .navigationTitle("Wind Presets")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        dismiss()
+                    } label: {
+                        Image(systemName: "xmark")
+                            .font(.system(size: 16))
+                            .foregroundStyle(.secondary)
+                    }
+                }
+            }
+        }
+        .presentationDetents([.medium, .large])
+    }
+
+    private var explanationSection: some View {
+        Text("Wind rises when you use limited apps and falls when you take breaks. TODO: Maybe more info..")
+            .font(.caption)
+            .foregroundStyle(.secondary)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding()
+            .background(Color.secondary.opacity(0.08), in: RoundedRectangle(cornerRadius: 12))
+    }
+}
+
+// MARK: - Preset Comparison Card
+
+private struct PresetComparisonCard: View {
+    let preset: WindPreset
+    let isCurrent: Bool
+
+    var body: some View {
+        HStack(spacing: 12) {
+            Image(systemName: preset.iconName)
+                .font(.system(size: 20, weight: .medium))
+                .foregroundStyle(preset.themeColor)
+                .frame(width: 40, height: 40)
+                .background(preset.themeColor.opacity(0.15), in: Circle())
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text(preset.displayName)
+                    .font(.headline)
+
+                Text(preset.description)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+
+            Spacer()
+
+            VStack(alignment: .trailing, spacing: 4) {
+                Text("~\(Int(preset.minutesToBlowAway)) min to blow away")
+                    .font(.caption.monospacedDigit())
+
+                Text("~\(Int(preset.minutesToRecover)) min to full recover")
+                    .font(.caption.monospacedDigit())
+            }
+            .foregroundStyle(.secondary)
+        }
+        .padding()
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(isCurrent ? preset.themeColor.opacity(0.1) : Color.secondary.opacity(0.05))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(isCurrent ? preset.themeColor.opacity(0.3) : .clear, lineWidth: 1)
+        )
     }
 }
 
 #if DEBUG
+#Preview("Gentle") {
+    VStack(spacing: 20) {
+        WindPresetInfoSection(preset: .gentle)
+            .glassCard()
+    }
+    .padding()
+}
+
 #Preview("Balanced") {
     VStack(spacing: 20) {
-        WindPresetInfoSection(
-            preset: .balanced,
-            limitedSources: LimitedSource.mockList()
-        )
-        .glassCard()
+        WindPresetInfoSection(preset: .balanced)
+            .glassCard()
     }
     .padding()
 }
 
 #Preview("Intense") {
     VStack(spacing: 20) {
-        WindPresetInfoSection(
-            preset: .intense,
-            limitedSources: LimitedSource.mockList()
-        )
-        .glassCard()
+        WindPresetInfoSection(preset: .intense)
+            .glassCard()
     }
     .padding()
+}
+
+#Preview("Comparison Sheet") {
+    WindPresetComparisonSheet(currentPreset: .balanced)
 }
 #endif

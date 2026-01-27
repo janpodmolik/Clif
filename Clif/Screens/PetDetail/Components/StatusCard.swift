@@ -33,6 +33,8 @@ struct StatusCard: View {
                         removal: .move(edge: .top).combined(with: .opacity)
                     ))
             }
+
+            WindPresetInfoSection(preset: preset)
         }
         .glassCard()
         .animation(.easeInOut(duration: 0.3), value: isOnBreak)

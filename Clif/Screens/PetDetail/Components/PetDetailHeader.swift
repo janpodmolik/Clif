@@ -6,8 +6,6 @@ struct PetDetailHeader: View {
     let evolutionPhase: Int
     var purpose: String? = nil
     var createdAt: Date? = nil
-    var preset: WindPreset? = nil
-    var limitedSources: [LimitedSource] = []
 
     private var formattedCreatedAt: String? {
         guard let createdAt else { return nil }
@@ -18,40 +16,34 @@ struct PetDetailHeader: View {
     }
 
     var body: some View {
-        VStack(spacing: 0) {
-            HStack(alignment: .top) {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(petName)
-                        .font(.title.weight(.bold))
+        HStack(alignment: .top) {
+            VStack(alignment: .leading, spacing: 4) {
+                Text(petName)
+                    .font(.title.weight(.bold))
 
-                    if let purpose, !purpose.isEmpty {
-                        Text(purpose)
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
-                    }
-
-                    if let formattedCreatedAt {
-                        Text("Od \(formattedCreatedAt)")
-                            .font(.caption)
-                            .foregroundStyle(.tertiary)
-                    }
+                if let purpose, !purpose.isEmpty {
+                    Text(purpose)
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
                 }
 
-                Spacer()
-
-                VStack(alignment: .trailing, spacing: 8) {
-                    if evolutionPhase > 0 {
-                        evolutionBadge
-                    }
-                    daysBadge
+                if let formattedCreatedAt {
+                    Text("Od \(formattedCreatedAt)")
+                        .font(.caption)
+                        .foregroundStyle(.tertiary)
                 }
             }
-            .padding()
 
-            if let preset {
-                WindPresetInfoSection(preset: preset, limitedSources: limitedSources)
+            Spacer()
+
+            VStack(alignment: .trailing, spacing: 8) {
+                if evolutionPhase > 0 {
+                    evolutionBadge
+                }
+                daysBadge
             }
         }
+        .padding()
         .glassCard()
     }
 
@@ -90,37 +82,20 @@ struct PetDetailHeader: View {
 }
 
 #if DEBUG
-#Preview("With Config - Default") {
+#Preview("With Purpose") {
     VStack {
         PetDetailHeader(
             petName: "Fern",
             totalDays: 12,
             evolutionPhase: 2,
             purpose: "Social Media",
-            createdAt: Calendar.current.date(byAdding: .day, value: -12, to: Date()),
-            preset: .default,
-            limitedSources: LimitedSource.mockList()
+            createdAt: Calendar.current.date(byAdding: .day, value: -12, to: Date())
         )
     }
     .padding()
 }
 
-#Preview("With Config - Intense") {
-    VStack {
-        PetDetailHeader(
-            petName: "Storm",
-            totalDays: 5,
-            evolutionPhase: 2,
-            purpose: "Gaming",
-            createdAt: Calendar.current.date(byAdding: .day, value: -5, to: Date()),
-            preset: .intense,
-            limitedSources: LimitedSource.mockList()
-        )
-    }
-    .padding()
-}
-
-#Preview("Without Config") {
+#Preview("Without Purpose") {
     VStack {
         PetDetailHeader(
             petName: "Bloom",

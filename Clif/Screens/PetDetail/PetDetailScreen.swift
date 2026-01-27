@@ -53,9 +53,7 @@ struct PetDetailScreen: View {
                         totalDays: pet.totalDays,
                         evolutionPhase: pet.currentPhase,
                         purpose: pet.purpose,
-                        createdAt: pet.evolutionHistory.createdAt,
-                        preset: pet.preset,
-                        limitedSources: pet.limitedSources
+                        createdAt: pet.evolutionHistory.createdAt
                     )
 
                     if pet.isBlob {
