@@ -31,6 +31,7 @@ struct HomeCardView: View {
     // Pulsing for "Calming the wind..." text (when shield active)
     @State private var isBreakPulsing = false
     @State private var evolveButtonSize: CGSize = .zero
+    @State private var showButton = false
 
     /// Whether shield is currently active (wind is decreasing).
     private var isShieldActive: Bool {
@@ -83,19 +84,20 @@ struct HomeCardView: View {
             // Main card content
             cardContent
 
-            // Evolve button in bump area
-            if showEvolveBump {
-                evolveButton
-                    .overlay(
-                        GeometryReader { geo in
-                            Color.clear.preference(
-                                key: BumpSizePreferenceKey.self,
-                                value: geo.size
-                            )
-                        }
-                    )
-                    .padding(.vertical, bumpVerticalPadding)
-            }
+            // Evolve button in bump area (always rendered for measurement, visibility controlled)
+            evolveButton
+                .scaleEffect(showButton ? 1 : 0.5)
+                .opacity(showButton ? 1 : 0)
+                .overlay(
+                    GeometryReader { geo in
+                        Color.clear.preference(
+                            key: BumpSizePreferenceKey.self,
+                            value: geo.size
+                        )
+                    }
+                )
+                .frame(height: showEvolveBump ? nil : 0, alignment: .center)
+                .padding(.vertical, showEvolveBump ? bumpVerticalPadding : 0)
         }
         .background(
             .ultraThinMaterial,
@@ -108,15 +110,35 @@ struct HomeCardView: View {
             )
         )
         .onPreferenceChange(BumpSizePreferenceKey.self) { size in
-            evolveButtonSize = size
+            // Only update if we have a valid measurement
+            if size.width > 0, size.height > 0 {
+                evolveButtonSize = size
+            }
         }
         .onAppear {
             if isShieldActive {
                 isBreakPulsing = true
             }
+            // Sync button visibility on appear
+            if showEvolveBump {
+                showButton = true
+            }
         }
         .onChange(of: isShieldActive) { _, newValue in
             isBreakPulsing = newValue
+        }
+        .onChange(of: showEvolveBump) { _, shouldShow in
+            if shouldShow {
+                // Show: bump grows first, then button pops in
+                withAnimation(.spring(duration: 0.25, bounce: 0.3).delay(0.15)) {
+                    showButton = true
+                }
+            } else {
+                // Hide: button shrinks first, then bump collapses
+                withAnimation(.easeOut(duration: 0.15)) {
+                    showButton = false
+                }
+            }
         }
     }
 
