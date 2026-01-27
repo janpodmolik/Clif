@@ -27,6 +27,20 @@ struct HomeCardView: View {
         SharedDefaults.isShieldActive
     }
 
+    // Layout constants (must match HomeScreen values)
+    private let cardInset: CGFloat = 16 // Distance from screen edge to card
+    private let contentPadding: CGFloat = 20
+
+    /// Concentric corner radius for inner elements (screen edge → card edge → content)
+    private var innerCornerRadius: CGFloat {
+        DeviceMetrics.concentricCornerRadius(inset: cardInset + contentPadding)
+    }
+
+    /// Corner radius of the card itself (concentric to screen edge)
+    private var cardCornerRadius: CGFloat {
+        DeviceMetrics.concentricCornerRadius(inset: cardInset)
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             // Tappable area above progress bar
@@ -40,7 +54,7 @@ struct HomeCardView: View {
 
             ProgressBarView(progress: Double(pet.windProgress), isPulsing: isShieldActive)
         }
-        .padding(16)
+        .padding(contentPadding)
         .frame(maxWidth: .infinity, alignment: .leading)
         .onAppear {
             if isShieldActive {
@@ -139,14 +153,16 @@ struct HomeCardView: View {
 // MARK: - Preview
 
 #if DEBUG
+private let previewCardCornerRadius = DeviceMetrics.concentricCornerRadius(inset: 16)
+
 #Preview("Pet") {
     HomeCardView(
         pet: .mock(),
         streakCount: 12,
         showDetailButton: true
     )
-    .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 24))
-    .padding()
+    .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: previewCardCornerRadius))
+    .padding(16)
 }
 
 #Preview("Pet - On Break") {
@@ -155,8 +171,8 @@ struct HomeCardView: View {
         streakCount: 5,
         showDetailButton: true
     )
-    .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 24))
-    .padding()
+    .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: previewCardCornerRadius))
+    .padding(16)
 }
 
 #Preview("Pet - High Wind") {
@@ -165,7 +181,7 @@ struct HomeCardView: View {
         streakCount: 3,
         showDetailButton: true
     )
-    .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 24))
-    .padding()
+    .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: previewCardCornerRadius))
+    .padding(16)
 }
 #endif

@@ -20,7 +20,11 @@ struct HomeScreen: View {
     @State private var refreshTick = 0
 
     private let homeCardInset: CGFloat = 16
-    private let homeCardCornerRadius: CGFloat = 24
+
+    /// Concentric corner radius for the card (based on screen edge distance)
+    private var homeCardCornerRadius: CGFloat {
+        DeviceMetrics.concentricCornerRadius(inset: homeCardInset)
+    }
     private let dropTargetExpansion: CGFloat = 40
 
     /// Whether we're in pet creation mode (empty island shown during entire flow)
