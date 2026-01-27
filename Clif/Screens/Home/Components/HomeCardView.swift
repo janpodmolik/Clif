@@ -170,7 +170,7 @@ struct HomeCardView: View {
             .contentShape(Rectangle())
             .onTapGesture { onAction(.detail) }
 
-            ProgressBarView(progress: Double(pet.windProgress), isPulsing: isShieldActive)
+            WindProgressBar(progress: Double(pet.windProgress), isPulsing: isShieldActive)
         }
         .padding(HomeCardLayout.contentPadding)
         .frame(maxWidth: .infinity, alignment: .leading)
