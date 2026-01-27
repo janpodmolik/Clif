@@ -45,9 +45,7 @@ struct PetDetailScreen: View {
                         isBlownAway: pet.isBlown,
                         activeBreak: pet.activeBreak,
                         currentWindPoints: pet.windPoints,
-                        timeToBlowAway: timeToBlowAway,
-                        onStartBreak: { onAction(.startBreak) },
-                        onEndBreak: { onAction(.endBreak) }
+                        timeToBlowAway: timeToBlowAway
                     )
 
                     PetDetailHeader(

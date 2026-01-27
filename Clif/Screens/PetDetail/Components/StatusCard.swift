@@ -8,15 +8,9 @@ struct StatusCard: View {
     var activeBreak: ActiveBreak? = nil
     var currentWindPoints: Double = 0
     var timeToBlowAway: Double? = nil
-    var onStartBreak: () -> Void
-    var onEndBreak: () -> Void = {}
 
     private var isOnBreak: Bool {
         activeBreak != nil
-    }
-
-    private var shouldPulse: Bool {
-        windProgress > 0.8 && !isOnBreak
     }
 
     var body: some View {
@@ -61,18 +55,17 @@ struct StatusCard: View {
     private var windProgressSection: some View {
         VStack(spacing: 12) {
             progressHeader
-            ProgressBarView(progress: Double(windProgress))
-            calmWindButton
+            WindProgressBar(progress: Double(windProgress))
         }
         .padding()
     }
 
     private var progressHeader: some View {
         HStack {
-            // Left side: time to blow away
+            // Left side: time to blow away (with tilde for approximate)
             VStack(alignment: .leading, spacing: 2) {
                 if let minutes = timeToBlowAway, minutes > 0 {
-                    Text(formatDuration(Int(ceil(minutes))))
+                    Text("~\(formatDuration(Int(ceil(minutes))))")
                         .font(.system(.title, design: .monospaced, weight: .bold))
                         .foregroundStyle(windLevel.color)
                     Text("to blow away")
@@ -102,44 +95,31 @@ struct StatusCard: View {
         }
     }
 
-    private var calmWindButton: some View {
-        Button(action: onStartBreak) {
-            Text("Calm the Wind")
-                .font(.system(size: 15, weight: .semibold))
-                .foregroundStyle(.white)
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 12)
-                .background(Color.cyan.opacity(0.7), in: Capsule())
-        }
-        .buttonStyle(.plain)
-        .pulsingEffect(isActive: shouldPulse)
-    }
-
     // MARK: - Break Section
 
     private func breakSection(_ activeBreak: ActiveBreak) -> some View {
         VStack(spacing: 12) {
-            breakHeader(activeBreak)
+            breakInfoRow(activeBreak)
 
             if let progress = activeBreak.progress {
-                ProgressBarView(progress: progress, isPulsing: true)
+                WindProgressBar(progress: progress, isPulsing: true)
             }
-
-            breakInfoRow(activeBreak)
-            releaseWindButton
         }
         .padding()
     }
 
-    private func breakHeader(_ activeBreak: ActiveBreak) -> some View {
+    private func breakInfoRow(_ activeBreak: ActiveBreak) -> some View {
         HStack {
-            Text("Calming the Wind")
-                .font(.subheadline.weight(.medium))
-                .foregroundStyle(.cyan)
+            // Left side: countdown or elapsed time
+            BreakCountdownLabel(activeBreak: activeBreak, formatTime: formatTime)
 
             Spacer()
 
-            breakTypeBadge(activeBreak.type)
+            // Right side: break type badge + wind prediction
+            VStack(alignment: .trailing, spacing: 6) {
+                breakTypeBadge(activeBreak.type)
+                windPredictionLabel(activeBreak)
+            }
         }
     }
 
@@ -152,46 +132,19 @@ struct StatusCard: View {
             .background(type.color.opacity(0.15), in: Capsule())
     }
 
-    private func breakInfoRow(_ activeBreak: ActiveBreak) -> some View {
-        HStack {
-            // Left side: countdown or elapsed time
-            BreakCountdownLabel(activeBreak: activeBreak, formatTime: formatTime)
-
-            Spacer()
-
-            // Right side: wind prediction
-            VStack(alignment: .trailing, spacing: 2) {
-                if activeBreak.type == .free {
-                    if let minutes = minutesToZeroWind(activeBreak) {
-                        Text(formatDuration(minutes))
-                            .font(.system(.title3, design: .monospaced, weight: .semibold))
-                            .foregroundStyle(.green)
-                        Text("to wind 0%")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    }
-                } else {
-                    Text("\(Int(predictedWindAfter(activeBreak)))%")
-                        .font(.system(.title3, design: .monospaced, weight: .semibold))
-                        .foregroundStyle(.green)
-                    Text("wind after")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
+    @ViewBuilder
+    private func windPredictionLabel(_ activeBreak: ActiveBreak) -> some View {
+        if activeBreak.type == .free {
+            if let minutes = minutesToZeroWind(activeBreak) {
+                Text("~\(formatDuration(minutes)) to 0%")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
             }
+        } else {
+            Text("→ \(Int(predictedWindAfter(activeBreak)))% wind")
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
         }
-    }
-
-    private var releaseWindButton: some View {
-        Button(action: onEndBreak) {
-            Text("Release the Wind")
-                .font(.system(size: 15, weight: .semibold))
-                .foregroundStyle(.cyan)
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 12)
-                .background(Color.cyan.opacity(0.15), in: Capsule())
-        }
-        .buttonStyle(.plain)
     }
 
     // MARK: - Break Calculations
@@ -411,37 +364,6 @@ private struct PulsingOpacityModifier: ViewModifier {
     }
 }
 
-// MARK: - Pulsing Effect
-
-private struct PulsingModifier: ViewModifier {
-    let isActive: Bool
-    @State private var isPulsing = false
-
-    func body(content: Content) -> some View {
-        content
-            .opacity(isActive ? (isPulsing ? 1.0 : 0.7) : 1.0)
-            .scaleEffect(isActive ? (isPulsing ? 1.02 : 1.0) : 1.0)
-            .animation(
-                isActive
-                    ? .easeInOut(duration: 1.0).repeatForever(autoreverses: true)
-                    : .default,
-                value: isPulsing
-            )
-            .onAppear {
-                if isActive { isPulsing = true }
-            }
-            .onChange(of: isActive) { _, newValue in
-                isPulsing = newValue
-            }
-    }
-}
-
-private extension View {
-    func pulsingEffect(isActive: Bool) -> some View {
-        modifier(PulsingModifier(isActive: isActive))
-    }
-}
-
 #if DEBUG
 #Preview("Normal - Low Wind") {
     StatusCard(
@@ -449,20 +371,18 @@ private extension View {
         windLevel: .low,
         preset: .balanced,
         currentWindPoints: 25,
-        timeToBlowAway: 7.5,
-        onStartBreak: {}
+        timeToBlowAway: 7.5
     )
     .padding()
 }
 
-#Preview("Normal - High Wind (Pulsing)") {
+#Preview("Normal - High Wind") {
     StatusCard(
         windProgress: 0.85,
         windLevel: .high,
         preset: .balanced,
         currentWindPoints: 85,
-        timeToBlowAway: 1.5,
-        onStartBreak: {}
+        timeToBlowAway: 1.5
     )
     .padding()
 }
@@ -473,9 +393,7 @@ private extension View {
         windLevel: .medium,
         preset: .balanced,
         activeBreak: .mock(type: .committed, minutesAgo: 10, durationMinutes: 30),
-        currentWindPoints: 65,
-        onStartBreak: {},
-        onEndBreak: {}
+        currentWindPoints: 65
     )
     .padding()
 }
@@ -486,21 +404,17 @@ private extension View {
         windLevel: .low,
         preset: .balanced,
         activeBreak: .unlimitedFree(),
-        currentWindPoints: 45,
-        onStartBreak: {},
-        onEndBreak: {}
+        currentWindPoints: 45
     )
     .padding()
 }
-
 
 #Preview("Blown Away") {
     StatusCard(
         windProgress: 1.0,
         windLevel: .high,
         preset: .balanced,
-        isBlownAway: true,
-        onStartBreak: {}
+        isBlownAway: true
     )
     .padding()
 }
