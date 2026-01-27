@@ -34,10 +34,19 @@ private enum HomeCardLayout {
 // MARK: - Animation Constants
 
 private enum HomeCardAnimation {
+    // Main spring animation for bump shape (must match external animation)
+    static let bumpSpring: Animation = .spring(duration: 0.4)
     // Bump content show animation (delayed to let shape grow first)
-    static let contentShowAnimation: Animation = .spring(duration: 0.25, bounce: 0.3).delay(0.15)
-    // Bump content hide animation (fast, before shape collapses)
-    static let contentHideAnimation: Animation = .easeOut(duration: 0.15)
+    static let contentShowDelay: Double = 0.15
+    // Bump content hide animation duration (fast, before shape collapses)
+    static let contentHideDuration: Double = 0.12
+}
+
+// MARK: - Bump Type
+
+private enum BumpType: Equatable {
+    case evolve(isBlob: Bool)
+    case blown
 }
 
 // MARK: - HomeCardView
@@ -46,14 +55,16 @@ struct HomeCardView: View {
     let pet: Pet
     let streakCount: Int
     let showDetailButton: Bool
-    /// Refresh trigger from parent (increments when shield state changes or timer ticks)
-    var refreshTick: Int = 0
+    /// Effective wind progress (0-1), passed from parent to ensure proper refresh
+    var windProgress: CGFloat = 0
     var onAction: (HomeCardAction) -> Void = { _ in }
 
     @State private var isBreakPulsing = false
     /// Measured size of bump content. Not reset when bump hides (bumpWidth/bumpHeight return 0 via guard).
     @State private var bumpContentSize: CGSize = .zero
     @State private var showBumpContent = false
+    /// Cached bump type to keep content visible during hide animation
+    @State private var cachedBumpType: BumpType? = nil
 
     /// Whether shield is currently active (wind is decreasing).
     private var isShieldActive: Bool {
@@ -70,20 +81,30 @@ struct HomeCardView: View {
         DeviceMetrics.concentricCornerRadius(inset: HomeCardLayout.cardInset)
     }
 
-    /// Whether to show the bump (for evolve or blown state actions)
-    private var showBump: Bool {
-        (pet.isEvolutionAvailable && !pet.isBlown) || pet.isBlown
+    /// Current bump type based on pet state (nil when no bump should show)
+    private var currentBumpType: BumpType? {
+        if pet.isBlown {
+            return .blown
+        } else if pet.isEvolutionAvailable {
+            return .evolve(isBlob: pet.isBlob)
+        }
+        return nil
+    }
+
+    /// Whether bump should be visible (driven by actual state for shape/layout animation)
+    private var isBumpVisible: Bool {
+        currentBumpType != nil
     }
 
     /// Calculated bump width based on content
     private var bumpWidth: CGFloat {
-        guard showBump, bumpContentSize.width > 0 else { return 0 }
+        guard isBumpVisible, bumpContentSize.width > 0 else { return 0 }
         return bumpContentSize.width + HomeCardLayout.bumpHorizontalPadding * 2
     }
 
     /// Calculated bump height based on content height + padding
     private var bumpHeight: CGFloat {
-        guard showBump, bumpContentSize.height > 0 else { return 0 }
+        guard isBumpVisible, bumpContentSize.height > 0 else { return 0 }
         return bumpContentSize.height + HomeCardLayout.bumpVerticalPadding * 2
     }
 
@@ -109,8 +130,8 @@ struct HomeCardView: View {
                         )
                     }
                 )
-                .frame(height: showBump ? nil : 0, alignment: .center)
-                .padding(.vertical, showBump ? HomeCardLayout.bumpVerticalPadding : 0)
+                .frame(height: isBumpVisible ? nil : 0, alignment: .center)
+                .padding(.vertical, isBumpVisible ? HomeCardLayout.bumpVerticalPadding : 0)
         }
         .background(
             .ultraThinMaterial,
@@ -132,29 +153,40 @@ struct HomeCardView: View {
             if isShieldActive {
                 isBreakPulsing = true
             }
-            // Animate content on appear (consistent with onChange)
-            if showBump {
-                withAnimation(HomeCardAnimation.contentShowAnimation) {
-                    showBumpContent = true
-                }
+            // Initialize cached bump type and show content immediately on appear (no animation needed)
+            if let bumpType = currentBumpType {
+                cachedBumpType = bumpType
+                showBumpContent = true
             }
         }
         .onChange(of: isShieldActive) { _, newValue in
             isBreakPulsing = newValue
         }
-        .onChange(of: showBump) { _, shouldShow in
-            if shouldShow {
-                // Show: bump grows first, then content pops in
-                withAnimation(HomeCardAnimation.contentShowAnimation) {
-                    showBumpContent = true
+        .onChange(of: currentBumpType) { oldValue, newValue in
+            if let newType = newValue {
+                // Show: update cache immediately, animate content after delay (let shape grow first)
+                cachedBumpType = newType
+                DispatchQueue.main.asyncAfter(deadline: .now() + HomeCardAnimation.contentShowDelay) {
+                    withAnimation(.spring(duration: 0.25, bounce: 0.3)) {
+                        showBumpContent = true
+                    }
                 }
-            } else {
-                // Hide: content shrinks first, then bump collapses
-                withAnimation(HomeCardAnimation.contentHideAnimation) {
+            } else if oldValue != nil {
+                // Hide: animate content out immediately (before shape collapses)
+                withAnimation(.easeOut(duration: HomeCardAnimation.contentHideDuration)) {
                     showBumpContent = false
+                }
+                // Clear cache after shape animation completes (0.4s spring duration)
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+                    // Only clear if still hidden (no new bump appeared)
+                    if currentBumpType == nil {
+                        cachedBumpType = nil
+                    }
                 }
             }
         }
+        // Animate bump shape changes (show/hide)
+        .animation(HomeCardAnimation.bumpSpring, value: isBumpVisible)
     }
 
     // MARK: - Card Content
@@ -170,7 +202,7 @@ struct HomeCardView: View {
             .contentShape(Rectangle())
             .onTapGesture { onAction(.detail) }
 
-            WindProgressBar(progress: Double(pet.windProgress), isPulsing: isShieldActive)
+            WindProgressBar(progress: Double(windProgress), isPulsing: isShieldActive)
         }
         .padding(HomeCardLayout.contentPadding)
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -180,20 +212,24 @@ struct HomeCardView: View {
 
     @ViewBuilder
     private var bumpContent: some View {
-        if pet.isBlown {
-            blownActions
-                .transition(.blurReplace)
-        } else if pet.isEvolutionAvailable {
-            evolveButton
-                .transition(.blurReplace)
+        // Use cached bump type to keep content visible during hide animation
+        if let bumpType = cachedBumpType {
+            switch bumpType {
+            case .blown:
+                blownActions
+                    .transition(.blurReplace)
+            case .evolve(let isBlob):
+                evolveButton(isBlob: isBlob)
+                    .transition(.blurReplace)
+            }
         }
     }
 
-    private var evolveButton: some View {
+    private func evolveButton(isBlob: Bool) -> some View {
         Button { onAction(.evolve) } label: {
             HStack(spacing: 6) {
-                Image(systemName: pet.isBlob ? "leaf.fill" : "sparkles")
-                Text(pet.isBlob ? "Use Essence" : "Evolve!")
+                Image(systemName: isBlob ? "leaf.fill" : "sparkles")
+                Text(isBlob ? "Use Essence" : "Evolve!")
             }
             .font(.system(size: 14, weight: .semibold))
             .foregroundStyle(.white)
@@ -297,9 +333,9 @@ struct HomeCardView: View {
 
     private var statsRow: some View {
         HStack(alignment: .firstTextBaseline) {
-            Text("\(Int(pet.windProgress * 100))%")
+            Text("\(Int(windProgress * 100))%")
                 .font(.system(size: 28, weight: .bold))
-                .foregroundStyle(pet.windProgress >= 1.0 ? .red : .primary)
+                .foregroundStyle(windProgress >= 1.0 ? .red : .primary)
 
             Spacer()
 
@@ -330,9 +366,9 @@ struct HomeCardView: View {
                 HomeCardView(
                     pet: .mock(phase: showBump ? 2 : 4), // phase 2 = can evolve, phase 4 = max
                     streakCount: 12,
-                    showDetailButton: true
+                    showDetailButton: true,
+                    windProgress: 0.45
                 )
-                .animation(.spring(duration: 0.4), value: showBump)
 
                 Button(showBump ? "Hide Bump" : "Show Bump") {
                     showBump.toggle()
@@ -350,7 +386,8 @@ struct HomeCardView: View {
     HomeCardView(
         pet: .mock(phase: 2),
         streakCount: 12,
-        showDetailButton: true
+        showDetailButton: true,
+        windProgress: 0.45
     )
     .padding(16)
     .padding(.bottom, 40)
@@ -360,7 +397,8 @@ struct HomeCardView: View {
     HomeCardView(
         pet: .mock(phase: 4),
         streakCount: 5,
-        showDetailButton: true
+        showDetailButton: true,
+        windProgress: 0.3
     )
     .padding(16)
 }
@@ -369,7 +407,8 @@ struct HomeCardView: View {
     HomeCardView(
         pet: .mockBlob(canUseEssence: true),
         streakCount: 2,
-        showDetailButton: true
+        showDetailButton: true,
+        windProgress: 0.2
     )
     .padding(16)
     .padding(.bottom, 40)
@@ -379,7 +418,8 @@ struct HomeCardView: View {
     HomeCardView(
         pet: .mockBlown(),
         streakCount: 8,
-        showDetailButton: true
+        showDetailButton: true,
+        windProgress: 1.0
     )
     .padding(16)
     .padding(.bottom, 40)
@@ -411,9 +451,9 @@ struct HomeCardView: View {
                 HomeCardView(
                     pet: pet,
                     streakCount: 7,
-                    showDetailButton: true
+                    showDetailButton: true,
+                    windProgress: 0.45
                 )
-                .animation(.spring(duration: 0.4), value: state)
 
                 Picker("State", selection: $state) {
                     ForEach(PetState.allCases, id: \.self) { s in
