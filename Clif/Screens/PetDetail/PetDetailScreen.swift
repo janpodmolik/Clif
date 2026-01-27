@@ -81,7 +81,7 @@ struct PetDetailScreen: View {
                     }
 
                     if !pet.dailyStats.isEmpty {
-                        UsageCard(stats: pet.fullStats)
+                        DayByDayUsageCard(stats: pet.fullStats)
                     }
 
                     if pet.totalDays > 1 {

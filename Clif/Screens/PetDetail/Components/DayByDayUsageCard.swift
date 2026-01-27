@@ -5,7 +5,7 @@ enum UsageViewMode: String, CaseIterable {
     case all = "Vše"
 }
 
-struct UsageCard: View {
+struct DayByDayUsageCard: View {
     let stats: FullUsageStats
 
     @State private var viewMode: UsageViewMode = .week
@@ -168,17 +168,17 @@ struct DayDetailSheet: View {
 
 #if DEBUG
 #Preview("Short history (no toggle)") {
-    UsageCard(stats: FullUsageStats.mock(days: 5))
+    DayByDayUsageCard(stats: FullUsageStats.mock(days: 5))
         .padding()
 }
 
 #Preview("Week+ history (with toggle)") {
-    UsageCard(stats: FullUsageStats.mock(days: 14))
+    DayByDayUsageCard(stats: FullUsageStats.mock(days: 14))
         .padding()
 }
 
 #Preview("Long history") {
-    UsageCard(stats: FullUsageStats.mock(days: 30))
+    DayByDayUsageCard(stats: FullUsageStats.mock(days: 30))
         .padding()
 }
 
