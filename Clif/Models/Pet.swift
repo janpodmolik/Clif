@@ -407,4 +407,22 @@ extension Pet {
             totalDays: totalDays
         )
     }
+
+    static func mockBlown(
+        name: String = "Fern",
+        phase: Int = 3
+    ) -> Pet {
+        let petId = UUID()
+        setupMockDefaults(petId: petId, windPoints: 100)
+
+        return Pet(
+            id: petId,
+            name: name,
+            evolutionHistory: .mock(phase: phase, essence: .plant, totalDays: 10, isBlown: true),
+            purpose: "Social Media",
+            dailyStats: DailyUsageStat.mockList(petId: petId, days: 10),
+            limitedSources: LimitedSource.mockList(days: 10),
+            breakHistory: CompletedBreak.mockList(count: 5)
+        )
+    }
 }

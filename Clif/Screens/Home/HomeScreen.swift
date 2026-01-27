@@ -193,13 +193,9 @@ struct HomeScreen: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
             .ignoresSafeArea(.container, edges: .bottom)
 
-            VStack(spacing: 12) {
-                homeCard(for: pet)
-
-                actionButtons(for: pet)
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
-            .padding(homeCardInset)
+            homeCard(for: pet)
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
+                .padding(homeCardInset)
                 .id(refreshTick) // Force re-read of windProgress from SharedDefaults
 
             #if DEBUG
@@ -231,24 +227,6 @@ struct HomeScreen: View {
         case .replay, .delete:
             break // TODO: Handle archived pet actions
         }
-    }
-
-    // MARK: - Action Buttons (for blown pet only)
-
-    @ViewBuilder
-    private func actionButtons(for pet: Pet) -> some View {
-        if pet.isBlown {
-            HStack(spacing: 12) {
-                ActionButton(icon: "memories", label: "Replay", color: .blue) {
-                    handleAction(.replay, for: pet)
-                }
-                Spacer()
-                ActionButton(icon: "trash", label: "Delete", color: .red) {
-                    handleAction(.delete, for: pet)
-                }
-            }
-        }
-        // Evolve button is now part of HomeCardView
     }
 
     // MARK: - Actions

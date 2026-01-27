@@ -30,8 +30,8 @@ struct HomeCardView: View {
 
     // Pulsing for "Calming the wind..." text (when shield active)
     @State private var isBreakPulsing = false
-    @State private var evolveButtonSize: CGSize = .zero
-    @State private var showButton = false
+    @State private var bumpContentSize: CGSize = .zero
+    @State private var showBumpContent = false
 
     /// Whether shield is currently active (wind is decreasing).
     private var isShieldActive: Bool {
@@ -57,21 +57,21 @@ struct HomeCardView: View {
         DeviceMetrics.concentricCornerRadius(inset: cardInset)
     }
 
-    /// Whether to show the evolve button bump
-    private var showEvolveBump: Bool {
-        pet.isEvolutionAvailable && !pet.isBlown
+    /// Whether to show the bump (for evolve or blown state actions)
+    private var showBump: Bool {
+        (pet.isEvolutionAvailable && !pet.isBlown) || pet.isBlown
     }
 
-    /// Calculated bump width based on button content
+    /// Calculated bump width based on content
     private var bumpWidth: CGFloat {
-        guard showEvolveBump, evolveButtonSize.width > 0 else { return 0 }
-        return evolveButtonSize.width + bumpHorizontalPadding * 2
+        guard showBump, bumpContentSize.width > 0 else { return 0 }
+        return bumpContentSize.width + bumpHorizontalPadding * 2
     }
 
-    /// Calculated bump height based on button height + padding
+    /// Calculated bump height based on content height + padding
     private var bumpHeight: CGFloat {
-        guard showEvolveBump, evolveButtonSize.height > 0 else { return 0 }
-        return evolveButtonSize.height + bumpVerticalPadding * 2
+        guard showBump, bumpContentSize.height > 0 else { return 0 }
+        return bumpContentSize.height + bumpVerticalPadding * 2
     }
 
     /// Corner radius for bump ends (capsule style)
@@ -84,10 +84,10 @@ struct HomeCardView: View {
             // Main card content
             cardContent
 
-            // Evolve button in bump area (always rendered for measurement, visibility controlled)
-            evolveButton
-                .scaleEffect(showButton ? 1 : 0.5)
-                .opacity(showButton ? 1 : 0)
+            // Bump content (evolve button or blown actions)
+            bumpContent
+                .scaleEffect(showBumpContent ? 1 : 0.5)
+                .opacity(showBumpContent ? 1 : 0)
                 .overlay(
                     GeometryReader { geo in
                         Color.clear.preference(
@@ -96,8 +96,8 @@ struct HomeCardView: View {
                         )
                     }
                 )
-                .frame(height: showEvolveBump ? nil : 0, alignment: .center)
-                .padding(.vertical, showEvolveBump ? bumpVerticalPadding : 0)
+                .frame(height: showBump ? nil : 0, alignment: .center)
+                .padding(.vertical, showBump ? bumpVerticalPadding : 0)
         }
         .background(
             .ultraThinMaterial,
@@ -112,31 +112,31 @@ struct HomeCardView: View {
         .onPreferenceChange(BumpSizePreferenceKey.self) { size in
             // Only update if we have a valid measurement
             if size.width > 0, size.height > 0 {
-                evolveButtonSize = size
+                bumpContentSize = size
             }
         }
         .onAppear {
             if isShieldActive {
                 isBreakPulsing = true
             }
-            // Sync button visibility on appear
-            if showEvolveBump {
-                showButton = true
+            // Sync content visibility on appear
+            if showBump {
+                showBumpContent = true
             }
         }
         .onChange(of: isShieldActive) { _, newValue in
             isBreakPulsing = newValue
         }
-        .onChange(of: showEvolveBump) { _, shouldShow in
+        .onChange(of: showBump) { _, shouldShow in
             if shouldShow {
-                // Show: bump grows first, then button pops in
+                // Show: bump grows first, then content pops in
                 withAnimation(.spring(duration: 0.25, bounce: 0.3).delay(0.15)) {
-                    showButton = true
+                    showBumpContent = true
                 }
             } else {
-                // Hide: button shrinks first, then bump collapses
+                // Hide: content shrinks first, then bump collapses
                 withAnimation(.easeOut(duration: 0.15)) {
-                    showButton = false
+                    showBumpContent = false
                 }
             }
         }
@@ -161,7 +161,16 @@ struct HomeCardView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
-    // MARK: - Evolve Button
+    // MARK: - Bump Content
+
+    @ViewBuilder
+    private var bumpContent: some View {
+        if pet.isBlown {
+            blownActions
+        } else if pet.isEvolutionAvailable {
+            evolveButton
+        }
+    }
 
     private var evolveButton: some View {
         Button { onAction(.evolve) } label: {
@@ -176,6 +185,36 @@ struct HomeCardView: View {
             .background(.green, in: Capsule())
         }
         .buttonStyle(.plain)
+    }
+
+    private var blownActions: some View {
+        HStack(spacing: 12) {
+            Button { onAction(.replay) } label: {
+                HStack(spacing: 6) {
+                    Image(systemName: "memories")
+                    Text("Replay")
+                }
+                .font(.system(size: 14, weight: .semibold))
+                .foregroundStyle(.blue)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 8)
+                .background(.blue.opacity(0.15), in: Capsule())
+            }
+            .buttonStyle(.plain)
+
+            Button { onAction(.delete) } label: {
+                HStack(spacing: 6) {
+                    Image(systemName: "trash")
+                    Text("Delete")
+                }
+                .font(.system(size: 14, weight: .semibold))
+                .foregroundStyle(.red)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 8)
+                .background(.red.opacity(0.15), in: Capsule())
+            }
+            .buttonStyle(.plain)
+        }
     }
 
     // MARK: - Header Row (Pet Name + Mood + Detail)
@@ -317,5 +356,61 @@ struct HomeCardView: View {
     )
     .padding(16)
     .padding(.bottom, 40)
+}
+
+#Preview("Blown Pet") {
+    HomeCardView(
+        pet: .mockBlown(),
+        streakCount: 8,
+        showDetailButton: true
+    )
+    .padding(16)
+    .padding(.bottom, 40)
+}
+
+#Preview("State Transitions") {
+    enum PetState: String, CaseIterable {
+        case normal = "Normal (no bump)"
+        case canEvolve = "Can Evolve"
+        case blown = "Blown"
+    }
+
+    struct StatePreview: View {
+        @State private var state: PetState = .canEvolve
+
+        private var pet: Pet {
+            switch state {
+            case .normal:
+                return .mock(phase: 4) // max phase, no evolution available
+            case .canEvolve:
+                return .mock(phase: 2)
+            case .blown:
+                return .mockBlown()
+            }
+        }
+
+        var body: some View {
+            VStack(spacing: 24) {
+                HomeCardView(
+                    pet: pet,
+                    streakCount: 7,
+                    showDetailButton: true
+                )
+                .animation(.spring(duration: 0.4), value: state)
+
+                Picker("State", selection: $state) {
+                    ForEach(PetState.allCases, id: \.self) { s in
+                        Text(s.rawValue).tag(s)
+                    }
+                }
+                .pickerStyle(.segmented)
+                .padding(.horizontal)
+            }
+            .padding(16)
+            .padding(.bottom, 40)
+        }
+    }
+
+    return StatePreview()
 }
 #endif
