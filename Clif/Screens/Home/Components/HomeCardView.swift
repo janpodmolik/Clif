@@ -18,6 +18,28 @@ private struct BumpSizePreferenceKey: PreferenceKey {
     }
 }
 
+// MARK: - Layout Constants
+
+private enum HomeCardLayout {
+    // Card layout (must match HomeScreen values)
+    static let cardInset: CGFloat = 16
+    static let contentPadding: CGFloat = 20
+
+    // Bump layout
+    static let bumpHorizontalPadding: CGFloat = 12
+    static let bumpVerticalPadding: CGFloat = 8
+    static let bumpTransitionRadius: CGFloat = 16
+}
+
+// MARK: - Animation Constants
+
+private enum HomeCardAnimation {
+    // Bump content show animation (delayed to let shape grow first)
+    static let contentShowAnimation: Animation = .spring(duration: 0.25, bounce: 0.3).delay(0.15)
+    // Bump content hide animation (fast, before shape collapses)
+    static let contentHideAnimation: Animation = .easeOut(duration: 0.15)
+}
+
 // MARK: - HomeCardView
 
 struct HomeCardView: View {
@@ -28,8 +50,8 @@ struct HomeCardView: View {
     var refreshTick: Int = 0
     var onAction: (HomeCardAction) -> Void = { _ in }
 
-    // Pulsing for "Calming the wind..." text (when shield active)
     @State private var isBreakPulsing = false
+    /// Measured size of bump content. Not reset when bump hides (bumpWidth/bumpHeight return 0 via guard).
     @State private var bumpContentSize: CGSize = .zero
     @State private var showBumpContent = false
 
@@ -38,23 +60,14 @@ struct HomeCardView: View {
         SharedDefaults.isShieldActive
     }
 
-    // Layout constants (must match HomeScreen values)
-    private let cardInset: CGFloat = 16 // Distance from screen edge to card
-    private let contentPadding: CGFloat = 20
-
-    // Bump layout constants
-    private let bumpHorizontalPadding: CGFloat = 12
-    private let bumpVerticalPadding: CGFloat = 8
-    private let bumpTransitionRadius: CGFloat = 16
-
     /// Concentric corner radius for inner elements (screen edge → card edge → content)
     private var innerCornerRadius: CGFloat {
-        DeviceMetrics.concentricCornerRadius(inset: cardInset + contentPadding)
+        DeviceMetrics.concentricCornerRadius(inset: HomeCardLayout.cardInset + HomeCardLayout.contentPadding)
     }
 
     /// Corner radius of the card itself (concentric to screen edge)
     private var cardCornerRadius: CGFloat {
-        DeviceMetrics.concentricCornerRadius(inset: cardInset)
+        DeviceMetrics.concentricCornerRadius(inset: HomeCardLayout.cardInset)
     }
 
     /// Whether to show the bump (for evolve or blown state actions)
@@ -65,13 +78,13 @@ struct HomeCardView: View {
     /// Calculated bump width based on content
     private var bumpWidth: CGFloat {
         guard showBump, bumpContentSize.width > 0 else { return 0 }
-        return bumpContentSize.width + bumpHorizontalPadding * 2
+        return bumpContentSize.width + HomeCardLayout.bumpHorizontalPadding * 2
     }
 
     /// Calculated bump height based on content height + padding
     private var bumpHeight: CGFloat {
         guard showBump, bumpContentSize.height > 0 else { return 0 }
-        return bumpContentSize.height + bumpVerticalPadding * 2
+        return bumpContentSize.height + HomeCardLayout.bumpVerticalPadding * 2
     }
 
     /// Corner radius for bump ends (capsule style)
@@ -97,7 +110,7 @@ struct HomeCardView: View {
                     }
                 )
                 .frame(height: showBump ? nil : 0, alignment: .center)
-                .padding(.vertical, showBump ? bumpVerticalPadding : 0)
+                .padding(.vertical, showBump ? HomeCardLayout.bumpVerticalPadding : 0)
         }
         .background(
             .ultraThinMaterial,
@@ -106,7 +119,7 @@ struct HomeCardView: View {
                 bumpWidth: bumpWidth,
                 bumpHeight: bumpHeight,
                 bumpCornerRadius: bumpCornerRadius,
-                transitionRadius: bumpTransitionRadius
+                transitionRadius: HomeCardLayout.bumpTransitionRadius
             )
         )
         .onPreferenceChange(BumpSizePreferenceKey.self) { size in
@@ -119,9 +132,11 @@ struct HomeCardView: View {
             if isShieldActive {
                 isBreakPulsing = true
             }
-            // Sync content visibility on appear
+            // Animate content on appear (consistent with onChange)
             if showBump {
-                showBumpContent = true
+                withAnimation(HomeCardAnimation.contentShowAnimation) {
+                    showBumpContent = true
+                }
             }
         }
         .onChange(of: isShieldActive) { _, newValue in
@@ -130,12 +145,12 @@ struct HomeCardView: View {
         .onChange(of: showBump) { _, shouldShow in
             if shouldShow {
                 // Show: bump grows first, then content pops in
-                withAnimation(.spring(duration: 0.25, bounce: 0.3).delay(0.15)) {
+                withAnimation(HomeCardAnimation.contentShowAnimation) {
                     showBumpContent = true
                 }
             } else {
                 // Hide: content shrinks first, then bump collapses
-                withAnimation(.easeOut(duration: 0.15)) {
+                withAnimation(HomeCardAnimation.contentHideAnimation) {
                     showBumpContent = false
                 }
             }
@@ -157,7 +172,7 @@ struct HomeCardView: View {
 
             ProgressBarView(progress: Double(pet.windProgress), isPulsing: isShieldActive)
         }
-        .padding(contentPadding)
+        .padding(HomeCardLayout.contentPadding)
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
@@ -167,8 +182,10 @@ struct HomeCardView: View {
     private var bumpContent: some View {
         if pet.isBlown {
             blownActions
+                .transition(.blurReplace)
         } else if pet.isEvolutionAvailable {
             evolveButton
+                .transition(.blurReplace)
         }
     }
 
