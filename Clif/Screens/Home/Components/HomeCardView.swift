@@ -51,6 +51,17 @@ private enum BumpType: Equatable {
     case blown
 }
 
+// MARK: - Debug Bump State
+
+#if DEBUG
+enum DebugBumpState: String, CaseIterable {
+    case actual = "Actual"
+    case evolve = "Evolve"
+    case blown = "Blown"
+    case hidden = "Hidden"
+}
+#endif
+
 // MARK: - HomeCardView
 
 struct HomeCardView: View {
@@ -59,6 +70,10 @@ struct HomeCardView: View {
     let showDetailButton: Bool
     /// Effective wind progress (0-1), passed from parent to ensure proper refresh
     var windProgress: CGFloat = 0
+    #if DEBUG
+    /// Debug override for bump state testing
+    var debugBumpState: DebugBumpState = .actual
+    #endif
     var onAction: (HomeCardAction) -> Void = { _ in }
 
     @State private var isBreakPulsing = false
@@ -85,6 +100,24 @@ struct HomeCardView: View {
 
     /// Current bump type based on pet state (nil when no bump should show)
     private var currentBumpType: BumpType? {
+        #if DEBUG
+        switch debugBumpState {
+        case .actual:
+            return actualBumpType
+        case .evolve:
+            return .evolve(isBlob: pet.isBlob)
+        case .blown:
+            return .blown
+        case .hidden:
+            return nil
+        }
+        #else
+        return actualBumpType
+        #endif
+    }
+
+    /// Actual bump type based on real pet state
+    private var actualBumpType: BumpType? {
         if pet.isBlown {
             return .blown
         } else if pet.isEvolutionAvailable {
@@ -98,21 +131,26 @@ struct HomeCardView: View {
         currentBumpType != nil
     }
 
-    /// Calculated bump width based on content
-    private var bumpWidth: CGFloat {
+    /// Target bump width (non-zero when bump should be visible and measured)
+    private var targetBumpWidth: CGFloat {
         guard isBumpVisible, bumpContentSize.width > 0 else { return 0 }
         return bumpContentSize.width + HomeCardLayout.bumpHorizontalPadding * 2
     }
 
-    /// Calculated bump height based on content height + padding
-    private var bumpHeight: CGFloat {
+    /// Target bump height (non-zero when bump should be visible and measured)
+    private var targetBumpHeight: CGFloat {
         guard isBumpVisible, bumpContentSize.height > 0 else { return 0 }
         return bumpContentSize.height + HomeCardLayout.bumpVerticalPadding * 2
     }
 
+    /// Animated bump width - use @State to enable smooth animation
+    @State private var animatedBumpWidth: CGFloat = 0
+    /// Animated bump height - use @State to enable smooth animation
+    @State private var animatedBumpHeight: CGFloat = 0
+
     /// Corner radius for bump ends (capsule style)
     private var bumpCornerRadius: CGFloat {
-        bumpHeight / 2
+        animatedBumpHeight / 2
     }
 
     var body: some View {
@@ -121,10 +159,11 @@ struct HomeCardView: View {
             cardContent
 
             // Bump content (evolve button or blown actions)
+            // Always render for measurement, but clip to animated height
             bumpContent
                 .scaleEffect(showBumpContent ? 1 : 0.5)
                 .opacity(showBumpContent ? 1 : 0)
-                .overlay(
+                .background(
                     GeometryReader { geo in
                         Color.clear.preference(
                             key: BumpSizePreferenceKey.self,
@@ -132,15 +171,17 @@ struct HomeCardView: View {
                         )
                     }
                 )
-                .frame(height: isBumpVisible ? nil : 0, alignment: .center)
-                .padding(.vertical, isBumpVisible ? HomeCardLayout.bumpVerticalPadding : 0)
+                // Use animated height for smooth transition
+                .frame(height: animatedBumpHeight > 0 ? animatedBumpHeight : nil)
+                .frame(height: animatedBumpHeight, alignment: .center)
+                .clipped()
         }
         .background(
             .ultraThinMaterial,
             in: HomeCardWithBumpShape(
                 cornerRadius: cardCornerRadius,
-                bumpWidth: bumpWidth,
-                bumpHeight: bumpHeight,
+                bumpWidth: animatedBumpWidth,
+                bumpHeight: animatedBumpHeight,
                 bumpCornerRadius: bumpCornerRadius,
                 transitionRadius: HomeCardLayout.bumpTransitionRadius
             )
@@ -155,10 +196,12 @@ struct HomeCardView: View {
             if isShieldActive {
                 isBreakPulsing = true
             }
-            // Initialize cached bump type and show content immediately on appear (no animation needed)
+            // Initialize cached bump type and dimensions immediately on appear (no animation needed)
             if let bumpType = currentBumpType {
                 cachedBumpType = bumpType
                 showBumpContent = true
+                animatedBumpWidth = targetBumpWidth
+                animatedBumpHeight = targetBumpHeight
             }
         }
         .onChange(of: isShieldActive) { _, newValue in
@@ -187,8 +230,17 @@ struct HomeCardView: View {
                 }
             }
         }
-        // Animate bump shape changes (show/hide)
-        .animation(HomeCardAnimation.bumpSpring, value: isBumpVisible)
+        // Animate bump dimensions when target changes
+        .onChange(of: targetBumpWidth) { _, newValue in
+            withAnimation(HomeCardAnimation.bumpSpring) {
+                animatedBumpWidth = newValue
+            }
+        }
+        .onChange(of: targetBumpHeight) { _, newValue in
+            withAnimation(HomeCardAnimation.bumpSpring) {
+                animatedBumpHeight = newValue
+            }
+        }
     }
 
     // MARK: - Card Content

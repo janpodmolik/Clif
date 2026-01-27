@@ -19,6 +19,11 @@ struct HomeScreen: View {
     /// Increments every second to force UI recalculation of effectiveWindPoints.
     @State private var refreshTick = 0
 
+    #if DEBUG
+    /// Debug state for testing bump visibility (evolve/blown buttons)
+    @State private var debugBumpState: DebugBumpState = .actual
+    #endif
+
     private let homeCardInset: CGFloat = 16
 
     /// Concentric corner radius for the card (based on screen edge distance)
@@ -197,10 +202,11 @@ struct HomeScreen: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
                 .padding(homeCardInset)
 
-//            #if DEBUG
-//            EventLogOverlay()
-//                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
-//            #endif
+            #if DEBUG
+            debugBumpToggle
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomLeading)
+                .padding(homeCardInset)
+            #endif
         }
     }
 
@@ -208,6 +214,16 @@ struct HomeScreen: View {
     // MARK: - Home Card
 
     private func homeCard(for pet: Pet, windProgress: CGFloat) -> some View {
+        #if DEBUG
+        HomeCardView(
+            pet: pet,
+            streakCount: 7, // TODO: get from streak manager
+            showDetailButton: true,
+            windProgress: windProgress,
+            debugBumpState: debugBumpState,
+            onAction: { handleAction($0, for: pet) }
+        )
+        #else
         HomeCardView(
             pet: pet,
             streakCount: 7, // TODO: get from streak manager
@@ -215,6 +231,7 @@ struct HomeScreen: View {
             windProgress: windProgress,
             onAction: { handleAction($0, for: pet) }
         )
+        #endif
     }
 
     private func handleAction(_ action: HomeCardAction, for pet: Pet) {
@@ -281,6 +298,38 @@ private struct HomeCardBackgroundModifier: ViewModifier {
         )
     }
 }
+
+// MARK: - Debug Bump Toggle
+
+#if DEBUG
+private extension HomeScreen {
+    var debugBumpToggle: some View {
+        Menu {
+            ForEach(DebugBumpState.allCases, id: \.self) { state in
+                Button {
+                    debugBumpState = state
+                } label: {
+                    HStack {
+                        Text(state.rawValue)
+                        if debugBumpState == state {
+                            Image(systemName: "checkmark")
+                        }
+                    }
+                }
+            }
+        } label: {
+            HStack(spacing: 6) {
+                Image(systemName: "ladybug.fill")
+                Text(debugBumpState.rawValue)
+            }
+            .font(.system(size: 12, weight: .medium))
+            .padding(.horizontal, 12)
+            .padding(.vertical, 8)
+            .background(.ultraThinMaterial, in: Capsule())
+        }
+    }
+}
+#endif
 
 #Preview {
     HomeScreen()
