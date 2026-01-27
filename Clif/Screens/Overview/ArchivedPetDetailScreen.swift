@@ -92,47 +92,51 @@ struct AppUsageDetailSheet: View {
 
     @Environment(\.dismiss) private var dismiss
 
-    private var sortedSources: [LimitedSource] {
-        sources.sorted { $0.totalMinutes > $1.totalMinutes }
+    private var sourcesWithTokens: [LimitedSource] {
+        sources.filter(\.hasToken).sorted { $0.totalMinutes > $1.totalMinutes }
     }
 
     private var totalMinutes: Int {
-        sources.reduce(0) { $0 + $1.totalMinutes }
+        sourcesWithTokens.reduce(0) { $0 + $1.totalMinutes }
     }
 
     private var maxMinutes: Int {
-        sources.map(\.totalMinutes).max() ?? 1
+        sourcesWithTokens.map(\.totalMinutes).max() ?? 1
     }
 
     var body: some View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 20) {
-                    if sources.count > 1 {
-                        UsageDonutChart(
-                            sources: sortedSources,
-                            totalMinutes: totalMinutes
-                        )
-                        .padding()
-                        .glassCard()
-                    }
-
-                    VStack(spacing: 0) {
-                        ForEach(Array(sortedSources.enumerated()), id: \.element.id) { index, source in
-                            AppUsageRow(
-                                source: source,
-                                maxMinutes: maxMinutes,
-                                color: chartColor(for: index)
+                    if sourcesWithTokens.isEmpty {
+                        emptyState
+                    } else {
+                        if sourcesWithTokens.count > 1 {
+                            UsageDonutChart(
+                                sources: sourcesWithTokens,
+                                totalMinutes: totalMinutes
                             )
+                            .padding()
+                            .glassCard()
+                        }
 
-                            if index < sortedSources.count - 1 {
-                                Divider()
-                                    .padding(.leading, 52)
+                        VStack(spacing: 0) {
+                            ForEach(Array(sourcesWithTokens.enumerated()), id: \.element.id) { index, source in
+                                AppUsageRow(
+                                    source: source,
+                                    maxMinutes: maxMinutes,
+                                    color: chartColor(for: index)
+                                )
+
+                                if index < sourcesWithTokens.count - 1 {
+                                    Divider()
+                                        .padding(.leading, 52)
+                                }
                             }
                         }
+                        .padding(.vertical, 8)
+                        .glassCard()
                     }
-                    .padding(.vertical, 8)
-                    .glassCard()
                 }
                 .padding()
             }
@@ -152,6 +156,16 @@ struct AppUsageDetailSheet: View {
         }
         .presentationDetents([.medium, .large])
         .presentationDragIndicator(.visible)
+    }
+
+    private var emptyState: some View {
+        ContentUnavailableView {
+            Label("Žádná data", systemImage: "app.badge")
+        } description: {
+            Text("Detailní data o aplikacích nejsou k dispozici.")
+        }
+        .padding()
+        .glassCard()
     }
 
     private func chartColor(for index: Int) -> Color {
@@ -250,26 +264,11 @@ private struct AppUsageRow: View {
 
     private let iconSize: CGFloat = 36
 
-    private var hasToken: Bool {
-        switch source {
-        case .app(let s): s.applicationToken != nil
-        case .category(let s): s.categoryToken != nil
-        case .website(let s): s.webDomainToken != nil
-        }
-    }
-
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(spacing: 12) {
                 sourceIcon
-
-                if hasToken {
-                    sourceLabelWithName
-                } else {
-                    Text(source.displayName)
-                        .font(.subheadline.weight(.medium))
-                        .lineLimit(1)
-                }
+                sourceLabel
 
                 Spacer()
 
@@ -286,7 +285,7 @@ private struct AppUsageRow: View {
     }
 
     @ViewBuilder
-    private var sourceLabelWithName: some View {
+    private var sourceLabel: some View {
         switch source {
         case .app(let appSource):
             if let token = appSource.applicationToken {
@@ -324,8 +323,6 @@ private struct AppUsageRow: View {
                     .frame(width: iconSize, height: iconSize)
                     .background(.ultraThinMaterial)
                     .clipShape(RoundedRectangle(cornerRadius: 8))
-            } else {
-                iconPlaceholder(systemName: "app.fill")
             }
 
         case .category(let catSource):
@@ -335,8 +332,6 @@ private struct AppUsageRow: View {
                     .frame(width: iconSize, height: iconSize)
                     .background(.ultraThinMaterial)
                     .clipShape(RoundedRectangle(cornerRadius: 8))
-            } else {
-                iconPlaceholder(systemName: "square.grid.2x2.fill")
             }
 
         case .website(let webSource):
@@ -346,19 +341,8 @@ private struct AppUsageRow: View {
                     .frame(width: iconSize, height: iconSize)
                     .background(.ultraThinMaterial)
                     .clipShape(RoundedRectangle(cornerRadius: 8))
-            } else {
-                iconPlaceholder(systemName: "globe")
             }
         }
-    }
-
-    private func iconPlaceholder(systemName: String) -> some View {
-        Image(systemName: systemName)
-            .font(.system(size: 18))
-            .foregroundStyle(.secondary)
-            .frame(width: iconSize, height: iconSize)
-            .background(.ultraThinMaterial)
-            .clipShape(RoundedRectangle(cornerRadius: 8))
     }
 
     private var usageBar: some View {

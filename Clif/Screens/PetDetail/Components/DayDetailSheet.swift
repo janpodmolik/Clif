@@ -16,7 +16,9 @@ struct DayDetailSheet: View {
 
     private var sourcesForDay: [SourceUsage] {
         sources.compactMap { source -> SourceUsage? in
-            guard let minutes = source.minutes(for: day.date) else { return nil }
+            guard source.hasToken,
+                  let minutes = source.minutes(for: day.date)
+            else { return nil }
             return SourceUsage(source: source, minutes: minutes)
         }
         .sorted { $0.minutes > $1.minutes }
@@ -153,26 +155,11 @@ private struct DayAppUsageRow: View {
 
     private let iconSize: CGFloat = 36
 
-    private var hasToken: Bool {
-        switch source {
-        case .app(let s): s.applicationToken != nil
-        case .category(let s): s.categoryToken != nil
-        case .website(let s): s.webDomainToken != nil
-        }
-    }
-
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(spacing: 12) {
                 sourceIcon
-
-                if hasToken {
-                    sourceLabelWithName
-                } else {
-                    Text(source.displayName)
-                        .font(.subheadline.weight(.medium))
-                        .lineLimit(1)
-                }
+                sourceLabel
 
                 Spacer()
 
@@ -189,7 +176,7 @@ private struct DayAppUsageRow: View {
     }
 
     @ViewBuilder
-    private var sourceLabelWithName: some View {
+    private var sourceLabel: some View {
         switch source {
         case .app(let appSource):
             if let token = appSource.applicationToken {
@@ -227,8 +214,6 @@ private struct DayAppUsageRow: View {
                     .frame(width: iconSize, height: iconSize)
                     .background(.ultraThinMaterial)
                     .clipShape(RoundedRectangle(cornerRadius: 8))
-            } else {
-                iconPlaceholder(systemName: "app.fill")
             }
 
         case .category(let catSource):
@@ -238,8 +223,6 @@ private struct DayAppUsageRow: View {
                     .frame(width: iconSize, height: iconSize)
                     .background(.ultraThinMaterial)
                     .clipShape(RoundedRectangle(cornerRadius: 8))
-            } else {
-                iconPlaceholder(systemName: "square.grid.2x2.fill")
             }
 
         case .website(let webSource):
@@ -249,19 +232,8 @@ private struct DayAppUsageRow: View {
                     .frame(width: iconSize, height: iconSize)
                     .background(.ultraThinMaterial)
                     .clipShape(RoundedRectangle(cornerRadius: 8))
-            } else {
-                iconPlaceholder(systemName: "globe")
             }
         }
-    }
-
-    private func iconPlaceholder(systemName: String) -> some View {
-        Image(systemName: systemName)
-            .font(.system(size: 18))
-            .foregroundStyle(.secondary)
-            .frame(width: iconSize, height: iconSize)
-            .background(.ultraThinMaterial)
-            .clipShape(RoundedRectangle(cornerRadius: 8))
     }
 
     private var usageBar: some View {

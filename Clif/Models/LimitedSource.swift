@@ -133,6 +133,14 @@ enum LimitedSource: Identifiable, Equatable {
         }
     }
 
+    var hasToken: Bool {
+        switch self {
+        case .app(let s): s.applicationToken != nil
+        case .category(let s): s.categoryToken != nil
+        case .website(let s): s.webDomainToken != nil
+        }
+    }
+
     enum Kind: String, Codable {
         case app, category, website
     }
