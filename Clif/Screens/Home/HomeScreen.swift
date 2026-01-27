@@ -195,7 +195,6 @@ struct HomeScreen: View {
 
             VStack(spacing: 12) {
                 homeCard(for: pet)
-                    .modifier(HomeCardBackgroundModifier(cornerRadius: homeCardCornerRadius))
 
                 actionButtons(for: pet)
             }
@@ -234,7 +233,7 @@ struct HomeScreen: View {
         }
     }
 
-    // MARK: - Action Buttons
+    // MARK: - Action Buttons (for blown pet only)
 
     @ViewBuilder
     private func actionButtons(for pet: Pet) -> some View {
@@ -248,27 +247,8 @@ struct HomeScreen: View {
                     handleAction(.delete, for: pet)
                 }
             }
-        } else if pet.isEvolutionAvailable {
-            HStack {
-                Spacer()
-                evolveButton(for: pet)
-            }
         }
-    }
-
-    private func evolveButton(for pet: Pet) -> some View {
-        Button { handleEvolve(pet) } label: {
-            HStack(spacing: 6) {
-                Image(systemName: pet.isBlob ? "leaf.fill" : "sparkles")
-                Text(pet.isBlob ? "Use Essence" : "Evolve!")
-            }
-            .font(.system(size: 14, weight: .semibold))
-            .foregroundStyle(.white)
-            .padding(.horizontal, 16)
-            .padding(.vertical, 8)
-            .background(.green, in: Capsule())
-        }
-        .buttonStyle(.plain)
+        // Evolve button is now part of HomeCardView
     }
 
     // MARK: - Actions
