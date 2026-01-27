@@ -12,6 +12,7 @@ struct PetDetailScreen: View {
     @Environment(\.dismiss) private var dismiss
     @State private var showEssencePicker = false
     @State private var showBreakHistory = false
+    @State private var showLimitedApps = false
 
     private var themeColor: Color {
         pet.themeColor
@@ -96,7 +97,7 @@ struct PetDetailScreen: View {
 
                     LimitedAppsButton(
                         sources: pet.limitedSources,
-                        onTap: { onAction(.limitedApps) }
+                        onTap: { showLimitedApps = true }
                     )
 
                     if showOverviewActions {
@@ -154,9 +155,15 @@ struct PetDetailScreen: View {
             .sheet(isPresented: $showBreakHistory) {
                 BreakHistorySheet(breakHistory: pet.breakHistory)
             }
+            .sheet(isPresented: $showLimitedApps) {
+                AppUsageDetailSheet(
+                    sources: pet.limitedSources,
+                    preset: pet.preset,
+                    totalDays: pet.totalDays
+                )
+            }
         }
     }
-
 }
 
 #if DEBUG

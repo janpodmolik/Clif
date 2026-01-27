@@ -5,7 +5,6 @@ enum PetDetailAction {
     case blowAway
     case replay
     case delete
-    case limitedApps
     case showOnHomepage
     case progress      // evolve or use essence
     case breakHistory  // show break history sheet

@@ -69,24 +69,24 @@ struct LimitedAppsButton: View {
             onTap?()
         } label: {
             HStack(spacing: 12) {
-                VStack(alignment: .leading, spacing: 2) {
+                VStack(alignment: .leading, spacing: 6) {
                     Text("Limited Apps")
                         .font(.subheadline.weight(.medium))
 
-                    Text(subtitleText)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                    if hasValidTokens {
+                        LimitedSourcesPreview(
+                            applicationTokens: applicationTokens,
+                            categoryTokens: categoryTokens,
+                            webDomainTokens: webDomainTokens
+                        )
+                    } else {
+                        Text(subtitleText)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
                 }
 
                 Spacer()
-
-                if hasValidTokens {
-                    LimitedSourcesPreview(
-                        applicationTokens: applicationTokens,
-                        categoryTokens: categoryTokens,
-                        webDomainTokens: webDomainTokens
-                    )
-                }
 
                 if onTap != nil {
                     Image(systemName: "chevron.right")
@@ -96,9 +96,10 @@ struct LimitedAppsButton: View {
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding()
+            .glassCard()
+            .contentShape(.rect)
         }
         .buttonStyle(.plain)
-        .glassCard()
     }
 }
 
