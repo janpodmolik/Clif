@@ -1,3 +1,5 @@
+import FamilyControls
+import ManagedSettings
 import SwiftUI
 
 // MARK: - HomeCardAction
@@ -270,17 +272,24 @@ struct HomeCardView: View {
         }
     }
 
-    // MARK: - Header Row (Pet Name + Mood + Detail)
+    // MARK: - Header Row (Pet Name + Purpose + Detail)
 
     private var headerRow: some View {
         HStack {
-            HStack(spacing: 8) {
+            HStack(spacing: 6) {
                 Text(pet.name)
                     .font(.system(size: 20, weight: .semibold))
 
-                Text(pet.mood.emoji)
-                    .font(.system(size: 18))
+                if let purpose = pet.purpose, !purpose.isEmpty {
+                    Text("·")
+                        .foregroundStyle(.tertiary)
+                    Text(purpose)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                        .truncationMode(.tail)
+                }
             }
+            .font(.system(size: 20, weight: .semibold))
 
             Spacer()
 
@@ -303,11 +312,11 @@ struct HomeCardView: View {
 
     private var infoRow: some View {
         HStack(spacing: 8) {
-            if let purpose = pet.purpose, !purpose.isEmpty {
-                Text(purpose)
-                    .font(.system(size: 14, weight: .medium))
-                    .foregroundStyle(.secondary)
-            }
+            LimitedSourcesPreview(
+                applicationTokens: pet.applicationTokens,
+                categoryTokens: pet.categoryTokens,
+                webDomainTokens: pet.webDomainTokens
+            )
 
             Spacer()
 
