@@ -1035,8 +1035,7 @@ struct PetDebugView: View {
 
     private func triggerDebugBubble() {
         debugSpeechBubbleState.forceShow(
-            mood: Mood(from: windLevel),
-            source: .random,
+            windLevel: windLevel,
             position: debugBubblePosition ?? .right,
             customText: debugCustomText.isEmpty ? nil : debugCustomText
         )

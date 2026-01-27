@@ -2,7 +2,6 @@ import SwiftUI
 
 struct PetDetailHeader: View {
     let petName: String
-    let mood: Mood
     let totalDays: Int
     let evolutionPhase: Int
     var purpose: String? = nil
@@ -22,13 +21,8 @@ struct PetDetailHeader: View {
         VStack(spacing: 0) {
             HStack(alignment: .top) {
                 VStack(alignment: .leading, spacing: 4) {
-                    HStack(spacing: 8) {
-                        Text(petName)
-                            .font(.title.weight(.bold))
-
-                        Text(mood.emoji)
-                            .font(.title2)
-                    }
+                    Text(petName)
+                        .font(.title.weight(.bold))
 
                     if let purpose, !purpose.isEmpty {
                         Text(purpose)
@@ -100,7 +94,6 @@ struct PetDetailHeader: View {
     VStack {
         PetDetailHeader(
             petName: "Fern",
-            mood: .happy,
             totalDays: 12,
             evolutionPhase: 2,
             purpose: "Social Media",
@@ -116,7 +109,6 @@ struct PetDetailHeader: View {
     VStack {
         PetDetailHeader(
             petName: "Storm",
-            mood: .neutral,
             totalDays: 5,
             evolutionPhase: 2,
             purpose: "Gaming",
@@ -132,7 +124,6 @@ struct PetDetailHeader: View {
     VStack {
         PetDetailHeader(
             petName: "Bloom",
-            mood: .sad,
             totalDays: 1,
             evolutionPhase: 0,
             createdAt: Calendar.current.date(byAdding: .day, value: -3, to: Date())

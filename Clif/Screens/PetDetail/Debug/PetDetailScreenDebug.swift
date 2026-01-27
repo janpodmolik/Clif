@@ -56,10 +56,6 @@ struct PetDetailScreenDebug: View {
         )
     }
 
-    private var mood: Mood {
-        isBlownAway ? .blown : Mood(from: windLevel)
-    }
-
     private var effectiveEssence: Essence? {
         isBlob ? nil : essence
     }
@@ -353,13 +349,11 @@ struct PetDetailScreenDebug: View {
                 }
 
                 HStack {
-                    Text("Pet Mood")
+                    Text("Is Blown")
                         .foregroundStyle(.secondary)
                     Spacer()
-                    Text(mood.emoji)
-                        .font(.title2)
-                    Text(mood.rawValue.capitalized)
-                        .foregroundStyle(.secondary)
+                    Text(isBlownAway ? "Yes" : "No")
+                        .foregroundStyle(isBlownAway ? .red : .secondary)
                 }
             }
         }

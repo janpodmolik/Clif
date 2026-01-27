@@ -73,17 +73,19 @@ extension PetEvolvable {
 
     // MARK: - Asset Resolution
 
-    /// Returns the asset name for the current evolution state.
-    /// Falls back to Blob asset when no essence is assigned.
-    func assetName(for mood: Mood) -> String {
-        guard let essence else {
-            return Blob.shared.assetName(for: mood)
-        }
-        return phase?.assetName(for: mood) ?? essence.assetName
-    }
-
     /// Returns the asset name based on wind level.
     func assetName(for windLevel: WindLevel) -> String {
-        assetName(for: Mood(from: windLevel))
+        guard let essence else {
+            return Blob.shared.assetName(for: windLevel)
+        }
+        return phase?.assetName(for: windLevel) ?? essence.assetName
+    }
+
+    /// Returns the asset name based on wind level and blown away state.
+    func assetName(for windLevel: WindLevel, isBlownAway: Bool) -> String {
+        guard let essence else {
+            return Blob.shared.assetName(for: windLevel, isBlownAway: isBlownAway)
+        }
+        return phase?.assetName(for: windLevel, isBlownAway: isBlownAway) ?? essence.assetName
     }
 }

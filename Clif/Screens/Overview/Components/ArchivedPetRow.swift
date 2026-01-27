@@ -11,10 +11,6 @@ struct ArchivedPetRow: View {
         return formatter
     }()
 
-    private var mood: Mood {
-        pet.isBlown ? .sad : .happy
-    }
-
     private var relativeDate: String {
         Self.relativeDateFormatter.localizedString(for: pet.archivedAt, relativeTo: Date())
     }
@@ -22,7 +18,7 @@ struct ArchivedPetRow: View {
     var body: some View {
         Button(action: onTap) {
             HStack(alignment: .center, spacing: 14) {
-                Image(pet.assetName(for: mood))
+                Image(pet.assetName(for: .none, isBlownAway: pet.isBlown))
                     .resizable()
                     .scaledToFit()
                     .frame(width: 50, height: 50)

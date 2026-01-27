@@ -193,27 +193,26 @@ struct HomeScreen: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
             .ignoresSafeArea(.container, edges: .bottom)
 
-            homeCard(for: pet)
+            homeCard(for: pet, windProgress: effectiveProgress)
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
                 .padding(homeCardInset)
-                .id(refreshTick) // Force re-read of windProgress from SharedDefaults
 
-            #if DEBUG
-            EventLogOverlay()
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
-            #endif
+//            #if DEBUG
+//            EventLogOverlay()
+//                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
+//            #endif
         }
     }
 
 
     // MARK: - Home Card
 
-    private func homeCard(for pet: Pet) -> some View {
+    private func homeCard(for pet: Pet, windProgress: CGFloat) -> some View {
         HomeCardView(
             pet: pet,
             streakCount: 7, // TODO: get from streak manager
             showDetailButton: true,
-            refreshTick: refreshTick,
+            windProgress: windProgress,
             onAction: { handleAction($0, for: pet) }
         )
     }

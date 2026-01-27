@@ -76,9 +76,6 @@ struct IslandView: View {
         WindConfig.interpolated(progress: windProgress)
     }
 
-    private var currentMood: Mood {
-        Mood(from: windLevel)
-    }
 
     private static var tapTypes: [TapAnimationType] {
         [.wiggle, .squeeze, .jiggle, .bounce]
@@ -170,13 +167,13 @@ struct IslandView: View {
             .contentTransition(.opacity)
             .animation(.easeInOut(duration: 0.5), value: windProgress)
             .onAppear {
-                speechBubbleState.startAutoTriggers(mood: currentMood)
+                speechBubbleState.startAutoTriggers(windLevel: windLevel)
             }
             .onDisappear {
                 speechBubbleState.stopAutoTriggers()
             }
             .onChange(of: windLevel) { _, newValue in
-                speechBubbleState.updateMood(Mood(from: newValue))
+                speechBubbleState.updateWindLevel(newValue)
             }
     }
 
@@ -221,7 +218,7 @@ struct IslandView: View {
         generator.impactOccurred()
 
         // Attempt to trigger speech bubble (30% chance)
-        speechBubbleState.triggerOnTap(mood: currentMood)
+        speechBubbleState.triggerOnTap(windLevel: windLevel)
     }
 }
 

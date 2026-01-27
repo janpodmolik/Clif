@@ -2,7 +2,7 @@
 import SwiftUI
 
 struct EvolutionScaleDebugView: View {
-    @State private var selectedMood: Mood = .happy
+    @State private var selectedWindLevel: WindLevel = .none
     @State private var showCopiedFeedback: Bool = false
 
     // Whether blob is selected (true) or an essence tree (false)
@@ -49,7 +49,7 @@ struct EvolutionScaleDebugView: View {
     }
 
     private var currentAssetName: String {
-        currentPet.assetName(for: selectedMood)
+        currentPet.assetName(for: selectedWindLevel)
     }
 
     private var currentScale: CGFloat {
@@ -219,14 +219,14 @@ struct EvolutionScaleDebugView: View {
             }
             .disabled(isBlobSelected || selectedPath.maxPhases < 1)
 
-            // Mood picker
+            // Wind Level picker
             HStack {
-                Text("Mood")
+                Text("Wind Level")
                     .foregroundStyle(.secondary)
                 Spacer()
-                Picker("Mood", selection: $selectedMood) {
-                    ForEach(Mood.allCases, id: \.self) { mood in
-                        Text(mood.rawValue.capitalized).tag(mood)
+                Picker("Wind Level", selection: $selectedWindLevel) {
+                    ForEach(WindLevel.allCases, id: \.self) { level in
+                        Text(level.displayName).tag(level)
                     }
                 }
                 .pickerStyle(.segmented)

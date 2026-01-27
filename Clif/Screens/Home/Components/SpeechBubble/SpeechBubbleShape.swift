@@ -109,7 +109,7 @@ struct SpeechBubbleShape: Shape {
             .fill(iMessageBlue)
             .frame(width: 70, height: 38)
             .overlay {
-                Text("👋")
+                Text("✨")
                     .font(.system(size: 20))
             }
 
@@ -118,7 +118,7 @@ struct SpeechBubbleShape: Shape {
             .fill(iMessageBlue)
             .frame(width: 70, height: 38)
             .overlay {
-                Text("😊")
+                Text("❤️")
                     .font(.system(size: 20))
             }
     }

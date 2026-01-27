@@ -11,17 +11,17 @@ struct SpeechBubbleConfig: Equatable {
     /// Custom text to display instead of emojis (for debug)
     var customText: String?
 
-    /// Mood determines bubble color (sad = green SMS style, otherwise blue iMessage)
-    var mood: Mood
+    /// Wind level determines bubble color (high = green SMS style, otherwise blue iMessage)
+    var windLevel: WindLevel
 
     /// Duration visible in seconds
     var displayDuration: TimeInterval
 
     static let `default` = SpeechBubbleConfig(
         position: .right,
-        emojis: ["😊"],
+        emojis: ["☀️"],
         customText: nil,
-        mood: .happy,
+        windLevel: .none,
         displayDuration: 3.0
     )
 }

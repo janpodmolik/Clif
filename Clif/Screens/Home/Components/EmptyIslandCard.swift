@@ -30,7 +30,7 @@ struct EmptyIslandCard: View {
     // MARK: - Description
 
     private var descriptionSection: some View {
-        Text("Create a pet to start managing your screen time. Your pet's mood reflects how much time you spend in selected apps.")
+        Text("Create a pet to start managing your screen time. Wind intensity reflects how much time you spend in selected apps.")
             .font(.system(size: 14, weight: .regular))
             .foregroundStyle(.secondary)
             .fixedSize(horizontal: false, vertical: true)

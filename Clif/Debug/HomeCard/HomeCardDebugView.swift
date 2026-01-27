@@ -37,17 +37,6 @@ struct HomeCardDebugView: View {
         windPoints / 100.0
     }
 
-    private var currentMood: Mood {
-        if isBlownAway {
-            return .blown
-        }
-        switch progress {
-        case 0..<0.5: return .happy
-        case 0.5..<0.8: return .neutral
-        default: return .sad
-        }
-    }
-
     private var isSaveEnabled: Bool {
         evolutionStage >= 2
     }
@@ -147,6 +136,7 @@ struct HomeCardDebugView: View {
                 pet: mockPet,
                 streakCount: streakCount,
                 showDetailButton: showDetailButton,
+                windProgress: progress,
                 onAction: { print("\($0) tapped") }
             )
             .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 28))

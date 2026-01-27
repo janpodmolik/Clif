@@ -4,14 +4,10 @@ struct ActivePetRow: View {
     let pet: Pet
     let onTap: () -> Void
 
-    private var mood: Mood {
-        Mood(from: pet.windLevel)
-    }
-
     var body: some View {
         Button(action: onTap) {
             HStack(alignment: .center, spacing: 14) {
-                Image(pet.assetName(for: mood))
+                Image(pet.assetName(for: pet.windLevel))
                     .resizable()
                     .scaledToFit()
                     .frame(width: 50, height: 50)

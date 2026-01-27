@@ -94,10 +94,10 @@ secondsForgiven = elapsedSeconds * fallRate * limitSeconds / 100
 
 This "forgives" usage time, effectively lowering wind on the next threshold calculation.
 
-| Type | fallRateMultiplier | Violation penalty |
-|------|-------------------|-------------------|
-| free | 1.0x | None |
-| committed | 1.5x | Pet blows away |
+| Type | Violation penalty |
+|------|-------------------|
+| free | None |
+| committed | Pet blows away |
 
 **Key files:**
 - `ScreenTimeManager.applyBreakReduction()` - calculates and adds to totalBreakReduction

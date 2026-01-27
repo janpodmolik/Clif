@@ -17,9 +17,4 @@ extension PetPresentable {
     var windLevel: WindLevel {
         .from(progress: windProgress)
     }
-
-    /// Current mood computed from wind level.
-    var mood: Mood {
-        Mood(from: windLevel)
-    }
 }

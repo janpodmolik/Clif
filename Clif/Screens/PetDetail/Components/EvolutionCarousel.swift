@@ -2,7 +2,8 @@ import SwiftUI
 
 struct EvolutionCarousel<Pet: PetEvolvable>: View {
     let pet: Pet
-    let mood: Mood
+    var windLevel: WindLevel = .none
+    var isBlownAway: Bool = false
     var canUseEssence: Bool = false
     var showCurrentBadge: Bool = true
 
@@ -132,16 +133,17 @@ struct EvolutionCarousel<Pet: PetEvolvable>: View {
     private func cardView(for index: Int) -> some View {
         if isBlob {
             // Blob-only card (no essence yet)
-            BlobOnlyCard(mood: mood, canUseEssence: canUseEssence)
+            BlobOnlyCard(windLevel: windLevel, isBlownAway: isBlownAway, canUseEssence: canUseEssence)
         } else if index == 0, let essence, let path = evolutionPath {
-            EvolutionOriginCard(essence: essence, path: path, mood: mood, themeColor: themeColor)
+            EvolutionOriginCard(essence: essence, path: path, windLevel: windLevel, isBlownAway: isBlownAway, themeColor: themeColor)
         } else if let path = evolutionPath {
             EvolutionPhaseCard(
                 phase: index,
                 isCurrentPhase: index == currentPhase,
                 isLocked: index > currentPhase,
                 evolutionPath: path,
-                mood: mood,
+                windLevel: windLevel,
+                isBlownAway: isBlownAway,
                 themeColor: themeColor,
                 showCurrentBadge: showCurrentBadge
             )
@@ -164,12 +166,13 @@ struct EvolutionCarousel<Pet: PetEvolvable>: View {
 // MARK: - Blob Only Card
 
 struct BlobOnlyCard: View {
-    let mood: Mood
+    var windLevel: WindLevel = .none
+    var isBlownAway: Bool = false
     var canUseEssence: Bool = false
 
     var body: some View {
         VStack(spacing: 12) {
-            Image(Blob.shared.assetName(for: mood))
+            Image(Blob.shared.assetName(for: windLevel, isBlownAway: isBlownAway))
                 .resizable()
                 .scaledToFit()
                 .frame(height: 140)
@@ -221,7 +224,8 @@ struct BlobOnlyCard: View {
 struct EvolutionOriginCard: View {
     let essence: Essence
     let path: EvolutionPath
-    let mood: Mood
+    var windLevel: WindLevel = .none
+    var isBlownAway: Bool = false
     var themeColor: Color = .green
 
     var body: some View {
@@ -242,7 +246,7 @@ struct EvolutionOriginCard: View {
     }
 
     private var blobAssetName: String {
-        Blob.shared.assetName(for: mood)
+        Blob.shared.assetName(for: windLevel, isBlownAway: isBlownAway)
     }
 
     private var originImageView: some View {
@@ -299,7 +303,8 @@ struct EvolutionPhaseCard: View {
     let isCurrentPhase: Bool
     let isLocked: Bool
     let evolutionPath: EvolutionPath
-    let mood: Mood
+    var windLevel: WindLevel = .none
+    var isBlownAway: Bool = false
     var themeColor: Color = .green
     var showCurrentBadge: Bool = true
 
@@ -329,7 +334,7 @@ struct EvolutionPhaseCard: View {
                     .foregroundStyle(.secondary.opacity(0.5))
             }
         } else if let evolution = evolutionPath.phase(at: phase) {
-            Image(evolution.assetName(for: mood))
+            Image(evolution.assetName(for: windLevel, isBlownAway: isBlownAway))
                 .resizable()
                 .scaledToFit()
         } else {
@@ -402,32 +407,33 @@ struct EvolutionPhaseCard: View {
             Text("Blob (no essence)").font(.caption)
             EvolutionCarousel(
                 pet: ArchivedPet.mockBlob(),
-                mood: .happy
+                windLevel: .none
             )
 
             Text("Blob - Ready for Essence").font(.caption)
             EvolutionCarousel(
                 pet: ArchivedPet.mockBlob(),
-                mood: .happy,
+                windLevel: .none,
                 canUseEssence: true
             )
 
             Text("With essence - Phase 2").font(.caption)
             EvolutionCarousel(
                 pet: ArchivedPet.mock(phase: 2),
-                mood: .happy
+                windLevel: .low
             )
 
             Text("Blown away at Phase 1").font(.caption)
             EvolutionCarousel(
                 pet: ArchivedPet.mock(phase: 1, isBlown: true),
-                mood: .sad
+                windLevel: .high,
+                isBlownAway: true
             )
 
             Text("Fully evolved - Phase 4").font(.caption)
             EvolutionCarousel(
                 pet: ArchivedPet.mock(phase: 4),
-                mood: .neutral
+                windLevel: .medium
             )
         }
         .padding()

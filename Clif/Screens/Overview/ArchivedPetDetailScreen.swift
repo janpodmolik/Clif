@@ -7,10 +7,6 @@ struct ArchivedPetDetailScreen: View {
     @State private var showAppUsageSheet = false
     @State private var showBreakHistory = false
 
-    private var mood: Mood {
-        pet.isBlown ? .blown : .happy
-    }
-
     var body: some View {
         NavigationStack {
             ScrollView {
@@ -31,7 +27,8 @@ struct ArchivedPetDetailScreen: View {
 
                     EvolutionCarousel(
                         pet: pet,
-                        mood: mood,
+                        windLevel: .none,
+                        isBlownAway: pet.isBlown,
                         showCurrentBadge: false
                     )
 

@@ -13,10 +13,6 @@ struct PetDetailScreen: View {
     @State private var showEssencePicker = false
     @State private var showBreakHistory = false
 
-    private var mood: Mood {
-        pet.isBlown ? .blown : Mood(from: pet.windLevel)
-    }
-
     private var themeColor: Color {
         pet.themeColor
     }
@@ -56,7 +52,6 @@ struct PetDetailScreen: View {
 
                     PetDetailHeader(
                         petName: pet.name,
-                        mood: mood,
                         totalDays: pet.totalDays,
                         evolutionPhase: pet.currentPhase,
                         purpose: pet.purpose,
@@ -75,7 +70,8 @@ struct PetDetailScreen: View {
 
                     EvolutionCarousel(
                         pet: pet,
-                        mood: mood,
+                        windLevel: pet.windLevel,
+                        isBlownAway: pet.isBlown,
                         canUseEssence: pet.canUseEssence
                     )
 

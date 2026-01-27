@@ -19,15 +19,15 @@ struct SpeechBubbleView: View {
     @State private var smoothedOffset: CGFloat = 0
     @State private var smoothedRotation: CGFloat = 0
 
-    /// iMessage blue color (happy/neutral mood)
+    /// iMessage blue color (calm wind)
     private let iMessageBlue = Color(red: 0, green: 122/255, blue: 255/255)
 
-    /// SMS green color (sad mood) - Apple #34C759
+    /// SMS green color (high wind) - Apple #34C759
     private let smsGreen = Color(red: 52/255, green: 199/255, blue: 89/255)
 
-    /// Bubble color based on mood
+    /// Bubble color based on wind level
     private var bubbleColor: Color {
-        config.mood == .sad ? smsGreen : iMessageBlue
+        config.windLevel == .high ? smsGreen : iMessageBlue
     }
 
     /// Whether displaying custom text or emojis
@@ -68,7 +68,7 @@ struct SpeechBubbleView: View {
 
     var body: some View {
         ZStack {
-            // Background: iMessage-style bubble (blue for happy/neutral, green for sad)
+            // Background: iMessage-style bubble (blue for calm wind, green for high wind)
             SpeechBubbleShape(tailPosition: config.position)
                 .fill(bubbleColor)
                 .shadow(color: .black.opacity(0.15), radius: 4, x: 0, y: 2)
@@ -126,7 +126,7 @@ struct SpeechBubbleView: View {
 // MARK: - Preview
 
 #if DEBUG
-#Preview("Speech Bubble - Happy (Blue)") {
+#Preview("Speech Bubble - Calm (Blue)") {
     ZStack {
         Color.blue.opacity(0.3)
 
@@ -137,8 +137,8 @@ struct SpeechBubbleView: View {
         SpeechBubbleView(
             config: SpeechBubbleConfig(
                 position: .right,
-                emojis: ["😊", "❤️"],
-                mood: .happy,
+                emojis: ["☀️", "🌸"],
+                windLevel: .low,
                 displayDuration: 3.0
             ),
             isVisible: true
@@ -146,7 +146,7 @@ struct SpeechBubbleView: View {
     }
 }
 
-#Preview("Speech Bubble - Sad (Green)") {
+#Preview("Speech Bubble - High Wind (Green)") {
     ZStack {
         Color.blue.opacity(0.3)
 
@@ -157,8 +157,8 @@ struct SpeechBubbleView: View {
         SpeechBubbleView(
             config: SpeechBubbleConfig(
                 position: .left,
-                emojis: ["😢", "💔"],
-                mood: .sad,
+                emojis: ["🌪️", "💨"],
+                windLevel: .high,
                 displayDuration: 3.0
             ),
             isVisible: true

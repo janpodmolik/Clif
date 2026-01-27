@@ -7,13 +7,13 @@ struct Blob: Hashable {
     let displayScale: CGFloat = 0.75
     let idleConfig: IdleConfig = .default
 
-    func assetName(for mood: Mood) -> String {
-        "blob/\(mood.forAsset.rawValue)/1"
+    func assetName(for windLevel: WindLevel) -> String {
+        "blob/\(windLevel.assetFolder)/1"
     }
 
-    /// Convenience method to get asset name from wind level.
-    func assetName(for windLevel: WindLevel) -> String {
-        assetName(for: Mood(from: windLevel))
+    func assetName(for windLevel: WindLevel, isBlownAway: Bool) -> String {
+        let folder = isBlownAway ? WindLevel.blownAssetFolder : windLevel.assetFolder
+        return "blob/\(folder)/1"
     }
 
     func tapConfig(for type: TapAnimationType) -> TapConfig {

@@ -53,7 +53,7 @@ struct HistoryIslandView: View {
                         }
 
                     // Pet positioned on top of grass
-                    Image(pet.assetName(for: .happy))
+                    Image(pet.assetName(for: .none, isBlownAway: pet.isBlown))
                         .resizable()
                         .scaledToFit()
                         .frame(height: scaledPetHeight)

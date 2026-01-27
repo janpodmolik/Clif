@@ -109,8 +109,8 @@ struct DebugIslandView: View {
         )
     }
 
-    private var currentMood: Mood {
-        Mood(from: windLevel)
+    private var currentWindLevel: WindLevel {
+        windLevel
     }
 
     private static var tapTypes: [TapAnimationType] {
@@ -140,7 +140,7 @@ struct DebugIslandView: View {
                         .scaledToFit()
                 }
 
-            // Pet with animation effects, speech bubble, and mood-aware image (top layer)
+            // Pet with animation effects, speech bubble, and wind-aware image (top layer)
             ZStack {
                 Image(pet.assetName(for: windLevel))
                     .resizable()
@@ -248,8 +248,7 @@ struct DebugIslandView: View {
         // Trigger speech bubble with custom text if provided
         if let bubbleState = debugSpeechBubbleState {
             bubbleState.forceShow(
-                mood: currentMood,
-                source: .random,
+                windLevel: currentWindLevel,
                 customText: debugCustomText.isEmpty ? nil : debugCustomText
             )
         }

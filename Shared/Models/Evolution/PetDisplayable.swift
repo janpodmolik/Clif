@@ -4,8 +4,8 @@ import Foundation
 protocol PetDisplayable {
     var displayScale: CGFloat { get }
     var idleConfig: IdleConfig { get }
-    func assetName(for mood: Mood) -> String
     func assetName(for windLevel: WindLevel) -> String
+    func assetName(for windLevel: WindLevel, isBlownAway: Bool) -> String
     func tapConfig(for type: TapAnimationType) -> TapConfig
 }
 

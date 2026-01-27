@@ -4,10 +4,6 @@ struct ArchivedPetGridItem: View {
     let pet: ArchivedPetSummary
     let onTap: () -> Void
 
-    private var mood: Mood {
-        pet.isBlown ? .sad : .happy
-    }
-
     private var shortDate: String {
         let formatter = DateFormatter()
         formatter.dateFormat = "d.M."
@@ -30,7 +26,7 @@ struct ArchivedPetGridItem: View {
                     }
                 }
 
-                Image(pet.assetName(for: mood))
+                Image(pet.assetName(for: .none, isBlownAway: pet.isBlown))
                     .resizable()
                     .scaledToFit()
                     .frame(width: 56, height: 56)
