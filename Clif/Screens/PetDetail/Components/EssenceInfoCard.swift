@@ -3,16 +3,6 @@ import SwiftUI
 struct EssenceInfoCard: View {
     let evolutionHistory: EvolutionHistory
 
-    private var essence: Essence { evolutionHistory.essence! }
-
-    private var themeColor: Color {
-        EvolutionPath.path(for: essence).themeColor
-    }
-
-    private var essenceName: String {
-        EvolutionPath.path(for: essence).displayName
-    }
-
     private var firstEvolutionDate: Date? {
         evolutionHistory.events.first?.date
     }
@@ -22,16 +12,24 @@ struct EssenceInfoCard: View {
     }
 
     var body: some View {
-        HStack(spacing: 16) {
+        guard let essence = evolutionHistory.essence else { return AnyView(EmptyView()) }
+        return AnyView(cardContent(essence: essence))
+    }
+
+    private func cardContent(essence: Essence) -> some View {
+        let color = EvolutionPath.path(for: essence).themeColor
+        let name = EvolutionPath.path(for: essence).displayName
+
+        return HStack(spacing: 16) {
             Image(essence.assetName)
                 .resizable()
                 .scaledToFit()
                 .padding(8)
                 .frame(width: 44, height: 44)
-                .background(themeColor.opacity(0.15), in: Circle())
+                .background(color.opacity(0.15), in: Circle())
 
             VStack(alignment: .leading, spacing: 4) {
-                Text(essenceName)
+                Text(name)
                     .font(.headline)
 
                 if let date = firstEvolutionDate {
@@ -47,7 +45,7 @@ struct EssenceInfoCard: View {
                 VStack(alignment: .trailing, spacing: 2) {
                     Text("\(evolutionCount)")
                         .font(.title2.weight(.semibold))
-                        .foregroundStyle(themeColor)
+                        .foregroundStyle(color)
 
                     Text(evolutionCount == 1 ? "evoluce" : "evolucí")
                         .font(.caption2)
@@ -56,7 +54,7 @@ struct EssenceInfoCard: View {
             }
         }
         .padding()
-        .background(themeColor.opacity(0.1))
+        .background(color.opacity(0.1))
         .clipShape(RoundedRectangle(cornerRadius: 32))
         .glassCard()
     }

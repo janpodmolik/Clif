@@ -10,9 +10,12 @@ struct PetDetailScreen: View {
     var onAction: (PetDetailAction) -> Void = { _ in }
 
     @Environment(\.dismiss) private var dismiss
+    @Environment(PetManager.self) private var petManager
+    @Environment(ArchivedPetManager.self) private var archivedPetManager
     @State private var showEssencePicker = false
     @State private var showBreakHistory = false
     @State private var showLimitedApps = false
+    @State private var showDeleteConfirmation = false
 
     private var themeColor: Color {
         pet.themeColor
@@ -110,7 +113,7 @@ struct PetDetailScreen: View {
                             themeColor: themeColor
                         ) { action in
                             switch action {
-                            case .delete: onAction(.delete)
+                            case .delete: showDeleteConfirmation = true
                             case .showOnHomepage: onAction(.showOnHomepage)
                             case .replay: onAction(.replay)
                             }
@@ -131,7 +134,7 @@ struct PetDetailScreen: View {
                                 }
                             case .blowAway: onAction(.blowAway)
                             case .replay: onAction(.replay)
-                            case .delete: onAction(.delete)
+                            case .delete: showDeleteConfirmation = true
                             }
                         }
                     }
@@ -161,6 +164,20 @@ struct PetDetailScreen: View {
             }
             .sheet(isPresented: $showLimitedApps) {
                 LimitedAppsSheet(sources: pet.limitedSources)
+            }
+            .sheet(isPresented: $showDeleteConfirmation) {
+                DeletePetSheet(
+                    petName: pet.name,
+                    showArchiveOption: true,
+                    onArchive: {
+                        petManager.archive(id: pet.id, using: archivedPetManager)
+                        dismiss()
+                    },
+                    onDelete: {
+                        petManager.delete(id: pet.id)
+                        dismiss()
+                    }
+                )
             }
         }
     }

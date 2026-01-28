@@ -5,6 +5,7 @@ import SwiftUI
 /// Supports horizontal paging when multiple pets exist.
 struct HomeScreen: View {
     @Environment(PetManager.self) private var petManager
+    @Environment(ArchivedPetManager.self) private var archivedPetManager
     @Environment(EssencePickerCoordinator.self) private var essenceCoordinator
     @Environment(CreatePetCoordinator.self) private var createPetCoordinator
     @Environment(\.colorScheme) private var colorScheme
@@ -12,6 +13,7 @@ struct HomeScreen: View {
     @State private var windRhythm = WindRhythm()
     @State private var showPetDetail = false
     @State private var showPresetPicker = false
+    @State private var showDeleteSheet = false
     @State private var petFrame: CGRect = .zero
     @State private var dropZoneFrame: CGRect = .zero
 
@@ -79,6 +81,20 @@ struct HomeScreen: View {
         .sheet(isPresented: $showPresetPicker) {
             DailyPresetPicker()
                 .interactiveDismissDisabled()
+        }
+        .sheet(isPresented: $showDeleteSheet) {
+            if let pet = currentPet {
+                DeletePetSheet(
+                    petName: pet.name,
+                    showArchiveOption: true,
+                    onArchive: {
+                        petManager.archive(id: pet.id, using: archivedPetManager)
+                    },
+                    onDelete: {
+                        petManager.delete(id: pet.id)
+                    }
+                )
+            }
         }
         .onAppear {
             windRhythm.start()
@@ -240,8 +256,10 @@ struct HomeScreen: View {
             showPetDetail = true
         case .evolve:
             handleEvolve(pet)
-        case .replay, .delete:
-            break // TODO: Handle archived pet actions
+        case .replay:
+            break // TODO: Handle replay action
+        case .delete:
+            showDeleteSheet = true
         }
     }
 

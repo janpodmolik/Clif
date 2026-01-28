@@ -4,8 +4,10 @@ struct ArchivedPetDetailScreen: View {
     let pet: ArchivedPet
 
     @Environment(\.dismiss) private var dismiss
+    @Environment(ArchivedPetManager.self) private var archivedPetManager
     @State private var showAppUsageSheet = false
     @State private var showBreakHistory = false
+    @State private var showDeleteConfirmation = false
 
     var body: some View {
         NavigationStack {
@@ -56,6 +58,8 @@ struct ArchivedPetDetailScreen: View {
                         sources: pet.limitedSources,
                         onTap: { showAppUsageSheet = true }
                     )
+
+                    deleteButton
                 }
                 .padding()
             }
@@ -78,7 +82,32 @@ struct ArchivedPetDetailScreen: View {
                     }
                 }
             }
+            .sheet(isPresented: $showDeleteConfirmation) {
+                DeletePetSheet(
+                    petName: pet.name,
+                    showArchiveOption: false,
+                    onDelete: {
+                        archivedPetManager.delete(id: pet.id)
+                        dismiss()
+                    }
+                )
+            }
         }
+    }
+
+    private var deleteButton: some View {
+        Button {
+            showDeleteConfirmation = true
+        } label: {
+            HStack {
+                Image(systemName: "trash")
+                Text("Smazat peta")
+            }
+            .foregroundStyle(.red)
+            .frame(maxWidth: .infinity)
+            .padding()
+        }
+        .glassCard()
     }
 }
 
