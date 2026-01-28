@@ -117,8 +117,9 @@ struct BreakControlSection: View {
     }
 
     private func confirmCommittedUnlock() {
-        petManager.blowAwayCurrentPet(reason: .breakViolation)
+        // End break first (logs breakEnded), then blow away
         ShieldManager.shared.toggle(success: false)
+        petManager.blowAwayCurrentPet(reason: .breakViolation)
     }
 }
 

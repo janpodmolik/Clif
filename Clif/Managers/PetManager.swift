@@ -69,6 +69,11 @@ final class PetManager {
     /// Marks the current pet as blown away (e.g. when violating a committed break).
     func blowAwayCurrentPet(reason: BlowAwayReason = .limitExceeded) {
         guard let pet = pet, !pet.isBlown else { return }
+
+        // Cancel any active break/shield and stop monitoring
+        ShieldManager.shared.clear()
+        ScreenTimeManager.shared.stopMonitoring()
+
         pet.blowAway(reason: reason)
         saveActivePet()
     }
