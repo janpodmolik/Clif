@@ -183,7 +183,7 @@ final class SnapshotStore {
         return loadAll().contains { event in
             event.petId == petId &&
             event.date == todayString &&
-            event.eventType == .blowAway
+            event.eventType.isBlowAway
         }
     }
 

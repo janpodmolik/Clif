@@ -16,6 +16,9 @@ struct ActivePetActionsCard: View {
     let isBlownAway: Bool
     var onAction: (ActivePetAction) -> Void = { _ in }
 
+    @Environment(PetManager.self) private var petManager
+    @State private var showBlowAwayConfirmation = false
+
     var body: some View {
         Group {
             if isBlownAway {
@@ -33,8 +36,20 @@ struct ActivePetActionsCard: View {
             progressSection
             Spacer()
             ActionButton(icon: "wind", label: "Blow Away", color: .red) {
-                onAction(.blowAway)
+                showBlowAwayConfirmation = true
             }
+        }
+        .confirmationDialog(
+            "Odfoukout peta?",
+            isPresented: $showBlowAwayConfirmation,
+            titleVisibility: .visible
+        ) {
+            Button("Odfoukout", role: .destructive) {
+                petManager.blowAwayCurrentPet(reason: .userChoice)
+            }
+            Button("Zrušit", role: .cancel) {}
+        } message: {
+            Text("Tvůj pet bude odfouknut a budeš muset začít znovu. Tato akce je nevratná.")
         }
     }
 

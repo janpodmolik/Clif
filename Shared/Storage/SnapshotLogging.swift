@@ -66,15 +66,16 @@ enum SnapshotLogging {
     }
 
     /// Logs a blowAway event.
-    /// Call this when pet blows away (windPoints >= 100).
+    /// Call this when pet blows away (windPoints >= 100 or break violation).
     static func logBlowAway(
         petId: UUID,
-        windPoints: Double
+        windPoints: Double,
+        reason: BlowAwayReason
     ) {
         let event = SnapshotEvent(
             petId: petId,
             windPoints: windPoints,
-            eventType: .blowAway
+            eventType: .blowAway(reason: reason)
         )
 
         SnapshotStore.shared.append(event)

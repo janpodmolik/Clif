@@ -155,7 +155,7 @@ final class Pet: Identifiable, PetPresentable, PetWithSources {
     }
 
     /// Marks pet as blown away.
-    func blowAway() {
+    func blowAway(reason: BlowAwayReason = .limitExceeded) {
         guard !isBlown else { return }
         windPoints = 100
         evolutionHistory.markAsBlown()
@@ -163,7 +163,8 @@ final class Pet: Identifiable, PetPresentable, PetWithSources {
         // Log snapshot
         SnapshotLogging.logBlowAway(
             petId: id,
-            windPoints: windPoints
+            windPoints: windPoints,
+            reason: reason
         )
     }
 

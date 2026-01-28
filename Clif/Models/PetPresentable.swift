@@ -9,7 +9,7 @@ protocol PetPresentable: PetEvolvable {
     var windProgress: CGFloat { get }
 
     /// Marks pet as blown away.
-    func blowAway()
+    func blowAway(reason: BlowAwayReason)
 }
 
 extension PetPresentable {

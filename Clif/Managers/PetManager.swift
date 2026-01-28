@@ -67,9 +67,9 @@ final class PetManager {
     }
 
     /// Marks the current pet as blown away (e.g. when violating a committed break).
-    func blowAwayCurrentPet() {
+    func blowAwayCurrentPet(reason: BlowAwayReason = .limitExceeded) {
         guard let pet = pet, !pet.isBlown else { return }
-        pet.blowAway()
+        pet.blowAway(reason: reason)
         saveActivePet()
     }
 

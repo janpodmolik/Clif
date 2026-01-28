@@ -46,6 +46,10 @@ struct DayDetailSheet: View {
         .presentationDragIndicator(.visible)
     }
 
+    private var blowAwayReason: BlowAwayReason? {
+        snapshots.first { $0.eventType.isBlowAway }?.eventType.blowAwayReason
+    }
+
     private var totalTimeCard: some View {
         HStack {
             Image(systemName: "clock.fill")
@@ -62,10 +66,10 @@ struct DayDetailSheet: View {
 
             Spacer()
 
-            if day.wasOverLimit {
-                Label("Překročen limit", systemImage: "exclamationmark.triangle.fill")
+            if let reason = blowAwayReason {
+                Label(reason.label, systemImage: reason.icon)
                     .font(.caption)
-                    .foregroundStyle(.orange)
+                    .foregroundStyle(.red)
             }
         }
         .padding()

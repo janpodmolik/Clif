@@ -16,7 +16,7 @@ enum SnapshotEventType: Codable, Equatable {
     case dailyReset
 
     /// Pet was blown away (wind reached 100 or committed break failed).
-    case blowAway
+    case blowAway(reason: BlowAwayReason)
 
     /// System day start marker.
     case systemDayStart
@@ -35,6 +35,7 @@ enum SnapshotEventType: Codable, Equatable {
         case breakType = "break_type"
         case actualMinutes = "actual_minutes"
         case success
+        case blowAwayReason = "blow_away_reason"
     }
 
     init(from decoder: Decoder) throws {
@@ -59,7 +60,8 @@ enum SnapshotEventType: Codable, Equatable {
             self = .dailyReset
 
         case "blowAway":
-            self = .blowAway
+            let reason = try container.decodeIfPresent(BlowAwayReason.self, forKey: .blowAwayReason) ?? .limitExceeded
+            self = .blowAway(reason: reason)
 
         case "systemDayStart":
             self = .systemDayStart
@@ -92,8 +94,9 @@ enum SnapshotEventType: Codable, Equatable {
         case .dailyReset:
             try container.encode("dailyReset", forKey: .type)
 
-        case .blowAway:
+        case .blowAway(let reason):
             try container.encode("blowAway", forKey: .type)
+            try container.encode(reason, forKey: .blowAwayReason)
 
         case .systemDayStart:
             try container.encode("systemDayStart", forKey: .type)
@@ -103,6 +106,46 @@ enum SnapshotEventType: Codable, Equatable {
 
         case .unknown(let value):
             try container.encode(value, forKey: .type)
+        }
+    }
+
+    /// Whether this is a blowAway event (any reason).
+    var isBlowAway: Bool {
+        if case .blowAway = self { return true }
+        return false
+    }
+
+    /// Returns the blow away reason if this is a blowAway event.
+    var blowAwayReason: BlowAwayReason? {
+        if case .blowAway(let reason) = self { return reason }
+        return nil
+    }
+}
+
+// MARK: - Blow Away Reason
+
+/// Reason why pet was blown away.
+enum BlowAwayReason: String, Codable {
+    /// Wind reached 100% from exceeding screen time limit.
+    case limitExceeded = "limit_exceeded"
+    /// User violated a committed break by opening a shielded app.
+    case breakViolation = "break_violation"
+    /// User chose to blow away their pet voluntarily.
+    case userChoice = "user_choice"
+
+    var label: String {
+        switch self {
+        case .limitExceeded: "Překročen limit"
+        case .breakViolation: "Porušena pauza"
+        case .userChoice: "Vlastní volba"
+        }
+    }
+
+    var icon: String {
+        switch self {
+        case .limitExceeded: "exclamationmark.triangle.fill"
+        case .breakViolation: "hand.raised.slash.fill"
+        case .userChoice: "hand.tap"
         }
     }
 }
