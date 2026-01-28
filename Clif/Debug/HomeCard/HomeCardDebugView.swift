@@ -105,6 +105,19 @@ struct HomeCardDebugView: View {
         let petId = UUID()
         Pet.setupMockDefaults(petId: petId, windPoints: windPoints)
 
+        // Setup SharedDefaults for activeBreak (computed property reads from these)
+        if isOnBreak {
+            SharedDefaults.isShieldActive = true
+            SharedDefaults.shieldActivatedAt = Date().addingTimeInterval(-5 * 60)
+            SharedDefaults.currentBreakType = BreakType.committed.rawValue
+            SharedDefaults.committedBreakDuration = 30
+        } else {
+            SharedDefaults.isShieldActive = false
+            SharedDefaults.shieldActivatedAt = nil
+            SharedDefaults.currentBreakType = nil
+            SharedDefaults.committedBreakDuration = nil
+        }
+
         let pet = Pet(
             id: petId,
             name: petName,
@@ -113,8 +126,7 @@ struct HomeCardDebugView: View {
                 essence: effectiveEssence,
                 totalDays: effectiveTotalDays
             ),
-            purpose: purposeLabel.isEmpty ? nil : purposeLabel,
-            activeBreak: isOnBreak ? .mock(type: .committed, minutesAgo: 5, durationMinutes: 30) : nil
+            purpose: purposeLabel.isEmpty ? nil : purposeLabel
         )
         if isBlownAway {
             pet.blowAway()

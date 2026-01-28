@@ -25,7 +25,25 @@ final class Pet: Identifiable, PetPresentable, PetWithSources {
     }
 
     /// Currently active break session, if any.
-    var activeBreak: ActiveBreak?
+    /// Computed from SharedDefaults - single source of truth for shield/break state.
+    var activeBreak: ActiveBreak? {
+        guard SharedDefaults.isShieldActive,
+              let activatedAt = SharedDefaults.shieldActivatedAt,
+              let rawType = SharedDefaults.currentBreakType,
+              let type = BreakType(rawValue: rawType) else {
+            return nil
+        }
+
+        let duration: TimeInterval? = SharedDefaults.committedBreakDuration.map {
+            TimeInterval($0 * 60)
+        }
+
+        return ActiveBreak(
+            type: type,
+            startedAt: activatedAt,
+            plannedDuration: duration
+        )
+    }
 
     /// Configuration for wind rise/fall behavior.
     let preset: WindPreset
@@ -123,80 +141,6 @@ final class Pet: Identifiable, PetPresentable, PetWithSources {
         }
     }
 
-    /// Starts a new break session.
-    func startBreak(_ breakSession: ActiveBreak) {
-        activeBreak = breakSession
-
-        // Log snapshot
-        let breakTypePayload = breakSession.toSnapshotPayload()
-        SnapshotLogging.logBreakStarted(
-            petId: id,
-            windPoints: windPoints,
-            breakType: breakTypePayload
-        )
-    }
-
-    /// Ends current break successfully, applying wind decrease.
-    func endBreak() {
-        guard let breakSession = activeBreak else { return }
-
-        let actualMinutes = Int(breakSession.elapsedMinutes)
-        let decreased = breakSession.windDecreased(for: preset)
-        let completed = CompletedBreak(
-            type: breakSession.type,
-            startedAt: breakSession.startedAt,
-            endedAt: Date(),
-            windAtStart: windPoints,
-            windDecreased: decreased,
-            wasViolated: false
-        )
-        breakHistory.append(completed)
-
-        windPoints = max(windPoints - decreased, 0)
-        activeBreak = nil
-
-        // Log snapshot
-        SnapshotLogging.logBreakEnded(
-            petId: id,
-            windPoints: windPoints,
-            actualMinutes: actualMinutes,
-            success: true
-        )
-    }
-
-    /// Fails current break (user violated it).
-    func failBreak() {
-        guard let breakSession = activeBreak else { return }
-
-        let actualMinutes = Int(breakSession.elapsedMinutes)
-        let completed = CompletedBreak(
-            type: breakSession.type,
-            startedAt: breakSession.startedAt,
-            endedAt: Date(),
-            windAtStart: windPoints,
-            windDecreased: 0,
-            wasViolated: true
-        )
-        breakHistory.append(completed)
-
-        // Committed penalty: pet blows away
-        if breakSession.type == .committed {
-            windPoints = 100
-            blowAway()
-        }
-        // Free: no wind decrease (windDecreased already set to 0)
-
-        activeBreak = nil
-
-        // Log snapshot
-        SnapshotLogging.logBreakEnded(
-            petId: id,
-            windPoints: windPoints,
-            actualMinutes: actualMinutes,
-            success: false
-        )
-    }
-
     /// Applies essence to blob.
     func applyEssence(_ essence: Essence) {
         guard isBlob else { return }
@@ -247,7 +191,6 @@ final class Pet: Identifiable, PetPresentable, PetWithSources {
         name: String,
         evolutionHistory: EvolutionHistory,
         purpose: String?,
-        activeBreak: ActiveBreak? = nil,
         preset: WindPreset = .default,
         dailyStats: [DailyUsageStat] = [],
         limitedSources: [LimitedSource] = [],
@@ -257,7 +200,6 @@ final class Pet: Identifiable, PetPresentable, PetWithSources {
         self.name = name
         self.evolutionHistory = evolutionHistory
         self.purpose = purpose
-        self.activeBreak = activeBreak
         self.preset = preset
         self.dailyStats = dailyStats
         self.limitedSources = limitedSources
@@ -384,9 +326,13 @@ extension Pet {
     }
 
     static func mockWithBreak() -> Pet {
-        let pet = mock(windPoints: 65)
-        pet.activeBreak = .mock(type: .committed, minutesAgo: 10, durationMinutes: 30)
-        return pet
+        // Setup SharedDefaults for break state (activeBreak is computed from these)
+        SharedDefaults.isShieldActive = true
+        SharedDefaults.shieldActivatedAt = Date().addingTimeInterval(-10 * 60) // 10 minutes ago
+        SharedDefaults.currentBreakType = BreakType.committed.rawValue
+        SharedDefaults.committedBreakDuration = 30
+
+        return mock(windPoints: 65)
     }
 
     static func mockWithBreakHistory() -> Pet {

@@ -1,11 +1,17 @@
 import SwiftUI
 
-/// A section displaying today's wind preset configuration.
-/// Shows rise/fall rates and provides access to preset comparison.
-struct WindPresetInfoSection: View {
+/// Break control section with preset info and break toggle button.
+/// Shows current wind preset and provides quick access to start/end breaks.
+struct BreakControlSection: View {
     let preset: WindPreset
 
+    @Environment(PetManager.self) private var petManager
+
     @State private var showPresetInfo = false
+    @State private var showBreakTypePicker = false
+    @State private var showCommittedUnlockConfirmation = false
+
+    private var shieldState: ShieldState { ShieldState.shared }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -16,8 +22,12 @@ struct WindPresetInfoSection: View {
                 presetIcon
 
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(preset.displayName)
-                        .font(.subheadline.weight(.semibold))
+                    HStack(spacing: 6) {
+                        Text(preset.displayName)
+                            .font(.subheadline.weight(.semibold))
+
+                        infoButton
+                    }
 
                     Text("Today's settings")
                         .font(.caption)
@@ -26,12 +36,34 @@ struct WindPresetInfoSection: View {
 
                 Spacer()
 
-                infoButton
+                breakToggleButton
             }
             .padding()
         }
         .sheet(isPresented: $showPresetInfo) {
             WindPresetComparisonSheet(currentPreset: preset)
+        }
+        .sheet(isPresented: $showBreakTypePicker) {
+            BreakTypePicker(
+                onSelectFree: {
+                    ShieldManager.shared.turnOn(breakType: .free, durationMinutes: nil)
+                },
+                onConfirmCommitted: { durationMinutes in
+                    ShieldManager.shared.turnOn(breakType: .committed, durationMinutes: durationMinutes)
+                }
+            )
+        }
+        .confirmationDialog(
+            "Ukončit Committed Break?",
+            isPresented: $showCommittedUnlockConfirmation,
+            titleVisibility: .visible
+        ) {
+            Button("Ukončit a ztratit peta", role: .destructive) {
+                confirmCommittedUnlock()
+            }
+            Button("Pokračovat v pauze", role: .cancel) {}
+        } message: {
+            Text("Ukončení committed breaku předčasně způsobí okamžitou ztrátu tvého peta. Tato akce je nevratná.")
         }
     }
 
@@ -48,9 +80,47 @@ struct WindPresetInfoSection: View {
             showPresetInfo = true
         } label: {
             Image(systemName: "info.circle")
-                .font(.system(size: 18))
-                .foregroundStyle(.primary)
+                .font(.system(size: 14))
+                .foregroundStyle(.secondary)
         }
+    }
+
+    private var breakToggleButton: some View {
+        Button {
+            handleBreakToggle()
+        } label: {
+            Image(systemName: shieldState.isActive ? "lock.fill" : "lock.open.fill")
+                .font(.system(size: 18, weight: .medium))
+                .foregroundStyle(shieldState.isActive ? .cyan : .primary)
+                .contentTransition(.symbolEffect(.replace))
+                .frame(width: 44, height: 44)
+                .background(
+                    Circle()
+                        .fill(shieldState.isActive ? .cyan.opacity(0.15) : Color(.tertiarySystemBackground))
+                )
+        }
+        .buttonStyle(.plain)
+    }
+
+    private func handleBreakToggle() {
+        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+
+        if shieldState.isActive {
+            if shieldState.currentBreakType == .committed {
+                showCommittedUnlockConfirmation = true
+            } else {
+                ShieldManager.shared.toggle()
+            }
+        } else {
+            showBreakTypePicker = true
+        }
+    }
+
+    private func confirmCommittedUnlock() {
+        if let pet = petManager.currentPet {
+            pet.blowAway()
+        }
+        ShieldManager.shared.toggle(success: false)
     }
 }
 
@@ -152,26 +222,29 @@ private struct PresetComparisonCard: View {
 #if DEBUG
 #Preview("Gentle") {
     VStack(spacing: 20) {
-        WindPresetInfoSection(preset: .gentle)
+        BreakControlSection(preset: .gentle)
             .glassCard()
     }
     .padding()
+    .environment(PetManager.mock())
 }
 
 #Preview("Balanced") {
     VStack(spacing: 20) {
-        WindPresetInfoSection(preset: .balanced)
+        BreakControlSection(preset: .balanced)
             .glassCard()
     }
     .padding()
+    .environment(PetManager.mock())
 }
 
 #Preview("Intense") {
     VStack(spacing: 20) {
-        WindPresetInfoSection(preset: .intense)
+        BreakControlSection(preset: .intense)
             .glassCard()
     }
     .padding()
+    .environment(PetManager.mock())
 }
 
 #Preview("Comparison Sheet") {

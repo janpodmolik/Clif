@@ -107,7 +107,20 @@ struct PetDetailScreenDebug: View {
         let petId = UUID()
         Pet.setupMockDefaults(petId: petId, windPoints: windPoints)
 
-        let pet = Pet(
+        // Setup SharedDefaults for activeBreak (computed property reads from these)
+        if let breakSession = activeBreak {
+            SharedDefaults.isShieldActive = true
+            SharedDefaults.shieldActivatedAt = breakSession.startedAt
+            SharedDefaults.currentBreakType = breakSession.type.rawValue
+            SharedDefaults.committedBreakDuration = breakSession.plannedDuration.map { Int($0 / 60) }
+        } else {
+            SharedDefaults.isShieldActive = false
+            SharedDefaults.shieldActivatedAt = nil
+            SharedDefaults.currentBreakType = nil
+            SharedDefaults.committedBreakDuration = nil
+        }
+
+        return Pet(
             id: petId,
             name: petName,
             evolutionHistory: evolutionHistory,
@@ -115,8 +128,6 @@ struct PetDetailScreenDebug: View {
             preset: windPreset,
             dailyStats: dailyStats
         )
-        pet.activeBreak = activeBreak
-        return pet
     }
 
     // MARK: - Body
