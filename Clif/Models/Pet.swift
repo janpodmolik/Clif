@@ -378,7 +378,7 @@ extension Pet {
             evolutionHistory: .mock(phase: phase, essence: essence, totalDays: totalDays),
             purpose: "Social Media",
             dailyStats: DailyUsageStat.mockList(petId: petId, days: totalDays),
-            limitedSources: LimitedSource.mockList(days: totalDays),
+            limitedSources: LimitedSource.mockList(),
             breakHistory: totalDays > 3 ? CompletedBreak.mockList(count: min(totalDays, 8)) : []
         )
     }
@@ -421,7 +421,7 @@ extension Pet {
             evolutionHistory: .mock(phase: phase, essence: .plant, totalDays: 10, isBlown: true),
             purpose: "Social Media",
             dailyStats: DailyUsageStat.mockList(petId: petId, days: 10),
-            limitedSources: LimitedSource.mockList(days: 10),
+            limitedSources: LimitedSource.mockList(),
             breakHistory: CompletedBreak.mockList(count: 5)
         )
     }

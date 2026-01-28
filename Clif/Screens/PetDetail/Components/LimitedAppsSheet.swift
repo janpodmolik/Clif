@@ -178,7 +178,7 @@ private struct SourceRow: View {
 
 #if DEBUG
 #Preview("With Sources") {
-    LimitedAppsSheet(sources: LimitedSource.mockList(days: 7))
+    LimitedAppsSheet(sources: LimitedSource.mockList())
 }
 
 #Preview("Empty") {

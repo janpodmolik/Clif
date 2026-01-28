@@ -254,7 +254,7 @@ extension LimitedSource {
         .website(WebsiteSource(displayName: name))
     }
 
-    static func mockList(days: Int = 14) -> [LimitedSource] {
+    static func mockList() -> [LimitedSource] {
         let apps = ["Instagram", "TikTok", "Twitter", "YouTube", "Facebook"]
         let categories = ["Social", "Entertainment"]
 

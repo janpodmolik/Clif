@@ -43,6 +43,10 @@ struct SnapshotEvent: Codable, Identifiable, Equatable {
     static func dateString(from date: Date) -> String {
         dateFormatter.string(from: date)
     }
+
+    static func date(from dateString: String) -> Date? {
+        dateFormatter.date(from: dateString)
+    }
 }
 
 // MARK: - Schema Versioning

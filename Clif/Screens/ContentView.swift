@@ -265,11 +265,11 @@ struct ContentView: View {
     }
 
     private func confirmCommittedUnlock() {
-        // Pet will be blown away
+        // Pet will be blown away - early termination of committed break
         if let pet = petManager.currentPet {
             pet.blowAway()
         }
-        ShieldManager.shared.toggle()
+        ShieldManager.shared.toggle(success: false)
     }
 
     private func startBreak(type: BreakType, durationMinutes: Int?) {

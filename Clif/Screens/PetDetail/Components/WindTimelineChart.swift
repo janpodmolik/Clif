@@ -12,14 +12,24 @@ struct WindTimelineChart: View {
     private var dataPoints: [ChartDataPoint] {
         snapshots
             .compactMap { event -> ChartDataPoint? in
-                guard case .usageThreshold(let cumulativeSeconds) = event.eventType else {
+                switch event.eventType {
+                case .usageThreshold(let cumulativeSeconds):
+                    return ChartDataPoint(
+                        timestamp: event.timestamp,
+                        windPoints: event.windPoints,
+                        cumulativeSeconds: cumulativeSeconds,
+                        isBreakEvent: false
+                    )
+                case .breakStarted, .breakEnded:
+                    return ChartDataPoint(
+                        timestamp: event.timestamp,
+                        windPoints: event.windPoints,
+                        cumulativeSeconds: nil,
+                        isBreakEvent: true
+                    )
+                default:
                     return nil
                 }
-                return ChartDataPoint(
-                    timestamp: event.timestamp,
-                    windPoints: event.windPoints,
-                    cumulativeSeconds: cumulativeSeconds
-                )
             }
             .sorted { $0.timestamp < $1.timestamp }
     }
@@ -162,9 +172,15 @@ struct WindTimelineChart: View {
             Text("\(Int(point.windPoints))%")
                 .font(.caption.bold())
                 .foregroundStyle(windColor(for: point.windPoints))
-            Text(formatMinutes(point.cumulativeSeconds / 60))
-                .font(.caption2)
-                .foregroundStyle(.secondary)
+            if let seconds = point.cumulativeSeconds {
+                Text(formatMinutes(seconds / 60))
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+            } else if point.isBreakEvent {
+                Text("Break")
+                    .font(.caption2)
+                    .foregroundStyle(.green)
+            }
         }
         .padding(.horizontal, 8)
         .padding(.vertical, 4)
@@ -172,7 +188,8 @@ struct WindTimelineChart: View {
     }
 
     private func updateSelectedPoint(at location: CGPoint, proxy: ChartProxy, geo: GeometryProxy) {
-        let xPosition = location.x - geo[proxy.plotFrame!].origin.x
+        guard let plotFrame = proxy.plotFrame else { return }
+        let xPosition = location.x - geo[plotFrame].origin.x
 
         guard let date: Date = proxy.value(atX: xPosition) else { return }
 
@@ -240,7 +257,8 @@ private struct ChartDataPoint: Identifiable {
     let id = UUID()
     let timestamp: Date
     let windPoints: Double
-    let cumulativeSeconds: Int
+    let cumulativeSeconds: Int?
+    let isBreakEvent: Bool
 }
 
 // MARK: - Preview
@@ -257,6 +275,28 @@ private struct ChartDataPoint: Identifiable {
         SnapshotEvent(petId: petId, timestamp: today.addingTimeInterval(14 * 3600), windPoints: 65, eventType: .usageThreshold(cumulativeSeconds: 1950)),
         SnapshotEvent(petId: petId, timestamp: today.addingTimeInterval(16 * 3600), windPoints: 80, eventType: .usageThreshold(cumulativeSeconds: 2400)),
         SnapshotEvent(petId: petId, timestamp: today.addingTimeInterval(18 * 3600), windPoints: 95, eventType: .usageThreshold(cumulativeSeconds: 2850))
+    ]
+
+    WindTimelineChart(snapshots: snapshots, limitMinutes: 60)
+        .padding()
+        .glassCard()
+        .padding()
+}
+
+#Preview("With Break") {
+    let petId = UUID()
+    let today = Calendar.current.startOfDay(for: Date())
+    let snapshots: [SnapshotEvent] = [
+        SnapshotEvent(petId: petId, timestamp: today.addingTimeInterval(8 * 3600), windPoints: 10, eventType: .usageThreshold(cumulativeSeconds: 300)),
+        SnapshotEvent(petId: petId, timestamp: today.addingTimeInterval(10 * 3600), windPoints: 35, eventType: .usageThreshold(cumulativeSeconds: 1050)),
+        SnapshotEvent(petId: petId, timestamp: today.addingTimeInterval(12 * 3600), windPoints: 55, eventType: .usageThreshold(cumulativeSeconds: 1650)),
+        // Break started at 55%
+        SnapshotEvent(petId: petId, timestamp: today.addingTimeInterval(12.5 * 3600), windPoints: 55, eventType: .breakStarted(type: .committed(plannedMinutes: 30))),
+        // Break ended at 40% (30 min break with fallRate ~0.5/min)
+        SnapshotEvent(petId: petId, timestamp: today.addingTimeInterval(13 * 3600), windPoints: 40, eventType: .breakEnded(actualMinutes: 30, success: true)),
+        // Usage continues
+        SnapshotEvent(petId: petId, timestamp: today.addingTimeInterval(15 * 3600), windPoints: 60, eventType: .usageThreshold(cumulativeSeconds: 2250)),
+        SnapshotEvent(petId: petId, timestamp: today.addingTimeInterval(17 * 3600), windPoints: 80, eventType: .usageThreshold(cumulativeSeconds: 2850))
     ]
 
     WindTimelineChart(snapshots: snapshots, limitMinutes: 60)

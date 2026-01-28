@@ -114,9 +114,10 @@ final class ShieldManager {
     /// Toggles shield on/off from the home screen button.
     /// When turning ON: activates shield for monitored tokens, records activation time.
     /// When turning OFF: calculates break reduction, clears shield, starts cooldown.
-    func toggle() {
+    /// - Parameter success: For committed breaks, false if ended early (before planned duration).
+    func toggle(success: Bool = true) {
         if SharedDefaults.isShieldActive {
-            turnOff()
+            turnOff(success: success)
         } else {
             turnOn(breakType: .free, durationMinutes: nil)
         }
@@ -140,15 +141,32 @@ final class ShieldManager {
         SharedDefaults.currentBreakType = breakType.rawValue
         SharedDefaults.committedBreakDuration = durationMinutes
 
+        // Log break started
+        if let petId = SharedDefaults.monitoredPetId {
+            let breakTypePayload: BreakTypePayload = switch breakType {
+            case .free: .free
+            case .committed: .committed(plannedMinutes: durationMinutes ?? 0)
+            }
+            SnapshotLogging.logBreakStarted(
+                petId: petId,
+                windPoints: SharedDefaults.monitoredWindPoints,
+                breakType: breakTypePayload
+            )
+        }
+
         ShieldState.shared.refresh()
     }
 
-    private func turnOff() {
+    private func turnOff(success: Bool) {
         #if DEBUG
-        print("[ShieldManager] toggle: OFF")
+        print("[ShieldManager] toggle: OFF (success: \(success))")
         #endif
 
         applyBreakReduction()
+
+        // Log break ended after reduction (uses updated windPoints), before resetting flags (need shieldActivatedAt)
+        logBreakEnded(success: success)
+
         deactivateStore()
         SharedDefaults.resetShieldFlags()
 
@@ -216,6 +234,24 @@ final class ShieldManager {
         #endif
     }
 
+    // MARK: - Break Logging
+
+    /// Logs breakEnded event to SnapshotStore.
+    /// Called when shield is turned off (break ends).
+    private func logBreakEnded(success: Bool) {
+        guard let petId = SharedDefaults.monitoredPetId,
+              let activatedAt = SharedDefaults.shieldActivatedAt else { return }
+
+        let actualMinutes = Int(Date().timeIntervalSince(activatedAt) / 60)
+
+        SnapshotLogging.logBreakEnded(
+            petId: petId,
+            windPoints: SharedDefaults.monitoredWindPoints,
+            actualMinutes: actualMinutes,
+            success: success
+        )
+    }
+
     // MARK: - Unlock Processing
 
     /// Processes unlock request from shield deep link.
@@ -235,6 +271,10 @@ final class ShieldManager {
         }
 
         applyBreakReduction()
+
+        // Log break ended after reduction (uses updated windPoints), before resetting flags (need shieldActivatedAt)
+        logBreakEnded(success: true)
+
         deactivateStore()
         SharedDefaults.resetShieldFlags()
 

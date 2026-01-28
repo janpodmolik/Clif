@@ -137,7 +137,7 @@ extension ArchivedPet {
             purpose: "Social Media",
             archivedAt: archivedAt,
             dailyStats: DailyUsageStat.mockList(petId: petId, days: totalDays),
-            limitedSources: LimitedSource.mockList(days: totalDays),
+            limitedSources: LimitedSource.mockList(),
             breakHistory: breakHistory,
             peakWindPoints: 95,
             totalBreakMinutes: 90,

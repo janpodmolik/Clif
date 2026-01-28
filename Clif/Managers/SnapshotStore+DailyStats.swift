@@ -10,11 +10,6 @@ extension SnapshotStore {
         // Group by date
         let groupedByDate = Dictionary(grouping: events, by: { $0.date })
 
-        // Date formatter for parsing date strings
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "yyyy-MM-dd"
-        dateFormatter.timeZone = .current
-
         var stats: [DailyUsageStat] = []
 
         for (dateString, dayEvents) in groupedByDate {
@@ -36,8 +31,8 @@ extension SnapshotStore {
             // Only include days with usage data
             guard maxCumulativeSeconds > 0 || hasBlowAway else { continue }
 
-            // Parse date string to Date
-            guard let date = dateFormatter.date(from: dateString) else { continue }
+            // Parse date string to Date using shared formatter
+            guard let date = SnapshotEvent.date(from: dateString) else { continue }
 
             let stat = DailyUsageStat(
                 petId: petId,
