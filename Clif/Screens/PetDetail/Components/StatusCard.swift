@@ -22,19 +22,13 @@ struct StatusCard: View {
 
             if let activeBreak {
                 breakSection(activeBreak)
-                    .transition(.asymmetric(
-                        insertion: .move(edge: .top).combined(with: .opacity),
-                        removal: .move(edge: .bottom).combined(with: .opacity)
-                    ))
+                    .transition(.blurReplace)
             } else {
                 windProgressSection
-                    .transition(.asymmetric(
-                        insertion: .move(edge: .bottom).combined(with: .opacity),
-                        removal: .move(edge: .top).combined(with: .opacity)
-                    ))
+                    .transition(.blurReplace)
             }
 
-            WindPresetInfoSection(preset: preset)
+            BreakControlSection(preset: preset)
         }
         .glassCard()
         .animation(.easeInOut(duration: 0.3), value: isOnBreak)
@@ -103,9 +97,7 @@ struct StatusCard: View {
         VStack(spacing: 12) {
             breakInfoRow(activeBreak)
 
-            if let progress = activeBreak.progress {
-                WindProgressBar(progress: progress, isPulsing: true)
-            }
+            WindProgressBar(progress: Double(windProgress), isPulsing: true)
         }
         .padding()
     }
@@ -152,7 +144,11 @@ struct StatusCard: View {
     // MARK: - Break Calculations
 
     private func predictedWindAfter(_ activeBreak: ActiveBreak) -> Double {
-        max(currentWindPoints - activeBreak.windDecreased(for: preset), 0)
+        guard let decrease = activeBreak.predictedWindDecrease(for: preset) else {
+            // Fallback for unlimited breaks - use elapsed time
+            return max(currentWindPoints - activeBreak.windDecreased(for: preset), 0)
+        }
+        return max(currentWindPoints - decrease, 0)
     }
 
     private func minutesToZeroWind(_ activeBreak: ActiveBreak) -> Int? {
