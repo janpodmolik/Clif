@@ -394,23 +394,65 @@ struct HomeCardView: View {
 
     private var statsRow: some View {
         HStack(alignment: .firstTextBaseline) {
-            Text("\(Int(windProgress * 100))%")
-                .font(.system(size: 28, weight: .bold))
-                .foregroundStyle(windProgress >= 1.0 ? .red : .primary)
+            if let activeBreak = pet.activeBreak {
+                breakCountdownView(activeBreak)
+                    .transition(.blurReplace)
+            }
 
             Spacer()
 
-            if isShieldActive {
-                Text("Calming the wind...")
-                    .font(.system(size: 14, weight: .medium))
+            Text("\(Int(windProgress * 100))%")
+                .font(.system(size: 28, weight: .bold))
+                .foregroundStyle(windProgressColor)
+        }
+        .animation(.easeInOut(duration: 0.3), value: isShieldActive)
+    }
+
+    private var windProgressColor: Color {
+        if windProgress >= 1.0 {
+            return .red
+        } else if isShieldActive {
+            return .cyan
+        } else {
+            return .primary
+        }
+    }
+
+    @ViewBuilder
+    private func breakCountdownView(_ activeBreak: ActiveBreak) -> some View {
+        HStack(alignment: .firstTextBaseline, spacing: 6) {
+            if let remaining = activeBreak.remainingSeconds {
+                // Committed break: countdown
+                Text(formatTime(remaining))
+                    .font(.system(size: 28, weight: .bold, design: .monospaced))
                     .foregroundStyle(.cyan)
-                    .opacity(isBreakPulsing ? 1.0 : 0.4)
-                    .animation(
-                        .easeInOut(duration: 1.0).repeatForever(autoreverses: true),
-                        value: isBreakPulsing
-                    )
+                    .contentTransition(.identity)
+                Text("left")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+            } else {
+                // Free break: elapsed time
+                Text(formatTime(activeBreak.elapsedMinutes * 60))
+                    .font(.system(size: 28, weight: .bold, design: .monospaced))
+                    .foregroundStyle(.cyan)
+                    .contentTransition(.identity)
+                Text("on break")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
             }
         }
+        .opacity(isBreakPulsing ? 1.0 : 0.6)
+        .animation(
+            .easeInOut(duration: 1.0).repeatForever(autoreverses: true),
+            value: isBreakPulsing
+        )
+    }
+
+    private func formatTime(_ seconds: TimeInterval) -> String {
+        let totalSeconds = Int(seconds)
+        let minutes = totalSeconds / 60
+        let secs = totalSeconds % 60
+        return String(format: "%d:%02d", minutes, secs)
     }
 
 }
