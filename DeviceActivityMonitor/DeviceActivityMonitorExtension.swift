@@ -179,6 +179,17 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
         if newWindPoints >= 100 {
             checkSafetyShield()
         }
+
+        // Log snapshot for daily stats
+        if let petId = SharedDefaults.monitoredPetId {
+            let event = SnapshotEvent(
+                petId: petId,
+                windPoints: newWindPoints,
+                eventType: .usageThreshold(cumulativeSeconds: trueCumulative)
+            )
+            SnapshotStore.shared.append(event)
+            logToFile("[Snapshot] Logged usageThreshold: \(trueCumulative)s")
+        }
     }
 
     // MARK: - Wind Notifications

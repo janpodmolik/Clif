@@ -1,11 +1,12 @@
-import FamilyControls
 import SwiftUI
 
 struct DayDetailSheet: View {
     let day: DailyUsageStat
-    let sources: [LimitedSource]
+    let petId: UUID
+    let limitMinutes: Int
 
     @Environment(\.dismiss) private var dismiss
+    @State private var snapshots: [SnapshotEvent] = []
 
     private let dateFormatter: DateFormatter = {
         let f = DateFormatter()
@@ -14,31 +15,13 @@ struct DayDetailSheet: View {
         return f
     }()
 
-    private var sourcesForDay: [SourceUsage] {
-        sources.compactMap { source -> SourceUsage? in
-            guard source.hasToken,
-                  let minutes = source.minutes(for: day.date)
-            else { return nil }
-            return SourceUsage(source: source, minutes: minutes)
-        }
-        .sorted { $0.minutes > $1.minutes }
-    }
-
-    private var maxMinutes: Int {
-        sourcesForDay.map(\.minutes).max() ?? 1
-    }
-
     var body: some View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 20) {
                     totalTimeCard
 
-                    if !sourcesForDay.isEmpty {
-                        appListCard
-                    } else {
-                        emptyState
-                    }
+                    windTimelineSection
                 }
                 .padding()
             }
@@ -54,6 +37,9 @@ struct DayDetailSheet: View {
                             .foregroundStyle(.secondary)
                     }
                 }
+            }
+            .onAppear {
+                loadSnapshots()
             }
         }
         .presentationDetents([.medium, .large])
@@ -86,175 +72,15 @@ struct DayDetailSheet: View {
         .glassCard()
     }
 
-    private var appListCard: some View {
-        VStack(spacing: 0) {
-            ForEach(Array(sourcesForDay.enumerated()), id: \.element.id) { index, usage in
-                DayAppUsageRow(
-                    source: usage.source,
-                    minutes: usage.minutes,
-                    maxMinutes: maxMinutes,
-                    color: chartColor(for: index)
-                )
-
-                if index < sourcesForDay.count - 1 {
-                    Divider()
-                        .padding(.leading, 52)
-                }
-            }
-        }
-        .padding(.vertical, 8)
-        .glassCard()
+    private var windTimelineSection: some View {
+        WindTimelineChart(snapshots: snapshots, limitMinutes: limitMinutes)
+            .padding()
+            .glassCard()
     }
 
-    private var emptyState: some View {
-        ContentUnavailableView {
-            Label("Žádná data", systemImage: "app.badge")
-        } description: {
-            Text("Pro tento den nejsou k dispozici detailní data o aplikacích.")
-        }
-        .padding()
-        .glassCard()
-    }
-
-    private func chartColor(for index: Int) -> Color {
-        let colors: [Color] = [.blue, .green, .orange, .pink, .purple, .cyan, .yellow, .mint]
-        return colors[index % colors.count]
-    }
-
-    private func formatMinutes(_ minutes: Int) -> String {
-        let h = minutes / 60
-        let m = minutes % 60
-        if h > 0 {
-            return m > 0 ? "\(h)h \(m)m" : "\(h)h"
-        }
-        return "\(m)m"
-    }
-}
-
-// MARK: - Source Usage
-
-private struct SourceUsage: Identifiable {
-    let id: UUID
-    let source: LimitedSource
-    let minutes: Int
-
-    init(source: LimitedSource, minutes: Int) {
-        self.id = source.id
-        self.source = source
-        self.minutes = minutes
-    }
-}
-
-// MARK: - Day App Usage Row
-
-private struct DayAppUsageRow: View {
-    let source: LimitedSource
-    let minutes: Int
-    let maxMinutes: Int
-    let color: Color
-
-    private let iconSize: CGFloat = 36
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack(spacing: 12) {
-                sourceIcon
-                sourceLabel
-
-                Spacer()
-
-                Text(formatMinutes(minutes))
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-            }
-
-            usageBar
-                .padding(.leading, iconSize + 12)
-        }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 10)
-    }
-
-    @ViewBuilder
-    private var sourceLabel: some View {
-        switch source {
-        case .app(let appSource):
-            if let token = appSource.applicationToken {
-                Label(token)
-                    .labelStyle(.titleOnly)
-                    .font(.subheadline.weight(.medium))
-                    .lineLimit(1)
-            }
-
-        case .category(let catSource):
-            if let token = catSource.categoryToken {
-                Label(token)
-                    .labelStyle(.titleOnly)
-                    .font(.subheadline.weight(.medium))
-                    .lineLimit(1)
-            }
-
-        case .website(let webSource):
-            if let token = webSource.webDomainToken {
-                Label(token)
-                    .labelStyle(.titleOnly)
-                    .font(.subheadline.weight(.medium))
-                    .lineLimit(1)
-            }
-        }
-    }
-
-    @ViewBuilder
-    private var sourceIcon: some View {
-        switch source {
-        case .app(let appSource):
-            if let token = appSource.applicationToken {
-                Label(token)
-                    .labelStyle(.iconOnly)
-                    .frame(width: iconSize, height: iconSize)
-                    .background(.ultraThinMaterial)
-                    .clipShape(RoundedRectangle(cornerRadius: 8))
-            }
-
-        case .category(let catSource):
-            if let token = catSource.categoryToken {
-                Label(token)
-                    .labelStyle(.iconOnly)
-                    .frame(width: iconSize, height: iconSize)
-                    .background(.ultraThinMaterial)
-                    .clipShape(RoundedRectangle(cornerRadius: 8))
-            }
-
-        case .website(let webSource):
-            if let token = webSource.webDomainToken {
-                Label(token)
-                    .labelStyle(.iconOnly)
-                    .frame(width: iconSize, height: iconSize)
-                    .background(.ultraThinMaterial)
-                    .clipShape(RoundedRectangle(cornerRadius: 8))
-            }
-        }
-    }
-
-    private var usageBar: some View {
-        GeometryReader { geo in
-            ZStack(alignment: .leading) {
-                RoundedRectangle(cornerRadius: 2)
-                    .fill(.quaternary)
-                    .frame(height: 4)
-
-                RoundedRectangle(cornerRadius: 2)
-                    .fill(color)
-                    .frame(width: barWidth(in: geo.size.width), height: 4)
-            }
-        }
-        .frame(height: 4)
-    }
-
-    private func barWidth(in totalWidth: CGFloat) -> CGFloat {
-        guard maxMinutes > 0 else { return 0 }
-        let fraction = CGFloat(minutes) / CGFloat(maxMinutes)
-        return totalWidth * fraction
+    private func loadSnapshots() {
+        let dateString = SnapshotEvent.dateString(from: day.date)
+        snapshots = SnapshotStore.shared.load(for: dateString, petId: petId)
     }
 
     private func formatMinutes(_ minutes: Int) -> String {
@@ -271,21 +97,24 @@ private struct DayAppUsageRow: View {
 #Preview("Day Detail") {
     DayDetailSheet(
         day: DailyUsageStat(petId: UUID(), date: Date(), totalMinutes: 127),
-        sources: LimitedSource.mockList(days: 7)
+        petId: UUID(),
+        limitMinutes: 60
     )
 }
 
 #Preview("Day Detail - Over Limit") {
     DayDetailSheet(
         day: DailyUsageStat(petId: UUID(), date: Date(), totalMinutes: 185, wasOverLimit: true),
-        sources: LimitedSource.mockList(days: 7)
+        petId: UUID(),
+        limitMinutes: 60
     )
 }
 
 #Preview("Day Detail - Empty") {
     DayDetailSheet(
         day: DailyUsageStat(petId: UUID(), date: Date(), totalMinutes: 0),
-        sources: []
+        petId: UUID(),
+        limitMinutes: 60
     )
 }
 #endif

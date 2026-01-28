@@ -42,6 +42,7 @@ struct MainApp: App {
             // (windPoints is computed from SharedDefaults - no sync needed)
             petManager.performDailyResetIfNeeded()
             petManager.checkBlowAwayState()
+            petManager.refreshDailyStats()
 
             #if DEBUG
             print("🟢 App became active")

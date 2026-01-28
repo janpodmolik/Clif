@@ -7,7 +7,8 @@ enum UsageViewMode: String, CaseIterable {
 
 struct DayByDayUsageCard: View {
     let stats: FullUsageStats
-    let sources: [LimitedSource]
+    let petId: UUID
+    let limitMinutes: Int
 
     @State private var viewMode: UsageViewMode = .week
     @State private var selectedDay: DailyUsageStat?
@@ -47,7 +48,7 @@ struct DayByDayUsageCard: View {
         .padding(.vertical)
         .glassCard()
         .sheet(item: $selectedDay) { day in
-            DayDetailSheet(day: day, sources: sources)
+            DayDetailSheet(day: day, petId: petId, limitMinutes: limitMinutes)
         }
     }
 
@@ -107,17 +108,17 @@ struct DayByDayUsageCard: View {
 
 #if DEBUG
 #Preview("Short history (no toggle)") {
-    DayByDayUsageCard(stats: FullUsageStats.mock(days: 5), sources: LimitedSource.mockList(days: 5))
+    DayByDayUsageCard(stats: FullUsageStats.mock(days: 5), petId: UUID(), limitMinutes: 60)
         .padding()
 }
 
 #Preview("Week+ history (with toggle)") {
-    DayByDayUsageCard(stats: FullUsageStats.mock(days: 14), sources: LimitedSource.mockList(days: 14))
+    DayByDayUsageCard(stats: FullUsageStats.mock(days: 14), petId: UUID(), limitMinutes: 60)
         .padding()
 }
 
 #Preview("Long history") {
-    DayByDayUsageCard(stats: FullUsageStats.mock(days: 30), sources: LimitedSource.mockList(days: 30))
+    DayByDayUsageCard(stats: FullUsageStats.mock(days: 30), petId: UUID(), limitMinutes: 60)
         .padding()
 }
 #endif

@@ -104,6 +104,11 @@ final class SnapshotStore {
         loadAll().filter { $0.petId == petId }
     }
 
+    /// Loads events for a specific date AND pet.
+    func load(for date: String, petId: UUID) -> [SnapshotEvent] {
+        loadAll().filter { $0.date == date && $0.petId == petId }
+    }
+
     /// Loads events grouped by date.
     func loadGroupedByDate() -> [String: [SnapshotEvent]] {
         Dictionary(grouping: loadAll(), by: { $0.date })

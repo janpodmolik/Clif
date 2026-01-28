@@ -4,6 +4,8 @@ import SwiftUI
 
 struct FallbackScreenTimeCard: View {
     let stats: WeeklyUsageStats
+    let petId: UUID
+    let limitMinutes: Int
     var applicationTokens: Set<ApplicationToken> = []
     var categoryTokens: Set<ActivityCategoryToken> = []
 
@@ -37,7 +39,7 @@ struct FallbackScreenTimeCard: View {
         .padding(18)
         .glassCard()
         .sheet(item: $selectedDay) { day in
-            DayDetailSheet(day: day, sources: [])
+            DayDetailSheet(day: day, petId: petId, limitMinutes: limitMinutes)
         }
     }
 
@@ -72,6 +74,6 @@ struct FallbackScreenTimeCard: View {
 }
 
 #Preview {
-    FallbackScreenTimeCard(stats: .mock())
+    FallbackScreenTimeCard(stats: .mock(), petId: UUID(), limitMinutes: 60)
         .padding()
 }

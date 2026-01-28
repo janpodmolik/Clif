@@ -94,6 +94,13 @@ final class PetManager {
         pet?.checkBlowAwayState()
     }
 
+    /// Refreshes daily usage stats from snapshots.
+    /// Call on foreground return to populate usage history.
+    func refreshDailyStats() {
+        guard let pet = pet else { return }
+        pet.dailyStats = SnapshotStore.shared.dailyUsageStats(petId: pet.id)
+    }
+
     // MARK: - Monitoring Restore
 
     /// Restores monitoring for existing pet after app restart/rebuild.

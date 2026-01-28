@@ -81,7 +81,11 @@ struct PetDetailScreen: View {
                     }
 
                     if !pet.dailyStats.isEmpty {
-                        DayByDayUsageCard(stats: pet.fullStats, sources: pet.limitedSources)
+                        DayByDayUsageCard(
+                            stats: pet.fullStats,
+                            petId: pet.id,
+                            limitMinutes: Int(pet.preset.minutesToBlowAway)
+                        )
                     }
 
                     if pet.totalDays > 1 {
@@ -156,11 +160,7 @@ struct PetDetailScreen: View {
                 BreakHistorySheet(breakHistory: pet.breakHistory)
             }
             .sheet(isPresented: $showLimitedApps) {
-                AppUsageDetailSheet(
-                    sources: pet.limitedSources,
-                    preset: pet.preset,
-                    totalDays: pet.totalDays
-                )
+                LimitedAppsSheet(sources: pet.limitedSources)
             }
         }
     }

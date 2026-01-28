@@ -85,4 +85,24 @@ enum SnapshotLogging {
     static func updateWindPoints(_ windPoints: Double) {
         SharedDefaults.monitoredWindPoints = windPoints
     }
+
+    /// Logs a usageThreshold event from the DeviceActivityMonitor extension.
+    /// Call this when a threshold event is processed to track cumulative usage.
+    /// - Parameters:
+    ///   - petId: The pet's ID
+    ///   - windPoints: Current wind points after threshold processing
+    ///   - cumulativeSeconds: Total cumulative seconds of usage (including baseline)
+    static func logUsageThreshold(
+        petId: UUID,
+        windPoints: Double,
+        cumulativeSeconds: Int
+    ) {
+        let event = SnapshotEvent(
+            petId: petId,
+            windPoints: windPoints,
+            eventType: .usageThreshold(cumulativeSeconds: cumulativeSeconds)
+        )
+
+        SnapshotStore.shared.append(event)
+    }
 }

@@ -77,10 +77,4 @@ extension PetWithSources {
         limitedSources.count
     }
 
-    // MARK: - Usage Data
-
-    /// All sources sorted by total minutes descending.
-    var usageBreakdown: [LimitedSource] {
-        limitedSources.sorted { $0.totalMinutes > $1.totalMinutes }
-    }
 }
