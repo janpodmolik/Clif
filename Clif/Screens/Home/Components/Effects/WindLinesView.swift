@@ -59,9 +59,11 @@ struct WindLinesView: View {
         WindGustConfig.interpolated(progress: windProgress)
     }
 
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
     var body: some View {
-        if windLevel != .none || overrideConfig != nil {
-            TimelineView(.animation) { timeline in
+        if (windLevel != .none || overrideConfig != nil) && !reduceMotion {
+            TimelineView(.animation(minimumInterval: 1/30)) { timeline in
                 let currentTime = timeline.date.timeIntervalSince1970
 
                 Canvas { context, size in

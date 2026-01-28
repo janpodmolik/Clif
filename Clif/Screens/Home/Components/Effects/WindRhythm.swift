@@ -48,6 +48,12 @@ final class WindRhythm {
 
     private var displayLink: CADisplayLink?
     private var startTime: CFTimeInterval = 0
+    private var lowPowerModeObserver: NSObjectProtocol?
+
+    /// Whether animations should be reduced (Low Power Mode or Reduce Motion)
+    private var isLowPowerMode: Bool {
+        ProcessInfo.processInfo.isLowPowerModeEnabled
+    }
 
     // MARK: - Lifecycle
 
@@ -55,16 +61,40 @@ final class WindRhythm {
         guard displayLink == nil else { return }
         startTime = CACurrentMediaTime()
         displayLink = CADisplayLink(target: self, selector: #selector(tick))
+
+        // Cap frame rate to 30fps for battery efficiency (60fps not needed for wind animation)
+        // In Low Power Mode, reduce further to 20fps
+        let preferredFps: Float = isLowPowerMode ? 20 : 30
+        displayLink?.preferredFrameRateRange = CAFrameRateRange(minimum: 15, maximum: preferredFps, preferred: preferredFps)
+
         displayLink?.add(to: .main, forMode: .common)
+
+        // Observe Low Power Mode changes
+        lowPowerModeObserver = NotificationCenter.default.addObserver(
+            forName: .NSProcessInfoPowerStateDidChange,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            self?.updateFrameRate()
+        }
     }
 
     func stop() {
         displayLink?.invalidate()
         displayLink = nil
+        if let observer = lowPowerModeObserver {
+            NotificationCenter.default.removeObserver(observer)
+            lowPowerModeObserver = nil
+        }
     }
 
     deinit {
         stop()
+    }
+
+    private func updateFrameRate() {
+        let preferredFps: Float = isLowPowerMode ? 20 : 30
+        displayLink?.preferredFrameRateRange = CAFrameRateRange(minimum: 15, maximum: preferredFps, preferred: preferredFps)
     }
 
     // MARK: - Wave Computation

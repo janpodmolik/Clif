@@ -53,6 +53,8 @@ struct PetAnimationEffect: ViewModifier {
     /// Local start time - only used when windRhythm is not provided (fallback mode).
     @State private var startTime = Date()
 
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
     /// Adjusted idle config with wind reduction applied
     private var adjustedIdleConfig: IdleConfig {
         guard idleConfig.enabled else { return idleConfig }
@@ -105,92 +107,106 @@ struct PetAnimationEffect: ViewModifier {
     }
 
     func body(content: Content) -> some View {
-        TimelineView(.animation) { context in
-            // Use shared rhythm time when available, otherwise fall back to local time
-            // Add idlePhaseOffset to desynchronize breathing between multiple pets
-            let baseTime: TimeInterval = windRhythm?.elapsedTime ?? context.date.timeIntervalSince(startTime)
-            let time: TimeInterval = baseTime + idlePhaseOffset
-
-            // Wave function for rotation (synchronized with shader)
-            // Pet bends IN the wind direction (wind pushes it)
-            // Forward swing (with wind): 100% amplitude
-            // Back swing (against wind): 50% amplitude
-            // In peak mode: use constant -1.0 for maximum deflection
-            let wave: Double = {
-                if peakMode {
-                    return -1.0
-                } else if let rhythm = windRhythm {
-                    // Use shared rhythm for synchronized effects with wind lines
-                    return Double(rhythm.rawWave)
-                } else {
-                    // Fallback: local computation (for backward compatibility)
-                    let rawWave = sin(time * 1.5) * 0.6 + sin(time * 2.3) * 0.3 + sin(time * 0.7) * 0.1
-                    return rawWave < 0 ? rawWave : rawWave * 0.4
-                }
-            }()
-
-            // Rotation follows wind direction (negative direction = negative rotation)
-            let rotation: Double = -wave * intensity * direction * rotationAmount * 6
-
-            // Calculate relativeTapTime independent of startTime to survive view recreation.
-            // Shader does: timeSinceTap = time - tapTime
-            // We want: timeSinceTap = seconds since tap = now - tapTime
-            // Therefore: tapTime = time - (now - tapTime)
-            let relativeTapTime: Float = tapTime > 0
-                ? Float(time) - Float(Date().timeIntervalSinceReferenceDate - tapTime)
-                : -1.0
-
-            // Use adjusted idle config with wind reduction
-            let idle: IdleConfig = adjustedIdleConfig
-
-            // Calculate max sample offset
-            let maxOffset: CGFloat = (screenWidth ?? 400) * 0.5
-
-            // Capture callback and peakMode before entering Sendable closure
-            let transformCallback = onTransformUpdate
-            let isPeakMode = peakMode
-
-            // Scale time for shader to match gustFrequency (so bend/sway syncs with rotation)
-            let shaderTime = time * (windRhythm?.gustFrequency ?? 1.0)
-
+        if reduceMotion {
+            // When reduce motion is enabled, show static pet with wind-based rotation only
+            let staticRotation = intensity > 0 ? Double(-intensity * direction * rotationAmount * 3) : 0.0
             content
-                .visualEffect { view, proxy in
-                    let shader = createShader(
-                        time: Float(shaderTime),
-                        relativeTapTime: relativeTapTime,
-                        idle: idle,
-                        peakMode: isPeakMode,
-                        size: proxy.size
-                    )
-
-                    // Calculate sway offset (same formula as shader, but inverted)
-                    // Shader moves sampling position, which produces opposite visual movement
-                    // So we negate to match the visual direction
-                    let swayMaxOffset = proxy.size.width * 0.15 * intensity * direction
-                    let swayOffset = -wave * swayMaxOffset * swayAmount * 0.3
-
-                    // Calculate top offset from rotation (how much the head moves horizontally)
-                    // When rotating around bottom anchor, the top moves: sin(angle) * height
-                    let rotationRadians = rotation * .pi / 180
-                    let topOffset = sin(rotationRadians) * proxy.size.height
-
-                    // Export transform values for overlays (e.g., speech bubble)
-                    if let callback = transformCallback {
-                        DispatchQueue.main.async {
-                            callback(PetAnimationTransform(
-                                rotation: rotation,
-                                swayOffset: swayOffset,
-                                topOffset: topOffset
-                            ))
-                        }
-                    }
-
-                    return view.distortionEffect(
-                        shader,
-                        maxSampleOffset: CGSize(width: maxOffset, height: 50)
-                    )
+                .rotationEffect(.degrees(staticRotation), anchor: .bottom)
+                .onAppear {
+                    onTransformUpdate?(PetAnimationTransform(
+                        rotation: staticRotation,
+                        swayOffset: 0,
+                        topOffset: 0
+                    ))
                 }
-                .rotationEffect(.degrees(rotation), anchor: .bottom)
+        } else {
+            TimelineView(.animation) { context in
+                // Use shared rhythm time when available, otherwise fall back to local time
+                // Add idlePhaseOffset to desynchronize breathing between multiple pets
+                let baseTime: TimeInterval = windRhythm?.elapsedTime ?? context.date.timeIntervalSince(startTime)
+                let time: TimeInterval = baseTime + idlePhaseOffset
+
+                // Wave function for rotation (synchronized with shader)
+                // Pet bends IN the wind direction (wind pushes it)
+                // Forward swing (with wind): 100% amplitude
+                // Back swing (against wind): 50% amplitude
+                // In peak mode: use constant -1.0 for maximum deflection
+                let wave: Double = {
+                    if peakMode {
+                        return -1.0
+                    } else if let rhythm = windRhythm {
+                        // Use shared rhythm for synchronized effects with wind lines
+                        return Double(rhythm.rawWave)
+                    } else {
+                        // Fallback: local computation (for backward compatibility)
+                        let rawWave = sin(time * 1.5) * 0.6 + sin(time * 2.3) * 0.3 + sin(time * 0.7) * 0.1
+                        return rawWave < 0 ? rawWave : rawWave * 0.4
+                    }
+                }()
+
+                // Rotation follows wind direction (negative direction = negative rotation)
+                let rotation: Double = -wave * intensity * direction * rotationAmount * 6
+
+                // Calculate relativeTapTime independent of startTime to survive view recreation.
+                // Shader does: timeSinceTap = time - tapTime
+                // We want: timeSinceTap = seconds since tap = now - tapTime
+                // Therefore: tapTime = time - (now - tapTime)
+                let relativeTapTime: Float = tapTime > 0
+                    ? Float(time) - Float(Date().timeIntervalSinceReferenceDate - tapTime)
+                    : -1.0
+
+                // Use adjusted idle config with wind reduction
+                let idle: IdleConfig = adjustedIdleConfig
+
+                // Calculate max sample offset
+                let maxOffset: CGFloat = (screenWidth ?? 400) * 0.5
+
+                // Capture callback and peakMode before entering Sendable closure
+                let transformCallback = onTransformUpdate
+                let isPeakMode = peakMode
+
+                // Scale time for shader to match gustFrequency (so bend/sway syncs with rotation)
+                let shaderTime = time * (windRhythm?.gustFrequency ?? 1.0)
+
+                content
+                    .visualEffect { view, proxy in
+                        let shader = createShader(
+                            time: Float(shaderTime),
+                            relativeTapTime: relativeTapTime,
+                            idle: idle,
+                            peakMode: isPeakMode,
+                            size: proxy.size
+                        )
+
+                        // Calculate sway offset (same formula as shader, but inverted)
+                        // Shader moves sampling position, which produces opposite visual movement
+                        // So we negate to match the visual direction
+                        let swayMaxOffset = proxy.size.width * 0.15 * intensity * direction
+                        let swayOffset = -wave * swayMaxOffset * swayAmount * 0.3
+
+                        // Calculate top offset from rotation (how much the head moves horizontally)
+                        // When rotating around bottom anchor, the top moves: sin(angle) * height
+                        let rotationRadians = rotation * .pi / 180
+                        let topOffset = sin(rotationRadians) * proxy.size.height
+
+                        // Export transform values for overlays (e.g., speech bubble)
+                        if let callback = transformCallback {
+                            DispatchQueue.main.async {
+                                callback(PetAnimationTransform(
+                                    rotation: rotation,
+                                    swayOffset: swayOffset,
+                                    topOffset: topOffset
+                                ))
+                            }
+                        }
+
+                        return view.distortionEffect(
+                            shader,
+                            maxSampleOffset: CGSize(width: maxOffset, height: 50)
+                        )
+                    }
+                    .rotationEffect(.degrees(rotation), anchor: .bottom)
+            }
         }
     }
 }
