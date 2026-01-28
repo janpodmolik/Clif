@@ -117,9 +117,7 @@ struct BreakControlSection: View {
     }
 
     private func confirmCommittedUnlock() {
-        if let pet = petManager.currentPet {
-            pet.blowAway()
-        }
+        petManager.blowAwayCurrentPet()
         ShieldManager.shared.toggle(success: false)
     }
 }

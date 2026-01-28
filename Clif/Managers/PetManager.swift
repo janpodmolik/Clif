@@ -66,6 +66,13 @@ final class PetManager {
         archive(id: id, using: archivedPetManager)
     }
 
+    /// Marks the current pet as blown away (e.g. when violating a committed break).
+    func blowAwayCurrentPet() {
+        guard let pet = pet, !pet.isBlown else { return }
+        pet.blowAway()
+        saveActivePet()
+    }
+
     // MARK: - Delete
 
     /// Removes the active pet without archiving.
@@ -91,7 +98,11 @@ final class PetManager {
     /// Checks for blow-away state when app returns to foreground.
     /// windPoints is computed from SharedDefaults, so no sync needed.
     func checkBlowAwayState() {
+        let wasBlown = pet?.isBlown ?? false
         pet?.checkBlowAwayState()
+        if pet?.isBlown == true && !wasBlown {
+            saveActivePet()
+        }
     }
 
     /// Refreshes daily usage stats from snapshots.

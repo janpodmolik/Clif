@@ -157,6 +157,7 @@ final class Pet: Identifiable, PetPresentable, PetWithSources {
     /// Marks pet as blown away.
     func blowAway() {
         guard !isBlown else { return }
+        windPoints = 100
         evolutionHistory.markAsBlown()
 
         // Log snapshot

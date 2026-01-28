@@ -397,6 +397,11 @@ struct HomeCardView: View {
             if let activeBreak = pet.activeBreak {
                 breakCountdownView(activeBreak)
                     .transition(.blurReplace)
+            } else if pet.isBlown {
+                Text("Blown away!")
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(.red)
+                    .transition(.blurReplace)
             }
 
             Spacer()

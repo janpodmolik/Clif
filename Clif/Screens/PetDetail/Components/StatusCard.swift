@@ -28,7 +28,9 @@ struct StatusCard: View {
                     .transition(.blurReplace)
             }
 
-            BreakControlSection(preset: preset)
+            if !isBlownAway {
+                BreakControlSection(preset: preset)
+            }
         }
         .glassCard()
         .animation(.easeInOut(duration: 0.3), value: isOnBreak)
@@ -71,7 +73,7 @@ struct StatusCard: View {
                     Text("--:--")
                         .font(.system(.title, design: .monospaced, weight: .bold))
                         .foregroundStyle(.red)
-                    Text("blow away!")
+                    Text("blown away")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
@@ -129,8 +131,12 @@ struct StatusCard: View {
     @ViewBuilder
     private func windPredictionLabel(_ activeBreak: ActiveBreak) -> some View {
         if activeBreak.type == .free {
-            if let minutes = minutesToZeroWind(activeBreak) {
+            if let minutes = minutesToZeroWind(activeBreak), minutes > 0 {
                 Text("~\(formatDuration(minutes)) to 0%")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+            } else {
+                Text("0%")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
             }
@@ -191,7 +197,7 @@ struct WeatherCardContent: View {
             return "Storm Passed"
         }
         if isOnBreak {
-            return "Wind is settling"
+            return windLevel == .none ? "Peaceful Break" : "Wind is settling"
         }
         switch windLevel {
         case .none: return "Calm"
@@ -362,6 +368,167 @@ private struct PulsingOpacityModifier: ViewModifier {
     }
 }
 
+// MARK: - Wind Intensity Bars
+
+struct WindIntensityBars: View {
+    let level: WindLevel
+    var isBlownAway: Bool = false
+    var isOnBreak: Bool = false
+    var progress: CGFloat = 0
+
+    @State private var animatedBarCount: Int = 0
+    @State private var isAnimating = false
+    @State private var pulsePhase = false
+
+    private var baseBarCount: Int {
+        if isBlownAway {
+            return 4
+        }
+        switch level {
+        case .none: return 0
+        case .low: return 1
+        case .medium: return 2
+        case .high: return 3
+        }
+    }
+
+    private var barColor: Color {
+        if isBlownAway {
+            return .red
+        }
+        if isOnBreak {
+            return .cyan
+        }
+        switch level {
+        case .none: return .green
+        case .low: return .green
+        case .medium: return .orange
+        case .high: return .red
+        }
+    }
+
+    private var displayBarCount: Int {
+        isOnBreak ? animatedBarCount : baseBarCount
+    }
+
+    private var nextBarIndex: Int? {
+        guard !isOnBreak, !isBlownAway else { return nil }
+        let next = baseBarCount
+        return next < 4 ? next : nil
+    }
+
+    private var progressToNextLevel: CGFloat {
+        let thresholds: [CGFloat] = [0.05, 0.50, 0.80, 1.0]
+        guard baseBarCount < 4 else { return 0 }
+        let currentThreshold = baseBarCount == 0 ? 0 : thresholds[baseBarCount - 1]
+        let nextThreshold = thresholds[baseBarCount]
+        let range = nextThreshold - currentThreshold
+        guard range > 0 else { return 0 }
+        return (progress - currentThreshold) / range
+    }
+
+    private var shouldPulse: Bool {
+        progressToNextLevel > 0.1 && !isOnBreak && !isBlownAway && nextBarIndex != nil
+    }
+
+    private func barFillColor(index: Int, isNextBar: Bool, isFilled: Bool) -> Color {
+        if isFilled {
+            return barColor
+        }
+        if isNextBar && shouldPulse {
+            let intensity = pulsePhase ? progressToNextLevel : 0
+            return barColor.opacity(intensity * 0.7)
+        }
+        return Color.secondary.opacity(0.3)
+    }
+
+    var body: some View {
+        HStack(alignment: .bottom, spacing: 4) {
+            ForEach(0..<4, id: \.self) { index in
+                let isNextBar = index == nextBarIndex
+                let isFilled = index < displayBarCount
+
+                RoundedRectangle(cornerRadius: 2)
+                    .fill(barFillColor(index: index, isNextBar: isNextBar, isFilled: isFilled))
+                    .frame(width: 6, height: CGFloat(10 + index * 6))
+            }
+        }
+        .animation(.easeInOut(duration: 1.0), value: pulsePhase)
+        .onAppear {
+            animatedBarCount = baseBarCount
+            if isOnBreak {
+                startBarAnimation()
+            }
+            if shouldPulse {
+                startPulseAnimation()
+            }
+        }
+        .onChange(of: isOnBreak) { _, newValue in
+            if newValue {
+                animatedBarCount = baseBarCount
+                startBarAnimation()
+            } else {
+                isAnimating = false
+                animatedBarCount = baseBarCount
+            }
+        }
+        .onChange(of: shouldPulse) { _, newValue in
+            if newValue {
+                startPulseAnimation()
+            }
+        }
+    }
+
+    private func startPulseAnimation() {
+        guard shouldPulse else { return }
+        withAnimation(.easeInOut(duration: 0.8)) {
+            pulsePhase = true
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
+            guard shouldPulse else { return }
+            withAnimation(.easeInOut(duration: 0.8)) {
+                pulsePhase = false
+            }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
+                startPulseAnimation()
+            }
+        }
+    }
+
+    private func startBarAnimation() {
+        isAnimating = true
+        animateDecrease()
+    }
+
+    private func animateDecrease() {
+        guard isAnimating, isOnBreak, baseBarCount > 0 else { return }
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+            guard isAnimating, isOnBreak else { return }
+
+            withAnimation(.easeInOut(duration: 0.4)) {
+                animatedBarCount = baseBarCount - 1
+            }
+
+            animateIncrease()
+        }
+    }
+
+    private func animateIncrease() {
+        guard isAnimating, isOnBreak else { return }
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+            guard isAnimating, isOnBreak else { return }
+
+            withAnimation(.easeInOut(duration: 0.4)) {
+                animatedBarCount = baseBarCount
+            }
+
+            animateDecrease()
+        }
+    }
+}
+
 #if DEBUG
 #Preview("Normal - Low Wind") {
     StatusCard(
@@ -372,6 +539,7 @@ private struct PulsingOpacityModifier: ViewModifier {
         timeToBlowAway: 7.5
     )
     .padding()
+    .environment(PetManager.mock())
 }
 
 #Preview("Normal - High Wind") {
@@ -383,6 +551,7 @@ private struct PulsingOpacityModifier: ViewModifier {
         timeToBlowAway: 1.5
     )
     .padding()
+    .environment(PetManager.mock())
 }
 
 #Preview("Committed Break") {
@@ -394,6 +563,7 @@ private struct PulsingOpacityModifier: ViewModifier {
         currentWindPoints: 65
     )
     .padding()
+    .environment(PetManager.mock())
 }
 
 #Preview("Free Break - Unlimited") {
@@ -405,6 +575,7 @@ private struct PulsingOpacityModifier: ViewModifier {
         currentWindPoints: 45
     )
     .padding()
+    .environment(PetManager.mock())
 }
 
 #Preview("Blown Away") {
@@ -415,5 +586,6 @@ private struct PulsingOpacityModifier: ViewModifier {
         isBlownAway: true
     )
     .padding()
+    .environment(PetManager.mock())
 }
 #endif

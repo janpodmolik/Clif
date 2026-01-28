@@ -162,7 +162,11 @@ final class ShieldManager {
         print("[ShieldManager] toggle: OFF (success: \(success))")
         #endif
 
-        applyBreakReduction()
+        // Only apply break reduction for successful breaks
+        // Failed committed breaks (violation) don't reduce wind - pet is blown away
+        if success {
+            applyBreakReduction()
+        }
 
         // Log break ended after reduction (uses updated windPoints), before resetting flags (need shieldActivatedAt)
         logBreakEnded(success: success)
