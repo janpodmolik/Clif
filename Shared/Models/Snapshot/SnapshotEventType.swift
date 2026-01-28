@@ -141,6 +141,14 @@ enum BlowAwayReason: String, Codable {
         }
     }
 
+    var description: String {
+        switch self {
+        case .limitExceeded: "Pet byl odfouknut, protože jsi překročil/a denní limit."
+        case .breakViolation: "Pet byl odfouknut, protože jsi porušil/a závaznou pauzu."
+        case .userChoice: "Pet byl odfouknut na tvé vlastní přání."
+        }
+    }
+
     var icon: String {
         switch self {
         case .limitExceeded: "exclamationmark.triangle.fill"

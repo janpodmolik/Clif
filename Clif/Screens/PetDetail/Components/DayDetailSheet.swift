@@ -67,9 +67,14 @@ struct DayDetailSheet: View {
             Spacer()
 
             if let reason = blowAwayReason {
-                Label(reason.label, systemImage: reason.icon)
-                    .font(.caption)
-                    .foregroundStyle(.red)
+                VStack(alignment: .trailing, spacing: 2) {
+                    Label("Odfouknut", systemImage: reason.icon)
+                        .font(.caption.bold())
+                        .foregroundStyle(.red)
+                    Text(reason.label)
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                }
             }
         }
         .padding()
