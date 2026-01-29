@@ -322,16 +322,12 @@ enum MonitoringEventBuilder {
         let maxThresholds = AppConstants.maxThresholds
         let minInterval = AppConstants.minimumThresholdSeconds
 
-        // Add 10% buffer for blow-away detection (110%)
-        let targetSeconds = limitSeconds + max(limitSeconds / 10, minInterval)
-
         // Calculate interval to spread thresholds evenly across full range
-        let intervalSeconds = max(targetSeconds / maxThresholds, minInterval)
+        let intervalSeconds = max(limitSeconds / maxThresholds, minInterval)
 
         #if DEBUG
         print("[MonitoringEventBuilder] buildEvents:")
         print("  limitSeconds: \(limitSeconds)s")
-        print("  targetSeconds (with buffer): \(targetSeconds)s")
         print("  intervalSeconds: \(intervalSeconds)s")
         #endif
 

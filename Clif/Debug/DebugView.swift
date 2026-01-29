@@ -390,7 +390,6 @@ struct DebugView: View {
         var windPoints = SharedDefaults.monitoredWindPoints
 
         windPoints += Double(intervalSeconds) * riseRatePerSecond
-        windPoints = min(windPoints, 100)
 
         SharedDefaults.monitoredWindPoints = windPoints
         SharedDefaults.monitoredLastThresholdSeconds = newSeconds

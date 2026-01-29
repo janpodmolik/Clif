@@ -71,10 +71,10 @@ final class Pet: Identifiable, PetPresentable, PetWithSources {
         return SharedDefaults.effectiveWind
     }
 
-    /// Wind progress for UI (0-1), clamped.
+    /// Wind progress for UI (0+), not capped at 1.0.
     /// Uses effectiveWindPoints to show real-time decrease during active shield.
     var windProgress: CGFloat {
-        CGFloat(min(max(effectiveWindPoints / 100.0, 0), 1.0))
+        CGFloat(max(effectiveWindPoints / 100.0, 0))
     }
 
     /// Whether pet has been blown away.
@@ -129,7 +129,6 @@ final class Pet: Identifiable, PetPresentable, PetWithSources {
         // riseRate is now per second
         let riseRatePerSecond = preset.riseRate / 60.0
         windPoints += Double(deltaSeconds) * riseRatePerSecond
-        windPoints = min(windPoints, 100)
         lastThresholdSeconds = newThresholdSeconds
 
         // Keep SharedDefaults in sync for extension snapshots
@@ -152,7 +151,6 @@ final class Pet: Identifiable, PetPresentable, PetWithSources {
     /// Marks pet as blown away.
     func blowAway(reason: BlowAwayReason = .limitExceeded) {
         guard !isBlown else { return }
-        windPoints = 100
         evolutionHistory.markAsBlown()
 
         // Log snapshot

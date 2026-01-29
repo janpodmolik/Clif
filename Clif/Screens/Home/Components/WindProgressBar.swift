@@ -19,7 +19,7 @@ struct WindProgressBar: View {
 
     var body: some View {
         GeometryReader { geometry in
-            let progressWidth = geometry.size.width * min(max(progress, 0), 1.0)
+            let progressWidth = geometry.size.width * min(max(progress, 0), 1)
 
             ZStack(alignment: .leading) {
                 // Track
