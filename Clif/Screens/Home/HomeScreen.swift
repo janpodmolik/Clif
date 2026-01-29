@@ -284,7 +284,7 @@ struct HomeScreen: View {
         // Fallback: if extension didn't catch the new day, perform reset here
         if SharedDefaults.isNewDay {
             SharedDefaults.performDailyResetIfNeeded()
-            ShieldManager.shared.activateFromStoredTokens(setUsageFlags: false)
+            ShieldManager.shared.activateStoreFromStoredTokens()
         }
 
         // Show preset picker if:

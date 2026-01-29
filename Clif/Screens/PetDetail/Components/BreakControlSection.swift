@@ -9,8 +9,8 @@ struct BreakControlSection: View {
 
     @State private var showPresetInfo = false
     @State private var showBreakTypePicker = false
-    @State private var showCommittedUnlockConfirmation = false
-    @State private var showSafetyUnlockConfirmation = false
+    @State private var showCommittedUnlock = false
+    @State private var showSafetyUnlock = false
 
     private var shieldState: ShieldState { ShieldState.shared }
 
@@ -54,30 +54,7 @@ struct BreakControlSection: View {
                 }
             )
         }
-        .confirmationDialog(
-            "Ukončit Committed Break?",
-            isPresented: $showCommittedUnlockConfirmation,
-            titleVisibility: .visible
-        ) {
-            Button("Ukončit a ztratit peta", role: .destructive) {
-                confirmCommittedUnlock()
-            }
-            Button("Pokračovat v pauze", role: .cancel) {}
-        } message: {
-            Text("Ukončení committed breaku předčasně způsobí okamžitou ztrátu tvého peta. Tato akce je nevratná.")
-        }
-        .confirmationDialog(
-            "Odemknout Safety Shield?",
-            isPresented: $showSafetyUnlockConfirmation,
-            titleVisibility: .visible
-        ) {
-            Button("Odemknout a ztratit peta", role: .destructive) {
-                confirmSafetyShieldUnlock()
-            }
-            Button("Počkat, až vítr klesne", role: .cancel) {}
-        } message: {
-            Text("Vítr je stále nad 80%. Odemčení teď způsobí ztrátu tvého mazlíčka.")
-        }
+        .unlockConfirmations(showCommitted: $showCommittedUnlock, showSafety: $showSafetyUnlock)
     }
 
     private var presetIcon: some View {
@@ -119,33 +96,14 @@ struct BreakControlSection: View {
         UIImpactFeedbackGenerator(style: .light).impactOccurred()
 
         if shieldState.isActive {
-            if shieldState.currentBreakType == .safety {
-                if ShieldManager.shared.isSafetyUnlockSafe {
-                    ShieldManager.shared.processSafetyShieldUnlock()
-                } else {
-                    showSafetyUnlockConfirmation = true
-                }
-            } else if shieldState.currentBreakType == .committed {
-                showCommittedUnlockConfirmation = true
-            } else {
-                ShieldManager.shared.toggle()
-            }
+            handleShieldUnlock(
+                shieldState: shieldState,
+                showCommittedConfirmation: $showCommittedUnlock,
+                showSafetyConfirmation: $showSafetyUnlock
+            )
         } else {
             showBreakTypePicker = true
         }
-    }
-
-    private func confirmSafetyShieldUnlock() {
-        let result = ShieldManager.shared.processSafetyShieldUnlock()
-        if result == .blownAway {
-            petManager.blowAwayCurrentPet(reason: .limitExceeded)
-        }
-    }
-
-    private func confirmCommittedUnlock() {
-        // End break first (logs breakEnded), then blow away
-        ShieldManager.shared.toggle(success: false)
-        petManager.blowAwayCurrentPet(reason: .breakViolation)
     }
 }
 

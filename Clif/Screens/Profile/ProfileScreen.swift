@@ -48,7 +48,7 @@ struct ProfileScreen: View {
 
                     Button("Simulate Daily Reset") {
                         SharedDefaults.resetForNewDay(dayStartShieldEnabled: limitSettings.dayStartShieldEnabled)
-                        ShieldManager.shared.activateFromStoredTokens(setUsageFlags: false)
+                        ShieldManager.shared.activateStoreFromStoredTokens()
                     }
                 }
                 #endif

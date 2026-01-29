@@ -38,12 +38,16 @@ extension SharedDefaults {
     }
 
     /// Typed accessor for current break type.
+    /// Setting this automatically syncs `isShieldActive` (non-nil = active).
     static var activeBreakType: BreakType? {
         get {
             guard let raw = currentBreakType else { return nil }
             return BreakType(rawValue: raw)
         }
-        set { currentBreakType = newValue?.rawValue }
+        set {
+            currentBreakType = newValue?.rawValue
+            isShieldActive = newValue != nil
+        }
     }
 
     /// Duration for committed break in minutes.
@@ -67,10 +71,9 @@ extension SharedDefaults {
     /// Resets usage shield flags to allow wind tracking.
     /// Does NOT reset isDayStartShieldActive - that's only cleared when user selects a preset.
     static func resetShieldFlags() {
-        isShieldActive = false
+        activeBreakType = nil  // also sets isShieldActive = false
         shieldActivatedAt = nil
         breakStartedAt = nil
-        currentBreakType = nil
         committedBreakDuration = nil
     }
 }

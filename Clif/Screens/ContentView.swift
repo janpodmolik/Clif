@@ -44,8 +44,8 @@ struct ContentView: View {
 
     // Break picker states
     @State private var showBreakTypePicker = false
-    @State private var showCommittedUnlockConfirmation = false
-    @State private var showSafetyUnlockConfirmation = false
+    @State private var showCommittedUnlock = false
+    @State private var showSafetyUnlock = false
 
     private var shieldState: ShieldState { ShieldState.shared }
 
@@ -123,30 +123,7 @@ struct ContentView: View {
                 }
             )
         }
-        .confirmationDialog(
-            "Ukončit Committed Break?",
-            isPresented: $showCommittedUnlockConfirmation,
-            titleVisibility: .visible
-        ) {
-            Button("Ukončit a ztratit peta", role: .destructive) {
-                confirmCommittedUnlock()
-            }
-            Button("Pokračovat v pauze", role: .cancel) {}
-        } message: {
-            Text("Ukončení committed breaku předčasně způsobí okamžitou ztrátu tvého peta. Tato akce je nevratná.")
-        }
-        .confirmationDialog(
-            "Odemknout Safety Shield?",
-            isPresented: $showSafetyUnlockConfirmation,
-            titleVisibility: .visible
-        ) {
-            Button("Odemknout a ztratit peta", role: .destructive) {
-                confirmSafetyShieldUnlock()
-            }
-            Button("Počkat, až vítr klesne", role: .cancel) {}
-        } message: {
-            Text("Vítr je stále nad 80%. Odemčení teď způsobí ztrátu tvého mazlíčka.")
-        }
+        .unlockConfirmations(showCommitted: $showCommittedUnlock, showSafety: $showSafetyUnlock)
         .onChange(of: scenePhase) { _, newPhase in
             if newPhase == .active {
                 ShieldState.shared.refresh()
@@ -275,30 +252,11 @@ struct ContentView: View {
     }
 
     private func handleUnlock() {
-        if shieldState.currentBreakType == .safety {
-            if ShieldManager.shared.isSafetyUnlockSafe {
-                ShieldManager.shared.processSafetyShieldUnlock()
-            } else {
-                showSafetyUnlockConfirmation = true
-            }
-        } else if shieldState.currentBreakType == .committed {
-            showCommittedUnlockConfirmation = true
-        } else {
-            ShieldManager.shared.toggle()
-        }
-    }
-
-    private func confirmSafetyShieldUnlock() {
-        let result = ShieldManager.shared.processSafetyShieldUnlock()
-        if result == .blownAway {
-            petManager.blowAwayCurrentPet(reason: .limitExceeded)
-        }
-    }
-
-    private func confirmCommittedUnlock() {
-        // End break first (logs breakEnded), then blow away
-        ShieldManager.shared.toggle(success: false)
-        petManager.blowAwayCurrentPet(reason: .breakViolation)
+        handleShieldUnlock(
+            shieldState: shieldState,
+            showCommittedConfirmation: $showCommittedUnlock,
+            showSafetyConfirmation: $showSafetyUnlock
+        )
     }
 
     private func startBreak(type: BreakType, durationMinutes: Int?) {

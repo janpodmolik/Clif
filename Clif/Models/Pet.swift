@@ -329,7 +329,7 @@ extension Pet {
 
     static func mockWithBreak() -> Pet {
         // Setup SharedDefaults for break state (activeBreak is computed from these)
-        SharedDefaults.isShieldActive = true
+        // activeBreakType setter syncs isShieldActive automatically
         SharedDefaults.shieldActivatedAt = Date().addingTimeInterval(-10 * 60) // 10 minutes ago
         SharedDefaults.activeBreakType = .committed
         SharedDefaults.committedBreakDuration = 30

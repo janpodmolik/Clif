@@ -8,14 +8,14 @@ import FamilyControls
 final class ShieldState {
     static let shared = ShieldState()
 
-    private(set) var isActive: Bool = SharedDefaults.isShieldActive
     private(set) var currentBreakType: BreakType? = SharedDefaults.activeBreakType
+
+    var isActive: Bool { currentBreakType != nil }
 
     private init() {}
 
     /// Call this after any shield state change to update observers.
     func refresh() {
-        isActive = SharedDefaults.isShieldActive
         currentBreakType = SharedDefaults.activeBreakType
     }
 }
@@ -50,33 +50,22 @@ final class ShieldManager {
         }
     }
 
-    /// Activates shield using currently stored tokens.
-    /// - Parameter setUsageFlags: If true, sets isShieldActive and shieldActivatedAt for break tracking.
-    ///   Set to false for Day Start Shield (no break tracking needed).
-    /// - Returns: false if tokens couldn't be loaded.
+    /// Activates shield in ManagedSettingsStore using stored tokens.
+    /// Does NOT set break-tracking flags — use for Day Start Shield or store-only activation.
     @discardableResult
-    func activateFromStoredTokens(setUsageFlags: Bool = true) -> Bool {
-        guard let appTokens = SharedDefaults.loadApplicationTokens(),
-              let catTokens = SharedDefaults.loadCategoryTokens() else {
+    func activateStoreFromStoredTokens() -> Bool {
+        let appTokens = SharedDefaults.loadApplicationTokens() ?? []
+        let catTokens = SharedDefaults.loadCategoryTokens() ?? []
+        let webTokens = SharedDefaults.loadWebDomainTokens() ?? []
+
+        guard !appTokens.isEmpty || !catTokens.isEmpty || !webTokens.isEmpty else {
             #if DEBUG
-            print("[ShieldManager] Failed to load tokens")
+            print("[ShieldManager] No tokens to activate")
             #endif
             return false
         }
-        let webTokens = SharedDefaults.loadWebDomainTokens() ?? Set()
 
         activate(applications: appTokens, categories: catTokens, webDomains: webTokens)
-
-        if setUsageFlags {
-            SharedDefaults.isShieldActive = true
-            SharedDefaults.shieldActivatedAt = Date()
-            SharedDefaults.synchronize()
-        }
-
-        #if DEBUG
-        print("[ShieldManager] Shield activated (usageFlags: \(setUsageFlags))")
-        #endif
-
         return true
     }
 
@@ -87,9 +76,7 @@ final class ShieldManager {
         #if DEBUG
         print("[ShieldManager] clear() called")
         #endif
-        store.shield.applications = nil
-        store.shield.applicationCategories = nil
-        store.shield.webDomains = nil
+        deactivateStore()
         SharedDefaults.resetShieldFlags()
         ShieldState.shared.refresh()
     }
@@ -121,6 +108,8 @@ final class ShieldManager {
     ///   - breakType: The type of break (free or committed)
     ///   - durationMinutes: For committed breaks: positive = minutes, -1 = until 0%, -2 = until end of day. Nil for free.
     func turnOn(breakType: BreakType, durationMinutes: Int?) {
+        assert(breakType != .safety, "[ShieldManager] turnOn should not be called with .safety — safety shield is activated by DeviceActivityMonitor extension")
+
         #if DEBUG
         print("[ShieldManager] turnOn: breakType=\(breakType), duration=\(String(describing: durationMinutes))")
         #endif
@@ -128,9 +117,10 @@ final class ShieldManager {
         // Stop monitoring while shield is active (no need to track time during break)
         ScreenTimeManager.shared.stopMonitoring()
 
-        guard activateFromStoredTokens() else { return }
+        guard activateStoreFromStoredTokens() else { return }
 
-        // Store break type and duration
+        // Store break type and duration (activeBreakType setter syncs isShieldActive)
+        SharedDefaults.shieldActivatedAt = Date()
         SharedDefaults.activeBreakType = breakType
         SharedDefaults.committedBreakDuration = durationMinutes
 
@@ -151,7 +141,7 @@ final class ShieldManager {
         ShieldState.shared.refresh()
     }
 
-    private func turnOff(success: Bool) {
+    func turnOff(success: Bool) {
         #if DEBUG
         print("[ShieldManager] toggle: OFF (success: \(success))")
         #endif
@@ -197,9 +187,13 @@ final class ShieldManager {
         let newReduction = min(oldReduction + secondsForgiven, cumulativeSeconds)
         SharedDefaults.totalBreakReduction = newReduction
 
-        // Recalculate wind using SharedDefaults
-        let oldWind = SharedDefaults.monitoredWindPoints
+        // Recalculate wind from updated reduction
         let newWind = SharedDefaults.calculatedWind
+
+        #if DEBUG
+        let oldWind = SharedDefaults.monitoredWindPoints
+        #endif
+
         SharedDefaults.monitoredWindPoints = newWind
 
         #if DEBUG
@@ -233,62 +227,39 @@ final class ShieldManager {
     /// Processes unlock request from shield deep link.
     /// Called when user taps unlock notification from ShieldAction.
     func processUnlock() {
-        #if DEBUG
-        print("[ShieldManager] processUnlock() called")
-        print("  Before: wind=\(SharedDefaults.monitoredWindPoints), lastThreshold=\(SharedDefaults.monitoredLastThresholdSeconds)")
-        #endif
-
         guard SharedDefaults.monitoredPetId != nil else {
-            #if DEBUG
-            print("[ShieldManager] processUnlock: No monitored pet, just clearing shields")
-            #endif
             clear()
             return
         }
 
-        applyBreakReduction()
-
-        // Log break ended after reduction (uses updated windPoints), before resetting flags (need shieldActivatedAt)
-        logBreakEnded(success: true)
-
-        deactivateStore()
-        SharedDefaults.resetShieldFlags()
-
-        #if DEBUG
-        print("  After break reduction: wind=\(SharedDefaults.monitoredWindPoints)")
-        #endif
-
-        // Restart monitoring to resume wind tracking
-        ScreenTimeManager.shared.restartMonitoring()
-
-        ShieldState.shared.refresh()
+        turnOff(success: true)
     }
 
     // MARK: - Safety Shield Unlock
 
     enum SafetyUnlockResult {
-        case safe       // wind < 80%, no penalty
-        case blownAway  // wind >= 80%, pet lost
+        case safe       // wind below high threshold, no penalty
+        case blownAway  // wind at or above high threshold, pet lost
     }
 
-    /// Whether the current safety shield can be safely unlocked (wind < 80%).
+    /// Whether the current safety shield can be safely unlocked (wind below high threshold).
     var isSafetyUnlockSafe: Bool {
-        SharedDefaults.effectiveWind < 80
+        SharedDefaults.effectiveWind < WindLevel.high.threshold
     }
 
     /// Processes safety shield unlock. Returns whether the unlock is safe or results in blow away.
     @discardableResult
     func processSafetyShieldUnlock() -> SafetyUnlockResult {
         guard SharedDefaults.activeBreakType == .safety else {
+            assertionFailure("[ShieldManager] processSafetyShieldUnlock called with non-safety break type: \(String(describing: SharedDefaults.activeBreakType))")
             processUnlock()
             return .safe
         }
 
         applyBreakReduction()
 
-        // After applyBreakReduction(), monitoredWindPoints is the final value
-        let currentWind = SharedDefaults.monitoredWindPoints
-        let result: SafetyUnlockResult = currentWind < 80 ? .safe : .blownAway
+        // Use monitoredWindPoints (updated by applyBreakReduction) as the source of truth
+            let result: SafetyUnlockResult = SharedDefaults.monitoredWindPoints < WindLevel.high.threshold ? .safe : .blownAway
 
         logBreakEnded(success: result == .safe)
         deactivateStore()

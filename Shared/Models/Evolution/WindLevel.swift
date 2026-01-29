@@ -93,15 +93,25 @@ enum WindLevel: Int, CaseIterable {
     /// - medium: 50% to <80%
     /// - high: 80%+
     static func from(progress: CGFloat) -> WindLevel {
-        switch progress {
-        case ..<0.05: return .none
-        case ..<0.50: return .low
-        case ..<0.80: return .medium
+        switch progress * 100 {
+        case ..<WindLevel.low.threshold: return .none
+        case ..<WindLevel.medium.threshold: return .low
+        case ..<WindLevel.high.threshold: return .medium
         default: return .high
         }
     }
 
     // MARK: - Wind Points
+
+    /// Wind points threshold where this level begins.
+    var threshold: Double {
+        switch self {
+        case .none: return 0
+        case .low: return 5
+        case .medium: return 50
+        case .high: return 80
+        }
+    }
 
     /// Returns the wind level zone based on wind points (0-100).
     ///
@@ -112,9 +122,9 @@ enum WindLevel: Int, CaseIterable {
     /// - high: 80-100 points (80%+)
     static func from(windPoints: Double) -> WindLevel {
         switch windPoints {
-        case ..<5: return .none
-        case ..<50: return .low
-        case ..<80: return .medium
+        case ..<WindLevel.low.threshold: return .none
+        case ..<WindLevel.medium.threshold: return .low
+        case ..<WindLevel.high.threshold: return .medium
         default: return .high
         }
     }

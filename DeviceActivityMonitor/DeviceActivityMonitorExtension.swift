@@ -253,8 +253,7 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
             store.shield.webDomains = webTokens
         }
 
-        // Set flags — including safety break type
-        SharedDefaults.isShieldActive = true
+        // Set flags — activeBreakType setter syncs isShieldActive automatically
         SharedDefaults.shieldActivatedAt = Date()
         SharedDefaults.activeBreakType = .safety
         SharedDefaults.synchronize()
