@@ -192,54 +192,39 @@ struct WeatherCardContent: View {
     @State private var showAlternateIcon = false
     @State private var alternationTask: Task<Void, Never>?
 
+    /// Break with wind already at zero - peaceful state, no reduction animation needed
+    private var isPeacefulBreak: Bool {
+        isOnBreak && windLevel == .none
+    }
+
+    /// Break with wind still present - show reduction animation
+    private var isActiveBreak: Bool {
+        isOnBreak && windLevel != .none
+    }
+
     private var windDescription: String {
-        if isBlownAway {
-            return "Storm Passed"
-        }
-        if isOnBreak {
-            return windLevel == .none ? "Peaceful Break" : "Wind is settling"
-        }
-        switch windLevel {
-        case .none: return "Calm"
-        case .low: return "Light Breeze"
-        case .medium: return "Moderate Wind"
-        case .high: return "Strong Gust"
-        }
+        if isBlownAway { return "Storm Passed" }
+        if isPeacefulBreak { return "Peaceful Break" }
+        if isActiveBreak { return "Wind is settling" }
+        return windLevel.description
     }
 
     private var windIcon: String {
-        if isBlownAway {
-            return "tornado"
-        }
-        if isOnBreak && showAlternateIcon {
-            return "arrow.down"
-        }
+        if isBlownAway { return "tornado" }
+        if isActiveBreak && showAlternateIcon { return "arrow.down" }
         return windLevel.icon
     }
 
     private var windColor: Color {
-        if isBlownAway {
-            return .red
-        }
-        if isOnBreak {
-            return .cyan
-        }
+        if isBlownAway { return .red }
+        if isOnBreak { return .cyan }
         return windLevel.color
     }
 
     private var petStatusText: String {
-        if isBlownAway {
-            return "The winds were too strong..."
-        }
-        if isOnBreak {
-            return "Taking a moment to breathe"
-        }
-        switch windLevel {
-        case .none: return "Uuumi is thriving"
-        case .low: return "Feeling the breeze"
-        case .medium: return "Getting a bit stressed"
-        case .high: return "Struggling to hold on"
-        }
+        if isBlownAway { return "The winds were too strong..." }
+        if isOnBreak { return "Taking a moment to breathe" }
+        return windLevel.petStatus
     }
 
     var body: some View {
@@ -264,7 +249,7 @@ struct WeatherCardContent: View {
 
             WindIntensityBars(level: windLevel, isBlownAway: isBlownAway, isOnBreak: isOnBreak, progress: windProgress)
         }
-        .onChange(of: isOnBreak) { _, newValue in
+        .onChange(of: isActiveBreak) { _, newValue in
             alternationTask?.cancel()
             if newValue {
                 startIconAlternation()
@@ -279,41 +264,24 @@ struct WeatherCardContent: View {
 
     @ViewBuilder
     private var iconView: some View {
-        if isBlownAway {
-            Image(systemName: windIcon)
-                .font(.system(size: 36))
-                .foregroundStyle(windColor)
-                .symbolEffect(.wiggle, options: .repeating.speed(1.2), isActive: true)
-        } else if isOnBreak {
-            Image(systemName: windIcon)
-                .font(.system(size: 36))
-                .foregroundStyle(windColor)
-                .contentTransition(.symbolEffect(.replace))
-        } else if windLevel == .none {
-            Image(systemName: windIcon)
-                .font(.system(size: 36))
-                .foregroundStyle(windColor)
-                .symbolEffect(.breathe, options: .repeating, isActive: true)
-        } else {
-            Image(systemName: windIcon)
-                .font(.system(size: 36))
-                .foregroundStyle(windColor)
-                .symbolEffect(.wiggle, options: .repeating.speed(wiggleSpeed), isActive: true)
-        }
-    }
+        let baseIcon = Image(systemName: windIcon)
+            .font(.system(size: 36))
+            .foregroundStyle(windColor)
 
-    private var wiggleSpeed: Double {
-        switch windLevel {
-        case .none: return 0.3
-        case .low: return 0.4
-        case .medium: return 0.7
-        case .high: return 1.0
+        if isBlownAway {
+            baseIcon.symbolEffect(.wiggle, options: .repeating.speed(1.2), isActive: true)
+        } else if isOnBreak {
+            baseIcon.contentTransition(.symbolEffect(.replace))
+        } else if windLevel == .none {
+            baseIcon.symbolEffect(.breathe, options: .repeating, isActive: true)
+        } else {
+            baseIcon.symbolEffect(.wiggle, options: .repeating.speed(windLevel.wiggleSpeed), isActive: true)
         }
     }
 
     private func startIconAlternation() {
         alternationTask = Task {
-            while !Task.isCancelled && isOnBreak {
+            while !Task.isCancelled && isActiveBreak {
                 try? await Task.sleep(for: .seconds(2.5))
                 guard !Task.isCancelled else { break }
                 withAnimation(.easeInOut(duration: 0.5)) {

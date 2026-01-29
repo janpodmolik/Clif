@@ -222,6 +222,9 @@ struct HomeScreen: View {
             debugBumpToggle
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomLeading)
                 .padding(homeCardInset)
+
+            EventLogOverlay()
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
             #endif
         }
     }

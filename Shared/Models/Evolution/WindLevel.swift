@@ -43,6 +43,33 @@ enum WindLevel: Int, CaseIterable {
         }
     }
 
+    var description: String {
+        switch self {
+        case .none: return "Calm"
+        case .low: return "Light Breeze"
+        case .medium: return "Moderate Wind"
+        case .high: return "Strong Gust"
+        }
+    }
+
+    var petStatus: String {
+        switch self {
+        case .none: return "Uuumi is thriving"
+        case .low: return "Feeling the breeze"
+        case .medium: return "Getting a bit stressed"
+        case .high: return "Struggling to hold on"
+        }
+    }
+
+    var wiggleSpeed: Double {
+        switch self {
+        case .none: return 0.3
+        case .low: return 0.4
+        case .medium: return 0.7
+        case .high: return 1.0
+        }
+    }
+
     /// Asset folder name for pet images based on wind intensity.
     /// Maps to: happy (none/low), neutral (medium), sad (high)
     var assetFolder: String {
