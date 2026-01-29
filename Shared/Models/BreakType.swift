@@ -7,6 +7,12 @@ enum BreakType: String, Codable, CaseIterable {
     case committed
     case safety
 
+    /// Break types that can be manually selected by the user.
+    /// Safety shield is auto-activated only and not user-selectable.
+    static var selectableCases: [BreakType] {
+        [.free, .committed]
+    }
+
     /// Display name for UI.
     var displayName: String {
         switch self {

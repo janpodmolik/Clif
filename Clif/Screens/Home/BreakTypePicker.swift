@@ -57,7 +57,7 @@ struct BreakTypePicker: View {
 
     private var segmentedPicker: some View {
         HStack(spacing: 0) {
-            ForEach(BreakType.allCases, id: \.self) { type in
+            ForEach(BreakType.selectableCases, id: \.self) { type in
                 Button {
                     withAnimation(.snappy(duration: 0.25)) {
                         selection = type
