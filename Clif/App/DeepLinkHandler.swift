@@ -60,12 +60,6 @@ private enum DeepLinkHandler {
             #endif
             // Default behavior - just open app to home
 
-        case "unlock":
-            #if DEBUG
-            print("[DeepLink] Processing unlock request")
-            #endif
-            ScreenTimeManager.shared.processUnlock()
-
         default:
             break
         }

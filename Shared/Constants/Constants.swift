@@ -41,7 +41,6 @@ enum DeepLinks {
     static let shield = "clif://shield"
     static let home = "clif://home"
     static let presetPicker = "clif://preset-picker"
-    static let unlock = "clif://unlock"
 
     /// Creates a pet-specific deep link
     static func pet(_ id: UUID) -> String {
@@ -92,10 +91,6 @@ enum DefaultsKeys {
     static let shieldActivatedAt = "shieldActivatedAt"
     static let monitoredFallRate = "monitoredFallRate"
     static let totalBreakReduction = "totalBreakReduction"
-
-    // MARK: - Shield Cooldown
-
-    static let shieldCooldownUntil = "shieldCooldownUntil"
 
     // MARK: - Break Type
 

@@ -24,31 +24,26 @@ extension SharedDefaults {
         set { defaults?.set(newValue, forKey: DefaultsKeys.shieldActivatedAt) }
     }
 
-    /// Timestamp until which shield cooldown is active.
-    /// During cooldown, safety shield will NOT auto-activate at 100%.
-    /// Note: Uses fresh UserDefaults instance for reads to ensure cross-process sync.
-    static var shieldCooldownUntil: Date? {
-        get {
-            let fresh = UserDefaults(suiteName: AppConstants.appGroupIdentifier)
-            fresh?.synchronize()
-            return fresh?.object(forKey: DefaultsKeys.shieldCooldownUntil) as? Date
-        }
-        set {
-            defaults?.set(newValue, forKey: DefaultsKeys.shieldCooldownUntil)
-            defaults?.synchronize()
-        }
-    }
-
     /// Timestamp when current break started (for calculating actualMinutes on break end).
     static var breakStartedAt: Date? {
         get { defaults?.object(forKey: DefaultsKeys.breakStartedAt) as? Date }
         set { defaults?.set(newValue, forKey: DefaultsKeys.breakStartedAt) }
     }
 
-    /// Current break type (free or committed). Nil when no break is active.
+    /// Current break type as raw string. Nil when no break is active.
+    /// Prefer `activeBreakType` for typed access.
     static var currentBreakType: String? {
         get { defaults?.string(forKey: DefaultsKeys.currentBreakType) }
         set { defaults?.set(newValue, forKey: DefaultsKeys.currentBreakType) }
+    }
+
+    /// Typed accessor for current break type.
+    static var activeBreakType: BreakType? {
+        get {
+            guard let raw = currentBreakType else { return nil }
+            return BreakType(rawValue: raw)
+        }
+        set { currentBreakType = newValue?.rawValue }
     }
 
     /// Duration for committed break in minutes.

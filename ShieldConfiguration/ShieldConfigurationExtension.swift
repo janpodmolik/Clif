@@ -58,7 +58,18 @@ class ShieldConfigurationExtension: ShieldConfigurationDataSource {
         let iconName: String
         let backgroundColor: UIColor
 
-        if windPoints >= 100 {
+        if SharedDefaults.activeBreakType?.rawValue == "safety" {
+            let effectiveWind = SharedDefaults.effectiveWind
+            if effectiveWind >= 80 {
+                subtitleText = "Počkej, až vítr klesne pod 80%. Odemčení teď = ztráta mazlíčka!"
+            } else {
+                subtitleText = "Vítr klesl pod 80%! Můžeš bezpečně odemknout."
+            }
+            iconName = "shield.fill"
+            backgroundColor = effectiveWind >= 80
+                ? UIColor.systemRed.withAlphaComponent(0.1)
+                : UIColor.systemGreen.withAlphaComponent(0.1)
+        } else if windPoints >= 100 {
             subtitleText = "Další používání pravděpodobně odfoukne mazlíčka!"
             iconName = "wind"
             backgroundColor = UIColor.systemRed.withAlphaComponent(0.1)

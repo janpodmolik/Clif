@@ -29,8 +29,7 @@ final class Pet: Identifiable, PetPresentable, PetWithSources {
     var activeBreak: ActiveBreak? {
         guard SharedDefaults.isShieldActive,
               let activatedAt = SharedDefaults.shieldActivatedAt,
-              let rawType = SharedDefaults.currentBreakType,
-              let type = BreakType(rawValue: rawType) else {
+              let type = SharedDefaults.activeBreakType else {
             return nil
         }
 
@@ -79,9 +78,9 @@ final class Pet: Identifiable, PetPresentable, PetWithSources {
     }
 
     /// Whether pet has been blown away.
-    /// Uses stored windPoints (not effective) since blow-away is a permanent state.
+    /// Delegates to evolutionHistory.isBlown — persistent and explicit.
     var isBlownAway: Bool {
-        windPoints >= 100
+        isBlown
     }
 
     /// Whether pet is currently on a break.
@@ -135,10 +134,6 @@ final class Pet: Identifiable, PetPresentable, PetWithSources {
 
         // Keep SharedDefaults in sync for extension snapshots
         SnapshotLogging.updateWindPoints(windPoints)
-
-        if windPoints >= 100 {
-            blowAway()
-        }
     }
 
     /// Applies essence to blob.
@@ -179,10 +174,15 @@ final class Pet: Identifiable, PetPresentable, PetWithSources {
     func checkBlowAwayState() {
         guard SharedDefaults.monitoredPetId == id else { return }
 
+        // Snapshots from extension — pet was blown away in background
         if SnapshotStore.shared.wasBlownAwayToday(petId: id) && !isBlownAway {
             blowAway()
-        } else if windPoints >= 100 && !isBlownAway {
-            blowAway()
+            return
+        }
+
+        // Safety shield protects against auto-blow-away
+        if SharedDefaults.activeBreakType == .safety {
+            return
         }
     }
 
@@ -331,7 +331,7 @@ extension Pet {
         // Setup SharedDefaults for break state (activeBreak is computed from these)
         SharedDefaults.isShieldActive = true
         SharedDefaults.shieldActivatedAt = Date().addingTimeInterval(-10 * 60) // 10 minutes ago
-        SharedDefaults.currentBreakType = BreakType.committed.rawValue
+        SharedDefaults.activeBreakType = .committed
         SharedDefaults.committedBreakDuration = 30
 
         return mock(windPoints: 65)

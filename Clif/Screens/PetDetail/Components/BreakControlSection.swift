@@ -10,6 +10,7 @@ struct BreakControlSection: View {
     @State private var showPresetInfo = false
     @State private var showBreakTypePicker = false
     @State private var showCommittedUnlockConfirmation = false
+    @State private var showSafetyUnlockConfirmation = false
 
     private var shieldState: ShieldState { ShieldState.shared }
 
@@ -65,6 +66,18 @@ struct BreakControlSection: View {
         } message: {
             Text("Ukončení committed breaku předčasně způsobí okamžitou ztrátu tvého peta. Tato akce je nevratná.")
         }
+        .confirmationDialog(
+            "Odemknout Safety Shield?",
+            isPresented: $showSafetyUnlockConfirmation,
+            titleVisibility: .visible
+        ) {
+            Button("Odemknout a ztratit peta", role: .destructive) {
+                confirmSafetyShieldUnlock()
+            }
+            Button("Počkat, až vítr klesne", role: .cancel) {}
+        } message: {
+            Text("Vítr je stále nad 80%. Odemčení teď způsobí ztrátu tvého mazlíčka.")
+        }
     }
 
     private var presetIcon: some View {
@@ -106,13 +119,26 @@ struct BreakControlSection: View {
         UIImpactFeedbackGenerator(style: .light).impactOccurred()
 
         if shieldState.isActive {
-            if shieldState.currentBreakType == .committed {
+            if shieldState.currentBreakType == .safety {
+                if ShieldManager.shared.isSafetyUnlockSafe {
+                    ShieldManager.shared.processSafetyShieldUnlock()
+                } else {
+                    showSafetyUnlockConfirmation = true
+                }
+            } else if shieldState.currentBreakType == .committed {
                 showCommittedUnlockConfirmation = true
             } else {
                 ShieldManager.shared.toggle()
             }
         } else {
             showBreakTypePicker = true
+        }
+    }
+
+    private func confirmSafetyShieldUnlock() {
+        let result = ShieldManager.shared.processSafetyShieldUnlock()
+        if result == .blownAway {
+            petManager.blowAwayCurrentPet(reason: .limitExceeded)
         }
     }
 

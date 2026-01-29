@@ -9,21 +9,14 @@ final class ShieldState {
     static let shared = ShieldState()
 
     private(set) var isActive: Bool = SharedDefaults.isShieldActive
-    private(set) var currentBreakType: BreakType? = {
-        guard let raw = SharedDefaults.currentBreakType else { return nil }
-        return BreakType(rawValue: raw)
-    }()
+    private(set) var currentBreakType: BreakType? = SharedDefaults.activeBreakType
 
     private init() {}
 
     /// Call this after any shield state change to update observers.
     func refresh() {
         isActive = SharedDefaults.isShieldActive
-        if let raw = SharedDefaults.currentBreakType {
-            currentBreakType = BreakType(rawValue: raw)
-        } else {
-            currentBreakType = nil
-        }
+        currentBreakType = SharedDefaults.activeBreakType
     }
 }
 
@@ -138,7 +131,7 @@ final class ShieldManager {
         guard activateFromStoredTokens() else { return }
 
         // Store break type and duration
-        SharedDefaults.currentBreakType = breakType.rawValue
+        SharedDefaults.activeBreakType = breakType
         SharedDefaults.committedBreakDuration = durationMinutes
 
         // Log break started
@@ -146,6 +139,7 @@ final class ShieldManager {
             let breakTypePayload: BreakTypePayload = switch breakType {
             case .free: .free
             case .committed: .committed(plannedMinutes: durationMinutes ?? 0)
+            case .safety: .safety
             }
             SnapshotLogging.logBreakStarted(
                 petId: petId,
@@ -173,8 +167,6 @@ final class ShieldManager {
 
         deactivateStore()
         SharedDefaults.resetShieldFlags()
-
-        startCooldown()
 
         // Restart monitoring to resume wind tracking
         ScreenTimeManager.shared.restartMonitoring()
@@ -215,26 +207,6 @@ final class ShieldManager {
         let wasCapped = oldReduction + secondsForgiven > cumulativeSeconds
         print("[ShieldManager] Break reduction: +\(secondsForgiven)s (elapsed: \(String(format: "%.1f", elapsedSeconds))s, fallRate: \(fallRate), total: \(newReduction)s\(wasCapped ? " [CAPPED]" : ""))")
         print("[ShieldManager] Wind recalculated: \(String(format: "%.1f", oldWind)) -> \(String(format: "%.1f", newWind))% (cumulative: \(cumulativeSeconds)s, effective: \(effectiveSeconds)s)")
-        #endif
-    }
-
-    // MARK: - Cooldown
-
-    /// Starts shield cooldown - shield won't auto-activate for specified duration.
-    /// Duration is 2× buffer time (10% of limit) to allow wind to rise from ~95% to 105%+ for blow-away.
-    /// After unlock, wind is typically around 95% (due to fallRate during shield).
-    /// User needs to gain ~10% wind to reach blow-away threshold.
-    func startCooldown() {
-        #if DEBUG
-        // Debug: fixed 30s cooldown for testing with short limits
-        let cooldownSeconds: TimeInterval = 30
-        #else
-        // Production: 10% of limit (2× buffer)
-        let cooldownSeconds = TimeInterval(SharedDefaults.bufferSeconds * 2)
-        #endif
-        SharedDefaults.shieldCooldownUntil = Date().addingTimeInterval(cooldownSeconds)
-        #if DEBUG
-        print("[ShieldManager] Cooldown set for \(cooldownSeconds)s")
         #endif
     }
 
@@ -282,8 +254,6 @@ final class ShieldManager {
         deactivateStore()
         SharedDefaults.resetShieldFlags()
 
-        startCooldown()
-
         #if DEBUG
         print("  After break reduction: wind=\(SharedDefaults.monitoredWindPoints)")
         #endif
@@ -292,5 +262,43 @@ final class ShieldManager {
         ScreenTimeManager.shared.restartMonitoring()
 
         ShieldState.shared.refresh()
+    }
+
+    // MARK: - Safety Shield Unlock
+
+    enum SafetyUnlockResult {
+        case safe       // wind < 80%, no penalty
+        case blownAway  // wind >= 80%, pet lost
+    }
+
+    /// Whether the current safety shield can be safely unlocked (wind < 80%).
+    var isSafetyUnlockSafe: Bool {
+        SharedDefaults.effectiveWind < 80
+    }
+
+    /// Processes safety shield unlock. Returns whether the unlock is safe or results in blow away.
+    @discardableResult
+    func processSafetyShieldUnlock() -> SafetyUnlockResult {
+        guard SharedDefaults.activeBreakType == .safety else {
+            processUnlock()
+            return .safe
+        }
+
+        applyBreakReduction()
+
+        // After applyBreakReduction(), monitoredWindPoints is the final value
+        let currentWind = SharedDefaults.monitoredWindPoints
+        let result: SafetyUnlockResult = currentWind < 80 ? .safe : .blownAway
+
+        logBreakEnded(success: result == .safe)
+        deactivateStore()
+        SharedDefaults.resetShieldFlags()
+
+        // Restart monitoring to resume wind tracking
+        ScreenTimeManager.shared.restartMonitoring()
+
+        ShieldState.shared.refresh()
+
+        return result
     }
 }

@@ -200,13 +200,10 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
             return
         }
 
-        // Blow away is always sent, others respect settings
-        if !notification.isAlwaysEnabled {
-            let settings = SharedDefaults.limitSettings
-            guard settings.enabledNotifications.contains(notification) else {
-                logToFile("[Notification] Skipped wind_\(notification.percentage)% - disabled in settings")
-                return
-            }
+        let settings = SharedDefaults.limitSettings
+        guard settings.enabledNotifications.contains(notification) else {
+            logToFile("[Notification] Skipped wind_\(notification.percentage)% - disabled in settings")
+            return
         }
 
         notification.send { [weak self] message in
@@ -217,7 +214,7 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
     // MARK: - Safety Shield
 
     /// Activates safety shield when wind reaches 100%.
-    /// Respects cooldown (after unlock) and debug disable flag.
+    /// Sets `.safety` break type to gate blow-away behind explicit user choice.
     private func checkSafetyShield() {
         logToFile("[SafetyShield] Wind >= 100%, checking conditions...")
 
@@ -234,12 +231,6 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
         let settings = SharedDefaults.limitSettings
         if settings.disableSafetyShield {
             logToFile("[SafetyShield] Disabled via debug settings, skipping")
-            return
-        }
-
-        // Cooldown active? (10% of limit to allow wind rise for potential blow-away)
-        if let cooldownUntil = SharedDefaults.shieldCooldownUntil, Date() < cooldownUntil {
-            logToFile("[SafetyShield] Cooldown active until \(cooldownUntil), skipping")
             return
         }
 
@@ -262,12 +253,13 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
             store.shield.webDomains = webTokens
         }
 
-        // Set flags
+        // Set flags — including safety break type
         SharedDefaults.isShieldActive = true
         SharedDefaults.shieldActivatedAt = Date()
+        SharedDefaults.activeBreakType = .safety
         SharedDefaults.synchronize()
 
-        logToFile("[SafetyShield] Shield activated at 100%")
+        logToFile("[SafetyShield] Shield activated at 100% with .safety break type")
     }
 
     private func logToFile(_ message: String) {

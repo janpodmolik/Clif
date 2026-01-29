@@ -93,6 +93,11 @@
 		B4C4C0922EE7FECE00E469E8 /* ManagedSettings.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B4924ADF2EE57EEE0033475C /* ManagedSettings.framework */; };
 		B4C4C09A2EE7FECE00E469E8 /* ShieldAction.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = B4C4C0912EE7FECE00E469E8 /* ShieldAction.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		B4C4C0A02EE7FF0900E469E8 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = B45862142EE5B92C0088CB78 /* Constants.swift */; };
+		B4C64EFD2F2B5EC00054A50E /* BreakType.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4C64EFC2F2B5EC00054A50E /* BreakType.swift */; };
+		B4C64EFF2F2B5ECE0054A50E /* BreakType.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4C64EFC2F2B5EC00054A50E /* BreakType.swift */; };
+		B4C6518A2F2B602A0054A50E /* BreakType.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4C64EFC2F2B5EC00054A50E /* BreakType.swift */; };
+		B4C6518B2F2B602A0054A50E /* BreakType.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4C64EFC2F2B5EC00054A50E /* BreakType.swift */; };
+		B4C6518C2F2B602A0054A50E /* BreakType.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4C64EFC2F2B5EC00054A50E /* BreakType.swift */; };
 		B4D351222F123D620076C09B /* EvolutionHistory.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4D351212F123D620076C09B /* EvolutionHistory.swift */; };
 		B4D351232F123D620076C09B /* Essence.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4D351202F123D620076C09B /* Essence.swift */; };
 		B4D351262F123DD00076C09B /* StatType.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4D351252F123DD00076C09B /* StatType.swift */; };
@@ -198,6 +203,7 @@
 		B4ANI0022F0E00010001B002 /* TapAnimationType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TapAnimationType.swift; sourceTree = "<group>"; };
 		B4ANI0032F0E00010001B003 /* TapConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TapConfig.swift; sourceTree = "<group>"; };
 		B4C4C0912EE7FECE00E469E8 /* ShieldAction.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = ShieldAction.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		B4C64EFC2F2B5EC00054A50E /* BreakType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BreakType.swift; sourceTree = "<group>"; };
 		B4D351202F123D620076C09B /* Essence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Essence.swift; sourceTree = "<group>"; };
 		B4D351212F123D620076C09B /* EvolutionHistory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EvolutionHistory.swift; sourceTree = "<group>"; };
 		B4D351242F123DD00076C09B /* DailyUsageStat.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailyUsageStat.swift; sourceTree = "<group>"; };
@@ -398,6 +404,7 @@
 		B43998452EE9FCE40049445F /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				B4C64EFC2F2B5EC00054A50E /* BreakType.swift */,
 				B45CF5A42F279E83009B4F06 /* DayStartGreeting.swift */,
 				B4153D3D2F27417F0006FEE3 /* LimitSettings.swift */,
 				B4167E542F1FE2D800D89B36 /* Snapshot */,
@@ -717,6 +724,7 @@
 				B4D351232F123D620076C09B /* Essence.swift in Sources */,
 				B45862442EE5FAF60088CB78 /* ActivityReportContext.swift in Sources */,
 				B493879E2F0E428B0090C730 /* WindConfig.swift in Sources */,
+				B4C64EFD2F2B5EC00054A50E /* BreakType.swift in Sources */,
 				B49387A02F0E428B0090C730 /* WindLevel.swift in Sources */,
 				B45862162EE5B92C0088CB78 /* Constants.swift in Sources */,
 				B4EVO1012F0E00010001A001 /* Blob.swift in Sources */,
@@ -742,6 +750,7 @@
 				B45862432EE5FAF60088CB78 /* ActivityReportContext.swift in Sources */,
 				B451D3842F26856C004C534F /* SharedDefaults.swift in Sources */,
 				B4153D472F2741D10006FEE3 /* WindNotification.swift in Sources */,
+				B4C6518B2F2B602A0054A50E /* BreakType.swift in Sources */,
 				B451D3852F26856C004C534F /* SharedDefaults+DayState.swift in Sources */,
 				B451D3862F26856C004C534F /* SharedDefaults+Shield.swift in Sources */,
 				B451D3872F26856C004C534F /* SharedDefaults+Tokens.swift in Sources */,
@@ -762,6 +771,7 @@
 				B451D37D2F26856C004C534F /* SharedDefaults+Tokens.swift in Sources */,
 				B451D37E2F26856C004C534F /* SharedDefaults+Wind.swift in Sources */,
 				B4153D412F2741A40006FEE3 /* WindNotification.swift in Sources */,
+				B4C6518A2F2B602A0054A50E /* BreakType.swift in Sources */,
 				B451D20B2F24C78E004C534F /* WindLevel.swift in Sources */,
 				B451D2112F24FEF0004C534F /* ExtensionLogger.swift in Sources */,
 				B4167E5C2F1FE73400D89B36 /* SnapshotEventType.swift in Sources */,
@@ -789,6 +799,7 @@
 				B4EVO2042F0E00010001A004 /* PetDisplayable.swift in Sources */,
 				B45CF5A52F279E83009B4F06 /* DayStartGreeting.swift in Sources */,
 				B4ESS2012F0E00010001A001 /* Essence.swift in Sources */,
+				B4C64EFF2F2B5ECE0054A50E /* BreakType.swift in Sources */,
 				B4ANI2012F0E00010001B001 /* IdleConfig.swift in Sources */,
 				B4ANI2022F0E00010001B002 /* TapAnimationType.swift in Sources */,
 				B4153D432F2741C30006FEE3 /* LimitSettings.swift in Sources */,
@@ -809,6 +820,7 @@
 				B451D38B2F26856C004C534F /* SharedDefaults+Shield.swift in Sources */,
 				B4153D482F2741D10006FEE3 /* WindNotification.swift in Sources */,
 				B451D38C2F26856C004C534F /* SharedDefaults+Tokens.swift in Sources */,
+				B4C6518C2F2B602A0054A50E /* BreakType.swift in Sources */,
 				B451D38D2F26856C004C534F /* SharedDefaults+Wind.swift in Sources */,
 				B451D20F2F24FEF0004C534F /* ExtensionLogger.swift in Sources */,
 				B4167E622F1FF91800D89B36 /* SnapshotEvent.swift in Sources */,

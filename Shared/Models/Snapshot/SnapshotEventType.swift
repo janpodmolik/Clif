@@ -164,6 +164,7 @@ enum BlowAwayReason: String, Codable {
 enum BreakTypePayload: Codable, Equatable {
     case free
     case committed(plannedMinutes: Int)
+    case safety
 
     // MARK: - Codable
 
@@ -183,6 +184,8 @@ enum BreakTypePayload: Codable, Equatable {
             // "hardcore" mapped to committed for backwards compatibility
             let minutes = try container.decode(Int.self, forKey: .plannedMinutes)
             self = .committed(plannedMinutes: minutes)
+        case "safety":
+            self = .safety
         default:
             self = .free // fallback
         }
@@ -197,6 +200,8 @@ enum BreakTypePayload: Codable, Equatable {
         case .committed(let minutes):
             try container.encode("committed", forKey: .type)
             try container.encode(minutes, forKey: .plannedMinutes)
+        case .safety:
+            try container.encode("safety", forKey: .type)
         }
     }
 }

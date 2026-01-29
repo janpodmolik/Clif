@@ -95,6 +95,8 @@ extension ActiveBreak {
             return .free
         case .committed:
             return .committed(plannedMinutes: plannedMinutes ?? 0)
+        case .safety:
+            return .safety
         }
     }
 }

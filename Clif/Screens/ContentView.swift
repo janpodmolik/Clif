@@ -40,9 +40,12 @@ struct ContentView: View {
     @State private var createPetCoordinator = CreatePetCoordinator()
     @State private var showMockSheet = false
 
+    @Environment(\.scenePhase) private var scenePhase
+
     // Break picker states
     @State private var showBreakTypePicker = false
     @State private var showCommittedUnlockConfirmation = false
+    @State private var showSafetyUnlockConfirmation = false
 
     private var shieldState: ShieldState { ShieldState.shared }
 
@@ -131,6 +134,23 @@ struct ContentView: View {
             Button("Pokračovat v pauze", role: .cancel) {}
         } message: {
             Text("Ukončení committed breaku předčasně způsobí okamžitou ztrátu tvého peta. Tato akce je nevratná.")
+        }
+        .confirmationDialog(
+            "Odemknout Safety Shield?",
+            isPresented: $showSafetyUnlockConfirmation,
+            titleVisibility: .visible
+        ) {
+            Button("Odemknout a ztratit peta", role: .destructive) {
+                confirmSafetyShieldUnlock()
+            }
+            Button("Počkat, až vítr klesne", role: .cancel) {}
+        } message: {
+            Text("Vítr je stále nad 80%. Odemčení teď způsobí ztrátu tvého mazlíčka.")
+        }
+        .onChange(of: scenePhase) { _, newPhase in
+            if newPhase == .active {
+                ShieldState.shared.refresh()
+            }
         }
     }
 
@@ -255,12 +275,23 @@ struct ContentView: View {
     }
 
     private func handleUnlock() {
-        if shieldState.currentBreakType == .committed {
-            // Show confirmation for committed break
+        if shieldState.currentBreakType == .safety {
+            if ShieldManager.shared.isSafetyUnlockSafe {
+                ShieldManager.shared.processSafetyShieldUnlock()
+            } else {
+                showSafetyUnlockConfirmation = true
+            }
+        } else if shieldState.currentBreakType == .committed {
             showCommittedUnlockConfirmation = true
         } else {
-            // Free break - unlock immediately
             ShieldManager.shared.toggle()
+        }
+    }
+
+    private func confirmSafetyShieldUnlock() {
+        let result = ShieldManager.shared.processSafetyShieldUnlock()
+        if result == .blownAway {
+            petManager.blowAwayCurrentPet(reason: .limitExceeded)
         }
     }
 

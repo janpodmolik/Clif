@@ -42,13 +42,6 @@ class ShieldActionExtension: ShieldActionDelegate {
         }
     }
 
-    /// Sends blow away notification.
-    private func sendBlowAwayNotification() {
-        WindNotification.blowAway.send { [weak self] message in
-            self?.logToFile(message)
-        }
-    }
-
     // MARK: - Day Start Shield Handling
 
     /// Handles Day Start Shield - always redirects to app for preset selection.

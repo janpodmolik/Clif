@@ -109,12 +109,12 @@ struct HomeCardDebugView: View {
         if isOnBreak {
             SharedDefaults.isShieldActive = true
             SharedDefaults.shieldActivatedAt = Date().addingTimeInterval(-5 * 60)
-            SharedDefaults.currentBreakType = BreakType.committed.rawValue
+            SharedDefaults.activeBreakType = .committed
             SharedDefaults.committedBreakDuration = 30
         } else {
             SharedDefaults.isShieldActive = false
             SharedDefaults.shieldActivatedAt = nil
-            SharedDefaults.currentBreakType = nil
+            SharedDefaults.activeBreakType = nil
             SharedDefaults.committedBreakDuration = nil
         }
 
