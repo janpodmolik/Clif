@@ -417,7 +417,8 @@ struct HomeCardView: View {
         if windProgress >= 1.0 {
             return .red
         } else if isShieldActive {
-            return .cyan
+            let isSafety = SharedDefaults.activeBreakType == .safety
+            return isSafety && windProgress >= 0.8 ? .red : .cyan
         } else {
             return .primary
         }
