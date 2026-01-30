@@ -240,11 +240,14 @@ final class ShieldManager {
         let windDrop = min(elapsedSeconds * fallRate, baseWind) // can't drop below 0
         let newWind = max(0, baseWind - windDrop)
 
-        // Convert point drop to seconds forgiven: points / 100 * limitSeconds
-        let secondsForgiven = Int(round(windDrop / 100.0 * Double(limitSeconds)))
-
         let oldReduction = SharedDefaults.totalBreakReduction
         let cumulativeSeconds = SharedDefaults.totalCumulativeSeconds
+
+        // Derive secondsForgiven algebraically so that calculatedWind == newWind exactly:
+        //   (cumulative - (oldReduction + X)) / limit * 100 = newWind
+        //   X = cumulative - oldReduction - newWind * limit / 100
+        let exactForgiven = Double(cumulativeSeconds - oldReduction) - newWind * Double(limitSeconds) / 100.0
+        let secondsForgiven = max(0, Int(round(exactForgiven)))
 
         // Cap break reduction at cumulative seconds - can't "save up" more than actually used
         let newReduction = min(oldReduction + secondsForgiven, cumulativeSeconds)
