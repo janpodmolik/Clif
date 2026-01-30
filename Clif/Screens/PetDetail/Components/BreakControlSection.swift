@@ -75,18 +75,34 @@ struct BreakControlSection: View {
         }
     }
 
+    private var isUnlockDangerous: Bool {
+        switch shieldState.currentBreakType {
+        case .committed:
+            return true
+        case .safety:
+            return !ShieldManager.shared.isSafetyUnlockSafe
+        default:
+            return false
+        }
+    }
+
+    private var lockColor: Color {
+        guard shieldState.isActive else { return .primary }
+        return isUnlockDangerous ? .red : .cyan
+    }
+
     private var breakToggleButton: some View {
         Button {
             handleBreakToggle()
         } label: {
             Image(systemName: shieldState.isActive ? "lock.fill" : "lock.open.fill")
                 .font(.system(size: 18, weight: .medium))
-                .foregroundStyle(shieldState.isActive ? .cyan : .primary)
+                .foregroundStyle(lockColor)
                 .contentTransition(.symbolEffect(.replace))
                 .frame(width: 44, height: 44)
                 .background(
                     Circle()
-                        .fill(shieldState.isActive ? .cyan.opacity(0.15) : Color(.tertiarySystemBackground))
+                        .fill(lockColor.opacity(0.15))
                 )
         }
         .buttonStyle(.plain)

@@ -130,7 +130,11 @@ struct StatusCard: View {
 
     @ViewBuilder
     private func windPredictionLabel(_ activeBreak: ActiveBreak) -> some View {
-        if activeBreak.type == .free {
+        if activeBreak.type == .committed {
+            Text("→ \(Int(predictedWindAfter(activeBreak)))% wind")
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+        } else {
             if let minutes = minutesToZeroWind(activeBreak), minutes > 0 {
                 Text("~\(formatDuration(minutes)) to 0%")
                     .font(.subheadline)
@@ -140,10 +144,6 @@ struct StatusCard: View {
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
             }
-        } else {
-            Text("→ \(Int(predictedWindAfter(activeBreak)))% wind")
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
         }
     }
 
