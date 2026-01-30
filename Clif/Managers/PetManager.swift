@@ -122,11 +122,15 @@ final class PetManager {
     /// Restores monitoring for existing pet after app restart/rebuild.
     /// DeviceActivityCenter schedules don't persist across app terminations,
     /// so we must re-register monitoring when the app launches.
+    ///
+    /// Skips restore when a break is active — monitoring is intentionally paused
+    /// during breaks and will be restored by ShieldManager.turnOff via restartMonitoring.
     private func restoreMonitoringIfNeeded() {
         guard let pet = pet,
               !pet.isBlownAway,
               !pet.limitedSources.isEmpty,
-              SharedDefaults.monitoredPetId == pet.id else {
+              SharedDefaults.monitoredPetId == pet.id,
+              !SharedDefaults.isShieldActive else {
             return
         }
 

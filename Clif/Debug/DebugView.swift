@@ -647,7 +647,6 @@ struct DebugView: View {
     DebugView()
         .environment(PetManager.mock())
 }
-#endif
 
 // MARK: - Debug Overlay
 
@@ -661,3 +660,4 @@ extension View {
         #endif
     }
 }
+#endif
