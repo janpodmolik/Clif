@@ -12,10 +12,6 @@ struct OverviewScreen: View {
         case list, grid
     }
 
-    private var completedPets: [ArchivedPetSummary] {
-        archivedPetManager.completedPets
-    }
-
     private var allSummaries: [ArchivedPetSummary] {
         archivedPetManager.summaries
     }
@@ -30,11 +26,9 @@ struct OverviewScreen: View {
                 headerSection
                     .padding(.horizontal, 20)
 
-                HistoryIslandsCarousel(pets: completedPets) { summary in
-                    Task {
-                        selectedArchivedPet = await archivedPetManager.loadDetail(for: summary)
-                    }
-                }
+                EssenceCollectionCarousel(
+                    records: archivedPetManager.essenceRecords(currentPet: petManager.currentPet)
+                )
                 .padding(.horizontal, 20)
 
                 activeSection

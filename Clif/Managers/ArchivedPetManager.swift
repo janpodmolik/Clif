@@ -88,6 +88,36 @@ final class ArchivedPetManager {
         saveSummaries()
     }
 
+    // MARK: - Public API: Essence Records
+
+    /// Build essence records for the collection carousel.
+    func essenceRecords(currentPet: Pet?) -> [EssenceRecord] {
+        Essence.allCases.compactMap { essence in
+            let matchingArchived = summaries.filter { $0.essence == essence }
+
+            let hasActivePet = currentPet?.essence == essence
+            let petCount = matchingArchived.count + (hasActivePet ? 1 : 0)
+
+            guard petCount > 0 else { return nil }
+
+            let archivedBest = matchingArchived.map(\.currentPhase).max()
+
+            let activePetPhase: Int? = {
+                guard let pet = currentPet, pet.essence == essence else { return nil }
+                return pet.currentPhase
+            }()
+
+            let bestPhase = [archivedBest, activePetPhase].compactMap { $0 }.max()
+
+            return EssenceRecord(
+                id: essence.rawValue,
+                essence: essence,
+                bestPhase: bestPhase,
+                petCount: petCount
+            )
+        }
+    }
+
     // MARK: - Public API: Delete
 
     /// Delete an archived pet.
@@ -101,12 +131,6 @@ final class ArchivedPetManager {
         detailCache.removeAll { $0.id == id }
     }
 
-    // MARK: - Computed Properties
-
-    /// Completed pets (not blown).
-    var completedPets: [ArchivedPetSummary] {
-        summaries.filter { !$0.isBlown }
-    }
 }
 
 // MARK: - Private: Persistence

@@ -1,7 +1,7 @@
 import Foundation
 
 /// Lightweight summary for archived pet listings.
-/// Contains only fields needed for ArchivedPetRow, ArchivedPetGridItem, HistoryIslandView.
+/// Contains only fields needed for ArchivedPetRow, ArchivedPetGridItem, EssenceCollectionCarousel.
 struct ArchivedPetSummary: Codable, Identifiable, Equatable, PetEvolvable {
     let id: UUID
     let name: String
