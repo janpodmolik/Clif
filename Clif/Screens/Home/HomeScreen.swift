@@ -355,6 +355,7 @@ private extension HomeScreen {
 #Preview {
     HomeScreen()
         .environment(PetManager.mock())
+        .environment(ArchivedPetManager.mock())
         .environment(EssencePickerCoordinator())
         .environment(CreatePetCoordinator())
 }

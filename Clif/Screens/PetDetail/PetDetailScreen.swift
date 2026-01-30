@@ -189,6 +189,8 @@ struct PetDetailScreen: View {
         .fullScreenCover(isPresented: .constant(true)) {
             PetDetailScreen(pet: .mock(name: "Fern", phase: 2, windPoints: 45))
         }
+        .environment(PetManager.mock())
+        .environment(ArchivedPetManager.mock())
 }
 
 #Preview("With Active Break") {
@@ -196,6 +198,8 @@ struct PetDetailScreen: View {
         .fullScreenCover(isPresented: .constant(true)) {
             PetDetailScreen(pet: .mockWithBreak())
         }
+        .environment(PetManager.mock())
+        .environment(ArchivedPetManager.mock())
 }
 
 #Preview("Blob - Ready for Essence") {
@@ -203,6 +207,8 @@ struct PetDetailScreen: View {
         .fullScreenCover(isPresented: .constant(true)) {
             PetDetailScreen(pet: .mockBlob(name: "Blobby", canUseEssence: true))
         }
+        .environment(PetManager.mock())
+        .environment(ArchivedPetManager.mock())
 }
 
 #Preview("With Break History") {
@@ -210,6 +216,8 @@ struct PetDetailScreen: View {
         .fullScreenCover(isPresented: .constant(true)) {
             PetDetailScreen(pet: .mockWithBreakHistory())
         }
+        .environment(PetManager.mock())
+        .environment(ArchivedPetManager.mock())
 }
 
 #Preview("Overview Actions") {
@@ -217,5 +225,7 @@ struct PetDetailScreen: View {
         .fullScreenCover(isPresented: .constant(true)) {
             PetDetailScreen(pet: .mock(name: "Ivy", phase: 3, windPoints: 30), showOverviewActions: true)
         }
+        .environment(PetManager.mock())
+        .environment(ArchivedPetManager.mock())
 }
 #endif

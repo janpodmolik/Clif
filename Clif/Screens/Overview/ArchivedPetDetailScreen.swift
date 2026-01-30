@@ -113,8 +113,10 @@ struct ArchivedPetDetailScreen: View {
 
 #Preview("Blown") {
     ArchivedPetDetailScreen(pet: .mock(name: "Storm", phase: 3, isBlown: true))
+        .environment(ArchivedPetManager.mock())
 }
 
 #Preview("Fully Evolved") {
     ArchivedPetDetailScreen(pet: .mock(name: "Breeze", phase: 4, isBlown: false, totalDays: 14))
+        .environment(ArchivedPetManager.mock())
 }
