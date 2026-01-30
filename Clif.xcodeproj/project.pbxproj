@@ -112,6 +112,11 @@
 		B4EVO2032F0E00010001A003 /* EvolutionPath.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4EVO0032F0E00010001A003 /* EvolutionPath.swift */; };
 		B4EVO2042F0E00010001A004 /* PetDisplayable.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4EVO0042F0E00010001A004 /* PetDisplayable.swift */; };
 		B4F8F9EC2FEC35C900E9E6D8 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = B45862142EE5B92C0088CB78 /* Constants.swift */; };
+		B4F939792F2C9D340012773D /* BreakNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4F939782F2C9D340012773D /* BreakNotification.swift */; };
+		B4F9397A2F2C9D340012773D /* BreakNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4F939782F2C9D340012773D /* BreakNotification.swift */; };
+		B4F9397B2F2C9D340012773D /* BreakNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4F939782F2C9D340012773D /* BreakNotification.swift */; };
+		B4F9397C2F2C9D340012773D /* BreakNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4F939782F2C9D340012773D /* BreakNotification.swift */; };
+		B4F9397D2F2C9D340012773D /* BreakNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4F939782F2C9D340012773D /* BreakNotification.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -212,6 +217,7 @@
 		B4EVO0022F0E00010001A002 /* EvolutionPhase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EvolutionPhase.swift; sourceTree = "<group>"; };
 		B4EVO0032F0E00010001A003 /* EvolutionPath.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EvolutionPath.swift; sourceTree = "<group>"; };
 		B4EVO0042F0E00010001A004 /* PetDisplayable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PetDisplayable.swift; sourceTree = "<group>"; };
+		B4F939782F2C9D340012773D /* BreakNotification.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BreakNotification.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -422,6 +428,7 @@
 			isa = PBXGroup;
 			children = (
 				B4153D402F2741A40006FEE3 /* WindNotification.swift */,
+				B4F939782F2C9D340012773D /* BreakNotification.swift */,
 			);
 			path = Notifications;
 			sourceTree = "<group>";
@@ -714,6 +721,7 @@
 				B45CF5A62F279E83009B4F06 /* DayStartGreeting.swift in Sources */,
 				B4153D422F2741A40006FEE3 /* WindNotification.swift in Sources */,
 				B451D3832F26856C004C534F /* SharedDefaults+Wind.swift in Sources */,
+				B4F9397C2F2C9D340012773D /* BreakNotification.swift in Sources */,
 				B4167E5D2F1FE73400D89B36 /* SnapshotEventType.swift in Sources */,
 				B4167E5F2F1FEF4E00D89B36 /* SnapshotStore.swift in Sources */,
 				B4167E652F1FF93800D89B36 /* SnapshotLogging.swift in Sources */,
@@ -754,6 +762,7 @@
 				B451D3852F26856C004C534F /* SharedDefaults+DayState.swift in Sources */,
 				B451D3862F26856C004C534F /* SharedDefaults+Shield.swift in Sources */,
 				B451D3872F26856C004C534F /* SharedDefaults+Tokens.swift in Sources */,
+				B4F9397D2F2C9D340012773D /* BreakNotification.swift in Sources */,
 				B451D3882F26856C004C534F /* SharedDefaults+Wind.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -775,6 +784,7 @@
 				B451D20B2F24C78E004C534F /* WindLevel.swift in Sources */,
 				B451D2112F24FEF0004C534F /* ExtensionLogger.swift in Sources */,
 				B4167E5C2F1FE73400D89B36 /* SnapshotEventType.swift in Sources */,
+				B4F939792F2C9D340012773D /* BreakNotification.swift in Sources */,
 				B4167E602F1FEF4E00D89B36 /* SnapshotStore.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -785,6 +795,7 @@
 			files = (
 				B49387992F0E428B0090C730 /* WindConfig.swift in Sources */,
 				B493879B2F0E428B0090C730 /* WindLevel.swift in Sources */,
+				B4F9397B2F2C9D340012773D /* BreakNotification.swift in Sources */,
 				B45862152EE5B92C0088CB78 /* Constants.swift in Sources */,
 				B4EVO2012F0E00010001A001 /* Blob.swift in Sources */,
 				B4EVO2022F0E00010001A002 /* EvolutionPhase.swift in Sources */,
@@ -824,6 +835,7 @@
 				B451D38D2F26856C004C534F /* SharedDefaults+Wind.swift in Sources */,
 				B451D20F2F24FEF0004C534F /* ExtensionLogger.swift in Sources */,
 				B4167E622F1FF91800D89B36 /* SnapshotEvent.swift in Sources */,
+				B4F9397A2F2C9D340012773D /* BreakNotification.swift in Sources */,
 				B4167E632F1FF92500D89B36 /* SnapshotStore.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

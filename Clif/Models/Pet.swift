@@ -34,7 +34,7 @@ final class Pet: Identifiable, PetPresentable, PetWithSources {
         }
 
         let duration: TimeInterval? = SharedDefaults.committedBreakDuration.map {
-            TimeInterval($0 * 60)
+            $0 == 0 ? TimeInterval(20) : TimeInterval($0 * 60)
         }
 
         return ActiveBreak(

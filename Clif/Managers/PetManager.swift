@@ -74,6 +74,9 @@ final class PetManager {
         ShieldManager.shared.clear()
         ScreenTimeManager.shared.stopMonitoring()
 
+        // Set wind to 100% so blown away state looks correct visually
+        SharedDefaults.monitoredWindPoints = 100
+
         pet.blowAway(reason: reason)
         saveActivePet()
     }

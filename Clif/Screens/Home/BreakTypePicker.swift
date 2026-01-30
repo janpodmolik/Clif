@@ -16,7 +16,13 @@ struct BreakTypePicker: View {
     private var currentWind: Double { currentPet?.windPoints ?? 0 }
     private var preset: WindPreset { currentPet?.preset ?? .balanced }
 
-    private let durationSteps = [5, 10, 15, 20, 30, 45, 60, 90, 120]
+    private var durationSteps: [Int] {
+        #if DEBUG
+        return [0, 5, 10, 15, 20, 30, 45, 60, 90, 120]
+        #else
+        return [5, 10, 15, 20, 30, 45, 60, 90, 120]
+        #endif
+    }
 
     var body: some View {
         VStack(spacing: 20) {
@@ -120,7 +126,8 @@ struct BreakTypePicker: View {
 
     private var selectionInfo: some View {
         let minutes = isUntilEndOfDay ? calculateMinutesToMidnight() : selectedMinutes
-        return Text("\(minutes) min")
+        let label = minutes == 0 ? "20s" : "\(minutes) min"
+        return Text(label)
             .font(.system(size: 48, weight: .bold, design: .rounded))
             .foregroundStyle(BreakType.committed.color)
             .contentTransition(.numericText())

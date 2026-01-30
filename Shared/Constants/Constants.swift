@@ -96,6 +96,7 @@ enum DefaultsKeys {
 
     static let currentBreakType = "currentBreakType"
     static let committedBreakDuration = "committedBreakDuration"
+    static let windZeroNotified = "windZeroNotified"
 
     // MARK: - Cumulative Tracking
 

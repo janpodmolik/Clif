@@ -66,6 +66,13 @@ extension SharedDefaults {
         }
     }
 
+    /// Whether the "wind reached 0%" notification was already sent during this break.
+    /// Used for both free and safety breaks. Reset when shield flags are cleared.
+    static var windZeroNotified: Bool {
+        get { defaults?.bool(forKey: DefaultsKeys.windZeroNotified) ?? false }
+        set { defaults?.set(newValue, forKey: DefaultsKeys.windZeroNotified) }
+    }
+
     // MARK: - Shield Helpers
 
     /// Resets usage shield flags to allow wind tracking.
@@ -75,5 +82,6 @@ extension SharedDefaults {
         shieldActivatedAt = nil
         breakStartedAt = nil
         committedBreakDuration = nil
+        windZeroNotified = false
     }
 }

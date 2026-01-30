@@ -28,6 +28,7 @@ final class ShieldManager {
     static let shared = ShieldManager()
 
     private let store = ManagedSettingsStore()
+    private var breakCompletionTimer: Timer?
 
     private init() {}
 
@@ -76,6 +77,8 @@ final class ShieldManager {
         #if DEBUG
         print("[ShieldManager] clear() called")
         #endif
+        stopBreakCompletionMonitoring()
+        BreakNotification.cancelScheduledCommittedBreakEnd()
         deactivateStore()
         SharedDefaults.resetShieldFlags()
         ShieldState.shared.refresh()
@@ -120,9 +123,17 @@ final class ShieldManager {
         guard activateStoreFromStoredTokens() else { return }
 
         // Store break type and duration (activeBreakType setter syncs isShieldActive)
-        SharedDefaults.shieldActivatedAt = Date()
+        let now = Date()
+        SharedDefaults.shieldActivatedAt = now
         SharedDefaults.activeBreakType = breakType
         SharedDefaults.committedBreakDuration = durationMinutes
+
+        // Schedule notification for committed break end
+        if breakType == .committed, let minutes = durationMinutes {
+            let seconds: TimeInterval = minutes == 0 ? 20 : TimeInterval(minutes * 60)
+            let fireDate = now.addingTimeInterval(seconds)
+            BreakNotification.scheduleCommittedBreakEnd(at: fireDate)
+        }
 
         // Log break started
         if let petId = SharedDefaults.monitoredPetId {
@@ -139,12 +150,17 @@ final class ShieldManager {
         }
 
         ShieldState.shared.refresh()
+        startBreakCompletionMonitoring()
     }
 
     func turnOff(success: Bool) {
+        stopBreakCompletionMonitoring()
         #if DEBUG
         print("[ShieldManager] toggle: OFF (success: \(success))")
         #endif
+
+        // Cancel any scheduled break end notification
+        BreakNotification.cancelScheduledCommittedBreakEnd()
 
         // Only apply break reduction for successful breaks
         // Failed committed breaks (violation) don't reduce wind - pet is blown away
@@ -162,6 +178,48 @@ final class ShieldManager {
         ScreenTimeManager.shared.restartMonitoring()
 
         ShieldState.shared.refresh()
+    }
+
+    // MARK: - Break Completion Monitoring
+
+    private func startBreakCompletionMonitoring() {
+        breakCompletionTimer?.invalidate()
+        breakCompletionTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
+            self?.checkBreakCompletion()
+        }
+    }
+
+    private func stopBreakCompletionMonitoring() {
+        breakCompletionTimer?.invalidate()
+        breakCompletionTimer = nil
+    }
+
+    private func checkBreakCompletion() {
+        guard SharedDefaults.isShieldActive,
+              let breakType = SharedDefaults.activeBreakType,
+              let activatedAt = SharedDefaults.shieldActivatedAt else { return }
+
+        switch breakType {
+        case .committed:
+            let duration: TimeInterval? = SharedDefaults.committedBreakDuration.map {
+                $0 == 0 ? TimeInterval(20) : TimeInterval($0 * 60)
+            }
+            if let duration, Date().timeIntervalSince(activatedAt) >= duration {
+                turnOff(success: true)
+            }
+
+        case .free:
+            if !SharedDefaults.windZeroNotified, SharedDefaults.effectiveWind <= 0 {
+                SharedDefaults.windZeroNotified = true
+                BreakNotification.freeBreakWindZero.send()
+            }
+
+        case .safety:
+            if !SharedDefaults.windZeroNotified, SharedDefaults.effectiveWind <= 0 {
+                SharedDefaults.windZeroNotified = true
+                BreakNotification.safetyBreakWindZero.send()
+            }
+        }
     }
 
     // MARK: - Break Reduction
