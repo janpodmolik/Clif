@@ -1,4 +1,5 @@
 import SwiftUI
+import Combine
 
 /// Shared unlock confirmation dialogs for safety and committed break types.
 /// Attach via `.unlockConfirmations(...)` to any view that needs unlock flow.
@@ -7,6 +8,9 @@ struct UnlockConfirmations: ViewModifier {
     @Binding var showSafetyConfirmation: Bool
 
     @Environment(PetManager.self) private var petManager
+
+    /// Dismisses safety dialog when wind drops below 80% so user can re-tap to unlock safely.
+    private let windCheckTimer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
 
     func body(content: Content) -> some View {
         content
@@ -37,6 +41,11 @@ struct UnlockConfirmations: ViewModifier {
                 Button("Počkat, až vítr klesne", role: .cancel) {}
             } message: {
                 Text("Vítr je stále nad 80%. Odemčení teď způsobí ztrátu tvého mazlíčka.")
+            }
+            .onReceive(windCheckTimer) { _ in
+                if showSafetyConfirmation, ShieldManager.shared.isSafetyUnlockSafe {
+                    showSafetyConfirmation = false
+                }
             }
     }
 }
