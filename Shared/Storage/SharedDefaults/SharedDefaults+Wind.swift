@@ -149,12 +149,15 @@ extension SharedDefaults {
 
     /// Effective wind during active shield - decreases over time based on fallRate.
     /// When shield is not active, returns calculatedWind.
+    /// Uses monitoredWindPoints (last stored value) as base during break to avoid
+    /// rounding drift between points↔seconds conversion in calculatedWind.
     static var effectiveWind: Double {
         guard let activatedAt = shieldActivatedAt else {
             return calculatedWind
         }
+        let baseWind = monitoredWindPoints
         let elapsed = Date().timeIntervalSince(activatedAt)
-        return max(0, calculatedWind - elapsed * monitoredFallRate)
+        return max(0, baseWind - elapsed * monitoredFallRate)
     }
 
     /// Buffer time in seconds (5% of limit).
