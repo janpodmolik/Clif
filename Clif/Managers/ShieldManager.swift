@@ -208,6 +208,16 @@ final class ShieldManager {
 
     // MARK: - Break Completion Monitoring
 
+    /// Restores break monitoring after app returns to foreground.
+    /// Checks immediately if break already expired, then starts timer for ongoing breaks.
+    func resumeBreakMonitoringIfNeeded() {
+        guard SharedDefaults.isShieldActive, SharedDefaults.activeBreakType != nil else { return }
+        checkBreakCompletion()
+        // If checkBreakCompletion ended the break, no need to start timer
+        guard SharedDefaults.isShieldActive else { return }
+        startBreakCompletionMonitoring()
+    }
+
     private func startBreakCompletionMonitoring() {
         breakCompletionTimer?.invalidate()
         breakCompletionTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in

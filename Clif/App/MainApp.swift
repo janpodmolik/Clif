@@ -41,6 +41,9 @@ struct MainApp: App {
             // Refresh shield state (may have been activated by extension at 100%)
             ShieldState.shared.refresh()
 
+            // Resume break monitoring (timer is lost when app is suspended/terminated)
+            ShieldManager.shared.resumeBreakMonitoringIfNeeded()
+
             // Check for blow-away state when returning to foreground
             // (windPoints is computed from SharedDefaults - no sync needed)
             petManager.performDailyResetIfNeeded()
