@@ -53,6 +53,11 @@ enum EventNames {
     static let secondPrefix = "second_"
 }
 
+/// Darwin notification names for cross-process IPC (extension → main app)
+enum DarwinNotifications {
+    static let safetyShieldActivated = "com.janpodmolik.Clif.safetyShieldActivated"
+}
+
 /// UserDefaults keys
 enum DefaultsKeys {
     static let lastMonitorUpdate = "lastMonitorUpdate"

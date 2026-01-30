@@ -30,7 +30,33 @@ final class ShieldManager {
     private let store = ManagedSettingsStore()
     private var breakCompletionTimer: Timer?
 
-    private init() {}
+    private init() {
+        // Listen for Darwin notification from DeviceActivityMonitor extension
+        // when safety shield is activated while the app is in foreground.
+        let center = CFNotificationCenterGetDarwinNotifyCenter()
+        CFNotificationCenterAddObserver(
+            center,
+            Unmanaged.passUnretained(self).toOpaque(),
+            { _, observer, _, _, _ in
+                guard let observer else { return }
+                let manager = Unmanaged<ShieldManager>.fromOpaque(observer).takeUnretainedValue()
+                DispatchQueue.main.async {
+                    manager.handleSafetyShieldActivatedByExtension()
+                }
+            },
+            DarwinNotifications.safetyShieldActivated as CFString,
+            nil,
+            .deliverImmediately
+        )
+    }
+
+    /// Called when the extension activates safety shield and notifies via Darwin notification.
+    /// Refreshes UI state and starts break completion monitoring.
+    private func handleSafetyShieldActivatedByExtension() {
+        guard SharedDefaults.activeBreakType == .safety else { return }
+        ShieldState.shared.refresh()
+        startBreakCompletionMonitoring()
+    }
 
     // MARK: - Shield Activation
 

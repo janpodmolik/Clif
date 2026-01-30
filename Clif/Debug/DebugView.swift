@@ -429,10 +429,31 @@ struct DebugView: View {
                 .tint(.red)
             }
             .font(.caption)
+
+            Button("Simulate Safety Shield") {
+                simulateSafetyShield()
+            }
+            .buttonStyle(.bordered)
+            .tint(.purple)
+            .font(.caption)
         }
         .padding()
         .background(Color.orange.opacity(0.1))
         .cornerRadius(12)
+    }
+
+    /// Simulates what the extension does when wind reaches 100%:
+    /// sets safety break flags in SharedDefaults and posts Darwin notification.
+    private func simulateSafetyShield() {
+        SharedDefaults.monitoredWindPoints = 100
+        SharedDefaults.shieldActivatedAt = Date()
+        SharedDefaults.activeBreakType = .safety
+        SharedDefaults.synchronize()
+
+        let center = CFNotificationCenterGetDarwinNotifyCenter()
+        CFNotificationCenterPostNotification(center, CFNotificationName(DarwinNotifications.safetyShieldActivated as CFString), nil, nil, true)
+
+        print("[DebugTools] Simulated safety shield activation + Darwin notification")
     }
 
     // MARK: - Supabase

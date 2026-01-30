@@ -196,6 +196,10 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
         SharedDefaults.activeBreakType = .safety
         SharedDefaults.synchronize()
 
+        // Notify the main app so it can refresh ShieldState immediately
+        let center = CFNotificationCenterGetDarwinNotifyCenter()
+        CFNotificationCenterPostNotification(center, CFNotificationName(DarwinNotifications.safetyShieldActivated as CFString), nil, nil, true)
+
         ExtensionLogger.log("[SafetyShield] Activated with .safety break type")
     }
 }

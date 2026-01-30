@@ -14,6 +14,9 @@ struct MainApp: App {
 
     init() {
         print("🟢 MainApp init")
+        // Eagerly initialize ShieldManager so its Darwin notification observer
+        // is registered before any extension threshold can fire.
+        _ = ShieldManager.shared
         Task {
             await AppDelegate.requestNotificationPermission()
         }
