@@ -86,7 +86,7 @@ struct HomeScreen: View {
             if let pet = currentPet {
                 DeletePetSheet(
                     petName: pet.name,
-                    showArchiveOption: true,
+                    showArchiveOption: pet.daysSinceCreation >= 3,
                     onArchive: {
                         petManager.archive(id: pet.id, using: archivedPetManager)
                     },

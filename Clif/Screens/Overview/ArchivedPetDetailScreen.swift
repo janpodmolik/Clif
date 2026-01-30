@@ -22,29 +22,38 @@ struct ArchivedPetDetailScreen: View {
                         purpose: pet.purpose
                     )
 
-                    EssenceInfoCard(evolutionHistory: pet.evolutionHistory)
+                    if !pet.isBlob {
+                        EssenceInfoCard(evolutionHistory: pet.evolutionHistory)
+                    }
 
                     EvolutionCarousel(
                         pet: pet,
                         windLevel: .none,
                         isBlownAway: pet.isBlown,
-                        showCurrentBadge: false
+                        showCurrentBadge: false,
+                        showBlobStatusBadge: false
                     )
 
-                    EvolutionTimelineView(
-                        history: pet.evolutionHistory,
-                        canEvolve: false,
-                        daysUntilEvolution: nil,
-                        showPulse: false
-                    )
+                    if !pet.isBlob {
+                        EvolutionTimelineView(
+                            history: pet.evolutionHistory,
+                            canEvolve: false,
+                            daysUntilEvolution: nil,
+                            showPulse: false
+                        )
+                    }
 
-                    DayByDayUsageCard(
-                        stats: pet.fullStats,
-                        petId: pet.id,
-                        limitMinutes: Int(pet.preset.minutesToBlowAway)
-                    )
+                    if !pet.dailyStats.isEmpty {
+                        DayByDayUsageCard(
+                            stats: pet.fullStats,
+                            petId: pet.id,
+                            limitMinutes: Int(pet.preset.minutesToBlowAway)
+                        )
+                    }
 
-                    TrendMiniChart(stats: pet.fullStats)
+                    if pet.dailyStats.count > 1 {
+                        TrendMiniChart(stats: pet.fullStats)
+                    }
 
                     LimitedAppsButton(
                         sources: pet.limitedSources,
@@ -107,5 +116,10 @@ struct ArchivedPetDetailScreen: View {
 
 #Preview("Fully Evolved") {
     ArchivedPetDetailScreen(pet: .mock(name: "Breeze", phase: 4, isBlown: false, totalDays: 14))
+        .environment(ArchivedPetManager.mock())
+}
+
+#Preview("Blob") {
+    ArchivedPetDetailScreen(pet: .mockBlob(name: "Blobby"))
         .environment(ArchivedPetManager.mock())
 }

@@ -6,6 +6,7 @@ struct EvolutionCarousel<Pet: PetEvolvable>: View {
     var isBlownAway: Bool = false
     var canUseEssence: Bool = false
     var showCurrentBadge: Bool = true
+    var showBlobStatusBadge: Bool = true
 
     @State private var selectedIndex: Int = 0
     @State private var scrollTarget: Int?
@@ -133,7 +134,7 @@ struct EvolutionCarousel<Pet: PetEvolvable>: View {
     private func cardView(for index: Int) -> some View {
         if isBlob {
             // Blob-only card (no essence yet)
-            BlobOnlyCard(windLevel: windLevel, isBlownAway: isBlownAway, canUseEssence: canUseEssence)
+            BlobOnlyCard(windLevel: windLevel, isBlownAway: isBlownAway, canUseEssence: canUseEssence, showStatusBadge: showBlobStatusBadge)
         } else if index == 0, let essence, let path = evolutionPath {
             EvolutionOriginCard(essence: essence, path: path, windLevel: windLevel, isBlownAway: isBlownAway, themeColor: themeColor)
         } else if let path = evolutionPath {
@@ -169,6 +170,7 @@ struct BlobOnlyCard: View {
     var windLevel: WindLevel = .none
     var isBlownAway: Bool = false
     var canUseEssence: Bool = false
+    var showStatusBadge: Bool = true
 
     var body: some View {
         VStack(spacing: 12) {
@@ -180,7 +182,9 @@ struct BlobOnlyCard: View {
             Text("Blob")
                 .font(.subheadline.weight(.semibold))
 
-            statusBadge
+            if showStatusBadge {
+                statusBadge
+            }
         }
         .padding()
         .frame(maxWidth: .infinity)

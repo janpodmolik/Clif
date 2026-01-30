@@ -157,7 +157,7 @@ struct PetDetailScreen: View {
             .sheet(isPresented: $showDeleteConfirmation) {
                 DeletePetSheet(
                     petName: pet.name,
-                    showArchiveOption: true,
+                    showArchiveOption: pet.daysSinceCreation >= 3,
                     onArchive: {
                         petManager.archive(id: pet.id, using: archivedPetManager)
                         dismiss()
