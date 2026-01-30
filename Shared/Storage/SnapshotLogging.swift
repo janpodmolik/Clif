@@ -81,6 +81,22 @@ enum SnapshotLogging {
         SnapshotStore.shared.append(event)
     }
 
+    /// Logs a presetSelected event.
+    /// Call this when user selects a daily wind preset.
+    static func logPresetSelected(
+        petId: UUID,
+        windPoints: Double,
+        preset: WindPreset
+    ) {
+        let event = SnapshotEvent(
+            petId: petId,
+            windPoints: windPoints,
+            eventType: .presetSelected(preset: preset.rawValue)
+        )
+
+        SnapshotStore.shared.append(event)
+    }
+
     /// Updates the current wind points in SharedDefaults.
     /// Call this whenever windPoints change so extension snapshots have accurate values.
     static func updateWindPoints(_ windPoints: Double) {

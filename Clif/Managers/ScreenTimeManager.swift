@@ -85,6 +85,13 @@ final class ScreenTimeManager: ObservableObject {
         SharedDefaults.windPresetLockedForToday = true
         SharedDefaults.windPresetLockedDate = Date()
 
+        // Log preset selection to snapshot analytics
+        SnapshotLogging.logPresetSelected(
+            petId: pet.id,
+            windPoints: 0,
+            preset: preset
+        )
+
         // Clear shields and deactivate day start shield (user selected preset)
         clearShield()
         SharedDefaults.isDayStartShieldActive = false

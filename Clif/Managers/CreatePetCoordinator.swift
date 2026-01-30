@@ -197,6 +197,13 @@ final class CreatePetCoordinator {
             return
         }
 
+        // Log preset selection for analytics
+        SnapshotLogging.logPresetSelected(
+            petId: pet.id,
+            windPoints: 0,
+            preset: preset
+        )
+
         // Start monitoring
         let limitSeconds = Int(preset.minutesToBlowAway * 60)
         let fallRatePerSecond = preset.fallRate / 60.0

@@ -17,18 +17,21 @@ struct DayDetailSheet: View {
 
     var body: some View {
         NavigationStack {
-            ScrollView {
-                VStack(spacing: 20) {
-                    totalTimeCard
-
-                    if breakCount > 0 {
-                        breakCard
-                    }
-
-                    windTimelineSection
+            VStack(spacing: 20) {
+                if let preset = selectedPreset {
+                    presetCard(preset)
                 }
-                .padding()
+
+                totalTimeCard
+
+                if breakCount > 0 {
+                    breakCard
             }
+
+                windTimelineSection
+                    .frame(maxHeight: .infinity)
+            }
+            .padding()
             .navigationTitle(dateFormatter.string(from: day.date))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -46,7 +49,7 @@ struct DayDetailSheet: View {
                 loadSnapshots()
             }
         }
-        .presentationDetents([.medium, .large])
+        .presentationDetents([.large])
         .presentationDragIndicator(.visible)
     }
 
@@ -66,6 +69,12 @@ struct DayDetailSheet: View {
 
     private var blowAwayReason: BlowAwayReason? {
         snapshots.first { $0.eventType.isBlowAway }?.eventType.blowAwayReason
+    }
+
+    private var selectedPreset: WindPreset? {
+        snapshots.compactMap { $0.eventType.presetValue }
+            .last
+            .flatMap { WindPreset(rawValue: $0) }
     }
 
     private var totalTimeCard: some View {
@@ -114,6 +123,30 @@ struct DayDetailSheet: View {
             }
 
             Spacer()
+        }
+        .padding()
+        .glassCard()
+    }
+
+    private func presetCard(_ preset: WindPreset) -> some View {
+        HStack {
+            Image(systemName: preset.iconName)
+                .font(.title2)
+                .foregroundStyle(preset.themeColor)
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Preset")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                Text(preset.displayName)
+                    .font(.title2.bold())
+            }
+
+            Spacer()
+
+            Text("\(Int(preset.minutesToBlowAway))m limit")
+                .font(.caption)
+                .foregroundStyle(.secondary)
         }
         .padding()
         .glassCard()

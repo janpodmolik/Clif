@@ -310,6 +310,9 @@ final class ShieldManager {
 
         let actualMinutes = Int(Date().timeIntervalSince(activatedAt) / 60)
 
+        // Skip breaks shorter than 1 minute
+        guard actualMinutes >= 1 else { return }
+
         SnapshotLogging.logBreakEnded(
             petId: petId,
             windPoints: SharedDefaults.monitoredWindPoints,

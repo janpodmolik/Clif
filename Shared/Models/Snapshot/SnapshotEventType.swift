@@ -24,6 +24,9 @@ enum SnapshotEventType: Codable, Equatable {
     /// System day end marker.
     case systemDayEnd
 
+    /// Daily preset was selected.
+    case presetSelected(preset: String)
+
     /// Unknown event type for forward-compatibility.
     case unknown(String)
 
@@ -36,6 +39,7 @@ enum SnapshotEventType: Codable, Equatable {
         case actualMinutes = "actual_minutes"
         case success
         case blowAwayReason = "blow_away_reason"
+        case preset
     }
 
     init(from decoder: Decoder) throws {
@@ -68,6 +72,10 @@ enum SnapshotEventType: Codable, Equatable {
 
         case "systemDayEnd":
             self = .systemDayEnd
+
+        case "presetSelected":
+            let preset = try container.decode(String.self, forKey: .preset)
+            self = .presetSelected(preset: preset)
 
         default:
             self = .unknown(type)
@@ -104,6 +112,10 @@ enum SnapshotEventType: Codable, Equatable {
         case .systemDayEnd:
             try container.encode("systemDayEnd", forKey: .type)
 
+        case .presetSelected(let preset):
+            try container.encode("presetSelected", forKey: .type)
+            try container.encode(preset, forKey: .preset)
+
         case .unknown(let value):
             try container.encode(value, forKey: .type)
         }
@@ -118,6 +130,12 @@ enum SnapshotEventType: Codable, Equatable {
     /// Returns the blow away reason if this is a blowAway event.
     var blowAwayReason: BlowAwayReason? {
         if case .blowAway(let reason) = self { return reason }
+        return nil
+    }
+
+    /// Returns the preset raw value if this is a presetSelected event.
+    var presetValue: String? {
+        if case .presetSelected(let preset) = self { return preset }
         return nil
     }
 }

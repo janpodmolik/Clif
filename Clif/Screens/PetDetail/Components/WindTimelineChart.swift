@@ -56,7 +56,7 @@ struct WindTimelineChart: View {
 
             if hasData {
                 chartView
-                    .frame(height: 140)
+                    .frame(maxHeight: .infinity)
             } else {
                 emptyState
             }
