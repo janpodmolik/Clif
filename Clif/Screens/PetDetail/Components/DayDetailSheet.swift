@@ -72,9 +72,7 @@ struct DayDetailSheet: View {
     }
 
     private var selectedPreset: WindPreset? {
-        snapshots.compactMap { $0.eventType.presetValue }
-            .last
-            .flatMap { WindPreset(rawValue: $0) }
+        day.preset
     }
 
     private var totalTimeCard: some View {

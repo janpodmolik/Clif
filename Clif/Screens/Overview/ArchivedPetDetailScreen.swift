@@ -44,6 +44,12 @@ struct ArchivedPetDetailScreen: View {
                     }
 
                     if !pet.dailyStats.isEmpty {
+                        UsageOverviewCard(
+                            stats: pet.fullStats,
+                            breakCount: pet.breakHistory.count,
+                            totalBreakMinutes: pet.totalBreakMinutes
+                        )
+
                         DayByDayUsageCard(
                             stats: pet.fullStats,
                             petId: pet.id,

@@ -93,6 +93,18 @@ struct FullUsageStats: Codable, Equatable, UsageStatsProtocol {
         days.min(by: { $0.totalMinutes < $1.totalMinutes })
     }
 
+    /// Number of days each preset was used. Only includes days with known preset.
+    var presetDistribution: [WindPreset: Int] {
+        var counts: [WindPreset: Int] = [:]
+        for day in days {
+            if let preset = day.preset {
+                counts[preset, default: 0] += 1
+            }
+        }
+        return counts
+    }
+
+
     /// For sparkline chart - returns normalized values (0-1).
     func normalizedValues() -> [CGFloat] {
         guard maxMinutes > 0 else { return days.map { _ in 0 } }

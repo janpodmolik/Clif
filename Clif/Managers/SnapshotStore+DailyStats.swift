@@ -22,6 +22,9 @@ extension SnapshotStore {
         var currentDate = calendar.startOfDay(for: minDate)
         let endDate = calendar.startOfDay(for: maxDate)
 
+        // Track last known preset across days (carries forward if no new presetSelected event)
+        var lastKnownPreset: WindPreset? = nil
+
         while currentDate <= endDate {
             let dateString = SnapshotEvent.dateString(from: currentDate)
             let dayEvents = groupedByDate[dateString] ?? []
@@ -36,6 +39,8 @@ extension SnapshotStore {
                     maxCumulativeSeconds = max(maxCumulativeSeconds, cumulativeSeconds)
                 case .blowAway:
                     hasBlowAway = true
+                case .presetSelected(let preset):
+                    lastKnownPreset = WindPreset(rawValue: preset)
                 default:
                     break
                 }
@@ -45,7 +50,8 @@ extension SnapshotStore {
                 petId: petId,
                 date: currentDate,
                 totalMinutes: maxCumulativeSeconds / 60,
-                wasOverLimit: hasBlowAway
+                wasOverLimit: hasBlowAway,
+                preset: lastKnownPreset
             )
             stats.append(stat)
 

@@ -14,13 +14,16 @@ struct DailyUsageStat: Codable, Identifiable, Equatable {
     let totalMinutes: Int
     /// Whether limit was exceeded this day (wind reached 100).
     let wasOverLimit: Bool
+    /// Wind preset active on this day (nil for legacy data without preset tracking).
+    let preset: WindPreset?
 
-    init(id: UUID = UUID(), petId: UUID, date: Date, totalMinutes: Int, wasOverLimit: Bool = false) {
+    init(id: UUID = UUID(), petId: UUID, date: Date, totalMinutes: Int, wasOverLimit: Bool = false, preset: WindPreset? = nil) {
         self.id = id
         self.petId = petId
         self.date = date
         self.totalMinutes = totalMinutes
         self.wasOverLimit = wasOverLimit
+        self.preset = preset
     }
 }
 
@@ -40,6 +43,7 @@ extension DailyUsageStat {
         minMinutes: Int = 20,
         wasBlown: Bool = false
     ) -> [DailyUsageStat] {
+        let presets: [WindPreset] = [.gentle, .balanced, .balanced, .intense]
         let calendar = Calendar.current
         let today = calendar.startOfDay(for: Date())
         return (0..<days).map { dayOffset in
@@ -49,7 +53,13 @@ extension DailyUsageStat {
             let minutes = Int.random(in: minMinutes...120)
             let wasOverLimit = wasBlown && isLastDay
 
-            return DailyUsageStat(petId: petId, date: date, totalMinutes: minutes, wasOverLimit: wasOverLimit)
+            return DailyUsageStat(
+                petId: petId,
+                date: date,
+                totalMinutes: minutes,
+                wasOverLimit: wasOverLimit,
+                preset: presets[dayOffset % presets.count]
+            )
         }
     }
 }
