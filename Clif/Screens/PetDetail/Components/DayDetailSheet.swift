@@ -21,6 +21,10 @@ struct DayDetailSheet: View {
                 VStack(spacing: 20) {
                     totalTimeCard
 
+                    if breakCount > 0 {
+                        breakCard
+                    }
+
                     windTimelineSection
                 }
                 .padding()
@@ -44,6 +48,20 @@ struct DayDetailSheet: View {
         }
         .presentationDetents([.medium, .large])
         .presentationDragIndicator(.visible)
+    }
+
+    private var breakCount: Int {
+        snapshots.filter {
+            if case .breakEnded = $0.eventType { return true }
+            return false
+        }.count
+    }
+
+    private var totalBreakMinutes: Int {
+        snapshots.compactMap {
+            if case .breakEnded(let minutes, _) = $0.eventType { return minutes }
+            return nil
+        }.reduce(0, +)
     }
 
     private var blowAwayReason: BlowAwayReason? {
@@ -76,6 +94,26 @@ struct DayDetailSheet: View {
                         .foregroundStyle(.secondary)
                 }
             }
+        }
+        .padding()
+        .glassCard()
+    }
+
+    private var breakCard: some View {
+        HStack {
+            Image(systemName: "leaf.fill")
+                .font(.title2)
+                .foregroundStyle(.cyan)
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text("\(breakCount) \(breakCount == 1 ? "pauza" : breakCount < 5 ? "pauzy" : "pauz")")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                Text(formatMinutes(totalBreakMinutes))
+                    .font(.title2.bold())
+            }
+
+            Spacer()
         }
         .padding()
         .glassCard()
@@ -126,4 +164,5 @@ struct DayDetailSheet: View {
         limitMinutes: 60
     )
 }
+
 #endif

@@ -13,7 +13,6 @@ struct PetDetailScreen: View {
     @Environment(PetManager.self) private var petManager
     @Environment(ArchivedPetManager.self) private var archivedPetManager
     @State private var showEssencePicker = false
-    @State private var showBreakHistory = false
     @State private var showLimitedApps = false
     @State private var showDeleteConfirmation = false
 
@@ -95,13 +94,6 @@ struct PetDetailScreen: View {
                         TrendMiniChart(stats: pet.fullStats)
                     }
 
-                    if !pet.breakHistory.isEmpty {
-                        BreakSummaryButton(
-                            breakHistory: pet.breakHistory,
-                            onTap: { showBreakHistory = true }
-                        )
-                    }
-
                     LimitedAppsButton(
                         sources: pet.limitedSources,
                         onTap: { showLimitedApps = true }
@@ -159,9 +151,6 @@ struct PetDetailScreen: View {
                     pet.applyEssence(essence)
                 }
             }
-            .sheet(isPresented: $showBreakHistory) {
-                BreakHistorySheet(breakHistory: pet.breakHistory)
-            }
             .sheet(isPresented: $showLimitedApps) {
                 LimitedAppsSheet(sources: pet.limitedSources)
             }
@@ -206,15 +195,6 @@ struct PetDetailScreen: View {
     Text("Tap to open")
         .fullScreenCover(isPresented: .constant(true)) {
             PetDetailScreen(pet: .mockBlob(name: "Blobby", canUseEssence: true))
-        }
-        .environment(PetManager.mock())
-        .environment(ArchivedPetManager.mock())
-}
-
-#Preview("With Break History") {
-    Text("Tap to open")
-        .fullScreenCover(isPresented: .constant(true)) {
-            PetDetailScreen(pet: .mockWithBreakHistory())
         }
         .environment(PetManager.mock())
         .environment(ArchivedPetManager.mock())

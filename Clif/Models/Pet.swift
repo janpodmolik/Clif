@@ -335,10 +335,6 @@ extension Pet {
         return mock(windPoints: 65)
     }
 
-    static func mockWithBreakHistory() -> Pet {
-        mock(windPoints: 45, totalDays: 10)
-    }
-
     static func mockBlob(
         name: String = "Blobby",
         canUseEssence: Bool = false,

@@ -6,7 +6,6 @@ struct ArchivedPetDetailScreen: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(ArchivedPetManager.self) private var archivedPetManager
     @State private var showAppUsageSheet = false
-    @State private var showBreakHistory = false
     @State private var showDeleteConfirmation = false
 
     var body: some View {
@@ -47,13 +46,6 @@ struct ArchivedPetDetailScreen: View {
 
                     TrendMiniChart(stats: pet.fullStats)
 
-                    if !pet.breakHistory.isEmpty {
-                        BreakSummaryButton(
-                            breakHistory: pet.breakHistory,
-                            onTap: { showBreakHistory = true }
-                        )
-                    }
-
                     LimitedAppsButton(
                         sources: pet.limitedSources,
                         onTap: { showAppUsageSheet = true }
@@ -62,9 +54,6 @@ struct ArchivedPetDetailScreen: View {
                     deleteButton
                 }
                 .padding()
-            }
-            .sheet(isPresented: $showBreakHistory) {
-                BreakHistorySheet(breakHistory: pet.breakHistory)
             }
             .sheet(isPresented: $showAppUsageSheet) {
                 LimitedAppsSheet(sources: pet.limitedSources)
