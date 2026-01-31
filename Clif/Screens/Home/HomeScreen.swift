@@ -17,6 +17,7 @@ struct HomeScreen: View {
     @State private var showPresetPicker = false
     @State private var showDeleteSheet = false
     @State private var showSuccessArchivePrompt = false
+    @State private var pendingEssencePicker = false
     @State private var petFrame: CGRect = .zero
     @State private var dropZoneFrame: CGRect = .zero
 
@@ -93,12 +94,19 @@ struct HomeScreen: View {
                     petManager.blowAwayCurrentPet(reason: .userChoice)
                 }
             }
+            if pendingEssencePicker, let pet = currentPet {
+                pendingEssencePicker = false
+                handleEvolve(pet)
+            }
         }) {
             if let pet = currentPet {
                 PetDetailScreen(pet: pet) { action in
                     switch action {
                     case .blowAway:
                         blowAwayAnimator.pendingBlowAway = true
+                        showPetDetail = false
+                    case .progress:
+                        pendingEssencePicker = true
                         showPetDetail = false
                     default:
                         break

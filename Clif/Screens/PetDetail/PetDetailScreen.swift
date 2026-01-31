@@ -12,7 +12,6 @@ struct PetDetailScreen: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(PetManager.self) private var petManager
     @Environment(ArchivedPetManager.self) private var archivedPetManager
-    @State private var showEssencePicker = false
     @State private var showLimitedApps = false
     @State private var showDeleteConfirmation = false
     @State private var showArchiveConfirmation = false
@@ -122,7 +121,8 @@ struct PetDetailScreen: View {
                             switch action {
                             case .progress:
                                 if pet.isBlob {
-                                    showEssencePicker = true
+                                    onAction(.progress)
+                                    dismiss()
                                 } else {
                                     pet.evolve()
                                 }
@@ -147,11 +147,6 @@ struct PetDetailScreen: View {
                             .font(.system(size: 16))
                             .foregroundStyle(.secondary)
                     }
-                }
-            }
-            .sheet(isPresented: $showEssencePicker) {
-                EssencePickerSheet { essence in
-                    pet.applyEssence(essence)
                 }
             }
             .sheet(isPresented: $showLimitedApps) {
