@@ -11,102 +11,40 @@ struct DeletePetSheet: View {
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
-        NavigationStack {
-            VStack(spacing: 24) {
-                headerSection
+        ConfirmationSheet(
+            navigationTitle: "Odstranit peta",
+            height: showArchiveOption ? 340 : 280
+        ) {
+            ConfirmationHeader(
+                icon: showArchiveOption ? "questionmark.circle" : "trash.circle",
+                iconColor: showArchiveOption ? .orange : .red,
+                title: "Co chceš udělat s \(petName)?"
+            )
 
-                VStack(spacing: 12) {
-                    if showArchiveOption {
-                        archiveButton
-                    }
-                    deleteButton
-                }
-
-                Spacer()
-            }
-            .padding(24)
-            .navigationTitle("Odstranit peta")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button {
+            VStack(spacing: 12) {
+                if showArchiveOption {
+                    ConfirmationAction(
+                        icon: "archivebox",
+                        title: "Archivovat",
+                        subtitle: "Zachová historii v přehledu"
+                    ) {
                         dismiss()
-                    } label: {
-                        Image(systemName: "xmark")
-                            .font(.system(size: 14))
-                            .foregroundStyle(.secondary)
+                        onArchive()
                     }
                 }
-            }
-        }
-        .presentationDetents([.height(showArchiveOption ? 340 : 280)])
-        .presentationDragIndicator(.visible)
-    }
 
-    private var headerSection: some View {
-        VStack(spacing: 8) {
-            Image(systemName: showArchiveOption ? "questionmark.circle" : "trash.circle")
-                .font(.system(size: 48))
-                .foregroundStyle(showArchiveOption ? .orange : .red)
-
-            Text("Co chceš udělat s \(petName)?")
-                .font(.headline)
-                .multilineTextAlignment(.center)
-        }
-    }
-
-    private var archiveButton: some View {
-        Button {
-            dismiss()
-            onArchive()
-        } label: {
-            HStack(spacing: 12) {
-                Image(systemName: "archivebox")
-                    .font(.title3)
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("Archivovat")
-                        .font(.headline)
-                    Text("Zachová historii v přehledu")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                ConfirmationAction(
+                    icon: "trash",
+                    title: "Smazat trvale",
+                    subtitle: "Odstraní všechna data",
+                    foregroundColor: .red,
+                    background: .tinted(.red)
+                ) {
+                    dismiss()
+                    onDelete()
                 }
-                Spacer()
-                Image(systemName: "chevron.right")
-                    .foregroundStyle(.tertiary)
             }
-            .padding()
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12))
         }
-        .buttonStyle(.plain)
-    }
-
-    private var deleteButton: some View {
-        Button {
-            dismiss()
-            onDelete()
-        } label: {
-            HStack(spacing: 12) {
-                Image(systemName: "trash")
-                    .font(.title3)
-                    .foregroundStyle(.red)
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("Smazat trvale")
-                        .font(.headline)
-                        .foregroundStyle(.red)
-                    Text("Odstraní všechna data")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
-                Spacer()
-                Image(systemName: "chevron.right")
-                    .foregroundStyle(.tertiary)
-            }
-            .padding()
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(.red.opacity(0.1), in: RoundedRectangle(cornerRadius: 12))
-        }
-        .buttonStyle(.plain)
     }
 }
 

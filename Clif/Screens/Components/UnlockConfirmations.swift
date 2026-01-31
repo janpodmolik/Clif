@@ -1,7 +1,6 @@
 import SwiftUI
-import Combine
 
-/// Shared unlock confirmation dialogs for safety and committed break types.
+/// Shared unlock confirmation sheets for safety and committed break types.
 /// Attach via `.unlockConfirmations(...)` to any view that needs unlock flow.
 struct UnlockConfirmations: ViewModifier {
     @Binding var showCommittedConfirmation: Bool
@@ -9,43 +8,26 @@ struct UnlockConfirmations: ViewModifier {
 
     @Environment(PetManager.self) private var petManager
 
-    /// Dismisses safety dialog when wind drops below 80% so user can re-tap to unlock safely.
-    private let windCheckTimer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
-
     func body(content: Content) -> some View {
         content
-            .confirmationDialog(
-                "Ukončit Committed Break?",
-                isPresented: $showCommittedConfirmation,
-                titleVisibility: .visible
-            ) {
-                Button("Ukončit a ztratit peta", role: .destructive) {
+            .sheet(isPresented: $showCommittedConfirmation) {
+                CommittedUnlockSheet {
                     ShieldManager.shared.toggle(success: false)
                     petManager.blowAwayCurrentPet(reason: .breakViolation)
                 }
-                Button("Pokračovat v pauze", role: .cancel) {}
-            } message: {
-                Text("Ukončení committed breaku předčasně způsobí okamžitou ztrátu tvého peta. Tato akce je nevratná.")
             }
-            .confirmationDialog(
-                "Odemknout Safety Shield?",
-                isPresented: $showSafetyConfirmation,
-                titleVisibility: .visible
-            ) {
-                Button("Odemknout a ztratit peta", role: .destructive) {
-                    let result = ShieldManager.shared.processSafetyShieldUnlock()
-                    if result == .blownAway {
-                        petManager.blowAwayCurrentPet(reason: .limitExceeded)
+            .sheet(isPresented: $showSafetyConfirmation) {
+                SafetyUnlockSheet(
+                    onUnlockDangerous: {
+                        let result = ShieldManager.shared.processSafetyShieldUnlock()
+                        if result == .blownAway {
+                            petManager.blowAwayCurrentPet(reason: .limitExceeded)
+                        }
+                    },
+                    onUnlockSafe: {
+                        ShieldManager.shared.processSafetyShieldUnlock()
                     }
-                }
-                Button("Počkat, až vítr klesne", role: .cancel) {}
-            } message: {
-                Text("Vítr je stále nad 80%. Odemčení teď způsobí ztrátu tvého mazlíčka.")
-            }
-            .onReceive(windCheckTimer) { _ in
-                if showSafetyConfirmation, ShieldManager.shared.isSafetyUnlockSafe {
-                    showSafetyConfirmation = false
-                }
+                )
             }
     }
 }

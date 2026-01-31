@@ -30,6 +30,11 @@ struct ActivePetActionsCard: View {
         }
         .padding()
         .glassCard()
+        .sheet(isPresented: $showBlowAwayConfirmation) {
+            BlowAwaySheet {
+                onAction(.blowAway)
+            }
+        }
     }
 
     private var normalActions: some View {
@@ -39,18 +44,6 @@ struct ActivePetActionsCard: View {
             }
             Spacer()
             progressSection
-        }
-        .confirmationDialog(
-            "Odfoukout peta?",
-            isPresented: $showBlowAwayConfirmation,
-            titleVisibility: .visible
-        ) {
-            Button("Odfoukout", role: .destructive) {
-                onAction(.blowAway)
-            }
-            Button("Zrušit", role: .cancel) {}
-        } message: {
-            Text("Tvůj pet bude odfouknut a budeš muset začít znovu. Tato akce je nevratná.")
         }
     }
 
