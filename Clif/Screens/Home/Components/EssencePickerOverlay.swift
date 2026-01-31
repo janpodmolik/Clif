@@ -4,10 +4,6 @@ import SwiftUI
 struct EssencePickerOverlay: View {
     @Environment(EssencePickerCoordinator.self) private var coordinator
 
-    private enum Layout {
-        static let dragPreviewOffset = CGSize(width: -20, height: -50)
-    }
-
     var body: some View {
         @Bindable var coordinator = coordinator
 
@@ -21,10 +17,7 @@ struct EssencePickerOverlay: View {
             if coordinator.dragState.isDragging,
                let essence = coordinator.dragState.draggedEssence {
                 EssenceDragPreview(essence: essence)
-                    .position(
-                        x: coordinator.dragState.dragLocation.x + Layout.dragPreviewOffset.width,
-                        y: coordinator.dragState.dragLocation.y + Layout.dragPreviewOffset.height
-                    )
+                    .position(DragPreviewOffset.adjustedPosition(from: coordinator.dragState.dragLocation))
                     .allowsHitTesting(false)
             }
         }

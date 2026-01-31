@@ -167,10 +167,7 @@ struct PetDropStep: View {
         hapticController.stop()
 
         // Use blob position (with offset), not finger position
-        let blobPosition = CGPoint(
-            x: location.x - 20,
-            y: location.y - 50
-        )
+        let blobPosition = DragPreviewOffset.adjustedPosition(from: location)
 
         guard let petDropFrame = coordinator.petDropFrame,
               petDropFrame.contains(blobPosition) else {
@@ -206,20 +203,17 @@ struct PetDropStep: View {
 
     private func updateSnapState(at location: CGPoint) {
         guard let petDropFrame = coordinator.petDropFrame else {
-            coordinator.dragState.isSnapped = false
+            coordinator.dragState.isOnTarget = false
             return
         }
 
         // Use blob position (with offset), not finger position
-        let blobPosition = CGPoint(
-            x: location.x - 20,
-            y: location.y - 50
-        )
-        let isSnapped = petDropFrame.contains(blobPosition)
-        if isSnapped != coordinator.dragState.isSnapped {
-            coordinator.dragState.isSnapped = isSnapped
-            if isSnapped {
-                coordinator.dragState.snapTargetCenter = CGPoint(
+        let blobPosition = DragPreviewOffset.adjustedPosition(from: location)
+        let isOnTarget = petDropFrame.contains(blobPosition)
+        if isOnTarget != coordinator.dragState.isOnTarget {
+            coordinator.dragState.isOnTarget = isOnTarget
+            if isOnTarget {
+                coordinator.dragState.snapTarget = CGPoint(
                     x: petDropFrame.midX,
                     y: petDropFrame.midY
                 )
@@ -229,7 +223,8 @@ struct PetDropStep: View {
     }
 
     private func updateDragHaptics(at location: CGPoint) {
-        hapticController.updateProximityIntensity(at: location, targetFrame: coordinator.petDropFrame)
+        let previewPosition = DragPreviewOffset.adjustedPosition(from: location)
+        hapticController.updateProximityIntensity(at: previewPosition, targetFrame: coordinator.petDropFrame)
     }
 }
 

@@ -12,12 +12,6 @@ struct EssencePicker: View {
         static let sectionSpacing: CGFloat = 16
     }
 
-    /// Offset applied to drag preview position (matches EssencePickerOverlay.Layout.dragPreviewOffset)
-    private enum DragOffset {
-        static let x: CGFloat = -20
-        static let y: CGFloat = -50
-    }
-
     private var selectedPath: EvolutionPath? {
         selectedEssence.map { EvolutionPath.path(for: $0) }
     }
@@ -115,10 +109,7 @@ struct EssencePicker: View {
         guard let essence = selectedEssence else { return }
 
         // Use essence preview position (with offset), not finger position
-        let essencePosition = CGPoint(
-            x: location.x + DragOffset.x,
-            y: location.y + DragOffset.y
-        )
+        let essencePosition = DragPreviewOffset.adjustedPosition(from: location)
         guard let petDropFrame = coordinator.petDropFrame,
               petDropFrame.contains(essencePosition) else { return }
 
@@ -129,7 +120,8 @@ struct EssencePicker: View {
     }
 
     private func updateDragHaptics(at location: CGPoint) {
-        hapticController.updateProximityIntensity(at: location, targetFrame: coordinator.petDropFrame)
+        let previewPosition = DragPreviewOffset.adjustedPosition(from: location)
+        hapticController.updateProximityIntensity(at: previewPosition, targetFrame: coordinator.petDropFrame)
     }
 }
 

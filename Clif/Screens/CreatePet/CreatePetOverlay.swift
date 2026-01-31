@@ -5,11 +5,6 @@ struct CreatePetOverlay: View {
 
     @Environment(CreatePetCoordinator.self) private var coordinator
 
-    private enum Layout {
-        // Offset to position pet below finger during drag
-        static let dragPreviewOffset = CGSize(width: -20, height: -50)
-    }
-
     var body: some View {
         @Bindable var coordinator = coordinator
 
@@ -37,21 +32,18 @@ struct CreatePetOverlay: View {
                     // When returning, position directly at dragLocation (which animates to staging card center)
                     // When dragging, apply offset to show pet below finger
                     let position: CGPoint = {
-                        if coordinator.dragState.isSnapped {
-                            return coordinator.dragState.snapTargetCenter
+                        if coordinator.dragState.isOnTarget {
+                            return coordinator.dragState.snapTarget
                         } else if coordinator.dragState.isReturning {
                             return coordinator.dragState.dragLocation
                         } else {
-                            return CGPoint(
-                                x: coordinator.dragState.dragLocation.x + Layout.dragPreviewOffset.width,
-                                y: coordinator.dragState.dragLocation.y + Layout.dragPreviewOffset.height
-                            )
+                            return DragPreviewOffset.adjustedPosition(from: coordinator.dragState.dragLocation)
                         }
                     }()
 
                     BlobDragPreview(
                         screenHeight: screenHeight,
-                        dragVelocity: coordinator.dragState.isSnapped ? .zero : coordinator.dragState.dragVelocity
+                        dragVelocity: coordinator.dragState.isOnTarget ? .zero : coordinator.dragState.dragVelocity
                     )
                         .position(position)
                         .animation(

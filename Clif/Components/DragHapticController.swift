@@ -1,5 +1,19 @@
 import UIKit
 
+/// Shared offset applied to drag preview position relative to the finger.
+/// Both blob drop and essence drop flows position the preview slightly
+/// above-left of the touch point so the dragged item isn't hidden under the finger.
+enum DragPreviewOffset {
+    static let x: CGFloat = -20
+    static let y: CGFloat = -50
+    static let size = CGSize(width: x, height: y)
+
+    /// Returns the visual position of the dragged item given a raw touch `location`.
+    static func adjustedPosition(from location: CGPoint) -> CGPoint {
+        CGPoint(x: location.x + x, y: location.y + y)
+    }
+}
+
 /// Controls proximity-based haptic feedback during drag-to-drop interactions.
 ///
 /// Emits periodic ticks whose intensity scales with the drag position's

@@ -36,8 +36,13 @@ struct HomeScreen: View {
     private var homeCardCornerRadius: CGFloat {
         DeviceMetrics.concentricCornerRadius(inset: homeCardInset)
     }
+    /// Hit-test expansion for blob drop during pet creation.
     private let dropTargetExpansion: CGFloat = 40
+    /// Hit-test expansion for essence drop on existing pet.
+    /// Larger than blob drop because the essence preview is smaller and harder to aim.
     private let essenceDropTargetExpansion: CGFloat = 80
+    /// Visual highlight expansion (broader than hit-test to give early feedback).
+    private let essenceHighlightExpansion: CGFloat = 100
 
     /// Whether we're in pet creation mode (empty island shown during entire flow)
     private var isInCreationMode: Bool {
@@ -52,27 +57,24 @@ struct HomeScreen: View {
         return expandedFrame.contains(createPetCoordinator.dragState.dragLocation)
     }
 
-    /// Whether the dragged essence is near the drop zone (larger area for visual feedback)
-    private var isEssenceDropZoneHighlighted: Bool {
-        guard essenceCoordinator.dragState.isDragging,
-              petFrame != .zero else { return false }
-        let expandedFrame = petFrame.insetBy(dx: -100, dy: -100)
-        let essencePosition = CGPoint(
-            x: essenceCoordinator.dragState.dragLocation.x - 20,
-            y: essenceCoordinator.dragState.dragLocation.y - 50
-        )
-        return expandedFrame.contains(essencePosition)
+    /// Position of the dragged essence preview (offset from finger).
+    private var essencePreviewPosition: CGPoint? {
+        guard essenceCoordinator.dragState.isDragging else { return nil }
+        return DragPreviewOffset.adjustedPosition(from: essenceCoordinator.dragState.dragLocation)
     }
 
-    /// Whether the dragged essence is within the actual drop target (matches petDropFrame used for hit-testing)
+    /// Whether the dragged essence is near the pet (broad glow feedback).
+    private var isEssenceDropZoneHighlighted: Bool {
+        guard let position = essencePreviewPosition, petFrame != .zero else { return false }
+        return petFrame.insetBy(dx: -essenceHighlightExpansion, dy: -essenceHighlightExpansion)
+            .contains(position)
+    }
+
+    /// Whether the dragged essence is within the actual drop target (matches petDropFrame used for hit-testing).
     private var isEssenceOnTarget: Bool {
-        guard essenceCoordinator.dragState.isDragging,
+        guard let position = essencePreviewPosition,
               let dropFrame = essenceDropFrame else { return false }
-        let essencePosition = CGPoint(
-            x: essenceCoordinator.dragState.dragLocation.x - 20,
-            y: essenceCoordinator.dragState.dragLocation.y - 50
-        )
-        return dropFrame.contains(essencePosition)
+        return dropFrame.contains(position)
     }
 
     private var currentPet: Pet? { petManager.currentPet }
@@ -240,7 +242,7 @@ struct HomeScreen: View {
                 content: createPetCoordinator.isDropping
                     ? .dropZone(
                         isHighlighted: isDropZoneHighlighted,
-                        isOnTarget: createPetCoordinator.dragState.isSnapped,
+                        isOnTarget: createPetCoordinator.dragState.isOnTarget,
                         isVisible: true
                     )
                     : .dropZone(isHighlighted: false, isOnTarget: false, isVisible: false),
