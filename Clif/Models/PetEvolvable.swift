@@ -14,6 +14,7 @@ extension PetEvolvable {
     var isBlob: Bool { evolutionHistory.isBlob }
     var canEvolve: Bool { evolutionHistory.canEvolve }
     var isBlown: Bool { evolutionHistory.isBlown }
+    var isFullyEvolved: Bool { evolutionHistory.isFullyEvolved }
 
     /// The evolution path for this pet, if essence is assigned.
     var evolutionPath: EvolutionPath? {

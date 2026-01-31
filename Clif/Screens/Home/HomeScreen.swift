@@ -16,6 +16,7 @@ struct HomeScreen: View {
     @State private var showPetDetail = false
     @State private var showPresetPicker = false
     @State private var showDeleteSheet = false
+    @State private var showSuccessArchivePrompt = false
     @State private var petFrame: CGRect = .zero
     @State private var dropZoneFrame: CGRect = .zero
 
@@ -120,6 +121,17 @@ struct HomeScreen: View {
                     },
                     onDelete: {
                         petManager.delete(id: pet.id)
+                    }
+                )
+            }
+        }
+        .sheet(isPresented: $showSuccessArchivePrompt) {
+            if let pet = currentPet {
+                SuccessArchiveSheet(
+                    petName: pet.name,
+                    themeColor: pet.themeColor,
+                    onArchive: {
+                        petManager.archive(id: pet.id, using: archivedPetManager)
                     }
                 )
             }
@@ -306,6 +318,8 @@ struct HomeScreen: View {
             handleReplay()
         case .delete:
             showDeleteSheet = true
+        case .archive:
+            showSuccessArchivePrompt = true
         }
     }
 
@@ -326,6 +340,11 @@ struct HomeScreen: View {
             }
         } else {
             pet.evolve()
+            if pet.isFullyEvolved {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                    showSuccessArchivePrompt = true
+                }
+            }
         }
     }
 

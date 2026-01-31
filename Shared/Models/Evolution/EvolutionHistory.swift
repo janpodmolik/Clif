@@ -43,6 +43,12 @@ struct EvolutionHistory: Codable, Equatable {
         return currentPhase < maxPhase
     }
 
+    /// True if pet has reached the maximum evolution phase.
+    var isFullyEvolved: Bool {
+        guard !isBlob else { return false }
+        return currentPhase >= maxPhase
+    }
+
     var isBlown: Bool {
         blownAt != nil
     }

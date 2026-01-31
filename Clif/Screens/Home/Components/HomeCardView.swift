@@ -9,6 +9,7 @@ enum HomeCardAction {
     case evolve
     case replay
     case delete
+    case archive
 }
 
 // MARK: - Bump Size Preference Key
@@ -49,6 +50,7 @@ private enum HomeCardAnimation {
 private enum BumpType: Equatable {
     case evolve(isBlob: Bool)
     case blown
+    case archive
 }
 
 // MARK: - Debug Bump State
@@ -57,6 +59,7 @@ private enum BumpType: Equatable {
 enum DebugBumpState: String, CaseIterable {
     case actual = "Actual"
     case evolve = "Evolve"
+    case archive = "Archive"
     case blown = "Blown"
     case hidden = "Hidden"
 }
@@ -106,6 +109,8 @@ struct HomeCardView: View {
             return actualBumpType
         case .evolve:
             return .evolve(isBlob: pet.isBlob)
+        case .archive:
+            return .archive
         case .blown:
             return .blown
         case .hidden:
@@ -122,6 +127,8 @@ struct HomeCardView: View {
             return .blown
         } else if pet.isEvolutionAvailable {
             return .evolve(isBlob: pet.isBlob)
+        } else if pet.isFullyEvolved {
+            return .archive
         }
         return nil
     }
@@ -275,6 +282,9 @@ struct HomeCardView: View {
             case .evolve(let isBlob):
                 evolveButton(isBlob: isBlob)
                     .transition(.blurReplace)
+            case .archive:
+                archiveBumpButton
+                    .transition(.blurReplace)
             }
         }
     }
@@ -290,6 +300,21 @@ struct HomeCardView: View {
             .padding(.horizontal, 16)
             .padding(.vertical, 8)
             .background(.green, in: Capsule())
+        }
+        .buttonStyle(.plain)
+    }
+
+    private var archiveBumpButton: some View {
+        Button { onAction(.archive) } label: {
+            HStack(spacing: 6) {
+                Image(systemName: "checkmark.seal.fill")
+                Text("Archive")
+            }
+            .font(.system(size: 14, weight: .semibold))
+            .foregroundStyle(.white)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 8)
+            .background(pet.themeColor, in: Capsule())
         }
         .buttonStyle(.plain)
     }

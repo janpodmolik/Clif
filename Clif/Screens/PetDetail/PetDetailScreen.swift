@@ -15,6 +15,7 @@ struct PetDetailScreen: View {
     @State private var showEssencePicker = false
     @State private var showLimitedApps = false
     @State private var showDeleteConfirmation = false
+    @State private var showArchiveConfirmation = false
 
     private var themeColor: Color {
         pet.themeColor
@@ -113,9 +114,10 @@ struct PetDetailScreen: View {
                     } else {
                         ActivePetActionsCard(
                             isBlob: pet.isBlob,
+                            isFullyEvolved: pet.isFullyEvolved && !pet.isBlown,
                             canProgress: canProgress,
-                            daysUntilProgress: daysUntilProgress,
-                            isBlownAway: pet.isBlown
+                            isBlownAway: pet.isBlown,
+                            themeColor: themeColor
                         ) { action in
                             switch action {
                             case .progress:
@@ -127,6 +129,7 @@ struct PetDetailScreen: View {
                             case .blowAway: onAction(.blowAway)
                             case .replay: onAction(.replay)
                             case .delete: showDeleteConfirmation = true
+                            case .archive: showArchiveConfirmation = true
                             }
                         }
                     }
@@ -164,6 +167,16 @@ struct PetDetailScreen: View {
                     },
                     onDelete: {
                         petManager.delete(id: pet.id)
+                        dismiss()
+                    }
+                )
+            }
+            .sheet(isPresented: $showArchiveConfirmation) {
+                SuccessArchiveSheet(
+                    petName: pet.name,
+                    themeColor: themeColor,
+                    onArchive: {
+                        petManager.archive(id: pet.id, using: archivedPetManager)
                         dismiss()
                     }
                 )
