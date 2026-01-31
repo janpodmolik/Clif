@@ -5,8 +5,6 @@ struct EssenceDragState: Equatable {
     var isDragging = false
     var dragLocation: CGPoint = .zero
     var draggedEssence: Essence?
-    var isSnapped = false
-    var snapTargetCenter: CGPoint = .zero
 }
 
 /// Coordinates the essence picker overlay across the app.

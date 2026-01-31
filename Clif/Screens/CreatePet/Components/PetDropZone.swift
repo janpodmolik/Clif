@@ -5,7 +5,7 @@ import SwiftUI
 /// Uses same corner radius as PetStagingCard for visual consistency.
 struct PetDropZone: View {
     var isHighlighted: Bool = false
-    var isSnapped: Bool = false
+    var isOnTarget: Bool = false
     var size: CGFloat = Layout.defaultSize
 
     @State private var pulsePhase: CGFloat = 0
@@ -24,7 +24,7 @@ struct PetDropZone: View {
     }
 
     private var strokeColor: Color {
-        isSnapped ? .green : .white
+        isOnTarget ? .green : .white
     }
 
     private var innerCornerRadius: CGFloat {
@@ -51,7 +51,7 @@ struct PetDropZone: View {
                 .frame(width: size * Layout.innerScale, height: size * Layout.innerScale)
         }
         .animation(.easeInOut(duration: 0.2), value: isHighlighted)
-        .animation(.easeInOut(duration: 0.15), value: isSnapped)
+        .animation(.easeInOut(duration: 0.15), value: isOnTarget)
         .onAppear {
             withAnimation(
                 .easeInOut(duration: 1.5)
@@ -72,7 +72,7 @@ struct PetDropZone: View {
         VStack(spacing: 40) {
             PetDropZone(isHighlighted: false)
             PetDropZone(isHighlighted: true)
-            PetDropZone(isHighlighted: true, isSnapped: true)
+            PetDropZone(isHighlighted: true, isOnTarget: true)
         }
     }
 }

@@ -3,7 +3,7 @@ import SwiftUI
 /// Content displayed on the island - either a pet or a drop zone during creation.
 enum IslandContent {
     case pet(any PetDisplayable, windProgress: CGFloat, windDirection: CGFloat, windRhythm: WindRhythm?)
-    case dropZone(isHighlighted: Bool, isSnapped: Bool, isVisible: Bool)
+    case dropZone(isHighlighted: Bool, isOnTarget: Bool, isVisible: Bool)
 
     var displayablePet: (any PetDisplayable)? {
         if case .pet(let pet, _, _, _) = self { return pet }
@@ -21,7 +21,7 @@ struct IslandView: View {
     var isBlowingAway: Bool = false
     var showEssenceDropZone: Bool = false
     var isEssenceHighlighted: Bool = false
-    var isEssenceSnapped: Bool = false
+    var isEssenceOnTarget: Bool = false
     var onFrameChange: ((CGRect) -> Void)?
 
     init(
@@ -33,7 +33,7 @@ struct IslandView: View {
         isBlowingAway: Bool = false,
         showEssenceDropZone: Bool = false,
         isEssenceHighlighted: Bool = false,
-        isEssenceSnapped: Bool = false,
+        isEssenceOnTarget: Bool = false,
         onFrameChange: ((CGRect) -> Void)? = nil
     ) {
         self.screenHeight = screenHeight
@@ -44,7 +44,7 @@ struct IslandView: View {
         self.isBlowingAway = isBlowingAway
         self.showEssenceDropZone = showEssenceDropZone
         self.isEssenceHighlighted = isEssenceHighlighted
-        self.isEssenceSnapped = isEssenceSnapped
+        self.isEssenceOnTarget = isEssenceOnTarget
         self.onFrameChange = onFrameChange
     }
 
@@ -64,6 +64,7 @@ struct IslandView: View {
     private var petHeight: CGFloat { screenHeight * 0.10 }
     private var petOffset: CGFloat { -petHeight }
     private var dropZoneSize: CGFloat { petHeight * 1.5 }
+    private var essenceDropZoneSize: CGFloat { petHeight * 2.0 }
 
     /// The pet to display, used for scale and asset calculations.
     /// For drop zone, uses Blob as reference for consistent sizing.
@@ -128,8 +129,8 @@ struct IslandView: View {
             case .pet(let pet, _, _, _):
                 petView(for: pet)
 
-            case .dropZone(let isHighlighted, let isSnapped, let isVisible):
-                dropZoneView(isHighlighted: isHighlighted, isSnapped: isSnapped, isVisible: isVisible)
+            case .dropZone(let isHighlighted, let isOnTarget, let isVisible):
+                dropZoneView(isHighlighted: isHighlighted, isOnTarget: isOnTarget, isVisible: isVisible)
             }
 
             // Speech bubble overlay - only for pet content, hidden during blow away
@@ -223,8 +224,8 @@ struct IslandView: View {
             .overlay {
                 PetDropZone(
                     isHighlighted: isEssenceHighlighted,
-                    isSnapped: isEssenceSnapped,
-                    size: dropZoneSize
+                    isOnTarget: isEssenceOnTarget,
+                    size: essenceDropZoneSize
                 )
             }
             .scaleEffect(pet.displayScale, anchor: .bottom)
@@ -233,7 +234,7 @@ struct IslandView: View {
     // MARK: - Drop Zone View
 
     @ViewBuilder
-    private func dropZoneView(isHighlighted: Bool, isSnapped: Bool, isVisible: Bool) -> some View {
+    private func dropZoneView(isHighlighted: Bool, isOnTarget: Bool, isVisible: Bool) -> some View {
         // Use invisible blob image to match exact pet dimensions
         Image(Blob.shared.assetName(for: .none))
             .resizable()
@@ -241,7 +242,7 @@ struct IslandView: View {
             .frame(height: petHeight)
             .opacity(0)
             .overlay {
-                PetDropZone(isHighlighted: isHighlighted, isSnapped: isSnapped, size: dropZoneSize)
+                PetDropZone(isHighlighted: isHighlighted, isOnTarget: isOnTarget, size: dropZoneSize)
                     .opacity(isVisible ? 1 : 0)
             }
             .scaleEffect(Blob.shared.displayScale, anchor: .bottom)
@@ -323,7 +324,7 @@ private struct IslandFramePreferenceKey: PreferenceKey {
             IslandView(
                 screenHeight: geometry.size.height,
                 screenWidth: geometry.size.width,
-                content: .dropZone(isHighlighted: false, isSnapped: false, isVisible: true)
+                content: .dropZone(isHighlighted: false, isOnTarget: false, isVisible: true)
             )
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
         }
@@ -338,7 +339,7 @@ private struct IslandFramePreferenceKey: PreferenceKey {
             IslandView(
                 screenHeight: geometry.size.height,
                 screenWidth: geometry.size.width,
-                content: .dropZone(isHighlighted: true, isSnapped: false, isVisible: true)
+                content: .dropZone(isHighlighted: true, isOnTarget: false, isVisible: true)
             )
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
         }
@@ -353,7 +354,7 @@ private struct IslandFramePreferenceKey: PreferenceKey {
             IslandView(
                 screenHeight: geometry.size.height,
                 screenWidth: geometry.size.width,
-                content: .dropZone(isHighlighted: true, isSnapped: true, isVisible: true)
+                content: .dropZone(isHighlighted: true, isOnTarget: true, isVisible: true)
             )
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
         }

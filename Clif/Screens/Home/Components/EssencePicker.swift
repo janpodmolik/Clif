@@ -12,13 +12,6 @@ struct EssencePicker: View {
         static let sectionSpacing: CGFloat = 16
     }
 
-    private enum Haptics {
-        static let maxDistanceMultiplier: CGFloat = 2.4
-        static let baseIntensity: CGFloat = 0.15
-        static let intensityRange: CGFloat = 0.85
-        static let fallbackIntensity: CGFloat = 0.2
-    }
-
     /// Offset applied to drag preview position (matches EssencePickerOverlay.Layout.dragPreviewOffset)
     private enum DragOffset {
         static let x: CGFloat = -20
@@ -88,7 +81,6 @@ struct EssencePicker: View {
                                     startDragging()
                                 }
                                 coordinator.dragState.dragLocation = value.location
-                                updateSnapState(at: value.location)
                                 updateDragHaptics(at: value.location)
                             }
                             .onEnded { value in
@@ -117,7 +109,6 @@ struct EssencePicker: View {
         defer {
             coordinator.dragState.isDragging = false
             coordinator.dragState.draggedEssence = nil
-            coordinator.dragState.isSnapped = false
             hapticController.stop()
         }
 
@@ -137,42 +128,8 @@ struct EssencePicker: View {
         HapticType.notificationSuccess.trigger()
     }
 
-    private func updateSnapState(at location: CGPoint) {
-        guard let petDropFrame = coordinator.petDropFrame else {
-            coordinator.dragState.isSnapped = false
-            return
-        }
-
-        // Use essence preview position (with offset), not finger position
-        let essencePosition = CGPoint(
-            x: location.x + DragOffset.x,
-            y: location.y + DragOffset.y
-        )
-        let isSnapped = petDropFrame.contains(essencePosition)
-        if isSnapped != coordinator.dragState.isSnapped {
-            coordinator.dragState.isSnapped = isSnapped
-            if isSnapped {
-                coordinator.dragState.snapTargetCenter = CGPoint(
-                    x: petDropFrame.midX,
-                    y: petDropFrame.midY
-                )
-                HapticType.impactMedium.trigger()
-            }
-        }
-    }
-
     private func updateDragHaptics(at location: CGPoint) {
-        guard let petDropFrame = coordinator.petDropFrame else {
-            hapticController.updateIntensity(Haptics.fallbackIntensity)
-            return
-        }
-
-        let center = CGPoint(x: petDropFrame.midX, y: petDropFrame.midY)
-        let distance = hypot(location.x - center.x, location.y - center.y)
-        let maxDistance = max(petDropFrame.width, petDropFrame.height) * Haptics.maxDistanceMultiplier
-        let normalized = max(0, min(1, 1 - (distance / maxDistance)))
-        let intensity = Haptics.baseIntensity + (normalized * Haptics.intensityRange)
-        hapticController.updateIntensity(intensity)
+        hapticController.updateProximityIntensity(at: location, targetFrame: coordinator.petDropFrame)
     }
 }
 
@@ -345,44 +302,6 @@ struct EssenceDragPreview: View {
                     shape.stroke(path.themeColor.opacity(CardStyle.subtleStrokeOpacity), lineWidth: 1)
                 }
         }
-    }
-}
-
-private final class DragHapticController {
-    private var timer: Timer?
-    private var generator = UIImpactFeedbackGenerator(style: .light)
-    private var intensity: CGFloat = 0.2
-
-    private static let tickInterval: TimeInterval = 0.15
-    private static let defaultIntensity: CGFloat = 0.2
-
-    func startDragging() {
-        intensity = Self.defaultIntensity
-        timer?.invalidate()
-        generator = UIImpactFeedbackGenerator(style: .light)
-        generator.prepare()
-
-        timer = Timer.scheduledTimer(withTimeInterval: Self.tickInterval, repeats: true) { [weak self] _ in
-            self?.tick()
-        }
-    }
-
-    func updateIntensity(_ newIntensity: CGFloat) {
-        intensity = max(0, min(1, newIntensity))
-    }
-
-    func stop() {
-        timer?.invalidate()
-        timer = nil
-    }
-
-    private func tick() {
-        generator.prepare()
-        generator.impactOccurred(intensity: intensity)
-    }
-
-    deinit {
-        stop()
     }
 }
 

@@ -18,13 +18,6 @@ struct PetDropStep: View {
         }
     }
 
-    private enum Haptics {
-        static let maxDistanceMultiplier: CGFloat = 2.4
-        static let baseIntensity: CGFloat = 0.15
-        static let intensityRange: CGFloat = 0.85
-        static let fallbackIntensity: CGFloat = 0.2
-    }
-
     var body: some View {
         VStack(spacing: 12) {
             // Header with back/cancel buttons
@@ -236,57 +229,7 @@ struct PetDropStep: View {
     }
 
     private func updateDragHaptics(at location: CGPoint) {
-        guard let petDropFrame = coordinator.petDropFrame else {
-            hapticController.updateIntensity(Haptics.fallbackIntensity)
-            return
-        }
-
-        let center = CGPoint(x: petDropFrame.midX, y: petDropFrame.midY)
-        let distance = hypot(location.x - center.x, location.y - center.y)
-        let maxDistance = max(petDropFrame.width, petDropFrame.height) * Haptics.maxDistanceMultiplier
-        let normalized = max(0, min(1, 1 - (distance / maxDistance)))
-        let intensity = Haptics.baseIntensity + (normalized * Haptics.intensityRange)
-        hapticController.updateIntensity(intensity)
-    }
-}
-
-// MARK: - Drag Haptic Controller
-
-private final class DragHapticController {
-    private var timer: Timer?
-    private var generator = UIImpactFeedbackGenerator(style: .light)
-    private var intensity: CGFloat = 0.2
-
-    private static let tickInterval: TimeInterval = 0.15
-    private static let defaultIntensity: CGFloat = 0.2
-
-    func startDragging() {
-        intensity = Self.defaultIntensity
-        timer?.invalidate()
-        generator = UIImpactFeedbackGenerator(style: .light)
-        generator.prepare()
-
-        timer = Timer.scheduledTimer(withTimeInterval: Self.tickInterval, repeats: true) { [weak self] _ in
-            self?.tick()
-        }
-    }
-
-    func updateIntensity(_ newIntensity: CGFloat) {
-        intensity = max(0, min(1, newIntensity))
-    }
-
-    func stop() {
-        timer?.invalidate()
-        timer = nil
-    }
-
-    private func tick() {
-        generator.prepare()
-        generator.impactOccurred(intensity: intensity)
-    }
-
-    deinit {
-        stop()
+        hapticController.updateProximityIntensity(at: location, targetFrame: coordinator.petDropFrame)
     }
 }
 

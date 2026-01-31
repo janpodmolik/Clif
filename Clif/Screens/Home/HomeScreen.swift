@@ -37,6 +37,7 @@ struct HomeScreen: View {
         DeviceMetrics.concentricCornerRadius(inset: homeCardInset)
     }
     private let dropTargetExpansion: CGFloat = 40
+    private let essenceDropTargetExpansion: CGFloat = 80
 
     /// Whether we're in pet creation mode (empty island shown during entire flow)
     private var isInCreationMode: Bool {
@@ -55,12 +56,23 @@ struct HomeScreen: View {
     private var isEssenceDropZoneHighlighted: Bool {
         guard essenceCoordinator.dragState.isDragging,
               petFrame != .zero else { return false }
-        let expandedFrame = petFrame.insetBy(dx: -60, dy: -60)
+        let expandedFrame = petFrame.insetBy(dx: -100, dy: -100)
         let essencePosition = CGPoint(
             x: essenceCoordinator.dragState.dragLocation.x - 20,
             y: essenceCoordinator.dragState.dragLocation.y - 50
         )
         return expandedFrame.contains(essencePosition)
+    }
+
+    /// Whether the dragged essence is within the actual drop target (matches petDropFrame used for hit-testing)
+    private var isEssenceOnTarget: Bool {
+        guard essenceCoordinator.dragState.isDragging,
+              let dropFrame = essenceDropFrame else { return false }
+        let essencePosition = CGPoint(
+            x: essenceCoordinator.dragState.dragLocation.x - 20,
+            y: essenceCoordinator.dragState.dragLocation.y - 50
+        )
+        return dropFrame.contains(essencePosition)
     }
 
     private var currentPet: Pet? { petManager.currentPet }
@@ -70,6 +82,11 @@ struct HomeScreen: View {
         let frame = isInCreationMode ? dropZoneFrame : petFrame
         guard frame != .zero else { return nil }
         return frame.insetBy(dx: -dropTargetExpansion, dy: -dropTargetExpansion)
+    }
+
+    private var essenceDropFrame: CGRect? {
+        guard petFrame != .zero else { return nil }
+        return petFrame.insetBy(dx: -essenceDropTargetExpansion, dy: -essenceDropTargetExpansion)
     }
 
     private func updatePetDropFrame() {
@@ -181,7 +198,7 @@ struct HomeScreen: View {
         .onChange(of: petFrame) { _, _ in
             updatePetDropFrame()
             if essenceCoordinator.isShowing {
-                essenceCoordinator.petDropFrame = petDropFrame
+                essenceCoordinator.petDropFrame = essenceDropFrame
             }
         }
         .onChange(of: dropZoneFrame) { _, _ in
@@ -223,10 +240,10 @@ struct HomeScreen: View {
                 content: createPetCoordinator.isDropping
                     ? .dropZone(
                         isHighlighted: isDropZoneHighlighted,
-                        isSnapped: createPetCoordinator.dragState.isSnapped,
+                        isOnTarget: createPetCoordinator.dragState.isSnapped,
                         isVisible: true
                     )
-                    : .dropZone(isHighlighted: false, isSnapped: false, isVisible: false),
+                    : .dropZone(isHighlighted: false, isOnTarget: false, isVisible: false),
                 onFrameChange: { frame in
                     dropZoneFrame = frame
                 }
@@ -289,7 +306,7 @@ struct HomeScreen: View {
                 isBlowingAway: blowAwayAnimator.isBlowingAway,
                 showEssenceDropZone: essenceCoordinator.hasSelectedEssence,
                 isEssenceHighlighted: isEssenceDropZoneHighlighted,
-                isEssenceSnapped: essenceCoordinator.dragState.isSnapped,
+                isEssenceOnTarget: isEssenceOnTarget,
                 onFrameChange: { frame in
                     petFrame = frame
                 }
@@ -365,7 +382,7 @@ struct HomeScreen: View {
 
     private func handleEvolve(_ pet: Pet) {
         if pet.isBlob {
-            essenceCoordinator.show(petDropFrame: petDropFrame) { essence in
+            essenceCoordinator.show(petDropFrame: essenceDropFrame) { essence in
                 pet.applyEssence(essence)
             }
         } else {
