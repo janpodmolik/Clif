@@ -17,7 +17,7 @@ struct EvolutionEvent: Codable, Identifiable, Equatable {
 
 /// Complete evolution history for a pet.
 struct EvolutionHistory: Codable, Equatable {
-    let createdAt: Date
+    private(set) var createdAt: Date
     private(set) var essence: Essence?
     private(set) var events: [EvolutionEvent]
     private(set) var blownAt: Date?
@@ -90,6 +90,18 @@ struct EvolutionHistory: Codable, Equatable {
         return events.first { $0.toPhase == phase }?.date
     }
 }
+
+#if DEBUG
+// MARK: - Debug Helpers
+
+extension EvolutionHistory {
+    /// Shifts createdAt back by one day, making the pet appear one day older.
+    mutating func debugBumpDay() {
+        guard let newDate = Calendar.current.date(byAdding: .day, value: -1, to: createdAt) else { return }
+        createdAt = newDate
+    }
+}
+#endif
 
 // MARK: - Mock Data
 

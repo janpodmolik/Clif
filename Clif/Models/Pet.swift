@@ -291,6 +291,33 @@ extension CompletedBreak {
     }
 }
 
+#if DEBUG
+// MARK: - Debug Helpers
+
+extension Pet {
+    /// Shifts createdAt back by one day, making the pet appear one day older.
+    func debugBumpDay() {
+        evolutionHistory.debugBumpDay()
+    }
+
+    /// Force-unlocks essence usage (shifts createdAt so daysSinceCreation >= 1).
+    func debugUnlockEssence() {
+        guard isBlob, !canUseEssence else { return }
+        while !canUseEssence {
+            evolutionHistory.debugBumpDay()
+        }
+    }
+
+    /// Force-unlocks next evolution (shifts createdAt so daysUntilEvolution == 0).
+    func debugUnlockEvolution() {
+        guard canEvolve else { return }
+        while daysUntilEvolution ?? 0 > 0 {
+            evolutionHistory.debugBumpDay()
+        }
+    }
+}
+#endif
+
 // MARK: - Mock Data
 
 extension Pet {

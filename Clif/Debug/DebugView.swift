@@ -20,29 +20,30 @@ struct DebugView: View {
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(spacing: 16) {
+                VStack(spacing: 12) {
+                    petEvolutionSection
+
                     if !manager.isAuthorized {
                         authorizationSection
-                    } else {
+                    }
+
+                    if manager.isAuthorized {
                         debugConfigSection
-                        sharedDefaultsSection
-                        screenTimeReportSection
-                        limitSliderSection
-                        appSelectionSection
                         progressSection
-                        debugToolsSection
-                        petAnimationSection
-                        evolutionScaleSection
-                        homeCardSection
-                        petDetailSection
-                        petHistoryRowSection
-                        supabaseSection
+                        sharedDefaultsSection
+                        monitoringSection
+                        screenTimeReportSection
+                    }
+
+                    navigationLinksSection
+
+                    if manager.isAuthorized {
                         extensionLogSection
                     }
                 }
                 .padding()
             }
-            .navigationTitle("🛠 Debug")
+            .navigationTitle("Debug")
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
@@ -60,6 +61,115 @@ struct DebugView: View {
         }
     }
 
+    // MARK: - Section Card
+
+    private func sectionCard<Content: View>(
+        _ title: String,
+        icon: String,
+        tint: Color = .secondary,
+        @ViewBuilder content: () -> Content
+    ) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Label(title, systemImage: icon)
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(tint)
+
+            content()
+        }
+        .padding(14)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color(.secondarySystemBackground))
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+    }
+
+    // MARK: - Pet Evolution
+
+    private var petEvolutionSection: some View {
+        sectionCard("Pet Evolution", icon: "leaf.fill", tint: .green) {
+            if let pet = petManager.currentPet {
+                VStack(alignment: .leading, spacing: 4) {
+                    debugRow("Phase", "\(pet.currentPhase) / \(pet.evolutionHistory.maxPhase)")
+                    debugRow("Days alive", "\(pet.daysSinceCreation)")
+                    debugRow("Essence", pet.essence?.rawValue ?? "none")
+                    debugRow("Created", pet.evolutionHistory.createdAt.formatted(date: .abbreviated, time: .shortened))
+
+                    if pet.isBlob {
+                        debugRow("Can use essence", pet.canUseEssence ? "Yes" : "No")
+                        if let days = pet.daysUntilEssence {
+                            debugRow("Days until essence", "\(days)")
+                        }
+                    } else {
+                        debugRow("Can evolve", pet.canEvolve ? "Yes" : "No")
+                        if let days = pet.daysUntilEvolution {
+                            debugRow("Days until evolution", "\(days)")
+                        }
+                    }
+                }
+
+                Divider()
+
+                FlowLayout(spacing: 8) {
+                    Button("+1 Day") {
+                        pet.debugBumpDay()
+                        petManager.savePet()
+                    }
+                    .tint(.green)
+
+                    if pet.isBlob && !pet.canUseEssence {
+                        Button("Unlock Essence") {
+                            pet.debugUnlockEssence()
+                            petManager.savePet()
+                        }
+                        .tint(.mint)
+                    }
+
+                    if !pet.isBlob && pet.canEvolve {
+                        if pet.daysUntilEvolution ?? 0 > 0 {
+                            Button("Unlock Evolution") {
+                                pet.debugUnlockEvolution()
+                                petManager.savePet()
+                            }
+                            .tint(.cyan)
+                        }
+
+                        Button("Evolve Now") {
+                            pet.debugUnlockEvolution()
+                            pet.evolve()
+                            petManager.savePet()
+                        }
+                        .tint(.orange)
+                    }
+                }
+                .buttonStyle(.bordered)
+                .controlSize(.small)
+            } else {
+                Text("No active pet")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+        }
+    }
+
+    // MARK: - Authorization
+
+    private var authorizationSection: some View {
+        sectionCard("Screen Time Access", icon: "hourglass", tint: .orange) {
+            Text("Authorize to use Screen Time debug tools.")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+
+            Button("Authorize Screen Time") {
+                Task {
+                    await manager.requestAuthorization()
+                }
+            }
+            .buttonStyle(.borderedProminent)
+            .tint(.orange)
+            .controlSize(.regular)
+            .frame(maxWidth: .infinity)
+        }
+    }
+
     // MARK: - Debug Config
 
     @State private var debugEnabled = DebugConfig.isEnabled
@@ -67,27 +177,24 @@ struct DebugView: View {
     @State private var minutesToRecover = DebugConfig.minutesToRecover
 
     private var debugConfigSection: some View {
-        VStack(spacing: 12) {
-            HStack {
-                Text("Debug Config")
-                    .font(.headline)
-                Spacer()
-                Toggle("", isOn: $debugEnabled)
-                    .labelsHidden()
-                    .onChange(of: debugEnabled) { _, newValue in
-                        DebugConfig.isEnabled = newValue
-                    }
-            }
+        sectionCard("Debug Config", icon: "wrench.fill", tint: .yellow) {
+            Toggle("Override WindPreset", isOn: $debugEnabled)
+                .font(.subheadline)
+                .onChange(of: debugEnabled) { _, newValue in
+                    DebugConfig.isEnabled = newValue
+                }
 
             if debugEnabled {
                 VStack(spacing: 8) {
                     HStack {
-                        Text("Blow Away:")
+                        Text("Blow Away")
                         Spacer()
                         Text("\(Int(minutesToBlowAway)) min")
                             .monospacedDigit()
-                            .foregroundColor(.orange)
+                            .foregroundStyle(.orange)
                     }
+                    .font(.subheadline)
+
                     Slider(value: $minutesToBlowAway, in: 1...10, step: 1)
                         .onChange(of: minutesToBlowAway) { _, newValue in
                             DebugConfig.minutesToBlowAway = newValue
@@ -95,50 +202,33 @@ struct DebugView: View {
                         }
 
                     HStack {
-                        Text("Recovery:")
+                        Text("Recovery")
                         Spacer()
                         Text("\(Int(minutesToRecover)) min")
                             .monospacedDigit()
-                            .foregroundColor(.green)
+                            .foregroundStyle(.green)
                     }
+                    .font(.subheadline)
+
                     Slider(value: $minutesToRecover, in: 1...10, step: 1)
                         .onChange(of: minutesToRecover) { _, newValue in
                             DebugConfig.minutesToRecover = newValue
-                            // Recovery rate doesn't affect monitoring thresholds, no restart needed
                         }
 
                     Divider()
 
                     HStack {
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text("Rise Rate")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                            Text("\(String(format: "%.1f", DebugConfig.riseRate)) pts/min")
-                                .font(.caption)
-                                .monospacedDigit()
-                        }
+                        debugRow("Rise Rate", String(format: "%.1f pts/min", DebugConfig.riseRate))
                         Spacer()
-                        VStack(alignment: .trailing, spacing: 2) {
-                            Text("Fall Rate")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                            Text("\(String(format: "%.1f", DebugConfig.fallRate)) pts/min")
-                                .font(.caption)
-                                .monospacedDigit()
-                        }
+                        debugRow("Fall Rate", String(format: "%.1f pts/min", DebugConfig.fallRate))
                     }
                 }
-                .font(.subheadline)
             } else {
                 Text("Using production WindPreset values")
                     .font(.caption)
-                    .foregroundColor(.secondary)
+                    .foregroundStyle(.secondary)
             }
         }
-        .padding()
-        .background(Color.yellow.opacity(0.15))
-        .cornerRadius(12)
     }
 
     /// Restarts monitoring with new DebugConfig values if a pet exists.
@@ -153,7 +243,6 @@ struct DebugView: View {
         let limitSeconds = newLimit * 60
         let fallRatePerSecond = fallRate / 60.0
 
-        // Update fallRate in SharedDefaults
         SharedDefaults.monitoredFallRate = fallRatePerSecond
 
         print("[DebugConfig] Restarting monitoring:")
@@ -168,213 +257,80 @@ struct DebugView: View {
             limitedSources: pet.limitedSources
         )
 
-        // Verify SharedDefaults were set
         print("[DebugConfig] After startMonitoring:")
         print("  - SharedDefaults.monitoredPetId: \(SharedDefaults.monitoredPetId?.uuidString ?? "nil")")
         print("  - SharedDefaults.monitoringLimitSeconds: \(SharedDefaults.integer(forKey: DefaultsKeys.monitoringLimitSeconds))")
     }
 
-    // MARK: - Authorization
-
-    private var authorizationSection: some View {
-        VStack(spacing: 16) {
-            Image(systemName: "hourglass")
-                .font(.system(size: 60))
-                .foregroundColor(.orange)
-
-            Text("Screen Time Access Required")
-                .font(.headline)
-
-            Text("Authorize to use debug tools.")
-                .font(.subheadline)
-                .foregroundColor(.secondary)
-
-            Button("Authorize Screen Time") {
-                Task {
-                    await manager.requestAuthorization()
-                }
-            }
-            .buttonStyle(.borderedProminent)
-            .tint(.orange)
-        }
-        .padding()
-    }
-
-    // MARK: - Screen Time Report
-
-    private var screenTimeReportSection: some View {
-        VStack(spacing: 0) {
-            HStack {
-                Label("Screen Time Report", systemImage: "clock")
-                    .font(.headline)
-                    .foregroundColor(.primary)
-
-                Spacer()
-
-                Button {
-                    refreshReport()
-                } label: {
-                    Image(systemName: "arrow.clockwise")
-                        .font(.system(size: 16, weight: .medium))
-                        .foregroundColor(.orange)
-                }
-            }
-            .padding(.horizontal)
-            .padding(.top, 12)
-            .padding(.bottom, 8)
-
-            if let filter = reportFilter {
-                DeviceActivityReport(.totalActivity, filter: filter)
-                    .id(reportId)
-                    .frame(minHeight: 180)
-            } else {
-                VStack(spacing: 12) {
-                    ProgressView()
-                        .scaleEffect(1.2)
-                    Text("Loading...")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
-                .frame(minHeight: 180)
-                .frame(maxWidth: .infinity)
-            }
-        }
-        .background(Color(.secondarySystemBackground))
-        .cornerRadius(16)
-        .task {
-            reportFilter = createFilter()
-        }
-    }
-
-    // MARK: - Limit Slider (Debug range: 1-30 min)
-
-    private var limitSliderSection: some View {
-        VStack {
-            Text("Monitoring Limit: \(Int(limitSliderValue))m (\(Int(limitSliderValue) * 60)s)")
-                .font(.headline)
-
-            Slider(value: $limitSliderValue, in: 1...30, step: 1) {
-                Text("Limit")
-            } onEditingChanged: { isEditing in
-                if !isEditing {
-                    monitoringLimitSeconds = Int(limitSliderValue) * 60
-                    refreshReport()
-                }
-            }
-
-            Text("Debug range: 1-30 minutes")
-                .font(.caption2)
-                .foregroundColor(.orange)
-        }
-        .padding()
-        .background(Color(.secondarySystemBackground))
-        .cornerRadius(12)
-        .onAppear {
-            let minutes = monitoringLimitSeconds / 60
-            limitSliderValue = Double(min(max(minutes, 1), 30))
-        }
-    }
-
-    // MARK: - App Selection
-
-    private var appSelectionSection: some View {
-        VStack(spacing: 12) {
-            Button("Select Apps to Monitor") {
-                isPickerPresented = true
-            }
-            .buttonStyle(.bordered)
-            .tint(.orange)
-
-            let appCount = manager.activitySelection.applicationTokens.count
-            let catCount = manager.activitySelection.categoryTokens.count
-
-            if appCount > 0 || catCount > 0 {
-                Text("Monitoring \(appCount) apps, \(catCount) categories")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-            }
-        }
-    }
-
     // MARK: - Progress Display
 
     private var progressSection: some View {
-        VStack(spacing: 12) {
-            Text("Current Progress")
-                .font(.headline)
+        sectionCard("Wind Progress", icon: "wind", tint: progressColor) {
+            HStack(alignment: .firstTextBaseline) {
+                Text("\(windProgress)%")
+                    .font(.system(size: 36, weight: .bold, design: .rounded))
+                    .foregroundStyle(progressColor)
 
-            Text("\(windProgress)%")
-                .font(.system(size: 48, weight: .bold, design: .rounded))
-                .foregroundColor(progressColor)
+                Spacer()
 
-            Text(timeSpentText)
-                .font(.subheadline)
-                .foregroundColor(.orange)
+                VStack(alignment: .trailing, spacing: 2) {
+                    Text(timeSpentText)
+                        .font(.subheadline.monospacedDigit())
+                        .foregroundStyle(.secondary)
+
+                    if let lastUpdate = SharedDefaults.lastMonitorUpdate {
+                        Text(lastUpdate.formatted(date: .omitted, time: .standard))
+                            .font(.caption2)
+                            .foregroundStyle(.tertiary)
+                    }
+                }
+            }
 
             ProgressView(value: Double(min(windProgress, 100)), total: 100)
-                .progressViewStyle(LinearProgressViewStyle(tint: progressColor))
-                .scaleEffect(x: 1, y: 2, anchor: .center)
-                .padding(.horizontal)
-
-            if let lastUpdate = SharedDefaults.lastMonitorUpdate {
-                Text("Updated: \(lastUpdate.formatted(date: .omitted, time: .standard))")
-                    .font(.caption)
-                    .foregroundColor(.gray)
-            }
+                .tint(progressColor)
         }
-        .padding()
-        .background(Color(.secondarySystemBackground))
-        .cornerRadius(12)
     }
 
     // MARK: - SharedDefaults State
 
     private var sharedDefaultsSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("SharedDefaults State")
-                .font(.headline)
-                .foregroundColor(.purple)
-
+        sectionCard("SharedDefaults", icon: "externaldrive.fill", tint: .purple) {
             let limitSeconds = SharedDefaults.integer(forKey: DefaultsKeys.monitoringLimitSeconds)
             let lastThresholdSec = SharedDefaults.monitoredLastThresholdSeconds
             let riseRate = SharedDefaults.monitoredRiseRate
 
-            Group {
-                Text("monitoredPetId: \(SharedDefaults.monitoredPetId?.uuidString ?? "nil")")
-                Text("monitoredWindPoints: \(String(format: "%.1f", SharedDefaults.monitoredWindPoints))")
-                Text("monitoredLastThreshold: \(lastThresholdSec)s (\(lastThresholdSec / 60)m \(lastThresholdSec % 60)s)")
-                Text("monitoredRiseRate: \(String(format: "%.4f", riseRate)) pts/sec")
-                Text("monitoringLimit: \(limitSeconds)s (\(limitSeconds / 60)m)")
+            VStack(alignment: .leading, spacing: 3) {
+                debugRow("petId", SharedDefaults.monitoredPetId.map { String($0.uuidString.prefix(8)) + "..." } ?? "nil")
+                debugRow("windPoints", String(format: "%.1f", SharedDefaults.monitoredWindPoints))
+                debugRow("lastThreshold", "\(lastThresholdSec)s (\(lastThresholdSec / 60)m \(lastThresholdSec % 60)s)")
+                debugRow("riseRate", String(format: "%.4f pts/sec", riseRate))
+                debugRow("limit", "\(limitSeconds)s (\(limitSeconds / 60)m)")
             }
-            .font(.system(size: 11, design: .monospaced))
 
             if let pet = petManager.currentPet {
                 Divider()
-                Text("Pet State")
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
-                Text("pet.windPoints: \(String(format: "%.1f", pet.windPoints))")
-                Text("pet.lastThresholdSeconds: \(pet.lastThresholdSeconds)")
-                    .font(.system(size: 11, design: .monospaced))
+                VStack(alignment: .leading, spacing: 3) {
+                    debugRow("pet.windPoints", String(format: "%.1f", pet.windPoints))
+                    debugRow("pet.lastThreshold", "\(pet.lastThresholdSeconds)s")
+                }
             }
+
+            Divider()
 
             HStack(spacing: 8) {
                 Button("Check Blow Away") {
                     petManager.currentPet?.checkBlowAwayState()
                 }
-                .buttonStyle(.bordered)
                 .tint(.purple)
 
                 Button("Simulate +interval") {
                     simulateThreshold()
                 }
-                .buttonStyle(.bordered)
                 .tint(.orange)
             }
+            .buttonStyle(.bordered)
+            .controlSize(.small)
         }
-        .padding()
-        .background(Color.purple.opacity(0.1))
-        .cornerRadius(12)
     }
 
     /// Simulates what the extension does when a threshold is reached
@@ -396,50 +352,87 @@ struct DebugView: View {
 
         print("[SimulateThreshold] seconds \(lastSeconds) -> \(newSeconds), wind -> \(windPoints)")
 
-        // Pet.windPoints is computed from SharedDefaults - no sync needed
-        // Just check for blow-away state
         petManager.currentPet?.checkBlowAwayState()
     }
 
-    // MARK: - Debug Tools
+    // MARK: - Monitoring Controls (merged: debug tools + limit slider + app selection)
 
-    private var debugToolsSection: some View {
-        VStack(spacing: 12) {
-            Text("Debug Tools")
-                .font(.headline)
-                .foregroundColor(.orange)
+    private var monitoringSection: some View {
+        sectionCard("Monitoring", icon: "antenna.radiowaves.left.and.right", tint: .orange) {
+            // Limit slider
+            VStack(spacing: 4) {
+                HStack {
+                    Text("Limit")
+                    Spacer()
+                    Text("\(Int(limitSliderValue))m (\(Int(limitSliderValue) * 60)s)")
+                        .monospacedDigit()
+                        .foregroundStyle(.orange)
+                }
+                .font(.subheadline)
 
-            HStack(spacing: 8) {
+                Slider(value: $limitSliderValue, in: 1...30, step: 1) {
+                    Text("Limit")
+                } onEditingChanged: { isEditing in
+                    if !isEditing {
+                        monitoringLimitSeconds = Int(limitSliderValue) * 60
+                        refreshReport()
+                    }
+                }
+            }
+            .onAppear {
+                let minutes = monitoringLimitSeconds / 60
+                limitSliderValue = Double(min(max(minutes, 1), 30))
+            }
+
+            Divider()
+
+            // App selection
+            let appCount = manager.activitySelection.applicationTokens.count
+            let catCount = manager.activitySelection.categoryTokens.count
+
+            Button {
+                isPickerPresented = true
+            } label: {
+                HStack {
+                    Label("Select Apps", systemImage: "app.badge")
+                    Spacer()
+                    Text("\(appCount) apps, \(catCount) cat.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    Image(systemName: "chevron.right")
+                        .font(.caption2)
+                        .foregroundStyle(.tertiary)
+                }
+            }
+            .tint(.primary)
+
+            Divider()
+
+            // Actions
+            FlowLayout(spacing: 8) {
                 Button("Restart Monitor") {
                     restartMonitoringIfNeeded()
                 }
-                .buttonStyle(.bordered)
                 .tint(.blue)
 
                 Button("Clear Shield") {
                     manager.clearShield()
                 }
-                .buttonStyle(.bordered)
                 .tint(.green)
 
                 Button("Apply Shield") {
                     manager.updateShield()
                 }
-                .buttonStyle(.bordered)
                 .tint(.red)
-            }
-            .font(.caption)
 
-            Button("Simulate Safety Shield") {
-                simulateSafetyShield()
+                Button("Safety Shield") {
+                    simulateSafetyShield()
+                }
+                .tint(.purple)
             }
             .buttonStyle(.bordered)
-            .tint(.purple)
-            .font(.caption)
+            .controlSize(.small)
         }
-        .padding()
-        .background(Color.orange.opacity(0.1))
-        .cornerRadius(12)
     }
 
     /// Simulates what the extension does when wind reaches 100%:
@@ -456,145 +449,156 @@ struct DebugView: View {
         print("[DebugTools] Simulated safety shield activation + Darwin notification")
     }
 
-    // MARK: - Supabase
+    // MARK: - Screen Time Report
 
-    private var supabaseSection: some View {
-        NavigationLink(destination: SupabaseTestView()) {
-            HStack {
-                Image(systemName: "server.rack")
-                Text("Supabase Test")
+    private var screenTimeReportSection: some View {
+        sectionCard("Screen Time Report", icon: "chart.bar.fill", tint: .blue) {
+            if let filter = reportFilter {
+                DeviceActivityReport(.totalActivity, filter: filter)
+                    .id(reportId)
+                    .frame(minHeight: 180)
+            } else {
+                VStack(spacing: 8) {
+                    ProgressView()
+                    Text("Loading...")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                .frame(minHeight: 120)
+                .frame(maxWidth: .infinity)
             }
-            .frame(maxWidth: .infinity)
-            .padding()
-            .background(Color.purple.opacity(0.2))
-            .cornerRadius(12)
+
+            Button {
+                refreshReport()
+            } label: {
+                HStack {
+                    Image(systemName: "arrow.clockwise")
+                    Text("Refresh Report")
+                }
+                .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.bordered)
+            .controlSize(.small)
+            .tint(.blue)
+        }
+        .task {
+            reportFilter = createFilter()
         }
     }
 
-    // MARK: - Pet Animation Debug
+    // MARK: - Navigation Links
 
-    private var petAnimationSection: some View {
-        NavigationLink(destination: PetDebugView()) {
-            HStack {
-                Image(systemName: "figure.wave")
-                Text("Pet Animation Debug")
+    private var navigationLinksSection: some View {
+        sectionCard("Debug Screens", icon: "rectangle.stack.fill", tint: .indigo) {
+            VStack(spacing: 0) {
+                debugNavigationRow("Pet Animation", icon: "figure.wave", color: .green) {
+                    PetDebugView()
+                }
+
+                Divider()
+
+                debugNavigationRow("Evolution Scale", icon: "arrow.up.left.and.arrow.down.right", color: .mint) {
+                    EvolutionScaleDebugView()
+                }
+
+                Divider()
+
+                debugNavigationRow("HomeCard", icon: "rectangle.on.rectangle", color: .blue) {
+                    HomeCardDebugView()
+                }
+
+                Divider()
+
+                debugNavigationRow("Pet Detail", icon: "info.circle", color: .cyan) {
+                    PetDetailScreenDebug()
+                }
+
+                Divider()
+
+                debugNavigationRow("Pet History Row", icon: "list.bullet.rectangle", color: .indigo) {
+                    PetHistoryRowDebugView()
+                }
+
+                Divider()
+
+                debugNavigationRow("Supabase Test", icon: "server.rack", color: .purple) {
+                    SupabaseTestView()
+                }
             }
-            .frame(maxWidth: .infinity)
-            .padding()
-            .background(Color.green.opacity(0.2))
-            .cornerRadius(12)
         }
     }
 
-    // MARK: - Evolution Scale Debug
+    private func debugNavigationRow<Destination: View>(
+        _ title: String,
+        icon: String,
+        color: Color,
+        @ViewBuilder destination: () -> Destination
+    ) -> some View {
+        NavigationLink(destination: destination()) {
+            HStack(spacing: 10) {
+                Image(systemName: icon)
+                    .font(.subheadline)
+                    .foregroundStyle(color)
+                    .frame(width: 24)
 
-    private var evolutionScaleSection: some View {
-        NavigationLink(destination: EvolutionScaleDebugView()) {
-            HStack {
-                Image(systemName: "arrow.up.left.and.arrow.down.right")
-                Text("Evolution Scale Debug")
+                Text(title)
+                    .font(.subheadline)
+
+                Spacer()
             }
-            .frame(maxWidth: .infinity)
-            .padding()
-            .background(Color.mint.opacity(0.2))
-            .cornerRadius(12)
-        }
-    }
-
-    // MARK: - HomeCard Debug
-
-    private var homeCardSection: some View {
-        NavigationLink(destination: HomeCardDebugView()) {
-            HStack {
-                Image(systemName: "rectangle.on.rectangle")
-                Text("HomeCard Debug")
-            }
-            .frame(maxWidth: .infinity)
-            .padding()
-            .background(Color.blue.opacity(0.2))
-            .cornerRadius(12)
-        }
-    }
-
-    // MARK: - Pet Detail Debug
-
-    private var petDetailSection: some View {
-        NavigationLink(destination: PetDetailScreenDebug()) {
-            HStack {
-                Image(systemName: "info.circle")
-                Text("Pet Detail Debug")
-            }
-            .frame(maxWidth: .infinity)
-            .padding()
-            .background(Color.cyan.opacity(0.2))
-            .cornerRadius(12)
-        }
-    }
-
-    // MARK: - Pet History Row Debug
-
-    private var petHistoryRowSection: some View {
-        NavigationLink(destination: PetHistoryRowDebugView()) {
-            HStack {
-                Image(systemName: "list.bullet.rectangle")
-                Text("Pet History Row Debug")
-            }
-            .frame(maxWidth: .infinity)
-            .padding()
-            .background(Color.indigo.opacity(0.2))
-            .cornerRadius(12)
+            .padding(.vertical, 10)
         }
     }
 
     // MARK: - Extension Log
 
     private var extensionLogSection: some View {
-        VStack(spacing: 8) {
+        sectionCard("Extension Log", icon: "doc.text.fill", tint: .gray) {
+            if !extensionLog.isEmpty {
+                ScrollView {
+                    Text(extensionLog)
+                        .font(.system(size: 9, design: .monospaced))
+                        .foregroundStyle(.green)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(8)
+                }
+                .frame(height: 200)
+                .background(Color.black)
+                .clipShape(RoundedRectangle(cornerRadius: 8))
+            } else {
+                Text("No log data. Tap Refresh to load.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 12)
+            }
+
+            let appCount = manager.activitySelection.applicationTokens.count
+            let catCount = manager.activitySelection.categoryTokens.count
+            Text("Apps: \(appCount) | Categories: \(catCount)")
+                .font(.caption2)
+                .foregroundStyle(.tertiary)
+
             HStack(spacing: 8) {
                 Button("Refresh") {
                     loadExtensionLog()
                 }
-                .buttonStyle(.bordered)
                 .tint(.gray)
 
                 Button("Copy") {
                     UIPasteboard.general.string = extensionLog
                 }
-                .buttonStyle(.bordered)
                 .tint(.blue)
                 .disabled(extensionLog.isEmpty)
 
                 Button("Clear") {
                     clearExtensionLog()
                 }
-                .buttonStyle(.bordered)
                 .tint(.red)
             }
-
-            if !extensionLog.isEmpty {
-                ScrollView {
-                    Text(extensionLog)
-                        .font(.system(size: 9, design: .monospaced))
-                        .foregroundColor(.green)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                }
-                .frame(height: 200)
-                .background(Color.black)
-                .cornerRadius(8)
-            } else {
-                Text("No log data. Tap Refresh to load.")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-                    .frame(height: 50)
-            }
-
-            Text("Apps: \(manager.activitySelection.applicationTokens.count) | Categories: \(manager.activitySelection.categoryTokens.count)")
-                .font(.caption2)
-                .foregroundColor(.gray)
+            .buttonStyle(.bordered)
+            .controlSize(.small)
         }
-        .padding()
-        .background(Color(.secondarySystemBackground))
-        .cornerRadius(12)
         .onAppear {
             loadExtensionLog()
         }
@@ -618,6 +622,16 @@ struct DebugView: View {
         let seconds = totalSeconds % 60
         let limitMinutes = monitoringLimitSeconds / 60
         return "\(minutes)m \(seconds)s / \(limitMinutes)m"
+    }
+
+    private func debugRow(_ label: String, _ value: String) -> some View {
+        HStack(spacing: 6) {
+            Text(label)
+                .foregroundStyle(.secondary)
+            Spacer()
+            Text(value)
+        }
+        .font(.system(size: 11, design: .monospaced))
     }
 
     private func createFilter() -> DeviceActivityFilter {
@@ -661,6 +675,55 @@ struct DebugView: View {
         let logFileURL = containerURL.appendingPathComponent("extension_log.txt")
         try? FileManager.default.removeItem(at: logFileURL)
         extensionLog = ""
+    }
+}
+
+// MARK: - FlowLayout
+
+/// Simple horizontal flow layout that wraps items to next line when they don't fit.
+private struct FlowLayout: Layout {
+    var spacing: CGFloat = 8
+
+    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
+        let result = arrange(proposal: proposal, subviews: subviews)
+        return result.size
+    }
+
+    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
+        let result = arrange(proposal: ProposedViewSize(width: bounds.width, height: bounds.height), subviews: subviews)
+        for (index, subview) in subviews.enumerated() {
+            let point = CGPoint(
+                x: bounds.minX + result.positions[index].x,
+                y: bounds.minY + result.positions[index].y
+            )
+            subview.place(at: point, anchor: .topLeading, proposal: .unspecified)
+        }
+    }
+
+    private func arrange(proposal: ProposedViewSize, subviews: Subviews) -> (positions: [CGPoint], size: CGSize) {
+        let maxWidth = proposal.width ?? .infinity
+        var positions: [CGPoint] = []
+        var x: CGFloat = 0
+        var y: CGFloat = 0
+        var rowHeight: CGFloat = 0
+        var maxX: CGFloat = 0
+
+        for subview in subviews {
+            let size = subview.sizeThatFits(.unspecified)
+
+            if x + size.width > maxWidth && x > 0 {
+                x = 0
+                y += rowHeight + spacing
+                rowHeight = 0
+            }
+
+            positions.append(CGPoint(x: x, y: y))
+            rowHeight = max(rowHeight, size.height)
+            x += size.width + spacing
+            maxX = max(maxX, x - spacing)
+        }
+
+        return (positions, CGSize(width: maxX, height: y + rowHeight))
     }
 }
 
