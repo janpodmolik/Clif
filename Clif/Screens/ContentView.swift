@@ -34,6 +34,7 @@ struct ContentView: View {
     @Environment(PetManager.self) private var petManager
 
     @State private var activeTab: AppTab = .home
+    @State private var navigationPaths: [AppTab: NavigationPath] = [:]
     @State private var showSearch = false
     @State private var showPremium = false
     @State private var essenceCoordinator = EssencePickerCoordinator()
@@ -70,7 +71,7 @@ struct ContentView: View {
                             .toolbarVisibility(.hidden, for: .tabBar)
                     }
                     Tab(value: .profile) {
-                        ProfileScreen()
+                        ProfileScreen(navigationPath: navigationPathBinding(for: .profile))
                             .toolbarVisibility(.hidden, for: .tabBar)
                     }
                 }
@@ -153,7 +154,9 @@ struct ContentView: View {
     private func tabBarContent() -> some View {
         HStack(spacing: 10) {
             GeometryReader { geo in
-                CustomTabBar(size: geo.size, activeTab: $activeTab) { tab in
+                CustomTabBar(size: geo.size, activeTab: $activeTab, onReselect: { tab in
+                    popToRoot(for: tab)
+                }) { tab in
                     VStack(spacing: 3) {
                         Image(systemName: tab.symbol)
                             .font(.title3)
@@ -263,14 +266,32 @@ struct ContentView: View {
         ShieldManager.shared.turnOn(breakType: type, durationMinutes: durationMinutes)
     }
 
+    private static let navigableTabs: Set<AppTab> = [.profile]
+
+    private func popToRoot(for tab: AppTab) {
+        guard Self.navigableTabs.contains(tab) else { return }
+        navigationPaths[tab] = NavigationPath()
+    }
+
+    private func navigationPathBinding(for tab: AppTab) -> Binding<NavigationPath> {
+        Binding(
+            get: { navigationPaths[tab, default: NavigationPath()] },
+            set: { navigationPaths[tab] = $0 }
+        )
+    }
+
     @ViewBuilder
     private func tabBarContentFallback() -> some View {
         HStack(spacing: 0) {
             ForEach(AppTab.allCases, id: \.self) { tab in
                 Button {
                     UIImpactFeedbackGenerator(style: .light).impactOccurred()
-                    withAnimation(.snappy(duration: 0.25)) {
-                        activeTab = tab
+                    if activeTab == tab {
+                        popToRoot(for: tab)
+                    } else {
+                        withAnimation(.snappy(duration: 0.25)) {
+                            activeTab = tab
+                        }
                     }
                 } label: {
                     VStack(spacing: 3) {
@@ -324,4 +345,5 @@ struct ContentView: View {
     ContentView()
         .environment(PetManager.mock())
         .environment(ArchivedPetManager.mock())
+        .environment(EssenceCatalogManager.mock())
 }

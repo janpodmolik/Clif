@@ -11,6 +11,7 @@ struct MainApp: App {
 
     @State private var petManager = PetManager()
     @State private var archivedPetManager = ArchivedPetManager()
+    @State private var essenceCatalogManager = EssenceCatalogManager()
 
     init() {
         print("🟢 MainApp init")
@@ -27,6 +28,7 @@ struct MainApp: App {
             ContentView()
                 .environment(petManager)
                 .environment(archivedPetManager)
+                .environment(essenceCatalogManager)
                 .onAppear { print("🟢 ContentView appeared") }
                 .withDeepLinkHandling()
         }

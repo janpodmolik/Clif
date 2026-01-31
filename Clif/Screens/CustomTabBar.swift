@@ -7,15 +7,16 @@ where Tab.RawValue == String, Tab.AllCases: RandomAccessCollection {
     var inActiveTint: Color = .primary.opacity(0.45)
     var barTint: Color = .gray.opacity(0.3)
     @Binding var activeTab: Tab
+    var onReselect: ((Tab) -> Void)?
     @ViewBuilder var tabItemView: (Tab) -> TabItemView
 
     func makeCoordinator() -> Coordinator {
         Coordinator(parent: self)
     }
 
-    func makeUIView(context: Context) -> UISegmentedControl {
+    func makeUIView(context: Context) -> ReselectableSegmentedControl {
         let items = Tab.allCases.map { $0.rawValue }
-        let control = UISegmentedControl(items: Array(items))
+        let control = ReselectableSegmentedControl(items: Array(items))
         control.selectedSegmentIndex = Tab.allCases.firstIndex(of: activeTab).map { Tab.allCases.distance(from: Tab.allCases.startIndex, to: $0) } ?? 0
 
         configureImages(for: control, coordinator: context.coordinator)
@@ -29,6 +30,11 @@ where Tab.RawValue == String, Tab.AllCases: RandomAccessCollection {
         ], for: .normal)
 
         control.addTarget(context.coordinator, action: #selector(context.coordinator.tabSelected(_:)), for: .valueChanged)
+        let coordinator = context.coordinator
+        control.onReselect = { [weak coordinator] index in
+            coordinator?.handleReselect(at: index)
+        }
+
         return control
     }
 
@@ -56,14 +62,14 @@ where Tab.RawValue == String, Tab.AllCases: RandomAccessCollection {
         }
     }
 
-    func updateUIView(_ uiView: UISegmentedControl, context: Context) {
+    func updateUIView(_ uiView: ReselectableSegmentedControl, context: Context) {
         let currentIndex = Tab.allCases.firstIndex(of: activeTab).map { Tab.allCases.distance(from: Tab.allCases.startIndex, to: $0) } ?? 0
         if uiView.selectedSegmentIndex != currentIndex {
             uiView.selectedSegmentIndex = currentIndex
         }
     }
 
-    func sizeThatFits(_ proposal: ProposedViewSize, uiView: UISegmentedControl, context: Context) -> CGSize? {
+    func sizeThatFits(_ proposal: ProposedViewSize, uiView: ReselectableSegmentedControl, context: Context) -> CGSize? {
         return size
     }
 
@@ -79,6 +85,27 @@ where Tab.RawValue == String, Tab.AllCases: RandomAccessCollection {
                 UIImpactFeedbackGenerator(style: .light).impactOccurred()
                 parent.activeTab = allCases[control.selectedSegmentIndex]
             }
+        }
+
+        func handleReselect(at index: Int) {
+            let allCases = Array(Tab.allCases)
+            guard index >= 0, index < allCases.count else { return }
+            UIImpactFeedbackGenerator(style: .light).impactOccurred()
+            parent.onReselect?(allCases[index])
+        }
+    }
+}
+
+// MARK: - ReselectableSegmentedControl
+
+final class ReselectableSegmentedControl: UISegmentedControl {
+    var onReselect: ((Int) -> Void)?
+
+    override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
+        let previousIndex = selectedSegmentIndex
+        super.touchesEnded(touches, with: event)
+        if selectedSegmentIndex == previousIndex {
+            onReselect?(selectedSegmentIndex)
         }
     }
 }

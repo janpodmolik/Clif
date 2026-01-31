@@ -1,18 +1,23 @@
 import SwiftUI
 
+enum ProfileDestination: Hashable {
+    case notifications
+    case essenceCatalog
+}
+
 struct ProfileScreen: View {
     @Environment(PetManager.self) private var petManager
+    @Environment(EssenceCatalogManager.self) private var catalogManager
     @AppStorage("isDarkModeEnabled") private var isDarkModeEnabled: Bool = false
     @State private var limitSettings = SharedDefaults.limitSettings
+    @Binding var navigationPath: NavigationPath
 
     var body: some View {
-        NavigationView {
+        NavigationStack(path: $navigationPath) {
             Form {
                 // MARK: - Notifications & Shield
                 Section {
-                    NavigationLink {
-                        NotificationSettingsView(settings: $limitSettings)
-                    } label: {
+                    NavigationLink(value: ProfileDestination.notifications) {
                         HStack {
                             Label("Notifikace", systemImage: "bell.fill")
                             Spacer()
@@ -29,6 +34,18 @@ struct ProfileScreen: View {
                     Text("Upozornění")
                 } footer: {
                     Text("Denní shield ti umožní vybrat si náročnost dne před prvním použitím blokovaných aplikací.")
+                }
+
+                // MARK: - Essence Catalog
+                Section(header: Text("Kolekce")) {
+                    NavigationLink(value: ProfileDestination.essenceCatalog) {
+                        HStack {
+                            Label("Katalog Essencí", systemImage: "sparkles")
+                            Spacer()
+                            Text("\(catalogManager.unlockedEssences.count)/\(Essence.allCases.count)")
+                                .foregroundStyle(.secondary)
+                        }
+                    }
                 }
 
                 // MARK: - Appearance
@@ -54,6 +71,14 @@ struct ProfileScreen: View {
                 #endif
             }
             .navigationTitle("Profil")
+            .navigationDestination(for: ProfileDestination.self) { destination in
+                switch destination {
+                case .notifications:
+                    NotificationSettingsView(settings: $limitSettings)
+                case .essenceCatalog:
+                    EssenceCatalogScreen()
+                }
+            }
             .onChange(of: limitSettings) { _, newValue in
                 SharedDefaults.limitSettings = newValue
             }
@@ -70,6 +95,7 @@ struct ProfileScreen: View {
 }
 
 #Preview {
-    ProfileScreen()
+    ProfileScreen(navigationPath: .constant(NavigationPath()))
         .environment(PetManager.mock())
+        .environment(EssenceCatalogManager.mock())
 }
