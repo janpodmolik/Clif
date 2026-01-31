@@ -16,17 +16,26 @@ struct IslandView: View {
     let screenHeight: CGFloat
     let screenWidth: CGFloat?
     let content: IslandContent
+    var blowAwayOffsetX: CGFloat = 0
+    var blowAwayRotation: CGFloat = 0
+    var isBlowingAway: Bool = false
     var onFrameChange: ((CGRect) -> Void)?
 
     init(
         screenHeight: CGFloat,
         screenWidth: CGFloat? = nil,
         content: IslandContent,
+        blowAwayOffsetX: CGFloat = 0,
+        blowAwayRotation: CGFloat = 0,
+        isBlowingAway: Bool = false,
         onFrameChange: ((CGRect) -> Void)? = nil
     ) {
         self.screenHeight = screenHeight
         self.screenWidth = screenWidth
         self.content = content
+        self.blowAwayOffsetX = blowAwayOffsetX
+        self.blowAwayRotation = blowAwayRotation
+        self.isBlowingAway = isBlowingAway
         self.onFrameChange = onFrameChange
     }
 
@@ -107,8 +116,8 @@ struct IslandView: View {
                 dropZoneView(isHighlighted: isHighlighted, isSnapped: isSnapped, isVisible: isVisible)
             }
 
-            // Speech bubble overlay - only for pet content
-            if case .pet = content, let config = speechBubbleState.currentConfig {
+            // Speech bubble overlay - only for pet content, hidden during blow away
+            if case .pet = content, !isBlowingAway, let config = speechBubbleState.currentConfig {
                 SpeechBubbleView(
                     config: config,
                     isVisible: speechBubbleState.isVisible,
@@ -152,6 +161,8 @@ struct IslandView: View {
                 }
             )
             .scaleEffect(pet.displayScale, anchor: .bottom)
+            .offset(x: blowAwayOffsetX)
+            .rotationEffect(.degrees(blowAwayRotation), anchor: .bottom)
             .background {
                 GeometryReader { proxy in
                     Color.clear
@@ -174,6 +185,11 @@ struct IslandView: View {
             }
             .onChange(of: windLevel) { _, newValue in
                 speechBubbleState.updateWindLevel(newValue)
+            }
+            .onChange(of: isBlowingAway) { _, newValue in
+                if newValue {
+                    speechBubbleState.hide()
+                }
             }
     }
 

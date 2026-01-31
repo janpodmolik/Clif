@@ -11,6 +11,8 @@ struct HomeScreen: View {
     @Environment(\.colorScheme) private var colorScheme
 
     @State private var windRhythm = WindRhythm()
+    @State private var blowAwayAnimator = BlowAwayAnimator()
+    @State private var currentScreenWidth: CGFloat?
     @State private var showPetDetail = false
     @State private var showPresetPicker = false
     @State private var showDeleteSheet = false
@@ -72,10 +74,36 @@ struct HomeScreen: View {
                     petPage(pet, geometry: geometry)
                 }
             }
+            .onAppear {
+                currentScreenWidth = geometry.size.width
+                // If pet was blown in background, set off-screen immediately
+                if currentPet?.isBlownAway == true {
+                    blowAwayAnimator.setBlownState(screenWidth: geometry.size.width)
+                }
+            }
+            .onChange(of: geometry.size.width) { _, newWidth in
+                currentScreenWidth = newWidth
+            }
         }
-        .fullScreenCover(isPresented: $showPetDetail) {
+        .sheet(isPresented: $showPetDetail, onDismiss: {
+            if blowAwayAnimator.pendingBlowAway {
+                blowAwayAnimator.pendingBlowAway = false
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                    petManager.blowAwayCurrentPet(reason: .userChoice)
+                }
+            }
+        }) {
             if let pet = currentPet {
-                PetDetailScreen(pet: pet)
+                PetDetailScreen(pet: pet) { action in
+                    switch action {
+                    case .blowAway:
+                        blowAwayAnimator.pendingBlowAway = true
+                        showPetDetail = false
+                    default:
+                        break
+                    }
+                }
+                .presentationDetents([.large])
             }
         }
         .sheet(isPresented: $showPresetPicker) {
@@ -126,6 +154,15 @@ struct HomeScreen: View {
         }
         .onChange(of: isInCreationMode) { _, _ in
             updatePetDropFrame()
+        }
+        .onChange(of: currentPet?.id) { _, _ in
+            // Reset animator when pet changes (e.g. deleted + new pet created)
+            blowAwayAnimator.reset()
+        }
+        .onChange(of: currentPet?.isBlownAway) { oldValue, newValue in
+            if newValue == true && oldValue != true, let screenWidth = currentScreenWidth {
+                blowAwayAnimator.trigger(screenWidth: screenWidth)
+            }
         }
     }
 
@@ -191,11 +228,12 @@ struct HomeScreen: View {
 
         return ZStack {
             WindLinesView(
-                windProgress: effectiveProgress,
+                windProgress: blowAwayAnimator.windBurstActive ? 1.0 : effectiveProgress,
                 direction: 1.0,
                 windAreaTop: 0.25,
                 windAreaBottom: 0.50,
-                windRhythm: windRhythm
+                overrideConfig: blowAwayAnimator.windBurstActive ? .burst : nil,
+                windRhythm: blowAwayAnimator.windBurstActive ? nil : windRhythm
             )
 
             IslandView(
@@ -207,6 +245,9 @@ struct HomeScreen: View {
                     windDirection: 1.0,
                     windRhythm: windRhythm
                 ),
+                blowAwayOffsetX: blowAwayAnimator.offsetX,
+                blowAwayRotation: blowAwayAnimator.rotation,
+                isBlowingAway: blowAwayAnimator.isBlowingAway,
                 onFrameChange: { frame in
                     petFrame = frame
                 }
@@ -218,13 +259,15 @@ struct HomeScreen: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
                 .padding(homeCardInset)
 
+            ReplayOverlayView(isVisible: blowAwayAnimator.replayOverlayVisible, petFrame: petFrame)
+
             #if DEBUG
             debugBumpToggle
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomLeading)
                 .padding(homeCardInset)
 
-            EventLogOverlay()
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
+//            EventLogOverlay()
+//                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
             #endif
         }
     }
@@ -260,10 +303,18 @@ struct HomeScreen: View {
         case .evolve:
             handleEvolve(pet)
         case .replay:
-            break // TODO: Handle replay action
+            handleReplay()
         case .delete:
             showDeleteSheet = true
         }
+    }
+
+    // MARK: - Blow Away
+
+    private func handleReplay() {
+        guard let screenWidth = currentScreenWidth,
+              !blowAwayAnimator.isAnimating else { return }
+        blowAwayAnimator.replay(screenWidth: screenWidth)
     }
 
     // MARK: - Actions

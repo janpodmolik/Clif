@@ -16,7 +16,6 @@ struct ActivePetActionsCard: View {
     let isBlownAway: Bool
     var onAction: (ActivePetAction) -> Void = { _ in }
 
-    @Environment(PetManager.self) private var petManager
     @State private var showBlowAwayConfirmation = false
 
     var body: some View {
@@ -45,7 +44,7 @@ struct ActivePetActionsCard: View {
             titleVisibility: .visible
         ) {
             Button("Odfoukout", role: .destructive) {
-                petManager.blowAwayCurrentPet(reason: .userChoice)
+                onAction(.blowAway)
             }
             Button("Zrušit", role: .cancel) {}
         } message: {

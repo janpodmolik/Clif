@@ -109,8 +109,9 @@ struct SearchSheet: View {
         .sheet(item: $activeFilterSheet) { type in
             filterSheet(for: type)
         }
-        .fullScreenCover(item: $selectedArchivedPet) { pet in
+        .sheet(item: $selectedArchivedPet) { pet in
             ArchivedPetDetailScreen(pet: pet)
+                .presentationDetents([.large])
         }
     }
 

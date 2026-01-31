@@ -13,4 +13,16 @@ struct BlowAwayConfig: Equatable {
         duration: 0.8,
         rotationDegrees: 25
     )
+
+    /// Slow-motion variant for replay (longer duration, same rotation)
+    static let slowmo = BlowAwayConfig(
+        duration: 2.0,
+        rotationDegrees: 25
+    )
+
+    /// Duration for the rewind phase (reverse animation back to island)
+    static let rewindDuration: TimeInterval = 0.6
+
+    /// Pause between rewind and slow-motion blow away
+    static let rewindPause: TimeInterval = 1.0
 }
