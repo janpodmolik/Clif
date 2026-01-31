@@ -5,6 +5,8 @@ struct EssenceDragState: Equatable {
     var isDragging = false
     var dragLocation: CGPoint = .zero
     var draggedEssence: Essence?
+    var isSnapped = false
+    var snapTargetCenter: CGPoint = .zero
 }
 
 /// Coordinates the essence picker overlay across the app.
@@ -20,6 +22,7 @@ struct EssenceDragState: Equatable {
 @Observable
 final class EssencePickerCoordinator {
     var isShowing = false
+    var hasSelectedEssence = false
     var dragState = EssenceDragState()
     var dismissDragOffset: CGFloat = 0
     var petDropFrame: CGRect?
@@ -42,6 +45,7 @@ final class EssencePickerCoordinator {
 
         cleanupWorkItem?.cancel()
         let workItem = DispatchWorkItem { [weak self] in
+            self?.hasSelectedEssence = false
             self?.dragState = EssenceDragState()
             self?.petDropFrame = nil
             self?.onDropOnPet = nil

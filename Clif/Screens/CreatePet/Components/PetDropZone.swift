@@ -42,29 +42,13 @@ struct PetDropZone: View {
                 .frame(width: size, height: size)
                 .scaleEffect(1 + pulsePhase * (Layout.pulseScale - 1))
 
-            // Middle dashed ring
+            // Inner dashed ring
             RoundedRectangle(cornerRadius: innerCornerRadius)
                 .stroke(
                     strokeColor.opacity(currentOpacity * 0.8),
                     style: StrokeStyle(lineWidth: 2, dash: [6, 4])
                 )
                 .frame(width: size * Layout.innerScale, height: size * Layout.innerScale)
-
-            // Inner glow
-            RoundedRectangle(cornerRadius: innerCornerRadius * 0.6)
-                .fill(
-                    RadialGradient(
-                        colors: [
-                            strokeColor.opacity(currentOpacity * 0.5),
-                            strokeColor.opacity(0)
-                        ],
-                        center: .center,
-                        startRadius: 0,
-                        endRadius: size * 0.35
-                    )
-                )
-                .frame(width: size * 0.5, height: size * 0.5)
-                .scaleEffect(isHighlighted ? 1.15 : 1.0)
         }
         .animation(.easeInOut(duration: 0.2), value: isHighlighted)
         .animation(.easeInOut(duration: 0.15), value: isSnapped)

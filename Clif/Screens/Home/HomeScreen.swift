@@ -51,6 +51,18 @@ struct HomeScreen: View {
         return expandedFrame.contains(createPetCoordinator.dragState.dragLocation)
     }
 
+    /// Whether the dragged essence is near the drop zone (larger area for visual feedback)
+    private var isEssenceDropZoneHighlighted: Bool {
+        guard essenceCoordinator.dragState.isDragging,
+              petFrame != .zero else { return false }
+        let expandedFrame = petFrame.insetBy(dx: -60, dy: -60)
+        let essencePosition = CGPoint(
+            x: essenceCoordinator.dragState.dragLocation.x - 20,
+            y: essenceCoordinator.dragState.dragLocation.y - 50
+        )
+        return expandedFrame.contains(essencePosition)
+    }
+
     private var currentPet: Pet? { petManager.currentPet }
 
     private var petDropFrame: CGRect? {
@@ -168,6 +180,9 @@ struct HomeScreen: View {
         }
         .onChange(of: petFrame) { _, _ in
             updatePetDropFrame()
+            if essenceCoordinator.isShowing {
+                essenceCoordinator.petDropFrame = petDropFrame
+            }
         }
         .onChange(of: dropZoneFrame) { _, _ in
             updatePetDropFrame()
@@ -248,12 +263,16 @@ struct HomeScreen: View {
 
         return ZStack {
             WindLinesView(
-                windProgress: blowAwayAnimator.windBurstActive ? 1.0 : effectiveProgress,
+                windProgress: essenceCoordinator.isShowing
+                    ? 0
+                    : (blowAwayAnimator.windBurstActive ? 1.0 : effectiveProgress),
                 direction: 1.0,
                 windAreaTop: 0.25,
                 windAreaBottom: 0.50,
                 overrideConfig: blowAwayAnimator.windBurstActive ? .burst : nil,
-                windRhythm: blowAwayAnimator.windBurstActive ? nil : windRhythm
+                windRhythm: essenceCoordinator.isShowing
+                    ? nil
+                    : (blowAwayAnimator.windBurstActive ? nil : windRhythm)
             )
 
             IslandView(
@@ -261,13 +280,16 @@ struct HomeScreen: View {
                 screenWidth: geometry.size.width,
                 content: .pet(
                     pet.phase ?? Blob.shared,
-                    windProgress: effectiveProgress,
+                    windProgress: essenceCoordinator.isShowing ? 0 : effectiveProgress,
                     windDirection: 1.0,
-                    windRhythm: windRhythm
+                    windRhythm: essenceCoordinator.isShowing ? nil : windRhythm
                 ),
                 blowAwayOffsetX: blowAwayAnimator.offsetX,
                 blowAwayRotation: blowAwayAnimator.rotation,
                 isBlowingAway: blowAwayAnimator.isBlowingAway,
+                showEssenceDropZone: essenceCoordinator.hasSelectedEssence,
+                isEssenceHighlighted: isEssenceDropZoneHighlighted,
+                isEssenceSnapped: essenceCoordinator.dragState.isSnapped,
                 onFrameChange: { frame in
                     petFrame = frame
                 }

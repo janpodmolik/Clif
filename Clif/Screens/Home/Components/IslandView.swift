@@ -19,6 +19,9 @@ struct IslandView: View {
     var blowAwayOffsetX: CGFloat = 0
     var blowAwayRotation: CGFloat = 0
     var isBlowingAway: Bool = false
+    var showEssenceDropZone: Bool = false
+    var isEssenceHighlighted: Bool = false
+    var isEssenceSnapped: Bool = false
     var onFrameChange: ((CGRect) -> Void)?
 
     init(
@@ -28,6 +31,9 @@ struct IslandView: View {
         blowAwayOffsetX: CGFloat = 0,
         blowAwayRotation: CGFloat = 0,
         isBlowingAway: Bool = false,
+        showEssenceDropZone: Bool = false,
+        isEssenceHighlighted: Bool = false,
+        isEssenceSnapped: Bool = false,
         onFrameChange: ((CGRect) -> Void)? = nil
     ) {
         self.screenHeight = screenHeight
@@ -36,6 +42,9 @@ struct IslandView: View {
         self.blowAwayOffsetX = blowAwayOffsetX
         self.blowAwayRotation = blowAwayRotation
         self.isBlowingAway = isBlowingAway
+        self.showEssenceDropZone = showEssenceDropZone
+        self.isEssenceHighlighted = isEssenceHighlighted
+        self.isEssenceSnapped = isEssenceSnapped
         self.onFrameChange = onFrameChange
     }
 
@@ -108,6 +117,13 @@ struct IslandView: View {
     @ViewBuilder
     private var islandContent: some View {
         ZStack {
+            // Essence drop zone indicator - behind the pet, uses same layout as dropZoneView
+            // so it aligns with the pet's visual center regardless of scaleEffect
+            if case .pet(let pet, _, _, _) = content, showEssenceDropZone {
+                essenceDropZoneView(for: pet)
+                    .transition(.opacity)
+            }
+
             switch content {
             case .pet(let pet, _, _, _):
                 petView(for: pet)
@@ -191,6 +207,27 @@ struct IslandView: View {
                     speechBubbleState.hide()
                 }
             }
+    }
+
+    // MARK: - Essence Drop Zone
+
+    @ViewBuilder
+    private func essenceDropZoneView(for pet: any PetDisplayable) -> some View {
+        // Use invisible pet image to match exact pet dimensions and scale,
+        // same pattern as dropZoneView — ensures correct center alignment
+        Image(pet.assetName(for: windLevel))
+            .resizable()
+            .scaledToFit()
+            .frame(height: petHeight)
+            .opacity(0)
+            .overlay {
+                PetDropZone(
+                    isHighlighted: isEssenceHighlighted,
+                    isSnapped: isEssenceSnapped,
+                    size: dropZoneSize
+                )
+            }
+            .scaleEffect(pet.displayScale, anchor: .bottom)
     }
 
     // MARK: - Drop Zone View

@@ -19,6 +19,12 @@ struct EssencePicker: View {
         static let fallbackIntensity: CGFloat = 0.2
     }
 
+    /// Offset applied to drag preview position (matches EssencePickerOverlay.Layout.dragPreviewOffset)
+    private enum DragOffset {
+        static let x: CGFloat = -20
+        static let y: CGFloat = -50
+    }
+
     private var selectedPath: EvolutionPath? {
         selectedEssence.map { EvolutionPath.path(for: $0) }
     }
@@ -37,6 +43,7 @@ struct EssencePicker: View {
                             withAnimation(.easeInOut(duration: 0.2)) {
                                 selectedEssence = essence
                             }
+                            coordinator.hasSelectedEssence = true
                         }
                     }
                 }
@@ -81,6 +88,7 @@ struct EssencePicker: View {
                                     startDragging()
                                 }
                                 coordinator.dragState.dragLocation = value.location
+                                updateSnapState(at: value.location)
                                 updateDragHaptics(at: value.location)
                             }
                             .onEnded { value in
@@ -109,16 +117,48 @@ struct EssencePicker: View {
         defer {
             coordinator.dragState.isDragging = false
             coordinator.dragState.draggedEssence = nil
+            coordinator.dragState.isSnapped = false
             hapticController.stop()
         }
 
         guard let essence = selectedEssence else { return }
+
+        // Use essence preview position (with offset), not finger position
+        let essencePosition = CGPoint(
+            x: location.x + DragOffset.x,
+            y: location.y + DragOffset.y
+        )
         guard let petDropFrame = coordinator.petDropFrame,
-              petDropFrame.contains(location) else { return }
+              petDropFrame.contains(essencePosition) else { return }
 
         coordinator.handleDrop(essence)
+        coordinator.hasSelectedEssence = false
         selectedEssence = nil
         HapticType.notificationSuccess.trigger()
+    }
+
+    private func updateSnapState(at location: CGPoint) {
+        guard let petDropFrame = coordinator.petDropFrame else {
+            coordinator.dragState.isSnapped = false
+            return
+        }
+
+        // Use essence preview position (with offset), not finger position
+        let essencePosition = CGPoint(
+            x: location.x + DragOffset.x,
+            y: location.y + DragOffset.y
+        )
+        let isSnapped = petDropFrame.contains(essencePosition)
+        if isSnapped != coordinator.dragState.isSnapped {
+            coordinator.dragState.isSnapped = isSnapped
+            if isSnapped {
+                coordinator.dragState.snapTargetCenter = CGPoint(
+                    x: petDropFrame.midX,
+                    y: petDropFrame.midY
+                )
+                HapticType.impactMedium.trigger()
+            }
+        }
     }
 
     private func updateDragHaptics(at location: CGPoint) {
