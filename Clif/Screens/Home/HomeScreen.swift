@@ -17,6 +17,7 @@ struct HomeScreen: View {
     @State private var showPresetPicker = false
     @State private var showDeleteSheet = false
     @State private var showSuccessArchivePrompt = false
+    @State private var showWindNotCalmAlert = false
     @State private var pendingEssencePicker = false
     @State private var petFrame: CGRect = .zero
     @State private var dropZoneFrame: CGRect = .zero
@@ -175,6 +176,7 @@ struct HomeScreen: View {
                 )
             }
         }
+        .windNotCalmAlert(isPresented: $showWindNotCalmAlert)
         .onAppear {
             windRhythm.start()
             // Fallback: check if new day and perform reset if extension missed it
@@ -282,16 +284,12 @@ struct HomeScreen: View {
 
         return ZStack {
             WindLinesView(
-                windProgress: essenceCoordinator.isShowing
-                    ? 0
-                    : (blowAwayAnimator.windBurstActive ? 1.0 : effectiveProgress),
+                windProgress: blowAwayAnimator.windBurstActive ? 1.0 : effectiveProgress,
                 direction: 1.0,
                 windAreaTop: 0.25,
                 windAreaBottom: 0.50,
                 overrideConfig: blowAwayAnimator.windBurstActive ? .burst : nil,
-                windRhythm: essenceCoordinator.isShowing
-                    ? nil
-                    : (blowAwayAnimator.windBurstActive ? nil : windRhythm)
+                windRhythm: blowAwayAnimator.windBurstActive ? nil : windRhythm
             )
 
             IslandView(
@@ -299,9 +297,9 @@ struct HomeScreen: View {
                 screenWidth: geometry.size.width,
                 content: .pet(
                     pet.phase ?? Blob.shared,
-                    windProgress: essenceCoordinator.isShowing ? 0 : effectiveProgress,
+                    windProgress: effectiveProgress,
                     windDirection: 1.0,
-                    windRhythm: essenceCoordinator.isShowing ? nil : windRhythm
+                    windRhythm: windRhythm
                 ),
                 blowAwayOffsetX: blowAwayAnimator.offsetX,
                 blowAwayRotation: blowAwayAnimator.rotation,
@@ -362,12 +360,20 @@ struct HomeScreen: View {
         case .detail:
             showPetDetail = true
         case .evolve:
+            guard pet.windLevel == .none else {
+                showWindNotCalmAlert = true
+                return
+            }
             handleEvolve(pet)
         case .replay:
             handleReplay()
         case .delete:
             showDeleteSheet = true
         case .archive:
+            guard pet.windLevel == .none else {
+                showWindNotCalmAlert = true
+                return
+            }
             showSuccessArchivePrompt = true
         }
     }

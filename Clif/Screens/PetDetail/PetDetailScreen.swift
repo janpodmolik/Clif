@@ -15,6 +15,7 @@ struct PetDetailScreen: View {
     @State private var showLimitedApps = false
     @State private var showDeleteConfirmation = false
     @State private var showArchiveConfirmation = false
+    @State private var showWindNotCalmAlert = false
 
     private var themeColor: Color {
         pet.themeColor
@@ -120,6 +121,10 @@ struct PetDetailScreen: View {
                         ) { action in
                             switch action {
                             case .progress:
+                                guard pet.windLevel == .none else {
+                                    showWindNotCalmAlert = true
+                                    return
+                                }
                                 if pet.isBlob {
                                     onAction(.progress)
                                     dismiss()
@@ -129,7 +134,12 @@ struct PetDetailScreen: View {
                             case .blowAway: onAction(.blowAway)
                             case .replay: onAction(.replay)
                             case .delete: showDeleteConfirmation = true
-                            case .archive: showArchiveConfirmation = true
+                            case .archive:
+                                guard pet.windLevel == .none else {
+                                    showWindNotCalmAlert = true
+                                    return
+                                }
+                                showArchiveConfirmation = true
                             }
                         }
                     }
@@ -176,6 +186,7 @@ struct PetDetailScreen: View {
                     }
                 )
             }
+            .windNotCalmAlert(isPresented: $showWindNotCalmAlert)
         }
     }
 }
