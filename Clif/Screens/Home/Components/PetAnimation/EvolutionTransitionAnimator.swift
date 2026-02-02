@@ -33,8 +33,6 @@ final class EvolutionTransitionAnimator {
 
     // MARK: - Private
 
-    /// Action to perform when the transition animation completes (e.g. evolve or apply essence).
-    private var onCompleteAction: (() -> Void)?
 
     // MARK: - Configuration
 
@@ -70,7 +68,7 @@ final class EvolutionTransitionAnimator {
         oldScale = pet.evolutionPath?.phase(at: currentPhase)?.displayScale ?? pet.displayScale
         newScale = pet.evolutionPath?.phase(at: nextPhase)?.displayScale ?? pet.displayScale
 
-        onCompleteAction = { pet.evolve() }
+        pet.evolve()
         startTransition()
     }
 
@@ -88,14 +86,12 @@ final class EvolutionTransitionAnimator {
         oldScale = Blob.shared.displayScale
         newScale = path.phase(at: 1)?.displayScale ?? oldScale
 
-        onCompleteAction = { pet.applyEssence(essence) }
+        pet.applyEssence(essence)
         startTransition()
     }
 
     /// Called when the transition animation completes.
     func complete() {
-        onCompleteAction?()
-        onCompleteAction = nil
         isShowingTransition = false
         isTransitioning = false
         cameraTransform = .identity
@@ -103,7 +99,6 @@ final class EvolutionTransitionAnimator {
 
     /// Resets all state (e.g. when pet changes).
     func reset() {
-        onCompleteAction = nil
         isShowingTransition = false
         isTransitioning = false
         cameraTransform = .identity

@@ -38,9 +38,9 @@ extension PetEvolvable {
         ).day ?? 0
     }
 
-    /// True if blob can use essence (at least 1 day old).
+    /// True if blob can use essence (at least 1 day old and hasn't progressed today).
     var canUseEssence: Bool {
-        guard isBlob else { return false }
+        guard isBlob, !evolutionHistory.hasProgressedToday else { return false }
         return daysSinceCreation >= 1
     }
 
@@ -53,8 +53,14 @@ extension PetEvolvable {
 
     /// Days until next evolution (1 day per phase).
     var daysUntilEvolution: Int? {
-        guard !evolutionHistory.canEvolve else { return nil }
         guard !isBlob else { return nil }
+        guard !evolutionHistory.isFullyEvolved else { return nil }
+        guard !evolutionHistory.isBlown else { return nil }
+
+        if evolutionHistory.hasProgressedToday {
+            return 1
+        }
+
         let nextEvolutionDay = evolutionHistory.currentPhase
         let remaining = nextEvolutionDay - daysSinceCreation
         return remaining > 0 ? remaining : nil

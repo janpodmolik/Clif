@@ -308,12 +308,20 @@ extension Pet {
         }
     }
 
-    /// Force-unlocks next evolution (shifts createdAt so daysUntilEvolution == 0).
+    /// Force-unlocks next evolution (clears daily lock and shifts createdAt so daysUntilEvolution == 0).
     func debugUnlockEvolution() {
-        guard canEvolve else { return }
+        guard !isBlob, !isBlown, currentPhase < evolutionHistory.maxPhase else { return }
+        if evolutionHistory.hasProgressedToday {
+            evolutionHistory.debugClearDailyProgress()
+        }
         while daysUntilEvolution ?? 0 > 0 {
             evolutionHistory.debugBumpDay()
         }
+    }
+
+    /// Clears the daily evolution gate for testing.
+    func debugClearDailyProgress() {
+        evolutionHistory.debugClearDailyProgress()
     }
 
     /// Resets pet back to blob state.

@@ -21,6 +21,7 @@ struct EvolutionHistory: Codable, Equatable {
     private(set) var essence: Essence?
     private(set) var events: [EvolutionEvent]
     private(set) var blownAt: Date?
+    private(set) var lastProgressDate: Date?
 
     /// True if pet is still a blob (no essence applied yet)
     var isBlob: Bool {
@@ -38,8 +39,14 @@ struct EvolutionHistory: Codable, Equatable {
         return EvolutionPath.path(for: essence).maxPhases
     }
 
+    /// Whether evolution or essence application already happened today.
+    var hasProgressedToday: Bool {
+        guard let lastProgressDate else { return false }
+        return Calendar.current.isDateInToday(lastProgressDate)
+    }
+
     var canEvolve: Bool {
-        guard !isBlob, !isBlown else { return false }
+        guard !isBlob, !isBlown, !hasProgressedToday else { return false }
         return currentPhase < maxPhase
     }
 
@@ -53,16 +60,18 @@ struct EvolutionHistory: Codable, Equatable {
         blownAt != nil
     }
 
-    init(createdAt: Date = Date(), essence: Essence? = nil, events: [EvolutionEvent] = [], blownAt: Date? = nil) {
+    init(createdAt: Date = Date(), essence: Essence? = nil, events: [EvolutionEvent] = [], blownAt: Date? = nil, lastProgressDate: Date? = nil) {
         self.createdAt = createdAt
         self.essence = essence
         self.events = events
         self.blownAt = blownAt
+        self.lastProgressDate = lastProgressDate
     }
 
     mutating func applyEssence(_ essence: Essence) {
         guard self.essence == nil else { return }
         self.essence = essence
+        lastProgressDate = Date()
     }
 
     mutating func recordEvolution(to phase: Int) {
@@ -72,6 +81,7 @@ struct EvolutionHistory: Codable, Equatable {
             date: Date()
         )
         events.append(event)
+        lastProgressDate = Date()
     }
 
     mutating func markAsBlown() {
@@ -112,7 +122,13 @@ extension EvolutionHistory {
         essence = nil
         events = []
         blownAt = nil
+        lastProgressDate = nil
         createdAt = Date()
+    }
+
+    /// Clears the daily progress gate so evolution can be tested again immediately.
+    mutating func debugClearDailyProgress() {
+        lastProgressDate = nil
     }
 }
 #endif
@@ -145,7 +161,8 @@ extension EvolutionHistory {
             createdAt: createdAt,
             essence: essence,
             events: events,
-            blownAt: blownAt
+            blownAt: blownAt,
+            lastProgressDate: nil
         )
     }
 }

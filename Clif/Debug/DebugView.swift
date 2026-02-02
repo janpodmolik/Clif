@@ -93,6 +93,8 @@ struct DebugView: View {
                     debugRow("Essence", pet.essence?.rawValue ?? "none")
                     debugRow("Created", pet.evolutionHistory.createdAt.formatted(date: .abbreviated, time: .shortened))
 
+                    debugRow("Progressed today", pet.evolutionHistory.hasProgressedToday ? "Yes" : "No")
+
                     if pet.isBlob {
                         debugRow("Can use essence", pet.canUseEssence ? "Yes" : "No")
                         if let days = pet.daysUntilEssence {
@@ -121,6 +123,14 @@ struct DebugView: View {
                             petManager.savePet()
                         }
                         .tint(.mint)
+                    }
+
+                    if pet.evolutionHistory.hasProgressedToday {
+                        Button("Clear Daily Lock") {
+                            pet.debugClearDailyProgress()
+                            petManager.savePet()
+                        }
+                        .tint(.yellow)
                     }
 
                     if !pet.isBlob {
