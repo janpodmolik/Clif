@@ -229,8 +229,8 @@ struct EvolutionTransitionView: View {
 
     private func cameraScale(progress: CGFloat) -> CGFloat {
         let preStart = cameraPreZoomStartPoint()
-        let flash = flashTriggerPoint()
-        let end = min(flash + 0.18, 1.0)
+        let flash = EvolutionTransitionConfig.flashStart
+        let end = min(flash + 0.10, 1.0)
         let preScale: CGFloat = 1.08
         let maxScale: CGFloat = 1.20
 
@@ -242,7 +242,7 @@ struct EvolutionTransitionView: View {
             return 1 + (preScale - 1) * t
         }
         if progress < end {
-            let t = smoothStep(normalized(progress, start: flash, end: end))
+            let t = normalized(progress, start: flash, end: end)
             return maxScale - (maxScale - 1) * t
         }
         return 1
