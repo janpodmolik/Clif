@@ -66,7 +66,7 @@ struct EssencePicker: View {
                 Spacer()
 
                 // Staging area - instant drag
-                EssenceStagingCard(essence: selectedEssence)
+                EssenceStagingCard(essence: selectedEssence, isDragging: coordinator.dragState.isDragging)
                     .gesture(
                         DragGesture(minimumDistance: 0, coordinateSpace: .global)
                             .onChanged { value in
@@ -142,56 +142,39 @@ private enum CardStyle {
 
 private struct EssenceStagingCard: View {
     let essence: Essence?
-
-    private var path: EvolutionPath? {
-        essence.map { EvolutionPath.path(for: $0) }
-    }
-
-    private var themeColor: Color {
-        path?.themeColor ?? .secondary
-    }
+    var isDragging: Bool = false
 
     var body: some View {
-        Group {
-            if let essence {
-                Image(essence.assetName)
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: CardStyle.imageSize, height: CardStyle.imageSize)
+        ZStack {
+            if isDragging {
+                RoundedRectangle(cornerRadius: CardStyle.cornerRadius)
+                    .strokeBorder(
+                        Color.secondary.opacity(0.2),
+                        style: StrokeStyle(lineWidth: 2, dash: [8, 4])
+                    )
+                    .frame(
+                        width: CardStyle.imageSize + CardStyle.padding * 2,
+                        height: CardStyle.imageSize + CardStyle.padding * 2
+                    )
             } else {
-                Image(systemName: "sparkles")
-                    .font(.title)
-                    .foregroundStyle(.tertiary)
-                    .frame(width: CardStyle.imageSize, height: CardStyle.imageSize)
+                Group {
+                    if let essence {
+                        Image(essence.assetName)
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: CardStyle.imageSize, height: CardStyle.imageSize)
+                    } else {
+                        Image(systemName: "sparkles")
+                            .font(.title)
+                            .foregroundStyle(.tertiary)
+                            .frame(width: CardStyle.imageSize, height: CardStyle.imageSize)
+                    }
+                }
+                .padding(CardStyle.padding)
+                .glassBackground(cornerRadius: CardStyle.cornerRadius)
             }
         }
-        .padding(CardStyle.padding)
-        .background(cardBackground)
-    }
-
-    @ViewBuilder
-    private var cardBackground: some View {
-        let shape = RoundedRectangle(cornerRadius: CardStyle.cornerRadius)
-
-        if #available(iOS 26.0, *) {
-            Color.clear
-                .glassEffect(
-                    essence != nil
-                        ? .regular.tint(themeColor.opacity(CardStyle.glassTintOpacity))
-                        : .regular,
-                    in: shape
-                )
-                .overlay {
-                    shape.stroke(themeColor.opacity(CardStyle.strokeOpacity), lineWidth: 2)
-                }
-        } else {
-            shape
-                .fill(essence != nil ? themeColor.opacity(CardStyle.fillOpacity) : Color.clear)
-                .background(.ultraThinMaterial, in: shape)
-                .overlay {
-                    shape.stroke(themeColor.opacity(CardStyle.strokeOpacity), lineWidth: 2)
-                }
-        }
+        .transaction { $0.animation = nil }
     }
 }
 
@@ -253,14 +236,9 @@ struct EssenceDragPreview: View {
 
     private enum Layout {
         static let imageSize: CGFloat = 56
-        static let padding: CGFloat = 10
-        static let shadowOpacity: CGFloat = 0.18
-        static let shadowRadius: CGFloat = 8
-        static let shadowY: CGFloat = 6
-    }
-
-    private var path: EvolutionPath {
-        EvolutionPath.path(for: essence)
+        static let shadowOpacity: CGFloat = 0.2
+        static let shadowRadius: CGFloat = 10
+        static let shadowY: CGFloat = 4
     }
 
     var body: some View {
@@ -268,32 +246,7 @@ struct EssenceDragPreview: View {
             .resizable()
             .scaledToFit()
             .frame(width: Layout.imageSize, height: Layout.imageSize)
-            .padding(Layout.padding)
-            .background(previewBackground)
             .shadow(color: .black.opacity(Layout.shadowOpacity), radius: Layout.shadowRadius, x: 0, y: Layout.shadowY)
-    }
-
-    @ViewBuilder
-    private var previewBackground: some View {
-        let shape = RoundedRectangle(cornerRadius: CardStyle.cornerRadius)
-
-        if #available(iOS 26.0, *) {
-            Color.clear
-                .glassEffect(
-                    .regular.tint(path.themeColor.opacity(CardStyle.glassTintOpacity)),
-                    in: shape
-                )
-                .overlay {
-                    shape.stroke(path.themeColor.opacity(CardStyle.subtleStrokeOpacity), lineWidth: 1)
-                }
-        } else {
-            shape
-                .fill(path.themeColor.opacity(CardStyle.fillOpacity))
-                .background(.ultraThinMaterial, in: shape)
-                .overlay {
-                    shape.stroke(path.themeColor.opacity(CardStyle.subtleStrokeOpacity), lineWidth: 1)
-                }
-        }
     }
 }
 
