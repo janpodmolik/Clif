@@ -5,7 +5,6 @@ struct ArchivedPetDetailScreen: View {
 
     @Environment(\.dismiss) private var dismiss
     @Environment(ArchivedPetManager.self) private var archivedPetManager
-    @State private var showAppUsageSheet = false
     @State private var showDeleteConfirmation = false
 
     var body: some View {
@@ -61,17 +60,9 @@ struct ArchivedPetDetailScreen: View {
                         TrendMiniChart(stats: pet.fullStats)
                     }
 
-                    LimitedAppsButton(
-                        sources: pet.limitedSources,
-                        onTap: { showAppUsageSheet = true }
-                    )
-
                     deleteButton
                 }
                 .padding()
-            }
-            .sheet(isPresented: $showAppUsageSheet) {
-                LimitedAppsSheet(sources: pet.limitedSources)
             }
             .navigationTitle(pet.name)
             .navigationBarTitleDisplayMode(.inline)

@@ -52,7 +52,7 @@ final class PetManager {
         guard let currentPet = pet, currentPet.id == id else { return }
 
         // Stop monitoring and clear all data before archiving
-        ScreenTimeManager.shared.stopMonitoringAndClear(petId: id)
+        ScreenTimeManager.shared.stopMonitoringAndClear()
 
         archivedPetManager.archive(currentPet)
         pet = nil
@@ -88,7 +88,7 @@ final class PetManager {
         guard let currentPet = pet, currentPet.id == id else { return }
 
         // Stop monitoring and clear all data before deleting
-        ScreenTimeManager.shared.stopMonitoringAndClear(petId: id)
+        ScreenTimeManager.shared.stopMonitoringAndClear()
 
         pet = nil
         saveActivePet()

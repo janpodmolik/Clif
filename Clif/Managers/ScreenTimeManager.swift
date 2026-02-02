@@ -140,9 +140,8 @@ final class ScreenTimeManager: ObservableObject {
             return
         }
 
-        // Save tokens for this pet (extension will load them)
-        SharedDefaults.saveTokens(
-            petId: petId,
+        // Save tokens for extension access
+        SharedDefaults.saveActiveTokens(
             applications: appTokens,
             categories: catTokens,
             webDomains: webTokens
@@ -222,9 +221,9 @@ final class ScreenTimeManager: ObservableObject {
         #endif
     }
 
-    /// Stops monitoring and clears all data for a specific pet.
+    /// Stops monitoring and clears all data for the active pet.
     /// Call when deleting or archiving a pet.
-    func stopMonitoringAndClear(petId: UUID) {
+    func stopMonitoringAndClear() {
         stopMonitoring()
 
         // Clear any active shields (prevents stale shield showing after pet deletion)
@@ -232,17 +231,15 @@ final class ScreenTimeManager: ObservableObject {
         store.shield.applicationCategories = nil
         store.shield.webDomains = nil
 
-        // Clear tokens for this pet
-        SharedDefaults.clearTokens(petId: petId)
+        // Clear active tokens
+        SharedDefaults.clearActiveTokens()
 
-        // Clear monitoring context and shield flags if this was the active pet
-        if SharedDefaults.monitoredPetId == petId {
-            SharedDefaults.monitoredPetId = nil
-            SharedDefaults.resetShieldFlags()
-        }
+        // Clear monitoring context and shield flags
+        SharedDefaults.monitoredPetId = nil
+        SharedDefaults.resetShieldFlags()
 
         #if DEBUG
-        print("[ScreenTimeManager] stopMonitoringAndClear for pet \(petId)")
+        print("[ScreenTimeManager] stopMonitoringAndClear")
         #endif
     }
 

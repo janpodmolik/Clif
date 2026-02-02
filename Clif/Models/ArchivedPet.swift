@@ -93,7 +93,7 @@ extension ArchivedPet {
             purpose: pet.purpose,
             archivedAt: archivedAt,
             dailyStats: pet.dailyStats,
-            limitedSources: pet.limitedSources,
+            limitedSources: pet.limitedSources.map { $0.strippingToken() },
             breakHistory: pet.breakHistory,
             peakWindPoints: pet.peakWindPoints,
             totalBreakMinutes: pet.totalBreakMinutes,

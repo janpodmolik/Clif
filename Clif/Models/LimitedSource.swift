@@ -197,6 +197,19 @@ extension LimitedSource: Codable {
     }
 }
 
+// MARK: - Token Stripping
+
+extension LimitedSource {
+    /// Returns a copy with the token removed (keeps id and displayName).
+    func strippingToken() -> LimitedSource {
+        switch self {
+        case .app(let s): .app(AppSource(id: s.id, displayName: s.displayName))
+        case .category(let s): .category(CategorySource(id: s.id, displayName: s.displayName))
+        case .website(let s): .website(WebsiteSource(id: s.id, displayName: s.displayName))
+        }
+    }
+}
+
 // MARK: - Token Extraction
 
 extension Array where Element == LimitedSource {
