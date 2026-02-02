@@ -12,7 +12,7 @@ enum IslandContent {
 }
 
 /// Displays the island scene with rock, grass, and either a pet or drop zone.
-struct IslandView: View {
+struct IslandView<TransitionContent: View>: View {
     let screenHeight: CGFloat
     let screenWidth: CGFloat?
     let content: IslandContent
@@ -22,7 +22,8 @@ struct IslandView: View {
     var showEssenceDropZone: Bool = false
     var isEssenceHighlighted: Bool = false
     var isEssenceOnTarget: Bool = false
-    var evolutionTransitionView: AnyView? = nil
+    var isEvolutionTransitioning: Bool = false
+    @ViewBuilder var transitionContent: TransitionContent
     var onFrameChange: ((CGRect) -> Void)?
 
     init(
@@ -35,7 +36,8 @@ struct IslandView: View {
         showEssenceDropZone: Bool = false,
         isEssenceHighlighted: Bool = false,
         isEssenceOnTarget: Bool = false,
-        evolutionTransitionView: AnyView? = nil,
+        isEvolutionTransitioning: Bool = false,
+        @ViewBuilder transitionContent: () -> TransitionContent,
         onFrameChange: ((CGRect) -> Void)? = nil
     ) {
         self.screenHeight = screenHeight
@@ -47,7 +49,8 @@ struct IslandView: View {
         self.showEssenceDropZone = showEssenceDropZone
         self.isEssenceHighlighted = isEssenceHighlighted
         self.isEssenceOnTarget = isEssenceOnTarget
-        self.evolutionTransitionView = evolutionTransitionView
+        self.isEvolutionTransitioning = isEvolutionTransitioning
+        self.transitionContent = transitionContent()
         self.onFrameChange = onFrameChange
     }
 
@@ -147,7 +150,7 @@ struct IslandView: View {
             }
 
             // Speech bubble overlay - only for pet content, hidden during blow away and evolution transition
-            if case .pet = content, !isBlowingAway, evolutionTransitionView == nil, let config = speechBubbleState.currentConfig {
+            if case .pet = content, !isBlowingAway, !isEvolutionTransitioning, let config = speechBubbleState.currentConfig {
                 SpeechBubbleView(
                     config: config,
                     isVisible: speechBubbleState.isVisible,
@@ -204,8 +207,8 @@ struct IslandView: View {
                 .scaleEffect(pet.displayScale, anchor: .bottom)
                 .offset(x: blowAwayOffsetX)
                 .rotationEffect(.degrees(blowAwayRotation), anchor: .bottom)
-                .opacity(evolutionTransitionView == nil ? 1.0 : 0.0)
-                .allowsHitTesting(evolutionTransitionView == nil)
+                .opacity(isEvolutionTransitioning ? 0.0 : 1.0)
+                .allowsHitTesting(!isEvolutionTransitioning)
                 .background {
                     GeometryReader { proxy in
                         Color.clear
@@ -235,8 +238,8 @@ struct IslandView: View {
                     }
                 }
 
-            if let transitionView = evolutionTransitionView {
-                transitionView
+            if isEvolutionTransitioning {
+                transitionContent
                     .frame(width: transitionFrameSize.width, height: transitionFrameSize.height)
                     .allowsHitTesting(false)
             }
@@ -306,6 +309,35 @@ struct IslandView: View {
 
         // Attempt to trigger speech bubble (30% chance)
         speechBubbleState.triggerOnTap(windLevel: windLevel)
+    }
+}
+
+extension IslandView where TransitionContent == EmptyView {
+    init(
+        screenHeight: CGFloat,
+        screenWidth: CGFloat? = nil,
+        content: IslandContent,
+        blowAwayOffsetX: CGFloat = 0,
+        blowAwayRotation: CGFloat = 0,
+        isBlowingAway: Bool = false,
+        showEssenceDropZone: Bool = false,
+        isEssenceHighlighted: Bool = false,
+        isEssenceOnTarget: Bool = false,
+        onFrameChange: ((CGRect) -> Void)? = nil
+    ) {
+        self.init(
+            screenHeight: screenHeight,
+            screenWidth: screenWidth,
+            content: content,
+            blowAwayOffsetX: blowAwayOffsetX,
+            blowAwayRotation: blowAwayRotation,
+            isBlowingAway: isBlowingAway,
+            showEssenceDropZone: showEssenceDropZone,
+            isEssenceHighlighted: isEssenceHighlighted,
+            isEssenceOnTarget: isEssenceOnTarget,
+            transitionContent: { EmptyView() },
+            onFrameChange: onFrameChange
+        )
     }
 }
 

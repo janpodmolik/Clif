@@ -21,16 +21,7 @@ struct HomeScreen: View {
     @State private var pendingEssencePicker = false
     @State private var petFrame: CGRect = .zero
     @State private var dropZoneFrame: CGRect = .zero
-
-    // Evolution transition state
-    @State private var showEvolutionTransition = false
-    @State private var isEvolutionTransitioning = false
-    @State private var evolutionTransitionKey = UUID()
-    @State private var evolutionCameraTransform: EvolutionCameraTransform = .identity
-    @State private var evolutionOldAssetName: String = ""
-    @State private var evolutionNewAssetName: String = ""
-    @State private var evolutionOldScale: CGFloat = 1.0
-    @State private var evolutionNewScale: CGFloat = 1.0
+    @State private var evolutionAnimator = EvolutionTransitionAnimator()
 
     /// Timer-driven refresh trigger for real-time wind updates during active shield.
     /// Increments every second to force UI recalculation of effectiveWindPoints.
@@ -222,8 +213,9 @@ struct HomeScreen: View {
             updatePetDropFrame()
         }
         .onChange(of: currentPet?.id) { _, _ in
-            // Reset animator when pet changes (e.g. deleted + new pet created)
+            // Reset animators when pet changes (e.g. deleted + new pet created)
             blowAwayAnimator.reset()
+            evolutionAnimator.reset()
         }
         .onChange(of: currentPet?.isBlownAway) { oldValue, newValue in
             if newValue == true && oldValue != true, let screenWidth = currentScreenWidth {
@@ -317,13 +309,40 @@ struct HomeScreen: View {
                 showEssenceDropZone: essenceCoordinator.hasSelectedEssence,
                 isEssenceHighlighted: isEssenceDropZoneHighlighted,
                 isEssenceOnTarget: isEssenceOnTarget,
-                evolutionTransitionView: evolutionTransitionView(for: pet),
+                isEvolutionTransitioning: evolutionAnimator.isShowingTransition,
+                transitionContent: {
+                    if evolutionAnimator.isShowingTransition {
+                        EvolutionTransitionView(
+                            isActive: true,
+                            config: evolutionAnimator.transitionConfig,
+                            particleConfig: evolutionAnimator.particleConfig,
+                            oldAssetName: evolutionAnimator.oldAssetName,
+                            newAssetName: evolutionAnimator.newAssetName,
+                            oldScale: evolutionAnimator.oldScale,
+                            newScale: evolutionAnimator.newScale,
+                            cameraTransform: .init(
+                                get: { evolutionAnimator.cameraTransform },
+                                set: { evolutionAnimator.cameraTransform = $0 }
+                            ),
+                            onComplete: {
+                                evolutionAnimator.complete()
+                                pet.evolve()
+                                if pet.isFullyEvolved {
+                                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                                        showSuccessArchivePrompt = true
+                                    }
+                                }
+                            }
+                        )
+                        .id(evolutionAnimator.transitionKey)
+                    }
+                },
                 onFrameChange: { frame in
                     petFrame = frame
                 }
             )
-            .scaleEffect(evolutionCameraTransform.scale, anchor: .top)
-            .offset(evolutionCameraTransform.offset)
+            .scaleEffect(evolutionAnimator.cameraTransform.scale, anchor: .top)
+            .offset(evolutionAnimator.cameraTransform.offset)
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
             .ignoresSafeArea(.container, edges: .bottom)
 
@@ -407,70 +426,8 @@ struct HomeScreen: View {
                 pet.applyEssence(essence)
             }
         } else {
-            triggerEvolutionTransition(pet)
+            evolutionAnimator.trigger(pet: pet)
         }
-    }
-
-    // MARK: - Evolution Transition
-
-    private var evolutionTransitionConfig: EvolutionTransitionConfig {
-        var config = EvolutionTransitionConfig.default
-        config.duration = 4.0
-        config.glowPeakIntensity = 4.0
-        return config
-    }
-
-    private var evolutionParticleConfig: EvolutionParticleConfig {
-        var config = EvolutionParticleConfig.default
-        config.particleCount = 160
-        return config
-    }
-
-    private func triggerEvolutionTransition(_ pet: Pet) {
-        guard !isEvolutionTransitioning else { return }
-        guard pet.canEvolve else { return }
-
-        let currentPhase = pet.currentPhase
-        let nextPhase = currentPhase + 1
-        let windLevel = WindLevel.none
-
-        evolutionOldAssetName = pet.evolutionPath?.phase(at: currentPhase)?.assetName(for: windLevel)
-            ?? pet.assetName(for: windLevel)
-        evolutionNewAssetName = pet.evolutionPath?.phase(at: nextPhase)?.assetName(for: windLevel)
-            ?? pet.assetName(for: windLevel)
-        evolutionOldScale = pet.evolutionPath?.phase(at: currentPhase)?.displayScale ?? pet.displayScale
-        evolutionNewScale = pet.evolutionPath?.phase(at: nextPhase)?.displayScale ?? pet.displayScale
-
-        evolutionTransitionKey = UUID()
-        isEvolutionTransitioning = true
-        showEvolutionTransition = true
-    }
-
-    private func evolutionTransitionView(for pet: Pet) -> AnyView? {
-        guard showEvolutionTransition else { return nil }
-        return AnyView(
-            EvolutionTransitionView(
-                isActive: true,
-                config: evolutionTransitionConfig,
-                particleConfig: evolutionParticleConfig,
-                oldAssetName: evolutionOldAssetName,
-                newAssetName: evolutionNewAssetName,
-                oldScale: evolutionOldScale,
-                newScale: evolutionNewScale,
-                cameraTransform: $evolutionCameraTransform,
-                onComplete: {
-                    showEvolutionTransition = false
-                    isEvolutionTransitioning = false
-                    pet.evolve()
-                    if pet.isFullyEvolved {
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-                            showSuccessArchivePrompt = true
-                        }
-                    }
-                }
-            )
-            .id(evolutionTransitionKey)
-        )
     }
 
     // MARK: - Daily Reset & Preset Picker
