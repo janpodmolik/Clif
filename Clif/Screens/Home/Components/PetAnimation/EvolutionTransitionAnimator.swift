@@ -31,6 +31,11 @@ final class EvolutionTransitionAnimator {
     /// Written by EvolutionTransitionView via Binding, read by HomeScreen for scaleEffect/offset.
     var cameraTransform: EvolutionCameraTransform = .identity
 
+    // MARK: - Private
+
+    /// Action to perform when the transition animation completes (e.g. evolve or apply essence).
+    private var onCompleteAction: (() -> Void)?
+
     // MARK: - Configuration
 
     var transitionConfig: EvolutionTransitionConfig {
@@ -65,13 +70,32 @@ final class EvolutionTransitionAnimator {
         oldScale = pet.evolutionPath?.phase(at: currentPhase)?.displayScale ?? pet.displayScale
         newScale = pet.evolutionPath?.phase(at: nextPhase)?.displayScale ?? pet.displayScale
 
-        transitionKey = UUID()
-        isTransitioning = true
-        isShowingTransition = true
+        onCompleteAction = { pet.evolve() }
+        startTransition()
+    }
+
+    /// Triggers the evolution transition for applying essence to a blob pet.
+    /// Snapshots blob assets as old and phase 1 of the essence path as new.
+    func triggerEssenceApplication(pet: Pet, essence: Essence) {
+        guard !isTransitioning else { return }
+        guard pet.isBlob else { return }
+
+        let windLevel = WindLevel.none
+        let path = EvolutionPath.path(for: essence)
+
+        oldAssetName = Blob.shared.assetName(for: windLevel)
+        newAssetName = path.phase(at: 1)?.assetName(for: windLevel) ?? oldAssetName
+        oldScale = Blob.shared.displayScale
+        newScale = path.phase(at: 1)?.displayScale ?? oldScale
+
+        onCompleteAction = { pet.applyEssence(essence) }
+        startTransition()
     }
 
     /// Called when the transition animation completes.
     func complete() {
+        onCompleteAction?()
+        onCompleteAction = nil
         isShowingTransition = false
         isTransitioning = false
         cameraTransform = .identity
@@ -79,6 +103,7 @@ final class EvolutionTransitionAnimator {
 
     /// Resets all state (e.g. when pet changes).
     func reset() {
+        onCompleteAction = nil
         isShowingTransition = false
         isTransitioning = false
         cameraTransform = .identity
@@ -86,5 +111,13 @@ final class EvolutionTransitionAnimator {
         newAssetName = ""
         oldScale = 1.0
         newScale = 1.0
+    }
+
+    // MARK: - Private
+
+    private func startTransition() {
+        transitionKey = UUID()
+        isTransitioning = true
+        isShowingTransition = true
     }
 }

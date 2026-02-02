@@ -106,6 +106,14 @@ extension EvolutionHistory {
         guard let newDate = Calendar.current.date(byAdding: .day, value: -1, to: createdAt) else { return }
         createdAt = newDate
     }
+
+    /// Resets evolution back to blob state (clears essence and all events).
+    mutating func debugResetToBlob() {
+        essence = nil
+        events = []
+        blownAt = nil
+        createdAt = Date()
+    }
 }
 #endif
 

@@ -315,6 +315,11 @@ extension Pet {
             evolutionHistory.debugBumpDay()
         }
     }
+
+    /// Resets pet back to blob state.
+    func debugResetToBlob() {
+        evolutionHistory.debugResetToBlob()
+    }
 }
 #endif
 

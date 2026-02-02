@@ -123,21 +123,29 @@ struct DebugView: View {
                         .tint(.mint)
                     }
 
-                    if !pet.isBlob && pet.canEvolve {
-                        if pet.daysUntilEvolution ?? 0 > 0 {
-                            Button("Unlock Evolution") {
+                    if !pet.isBlob {
+                        if pet.canEvolve {
+                            if pet.daysUntilEvolution ?? 0 > 0 {
+                                Button("Unlock Evolution") {
+                                    pet.debugUnlockEvolution()
+                                    petManager.savePet()
+                                }
+                                .tint(.cyan)
+                            }
+
+                            Button("Evolve Now") {
                                 pet.debugUnlockEvolution()
+                                pet.evolve()
                                 petManager.savePet()
                             }
-                            .tint(.cyan)
+                            .tint(.orange)
                         }
 
-                        Button("Evolve Now") {
-                            pet.debugUnlockEvolution()
-                            pet.evolve()
+                        Button("Reset to Blob") {
+                            pet.debugResetToBlob()
                             petManager.savePet()
                         }
-                        .tint(.orange)
+                        .tint(.red)
                     }
                 }
                 .buttonStyle(.bordered)

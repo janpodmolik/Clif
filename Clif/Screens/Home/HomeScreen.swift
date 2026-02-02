@@ -326,7 +326,6 @@ struct HomeScreen: View {
                             ),
                             onComplete: {
                                 evolutionAnimator.complete()
-                                pet.evolve()
                                 if pet.isFullyEvolved {
                                     DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
                                         showSuccessArchivePrompt = true
@@ -423,7 +422,7 @@ struct HomeScreen: View {
     private func handleEvolve(_ pet: Pet) {
         if pet.isBlob {
             essenceCoordinator.show(petDropFrame: essenceDropFrame) { essence in
-                pet.applyEssence(essence)
+                evolutionAnimator.triggerEssenceApplication(pet: pet, essence: essence)
             }
         } else {
             evolutionAnimator.trigger(pet: pet)
