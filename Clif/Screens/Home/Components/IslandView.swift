@@ -22,6 +22,7 @@ struct IslandView: View {
     var showEssenceDropZone: Bool = false
     var isEssenceHighlighted: Bool = false
     var isEssenceOnTarget: Bool = false
+    var evolutionTransitionView: AnyView? = nil
     var onFrameChange: ((CGRect) -> Void)?
 
     init(
@@ -34,6 +35,7 @@ struct IslandView: View {
         showEssenceDropZone: Bool = false,
         isEssenceHighlighted: Bool = false,
         isEssenceOnTarget: Bool = false,
+        evolutionTransitionView: AnyView? = nil,
         onFrameChange: ((CGRect) -> Void)? = nil
     ) {
         self.screenHeight = screenHeight
@@ -45,6 +47,7 @@ struct IslandView: View {
         self.showEssenceDropZone = showEssenceDropZone
         self.isEssenceHighlighted = isEssenceHighlighted
         self.isEssenceOnTarget = isEssenceOnTarget
+        self.evolutionTransitionView = evolutionTransitionView
         self.onFrameChange = onFrameChange
     }
 
@@ -59,6 +62,9 @@ struct IslandView: View {
     // Pet animation transform for bubble positioning
     @State private var petTransform: PetAnimationTransform = .zero
 
+    // Pet image size for evolution transition frame
+    @State private var petImageSize: CGSize = .zero
+
     // MARK: - Computed Properties
 
     private var petHeight: CGFloat { screenHeight * 0.10 }
@@ -70,6 +76,13 @@ struct IslandView: View {
     /// For drop zone, uses Blob as reference for consistent sizing.
     private var referencePet: any PetDisplayable {
         content.displayablePet ?? Blob.shared
+    }
+
+    private var transitionFrameSize: CGSize {
+        if petImageSize == .zero {
+            return CGSize(width: petHeight, height: petHeight)
+        }
+        return petImageSize
     }
 
     private var windProgress: CGFloat {
@@ -133,8 +146,8 @@ struct IslandView: View {
                 dropZoneView(isHighlighted: isHighlighted, isOnTarget: isOnTarget, isVisible: isVisible)
             }
 
-            // Speech bubble overlay - only for pet content, hidden during blow away
-            if case .pet = content, !isBlowingAway, let config = speechBubbleState.currentConfig {
+            // Speech bubble overlay - only for pet content, hidden during blow away and evolution transition
+            if case .pet = content, !isBlowingAway, evolutionTransitionView == nil, let config = speechBubbleState.currentConfig {
                 SpeechBubbleView(
                     config: config,
                     isVisible: speechBubbleState.isVisible,
@@ -153,61 +166,81 @@ struct IslandView: View {
 
     @ViewBuilder
     private func petView(for pet: any PetDisplayable) -> some View {
-        Image(pet.assetName(for: windLevel))
-            .resizable()
-            .scaledToFit()
-            .frame(height: petHeight)
-            .petAnimation(
-                intensity: windConfig.intensity,
-                direction: windDirection,
-                bendCurve: windConfig.bendCurve,
-                swayAmount: windConfig.swayAmount,
-                rotationAmount: windConfig.rotationAmount,
-                tapTime: internalTapTime,
-                tapType: currentTapType,
-                tapConfig: currentTapConfig,
-                idleConfig: pet.idleConfig,
-                screenWidth: screenWidth,
-                windRhythm: windRhythm,
-                onTransformUpdate: { transform in
-                    petTransform = PetAnimationTransform(
-                        rotation: transform.rotation,
-                        swayOffset: transform.swayOffset * pet.displayScale,
-                        topOffset: transform.topOffset * pet.displayScale
-                    )
+        ZStack {
+            Image(pet.assetName(for: windLevel))
+                .resizable()
+                .scaledToFit()
+                .frame(height: petHeight)
+                .background(
+                    GeometryReader { proxy in
+                        Color.clear.preference(key: PetImageSizeKey.self, value: proxy.size)
+                    }
+                )
+                .onPreferenceChange(PetImageSizeKey.self) { newSize in
+                    if newSize != .zero {
+                        petImageSize = newSize
+                    }
                 }
-            )
-            .scaleEffect(pet.displayScale, anchor: .bottom)
-            .offset(x: blowAwayOffsetX)
-            .rotationEffect(.degrees(blowAwayRotation), anchor: .bottom)
-            .background {
-                GeometryReader { proxy in
-                    Color.clear
-                        .preference(
-                            key: IslandFramePreferenceKey.self,
-                            value: proxy.frame(in: .global)
+                .petAnimation(
+                    intensity: windConfig.intensity,
+                    direction: windDirection,
+                    bendCurve: windConfig.bendCurve,
+                    swayAmount: windConfig.swayAmount,
+                    rotationAmount: windConfig.rotationAmount,
+                    tapTime: internalTapTime,
+                    tapType: currentTapType,
+                    tapConfig: currentTapConfig,
+                    idleConfig: pet.idleConfig,
+                    screenWidth: screenWidth,
+                    windRhythm: windRhythm,
+                    onTransformUpdate: { transform in
+                        petTransform = PetAnimationTransform(
+                            rotation: transform.rotation,
+                            swayOffset: transform.swayOffset * pet.displayScale,
+                            topOffset: transform.topOffset * pet.displayScale
                         )
+                    }
+                )
+                .scaleEffect(pet.displayScale, anchor: .bottom)
+                .offset(x: blowAwayOffsetX)
+                .rotationEffect(.degrees(blowAwayRotation), anchor: .bottom)
+                .opacity(evolutionTransitionView == nil ? 1.0 : 0.0)
+                .allowsHitTesting(evolutionTransitionView == nil)
+                .background {
+                    GeometryReader { proxy in
+                        Color.clear
+                            .preference(
+                                key: IslandFramePreferenceKey.self,
+                                value: proxy.frame(in: .global)
+                            )
+                    }
                 }
-            }
-            .onTapGesture {
-                triggerTap(for: pet)
-            }
-            .contentTransition(.opacity)
-            .animation(.easeInOut(duration: 0.5), value: windProgress)
-            .onAppear {
-                speechBubbleState.startAutoTriggers(windLevel: windLevel)
-            }
-            .onDisappear {
-                speechBubbleState.stopAutoTriggers()
-            }
-            .onChange(of: windLevel) { _, newValue in
-                speechBubbleState.updateWindLevel(newValue)
-            }
-            .onChange(of: isBlowingAway) { _, newValue in
-                if newValue {
-                    speechBubbleState.hide()
+                .onTapGesture {
+                    triggerTap(for: pet)
                 }
+                .contentTransition(.opacity)
+                .animation(.easeInOut(duration: 0.5), value: windProgress)
+                .onAppear {
+                    speechBubbleState.startAutoTriggers(windLevel: windLevel)
+                }
+                .onDisappear {
+                    speechBubbleState.stopAutoTriggers()
+                }
+                .onChange(of: windLevel) { _, newValue in
+                    speechBubbleState.updateWindLevel(newValue)
+                }
+                .onChange(of: isBlowingAway) { _, newValue in
+                    if newValue {
+                        speechBubbleState.hide()
+                    }
+                }
+
+            if let transitionView = evolutionTransitionView {
+                transitionView
+                    .frame(width: transitionFrameSize.width, height: transitionFrameSize.height)
+                    .allowsHitTesting(false)
             }
+        }
     }
 
     // MARK: - Essence Drop Zone
@@ -273,6 +306,17 @@ struct IslandView: View {
 
         // Attempt to trigger speech bubble (30% chance)
         speechBubbleState.triggerOnTap(windLevel: windLevel)
+    }
+}
+
+private struct PetImageSizeKey: PreferenceKey {
+    static var defaultValue: CGSize = .zero
+
+    static func reduce(value: inout CGSize, nextValue: () -> CGSize) {
+        let next = nextValue()
+        if next != .zero {
+            value = next
+        }
     }
 }
 

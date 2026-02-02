@@ -333,7 +333,7 @@ extension Pet {
         name: String = "Fern",
         phase: Int = 2,
         essence: Essence? = .plant,
-        windPoints: Double = 45,
+        windPoints: Double = 0,
         totalDays: Int = 14
     ) -> Pet {
         let petId = UUID()
