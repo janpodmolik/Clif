@@ -3,7 +3,7 @@ import Foundation
 import ManagedSettings
 
 @Observable
-final class Pet: Identifiable, PetPresentable, PetWithSources {
+final class Pet: Identifiable, PetPresentable, PetEvolvable {
     let id: UUID
     let name: String
     private(set) var evolutionHistory: EvolutionHistory
@@ -47,10 +47,15 @@ final class Pet: Identifiable, PetPresentable, PetWithSources {
     /// Configuration for wind rise/fall behavior.
     let preset: WindPreset
 
-    // MARK: - PetWithSources
+    // MARK: - Stats & Sources
 
     var dailyStats: [DailyUsageStat]
     var limitedSources: [LimitedSource]
+
+    var totalDays: Int { dailyStats.count }
+    var applicationTokens: Set<ApplicationToken> { limitedSources.applicationTokens }
+    var categoryTokens: Set<ActivityCategoryToken> { limitedSources.categoryTokens }
+    var webDomainTokens: Set<WebDomainToken> { limitedSources.webDomainTokens }
 
     /// Break history for current session.
     var breakHistory: [CompletedBreak]

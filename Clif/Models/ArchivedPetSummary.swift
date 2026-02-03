@@ -9,6 +9,7 @@ struct ArchivedPetSummary: Codable, Identifiable, Equatable, PetEvolvable {
     let purpose: String?
     let archivedAt: Date
     let totalDays: Int
+    let archiveReason: ArchiveReason
 
     var finalPhase: Int { currentPhase }
 }
@@ -23,6 +24,7 @@ extension ArchivedPetSummary {
         self.purpose = pet.purpose
         self.archivedAt = pet.archivedAt
         self.totalDays = pet.totalDays
+        self.archiveReason = pet.archiveReason
     }
 }
 
@@ -32,25 +34,31 @@ extension ArchivedPetSummary {
     static func mock(
         name: String = "Fern",
         phase: Int = 4,
-        isBlown: Bool = false,
+        archiveReason: ArchiveReason = .completed,
         totalDays: Int = 21
     ) -> ArchivedPetSummary {
         ArchivedPetSummary(
             id: UUID(),
             name: name,
-            evolutionHistory: .mock(phase: phase, essence: .plant, totalDays: totalDays, isBlown: isBlown),
+            evolutionHistory: .mock(
+                phase: phase,
+                essence: .plant,
+                totalDays: totalDays,
+                isBlown: archiveReason == .blown
+            ),
             purpose: "Social Media",
             archivedAt: Date(),
-            totalDays: totalDays
+            totalDays: totalDays,
+            archiveReason: archiveReason
         )
     }
 
     static func mockList() -> [ArchivedPetSummary] {
         [
-            .mock(name: "Fern", phase: 4, isBlown: false, totalDays: 21),
-            .mock(name: "Ivy", phase: 4, isBlown: false, totalDays: 18),
-            .mock(name: "Storm", phase: 3, isBlown: true, totalDays: 5),
-            .mock(name: "Sprout", phase: 2, isBlown: true, totalDays: 4)
+            .mock(name: "Fern", phase: 4, archiveReason: .completed, totalDays: 21),
+            .mock(name: "Ivy", phase: 4, archiveReason: .completed, totalDays: 18),
+            .mock(name: "Storm", phase: 3, archiveReason: .blown, totalDays: 5),
+            .mock(name: "Sprout", phase: 2, archiveReason: .blown, totalDays: 4)
         ]
     }
 }

@@ -13,7 +13,7 @@ struct PetHistoryRowDebugView: View {
 
     // MARK: - Status State
 
-    @State private var isBlown: Bool = false
+    @State private var archiveReason: ArchiveReason = .completed
     @State private var totalDays: Int = 21
     @State private var daysAgo: Int = 14
 
@@ -29,7 +29,7 @@ struct PetHistoryRowDebugView: View {
         ArchivedPetSummary.mock(
             name: petName,
             phase: phase,
-            isBlown: isBlown,
+            archiveReason: archiveReason,
             totalDays: totalDays
         )
     }
@@ -152,7 +152,13 @@ struct PetHistoryRowDebugView: View {
             isExpanded: $isStatusSectionExpanded
         ) {
             VStack(spacing: 12) {
-                Toggle("Blown Away", isOn: $isBlown)
+                Picker("Archive Reason", selection: $archiveReason) {
+                    Text("Blown").tag(ArchiveReason.blown)
+                    Text("Completed").tag(ArchiveReason.completed)
+                    Text("Lost").tag(ArchiveReason.lost)
+                    Text("Manual").tag(ArchiveReason.manual)
+                }
+                .pickerStyle(.segmented)
 
                 HStack {
                     Text("Total Days")
@@ -253,7 +259,7 @@ struct PetHistoryRowDebugView: View {
             petName = "Elder Oak"
             purpose = "Social Media"
             phase = 4
-            isBlown = false
+            archiveReason = .completed
             totalDays = 35
             daysAgo = 7
         }
@@ -264,7 +270,7 @@ struct PetHistoryRowDebugView: View {
             petName = "Sprout"
             purpose = "Gaming"
             phase = 2
-            isBlown = true
+            archiveReason = .blown
             totalDays = 3
             daysAgo = 2
         }
@@ -275,7 +281,7 @@ struct PetHistoryRowDebugView: View {
             petName = "Seedling"
             purpose = "Work Apps"
             phase = 1
-            isBlown = false
+            archiveReason = .completed
             totalDays = 5
             daysAgo = 1
         }
@@ -286,7 +292,7 @@ struct PetHistoryRowDebugView: View {
             petName = "Moss"
             purpose = "Entertainment"
             phase = 3
-            isBlown = false
+            archiveReason = .completed
             totalDays = 28
             daysAgo = 30
         }
@@ -297,7 +303,7 @@ struct PetHistoryRowDebugView: View {
             petName = "Ancient Fern"
             purpose = "All Apps"
             phase = 4
-            isBlown = false
+            archiveReason = .completed
             totalDays = 90
             daysAgo = 3
         }
@@ -308,7 +314,7 @@ struct PetHistoryRowDebugView: View {
             petName = "Leaf"
             purpose = "Streaming"
             phase = 1
-            isBlown = true
+            archiveReason = .blown
             totalDays = 2
             daysAgo = 5
         }

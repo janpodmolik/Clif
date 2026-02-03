@@ -10,18 +10,23 @@ struct ArchivedPetGridItem: View {
         return formatter.string(from: pet.archivedAt)
     }
 
+    /// Blown and lost pets use faded visual treatment.
+    private var isFaded: Bool {
+        pet.archiveReason == .blown || pet.archiveReason == .lost
+    }
+
     var body: some View {
         Button(action: onTap) {
             VStack(spacing: 10) {
                 VStack(spacing: 2) {
                     Text(pet.name)
                         .font(.subheadline.weight(.semibold))
-                        .foregroundStyle(pet.isBlown ? .secondary : .primary)
+                        .foregroundStyle(isFaded ? .secondary : .primary)
 
                     if let purpose = pet.purpose {
                         Text(purpose)
                             .font(.caption)
-                            .foregroundStyle(pet.isBlown ? .tertiary : .secondary)
+                            .foregroundStyle(isFaded ? .tertiary : .secondary)
                             .lineLimit(1)
                     }
                 }
@@ -31,7 +36,7 @@ struct ArchivedPetGridItem: View {
                     .scaledToFit()
                     .frame(width: 56, height: 56)
                     .scaleEffect(pet.displayScale)
-                    .opacity(pet.isBlown ? 0.5 : 1.0)
+                    .opacity(isFaded ? 0.5 : 1.0)
                     .padding(.vertical, 8)
 
                 HStack(spacing: 8) {
@@ -53,13 +58,13 @@ struct ArchivedPetGridItem: View {
                     }
                 }
                 .font(.caption2)
-                .foregroundStyle(pet.isBlown ? .tertiary : .secondary)
+                .foregroundStyle(isFaded ? .tertiary : .secondary)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
             .padding(.vertical, 14)
             .padding(.horizontal, 10)
             .background {
-                if pet.isBlown {
+                if isFaded {
                     RoundedRectangle(cornerRadius: 16)
                         .fill(.ultraThinMaterial)
                 } else {
@@ -75,10 +80,10 @@ struct ArchivedPetGridItem: View {
 
 #Preview {
     LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
-        ArchivedPetGridItem(pet: .mock(name: "Fern", phase: 4, isBlown: false)) {}
-        ArchivedPetGridItem(pet: .mock(name: "Sprout", phase: 2, isBlown: true)) {}
-        ArchivedPetGridItem(pet: .mock(name: "Moss", phase: 3, isBlown: false)) {}
-        ArchivedPetGridItem(pet: .mock(name: "Willow", phase: 1, isBlown: false)) {}
+        ArchivedPetGridItem(pet: .mock(name: "Fern", phase: 4, archiveReason: .completed)) {}
+        ArchivedPetGridItem(pet: .mock(name: "Sprout", phase: 2, archiveReason: .blown)) {}
+        ArchivedPetGridItem(pet: .mock(name: "Moss", phase: 3, archiveReason: .manual)) {}
+        ArchivedPetGridItem(pet: .mock(name: "Ghost", phase: 1, archiveReason: .lost)) {}
     }
     .padding()
 }

@@ -5,20 +5,35 @@ struct ArchivedPetHeaderCard: View {
     let totalDays: Int
     let evolutionPhase: Int
     let createdAt: Date
-    let isBlown: Bool
+    let archiveReason: ArchiveReason
     let archivedAt: Date
     var purpose: String? = nil
 
     private var statusText: String {
-        isBlown ? "Odfouknut" : "Plně evolvován"
+        switch archiveReason {
+        case .blown: "Odfouknut"
+        case .completed: "Plně evolvován"
+        case .lost: "Ztracen"
+        case .manual: "Archivován"
+        }
     }
 
     private var statusIcon: String {
-        isBlown ? "wind" : "checkmark.circle.fill"
+        switch archiveReason {
+        case .blown: "wind"
+        case .completed: "checkmark.circle.fill"
+        case .lost: "icloud.slash"
+        case .manual: "archivebox"
+        }
     }
 
     private var statusColor: Color {
-        isBlown ? .red : .green
+        switch archiveReason {
+        case .blown: .red
+        case .completed: .green
+        case .lost: .secondary
+        case .manual: .orange
+        }
     }
 
     var body: some View {
@@ -134,7 +149,7 @@ struct ArchivedPetHeaderCard: View {
         totalDays: 12,
         evolutionPhase: 4,
         createdAt: Calendar.current.date(byAdding: .day, value: -12, to: Date())!,
-        isBlown: false,
+        archiveReason: .completed,
         archivedAt: Date(),
         purpose: "Social Media"
     )
@@ -147,21 +162,34 @@ struct ArchivedPetHeaderCard: View {
         totalDays: 5,
         evolutionPhase: 2,
         createdAt: Calendar.current.date(byAdding: .day, value: -5, to: Date())!,
-        isBlown: true,
+        archiveReason: .blown,
         archivedAt: Date(),
         purpose: "Gaming"
     )
     .padding()
 }
 
-#Preview("Without Purpose") {
+#Preview("Lost") {
     ArchivedPetHeaderCard(
         petName: "Sprout",
         totalDays: 3,
         evolutionPhase: 1,
         createdAt: Calendar.current.date(byAdding: .day, value: -3, to: Date())!,
-        isBlown: true,
+        archiveReason: .lost,
         archivedAt: Date()
+    )
+    .padding()
+}
+
+#Preview("Manual") {
+    ArchivedPetHeaderCard(
+        petName: "Moss",
+        totalDays: 7,
+        evolutionPhase: 2,
+        createdAt: Calendar.current.date(byAdding: .day, value: -7, to: Date())!,
+        archiveReason: .manual,
+        archivedAt: Date(),
+        purpose: "Gaming"
     )
     .padding()
 }

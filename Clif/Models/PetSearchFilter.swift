@@ -106,14 +106,29 @@ extension PetSearchFilter {
         case all = "Všichni"
         case completed = "Dokončení"
         case blownAway = "Odfouknutí"
+        case lost = "Ztracení"
+        case manual = "Archivovaní"
 
         var id: String { rawValue }
 
         var icon: String {
             switch self {
-            case .all: return "list.bullet"
-            case .completed: return "checkmark.circle.fill"
-            case .blownAway: return "wind"
+            case .all: "list.bullet"
+            case .completed: "checkmark.circle.fill"
+            case .blownAway: "wind"
+            case .lost: "icloud.slash"
+            case .manual: "archivebox"
+            }
+        }
+
+        /// The ArchiveReason this filter matches, if any.
+        var matchingReason: ArchiveReason? {
+            switch self {
+            case .all: nil
+            case .completed: .completed
+            case .blownAway: .blown
+            case .lost: .lost
+            case .manual: .manual
             }
         }
     }

@@ -429,7 +429,7 @@ struct EvolutionPhaseCard: View {
 
             Text("Blown away at Phase 1").font(.caption)
             EvolutionCarousel(
-                pet: ArchivedPet.mock(phase: 1, isBlown: true),
+                pet: ArchivedPet.mock(phase: 1, archiveReason: .blown),
                 windLevel: .high,
                 isBlownAway: true
             )

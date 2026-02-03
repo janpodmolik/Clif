@@ -1,10 +1,19 @@
+import FamilyControls
 import Foundation
 
 @Observable
 final class PetManager {
+    // MARK: - Constants
+
+    /// Pets younger than this are deleted instead of archived (not enough data to be useful).
+    static let minimumArchiveDays = 3
+
     // MARK: - Private Storage
 
     private var pet: Pet?
+
+    /// Whether a re-authorization prompt is pending (prevents spam on repeated .active cycles).
+    var needsReauthorization = false
 
     // MARK: - Public API
 
@@ -47,14 +56,25 @@ final class PetManager {
 
     // MARK: - Archive
 
-    /// Archives the active pet using ArchivedPetManager.
+    /// Archives the active pet, or deletes it if too young to be worth keeping.
     func archive(id: UUID, using archivedPetManager: ArchivedPetManager) {
         guard let currentPet = pet, currentPet.id == id else { return }
 
-        // Stop monitoring and clear all data before archiving
+        // Stop monitoring and clear all data
         ScreenTimeManager.shared.stopMonitoringAndClear()
 
-        archivedPetManager.archive(currentPet)
+        // Pets younger than minimum days are just deleted (not enough data to archive)
+        guard currentPet.daysSinceCreation >= Self.minimumArchiveDays else {
+            pet = nil
+            saveActivePet()
+            return
+        }
+
+        let reason: ArchiveReason = currentPet.isBlown ? .blown
+            : currentPet.isFullyEvolved ? .completed
+            : .manual
+
+        archivedPetManager.archive(currentPet, reason: reason)
         pet = nil
         saveActivePet()
     }
@@ -64,6 +84,33 @@ final class PetManager {
         guard let currentPet = pet, currentPet.id == id else { return }
         currentPet.blowAway()
         archive(id: id, using: archivedPetManager)
+    }
+
+    // MARK: - Authorization Check
+
+    /// Checks if FamilyControls authorization was lost and signals the UI to show re-authorization prompt.
+    /// Does NOT archive immediately — gives the user a chance to re-authorize.
+    /// Call on app activation (foreground return).
+    func checkAuthorizationStatus() {
+        guard let pet, !pet.isBlownAway, !needsReauthorization else { return }
+
+        let isAuthorized = AuthorizationCenter.shared.authorizationStatus == .approved
+        if !isAuthorized {
+            needsReauthorization = true
+        }
+    }
+
+    /// Call after the user successfully re-authorizes to resume normal operation.
+    func handleReauthorizationSuccess() {
+        needsReauthorization = false
+        restoreMonitoringIfNeeded()
+    }
+
+    /// Call when the user declines re-authorization — marks the pet as blown away.
+    /// Does NOT archive — the user sees the blow-away animation and archives manually.
+    func handleReauthorizationDeclined() {
+        needsReauthorization = false
+        blowAwayCurrentPet(reason: .limitExceeded)
     }
 
     /// Marks the current pet as blown away (e.g. when violating a committed break).

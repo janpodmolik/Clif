@@ -15,6 +15,19 @@ struct ArchivedPetRow: View {
         Self.relativeDateFormatter.localizedString(for: pet.archivedAt, relativeTo: Date())
     }
 
+    /// Blown and lost pets use faded visual treatment.
+    private var isFaded: Bool {
+        pet.archiveReason == .blown || pet.archiveReason == .lost
+    }
+
+    private var reasonLabel: (icon: String, text: String, color: Color)? {
+        switch pet.archiveReason {
+        case .blown: ("wind", "Odfouknut", .red)
+        case .lost: ("icloud.slash", "Ztracen", .secondary)
+        case .completed, .manual: nil
+        }
+    }
+
     var body: some View {
         Button(action: onTap) {
             HStack(alignment: .center, spacing: 14) {
@@ -23,17 +36,17 @@ struct ArchivedPetRow: View {
                     .scaledToFit()
                     .frame(width: 50, height: 50)
                     .scaleEffect(pet.displayScale)
-                    .opacity(pet.isBlown ? 0.5 : 1.0)
+                    .opacity(isFaded ? 0.5 : 1.0)
 
                 VStack(alignment: .leading, spacing: 4) {
                     Text(pet.name)
                         .font(.headline)
-                        .foregroundStyle(pet.isBlown ? .secondary : .primary)
+                        .foregroundStyle(isFaded ? .secondary : .primary)
 
                     if let purpose = pet.purpose {
                         Text(purpose)
                             .font(.subheadline)
-                            .foregroundStyle(pet.isBlown ? .tertiary : .secondary)
+                            .foregroundStyle(isFaded ? .tertiary : .secondary)
                     }
 
                     HStack(spacing: 12) {
@@ -50,12 +63,12 @@ struct ArchivedPetRow: View {
                         }
                     }
                     .font(.caption)
-                    .foregroundStyle(pet.isBlown ? .tertiary : .secondary)
+                    .foregroundStyle(isFaded ? .tertiary : .secondary)
                 }
 
                 Spacer()
 
-                if pet.isBlown {
+                if let reason = reasonLabel {
                     VStack(alignment: .trailing, spacing: 4) {
                         Text(relativeDate)
                             .font(.caption)
@@ -65,11 +78,11 @@ struct ArchivedPetRow: View {
                             .frame(minHeight: 0)
 
                         HStack(spacing: 4) {
-                            Image(systemName: "wind")
-                            Text("Odfouknut")
+                            Image(systemName: reason.icon)
+                            Text(reason.text)
                         }
                         .font(.caption)
-                        .foregroundStyle(.red)
+                        .foregroundStyle(reason.color)
                     }
                 } else {
                     Text(relativeDate)
@@ -81,7 +94,7 @@ struct ArchivedPetRow: View {
             .fixedSize(horizontal: false, vertical: true)
             .padding(14)
             .background {
-                if pet.isBlown {
+                if isFaded {
                     RoundedRectangle(cornerRadius: 16)
                         .fill(.ultraThinMaterial)
                 } else {
@@ -97,9 +110,10 @@ struct ArchivedPetRow: View {
 
 #Preview {
     VStack(spacing: 12) {
-        ArchivedPetRow(pet: .mock(name: "Fern", phase: 4, isBlown: false)) {}
-        ArchivedPetRow(pet: .mock(name: "Sprout", phase: 2, isBlown: true)) {}
-        ArchivedPetRow(pet: .mock(name: "Moss", phase: 3, isBlown: false)) {}
+        ArchivedPetRow(pet: .mock(name: "Fern", phase: 4, archiveReason: .completed)) {}
+        ArchivedPetRow(pet: .mock(name: "Sprout", phase: 2, archiveReason: .blown)) {}
+        ArchivedPetRow(pet: .mock(name: "Moss", phase: 3, archiveReason: .manual)) {}
+        ArchivedPetRow(pet: .mock(name: "Ghost", phase: 1, archiveReason: .lost)) {}
     }
     .padding()
 }

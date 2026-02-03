@@ -1,17 +1,17 @@
 import Foundation
 
 /// Archived version of a Pet for history/graveyard.
-struct ArchivedPet: Codable, Identifiable, Equatable, PetWithSources {
+struct ArchivedPet: Codable, Identifiable, Equatable, PetEvolvable {
     let id: UUID
     let name: String
     let evolutionHistory: EvolutionHistory
     let purpose: String?
     let archivedAt: Date
+    let archiveReason: ArchiveReason
 
-    // MARK: - PetWithSources
+    // MARK: - Stats
 
     let dailyStats: [DailyUsageStat]
-    let limitedSources: [LimitedSource]
 
     // MARK: - Wind & Breaks
 
@@ -31,6 +31,9 @@ struct ArchivedPet: Codable, Identifiable, Equatable, PetWithSources {
     let preset: WindPreset
 
     // MARK: - Computed
+
+    /// Total days tracked.
+    var totalDays: Int { dailyStats.count }
 
     /// Alias for currentPhase - the phase when pet was archived.
     var finalPhase: Int { currentPhase }
@@ -58,8 +61,8 @@ struct ArchivedPet: Codable, Identifiable, Equatable, PetWithSources {
         evolutionHistory: EvolutionHistory,
         purpose: String?,
         archivedAt: Date = Date(),
+        archiveReason: ArchiveReason,
         dailyStats: [DailyUsageStat] = [],
-        limitedSources: [LimitedSource] = [],
         breakHistory: [CompletedBreak] = [],
         peakWindPoints: Double = 0,
         totalBreakMinutes: Double = 0,
@@ -71,8 +74,8 @@ struct ArchivedPet: Codable, Identifiable, Equatable, PetWithSources {
         self.evolutionHistory = evolutionHistory
         self.purpose = purpose
         self.archivedAt = archivedAt
+        self.archiveReason = archiveReason
         self.dailyStats = dailyStats
-        self.limitedSources = limitedSources
         self.breakHistory = breakHistory
         self.peakWindPoints = peakWindPoints
         self.totalBreakMinutes = totalBreakMinutes
@@ -85,15 +88,15 @@ struct ArchivedPet: Codable, Identifiable, Equatable, PetWithSources {
 
 extension ArchivedPet {
     /// Creates an archived pet from an active Pet.
-    init(archiving pet: Pet, archivedAt: Date = Date()) {
+    init(archiving pet: Pet, reason: ArchiveReason, archivedAt: Date = Date()) {
         self.init(
             id: pet.id,
             name: pet.name,
             evolutionHistory: pet.evolutionHistory,
             purpose: pet.purpose,
             archivedAt: archivedAt,
+            archiveReason: reason,
             dailyStats: pet.dailyStats,
-            limitedSources: pet.limitedSources.map { $0.strippingToken() },
             breakHistory: pet.breakHistory,
             peakWindPoints: pet.peakWindPoints,
             totalBreakMinutes: pet.totalBreakMinutes,
@@ -109,7 +112,7 @@ extension ArchivedPet {
     static func mock(
         name: String = "Windy",
         phase: Int = 3,
-        isBlown: Bool = true,
+        archiveReason: ArchiveReason = .blown,
         totalDays: Int = 5
     ) -> ArchivedPet {
         let petId = UUID()
@@ -133,11 +136,16 @@ extension ArchivedPet {
         return ArchivedPet(
             id: petId,
             name: name,
-            evolutionHistory: .mock(phase: phase, essence: .plant, totalDays: totalDays, isBlown: isBlown),
+            evolutionHistory: .mock(
+                phase: phase,
+                essence: .plant,
+                totalDays: totalDays,
+                isBlown: archiveReason == .blown
+            ),
             purpose: "Social Media",
             archivedAt: archivedAt,
+            archiveReason: archiveReason,
             dailyStats: DailyUsageStat.mockList(petId: petId, days: totalDays),
-            limitedSources: LimitedSource.mockList(),
             breakHistory: breakHistory,
             peakWindPoints: 95,
             totalBreakMinutes: 90,
@@ -147,9 +155,9 @@ extension ArchivedPet {
 
     static func mockList() -> [ArchivedPet] {
         [
-            .mock(name: "Storm", phase: 4, isBlown: false, totalDays: 10),
-            .mock(name: "Breeze", phase: 3, isBlown: true, totalDays: 5),
-            .mock(name: "Gust", phase: 2, isBlown: true, totalDays: 2)
+            .mock(name: "Storm", phase: 4, archiveReason: .completed, totalDays: 10),
+            .mock(name: "Breeze", phase: 3, archiveReason: .blown, totalDays: 5),
+            .mock(name: "Gust", phase: 2, archiveReason: .blown, totalDays: 2)
         ]
     }
 
@@ -158,7 +166,7 @@ extension ArchivedPet {
             name: name,
             evolutionHistory: .mock(phase: 0, essence: nil, totalDays: 1, isBlown: false),
             purpose: nil,
-            archivedAt: Date()
+            archiveReason: .manual
         )
     }
 }

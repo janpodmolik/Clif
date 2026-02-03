@@ -46,6 +46,9 @@ struct MainApp: App {
             // Resume break monitoring (timer is lost when app is suspended/terminated)
             ShieldManager.shared.resumeBreakMonitoringIfNeeded()
 
+            // Detect lost authorization (reinstall, revoked Screen Time access)
+            petManager.checkAuthorizationStatus()
+
             // Check for blow-away state when returning to foreground
             // (windPoints is computed from SharedDefaults - no sync needed)
             petManager.performDailyResetIfNeeded()

@@ -16,7 +16,7 @@ struct ArchivedPetDetailScreen: View {
                         totalDays: pet.totalDays,
                         evolutionPhase: pet.finalPhase,
                         createdAt: pet.evolutionHistory.createdAt,
-                        isBlown: pet.isBlown,
+                        archiveReason: pet.archiveReason,
                         archivedAt: pet.archivedAt,
                         purpose: pet.purpose
                     )
@@ -107,12 +107,12 @@ struct ArchivedPetDetailScreen: View {
 }
 
 #Preview("Blown") {
-    ArchivedPetDetailScreen(pet: .mock(name: "Storm", phase: 3, isBlown: true))
+    ArchivedPetDetailScreen(pet: .mock(name: "Storm", phase: 3, archiveReason: .blown))
         .environment(ArchivedPetManager.mock())
 }
 
 #Preview("Fully Evolved") {
-    ArchivedPetDetailScreen(pet: .mock(name: "Breeze", phase: 4, isBlown: false, totalDays: 14))
+    ArchivedPetDetailScreen(pet: .mock(name: "Breeze", phase: 4, archiveReason: .completed, totalDays: 14))
         .environment(ArchivedPetManager.mock())
 }
 

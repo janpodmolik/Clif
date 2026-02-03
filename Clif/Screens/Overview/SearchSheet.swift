@@ -44,13 +44,9 @@ struct SearchSheet: View {
             }
 
             // Status filter
-            switch filter.statusFilter {
-            case .all:
-                break
-            case .completed:
-                if pet.isBlown { return false }
-            case .blownAway:
-                if !pet.isBlown { return false }
+            if let reason = filter.statusFilter.matchingReason,
+               pet.archiveReason != reason {
+                return false
             }
 
             // Essence filter

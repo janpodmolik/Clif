@@ -78,9 +78,9 @@ final class ArchivedPetManager {
 
     // MARK: - Public API: Archive
 
-    /// Archive a Pet.
-    func archive(_ pet: Pet) {
-        let archived = ArchivedPet(archiving: pet)
+    /// Archive a Pet with the given reason.
+    func archive(_ pet: Pet, reason: ArchiveReason) {
+        let archived = ArchivedPet(archiving: pet, reason: reason)
         let summary = ArchivedPetSummary(from: archived)
 
         saveDetail(archived, for: pet.id)

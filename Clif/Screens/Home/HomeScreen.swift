@@ -1,4 +1,5 @@
 import Combine
+import FamilyControls
 import SwiftUI
 
 /// Main home screen displaying the floating island scene with pet and status card.
@@ -18,6 +19,7 @@ struct HomeScreen: View {
     @State private var showDeleteSheet = false
     @State private var showSuccessArchivePrompt = false
     @State private var showWindNotCalmAlert = false
+    @State private var showAuthorizationAlert = false
     @State private var pendingEssencePicker = false
     @State private var petFrame: CGRect = .zero
     @State private var dropZoneFrame: CGRect = .zero
@@ -156,7 +158,7 @@ struct HomeScreen: View {
             if let pet = currentPet {
                 DeletePetSheet(
                     petName: pet.name,
-                    showArchiveOption: pet.daysSinceCreation >= 3,
+                    showArchiveOption: pet.daysSinceCreation >= PetManager.minimumArchiveDays,
                     onArchive: {
                         petManager.archive(id: pet.id, using: archivedPetManager)
                     },
@@ -177,7 +179,30 @@ struct HomeScreen: View {
                 )
             }
         }
+        .sheet(isPresented: $petManager.needsReauthorization) {
+            if let name = petManager.currentPet?.name {
+                ReauthorizationSheet(
+                    petName: name,
+                    onReauthorize: {
+                        Task {
+                            await reauthorize()
+                        }
+                    },
+                    onDecline: {
+                        petManager.handleReauthorizationDeclined()
+                    }
+                )
+            }
+        }
         .windNotCalmAlert(isPresented: $showWindNotCalmAlert)
+        .alert(
+            "Přístup k času u obrazovky",
+            isPresented: $showAuthorizationAlert
+        ) {
+            Button("OK") {}
+        } message: {
+            Text("Pro vytvoření peta je potřeba povolit přístup k času u obrazovky v Nastavení.")
+        }
         .onAppear {
             windRhythm.start()
             // Fallback: check if new day and perform reset if extension missed it
@@ -272,7 +297,34 @@ struct HomeScreen: View {
 
     private var emptyIslandCard: some View {
         EmptyIslandCard {
+            Task {
+                await requestAuthorizationAndCreatePet()
+            }
+        }
+    }
+
+    private func reauthorize() async {
+        do {
+            try await AuthorizationCenter.shared.requestAuthorization(for: .individual)
+            petManager.handleReauthorizationSuccess()
+        } catch {
+            // Authorization failed — keep sheet open so next .active cycle re-triggers
+            petManager.needsReauthorization = false
+        }
+    }
+
+    private func requestAuthorizationAndCreatePet() async {
+        let status = AuthorizationCenter.shared.authorizationStatus
+        if status == .approved {
             createPetCoordinator.show { _ in }
+            return
+        }
+
+        do {
+            try await AuthorizationCenter.shared.requestAuthorization(for: .individual)
+            createPetCoordinator.show { _ in }
+        } catch {
+            showAuthorizationAlert = true
         }
     }
 
