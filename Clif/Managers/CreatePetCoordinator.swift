@@ -197,30 +197,8 @@ final class CreatePetCoordinator {
             return
         }
 
-        // Log preset selection for analytics
-        SnapshotLogging.logPresetSelected(
-            petId: pet.id,
-            windPoints: 0,
-            preset: preset
-        )
-
-        // Start monitoring
-        let limitSeconds = Int(preset.minutesToBlowAway * 60)
-        let fallRatePerSecond = preset.fallRate / 60.0
-
-        // Initialize wind state for new pet
-        SharedDefaults.resetWindState()
-        SharedDefaults.monitoredFallRate = fallRatePerSecond
-
-        #if DEBUG
-        print("[CreatePet] Starting monitoring - limit: \(limitSeconds)s")
-        #endif
-
-        ScreenTimeManager.shared.startMonitoring(
-            petId: pet.id,
-            limitSeconds: limitSeconds,
-            limitedSources: limitedSources
-        )
+        // Apply preset (locks it for today, starts monitoring, resets wind)
+        ScreenTimeManager.shared.applyDailyPreset(preset, for: pet)
 
         onComplete?(pet)
         dismiss()

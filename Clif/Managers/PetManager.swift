@@ -1,3 +1,4 @@
+import Combine
 import FamilyControls
 import Foundation
 
@@ -11,6 +12,7 @@ final class PetManager {
     // MARK: - Private Storage
 
     private var pet: Pet?
+    private var authorizationCancellable: AnyCancellable?
 
     /// Whether a re-authorization prompt is pending (prevents spam on repeated .active cycles).
     var needsReauthorization = false
@@ -28,6 +30,7 @@ final class PetManager {
     init() {
         loadActivePet()
         restoreMonitoringIfNeeded()
+        observeAuthorizationStatus()
     }
 
     // MARK: - Create
@@ -88,16 +91,27 @@ final class PetManager {
 
     // MARK: - Authorization Check
 
-    /// Checks if FamilyControls authorization was lost and signals the UI to show re-authorization prompt.
-    /// Does NOT archive immediately — gives the user a chance to re-authorize.
-    /// Call on app activation (foreground return).
-    func checkAuthorizationStatus() {
-        guard let pet, !pet.isBlownAway, !needsReauthorization else { return }
-
-        let isAuthorized = AuthorizationCenter.shared.authorizationStatus == .approved
-        if !isAuthorized {
-            needsReauthorization = true
-        }
+    /// Observes FamilyControls authorization status reactively.
+    /// `AuthorizationCenter.shared.authorizationStatus` starts as `.notDetermined` on cold launch
+    /// and asynchronously resolves to the real value. Synchronous reads in `.active` phase race
+    /// against this, causing false positives. The `$authorizationStatus` publisher only emits
+    /// once the framework has resolved the actual status, avoiding that race.
+    private func observeAuthorizationStatus() {
+        authorizationCancellable = AuthorizationCenter.shared.$authorizationStatus
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] status in
+                guard let self else { return }
+                #if DEBUG
+                print("[PetManager] authorizationStatus changed = \(status)")
+                #endif
+                // Ignore .notDetermined — framework hasn't resolved yet (cold start).
+                // Only react to definitive revocation.
+                guard status != .notDetermined else { return }
+                guard let pet, !pet.isBlownAway, !needsReauthorization else { return }
+                if status != .approved {
+                    needsReauthorization = true
+                }
+            }
     }
 
     /// Call after the user successfully re-authorizes to resume normal operation.
