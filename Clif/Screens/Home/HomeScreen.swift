@@ -100,6 +100,7 @@ struct HomeScreen: View {
     }
 
     var body: some View {
+        @Bindable var petManager = petManager
         GeometryReader { geometry in
             ZStack {
                 background
