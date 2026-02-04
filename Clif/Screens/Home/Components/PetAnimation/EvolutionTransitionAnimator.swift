@@ -68,8 +68,8 @@ final class EvolutionTransitionAnimator {
         oldScale = pet.evolutionPath?.phase(at: currentPhase)?.displayScale ?? pet.displayScale
         newScale = pet.evolutionPath?.phase(at: nextPhase)?.displayScale ?? pet.displayScale
 
-        pet.evolve()
         startTransition()
+        pet.evolve()
     }
 
     /// Triggers the evolution transition for applying essence to a blob pet.
@@ -86,8 +86,8 @@ final class EvolutionTransitionAnimator {
         oldScale = Blob.shared.displayScale
         newScale = path.phase(at: 1)?.displayScale ?? oldScale
 
-        pet.applyEssence(essence)
         startTransition()
+        pet.applyEssence(essence)
     }
 
     /// Called when the transition animation completes.

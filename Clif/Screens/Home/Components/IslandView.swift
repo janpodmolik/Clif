@@ -180,7 +180,7 @@ struct IslandView<TransitionContent: View>: View {
                     }
                 )
                 .onPreferenceChange(PetImageSizeKey.self) { newSize in
-                    if newSize != .zero {
+                    if newSize != .zero, !isEvolutionTransitioning {
                         petImageSize = newSize
                     }
                 }
