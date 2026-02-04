@@ -196,7 +196,10 @@ private struct EssenceCatalogCard: View {
             .frame(width: CardStyle.imageSize, height: CardStyle.imageSize)
             .padding(CardStyle.padding)
             .background(cardBackground)
-            .onTapGesture(perform: onTap)
+            .onTapGesture {
+                HapticType.impactLight.trigger()
+                onTap()
+            }
     }
 
     @ViewBuilder

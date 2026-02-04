@@ -8,7 +8,10 @@ struct ActionButton: View {
     let action: () -> Void
 
     var body: some View {
-        Button(action: action) {
+        Button {
+            HapticType.impactMedium.trigger()
+            action()
+        } label: {
             HStack(spacing: 6) {
                 if let icon {
                     Image(systemName: icon)

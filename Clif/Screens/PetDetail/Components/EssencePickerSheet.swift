@@ -82,7 +82,10 @@ private struct EssenceRow: View {
     }
 
     var body: some View {
-        Button(action: onTap) {
+        Button {
+            HapticType.impactLight.trigger()
+            onTap()
+        } label: {
             HStack(spacing: 16) {
                 Image(essence.assetName)
                     .resizable()

@@ -290,7 +290,10 @@ struct HomeCardView: View {
     }
 
     private func evolveButton(isBlob: Bool) -> some View {
-        Button { onAction(.evolve) } label: {
+        Button {
+            HapticType.impactMedium.trigger()
+            onAction(.evolve)
+        } label: {
             HStack(spacing: 6) {
                 Image(systemName: isBlob ? "leaf.fill" : "sparkles")
                 Text(isBlob ? "Use Essence" : "Evolve!")
