@@ -1,5 +1,5 @@
-import FamilyControls
 import SwiftUI
+import FamilyControls
 
 /// Sheet displaying limited apps, categories, and websites grouped by type.
 /// Shows only icon and name (no usage minutes - Apple API limitation).
@@ -63,6 +63,8 @@ struct LimitedAppsSheet: View {
         .presentationDetents([.medium, .large])
         .presentationDragIndicator(.visible)
     }
+
+    // MARK: - Sections
 
     private func sourceSection(title: String, icon: String, sources: [LimitedSource]) -> some View {
         VStack(alignment: .leading, spacing: 12) {

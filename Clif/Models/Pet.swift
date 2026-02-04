@@ -51,11 +51,25 @@ final class Pet: Identifiable, PetPresentable, PetEvolvable {
 
     var dailyStats: [DailyUsageStat]
     var limitedSources: [LimitedSource]
+    private(set) var limitedSourceChangesCount: Int
 
     var totalDays: Int { dailyStats.count }
     var applicationTokens: Set<ApplicationToken> { limitedSources.applicationTokens }
     var categoryTokens: Set<ActivityCategoryToken> { limitedSources.categoryTokens }
     var webDomainTokens: Set<WebDomainToken> { limitedSources.webDomainTokens }
+
+    /// Maximum number of times limited sources can be changed per pet lifetime.
+    static let maxLimitedSourceChanges = 3
+
+    /// Whether limited sources can still be changed.
+    var canChangeLimitedSources: Bool {
+        limitedSourceChangesCount < Self.maxLimitedSourceChanges && !isBlown
+    }
+
+    /// How many limited source changes remain.
+    var remainingLimitedSourceChanges: Int {
+        Self.maxLimitedSourceChanges - limitedSourceChangesCount
+    }
 
     /// Break history for current session.
     var breakHistory: [CompletedBreak]
@@ -153,6 +167,13 @@ final class Pet: Identifiable, PetPresentable, PetEvolvable {
         evolutionHistory.recordEvolution(to: nextPhase)
     }
 
+    /// Replaces limited sources and increments the change counter.
+    /// Caller is responsible for checking `canChangeLimitedSources` before calling.
+    func updateLimitedSources(_ newSources: [LimitedSource]) {
+        limitedSources = newSources
+        limitedSourceChangesCount += 1
+    }
+
     /// Marks pet as blown away.
     func blowAway(reason: BlowAwayReason = .limitExceeded) {
         guard !isBlown else { return }
@@ -199,6 +220,7 @@ final class Pet: Identifiable, PetPresentable, PetEvolvable {
         preset: WindPreset = .default,
         dailyStats: [DailyUsageStat] = [],
         limitedSources: [LimitedSource] = [],
+        limitedSourceChangesCount: Int = 0,
         breakHistory: [CompletedBreak] = []
     ) {
         self.id = id
@@ -208,6 +230,7 @@ final class Pet: Identifiable, PetPresentable, PetEvolvable {
         self.preset = preset
         self.dailyStats = dailyStats
         self.limitedSources = limitedSources
+        self.limitedSourceChangesCount = limitedSourceChangesCount
         self.breakHistory = breakHistory
     }
 }

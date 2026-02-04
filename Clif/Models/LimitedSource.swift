@@ -1,3 +1,4 @@
+import FamilyControls
 import Foundation
 import ManagedSettings
 
@@ -236,6 +237,29 @@ extension Array where Element == LimitedSource {
     /// Whether this collection has any tokens to monitor.
     var hasTokens: Bool {
         !applicationTokens.isEmpty || !categoryTokens.isEmpty || !webDomainTokens.isEmpty
+    }
+}
+
+// MARK: - FamilyActivitySelection Conversion
+
+extension LimitedSource {
+    /// Converts a FamilyActivitySelection into an array of LimitedSource.
+    static func from(_ selection: FamilyActivitySelection) -> [LimitedSource] {
+        var sources: [LimitedSource] = []
+
+        for token in selection.applicationTokens {
+            sources.append(.app(AppSource(displayName: "App", applicationToken: token)))
+        }
+
+        for token in selection.categoryTokens {
+            sources.append(.category(CategorySource(displayName: "Category", categoryToken: token)))
+        }
+
+        for token in selection.webDomainTokens {
+            sources.append(.website(WebsiteSource(displayName: "Website", webDomainToken: token)))
+        }
+
+        return sources
     }
 }
 

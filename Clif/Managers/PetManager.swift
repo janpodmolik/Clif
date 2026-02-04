@@ -155,6 +155,34 @@ final class PetManager {
         saveActivePet()
     }
 
+    // MARK: - Update Limited Sources
+
+    /// Replaces the pet's limited sources and restarts monitoring.
+    /// Wind is preserved — only the monitored tokens change.
+    /// No-op if the new selection is identical to the current one (preserves change count).
+    func updateLimitedSources(_ newSources: [LimitedSource], selection: FamilyActivitySelection) {
+        guard let pet = pet, pet.canChangeLimitedSources else { return }
+
+        // Skip if tokens are identical to current selection
+        let currentTokens = (pet.applicationTokens, pet.categoryTokens, pet.webDomainTokens)
+        let newTokens = (newSources.applicationTokens, newSources.categoryTokens, newSources.webDomainTokens)
+        guard currentTokens != newTokens else { return }
+
+        pet.updateLimitedSources(newSources)
+        saveActivePet()
+
+        // Persist selection for pre-populating the picker on next edit
+        SharedDefaults.saveFamilyActivitySelection(selection)
+
+        // Restart monitoring with new tokens (wind preserved)
+        let limitSeconds = Int(pet.preset.minutesToBlowAway * 60)
+        ScreenTimeManager.shared.startMonitoring(
+            petId: pet.id,
+            limitSeconds: limitSeconds,
+            limitedSources: pet.limitedSources
+        )
+    }
+
     // MARK: - Save Trigger
 
     /// Call after mutating the pet to persist changes.

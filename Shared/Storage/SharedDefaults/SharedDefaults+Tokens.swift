@@ -17,11 +17,12 @@ extension SharedDefaults {
         defaults?.set(try? PropertyListEncoder().encode(webDomains), forKey: DefaultsKeys.webDomainTokens)
     }
 
-    /// Clears active tokens (call when archiving/deleting the pet).
+    /// Clears active tokens and stored selection (call when archiving/deleting the pet).
     static func clearActiveTokens() {
         defaults?.removeObject(forKey: DefaultsKeys.applicationTokens)
         defaults?.removeObject(forKey: DefaultsKeys.categoryTokens)
         defaults?.removeObject(forKey: DefaultsKeys.webDomainTokens)
+        defaults?.removeObject(forKey: DefaultsKeys.familyActivitySelection)
     }
 
     // MARK: - Active Token Access (used by extensions)
@@ -51,5 +52,20 @@ extension SharedDefaults {
             return nil
         }
         return try? PropertyListDecoder().decode(Set<WebDomainToken>.self, from: data)
+    }
+
+    // MARK: - FamilyActivitySelection Storage
+
+    /// Saves the current FamilyActivitySelection for pre-populating the picker on edit.
+    static func saveFamilyActivitySelection(_ selection: FamilyActivitySelection) {
+        defaults?.set(try? PropertyListEncoder().encode(selection), forKey: DefaultsKeys.familyActivitySelection)
+    }
+
+    /// Loads the stored FamilyActivitySelection.
+    static func loadFamilyActivitySelection() -> FamilyActivitySelection? {
+        guard let data = defaults?.data(forKey: DefaultsKeys.familyActivitySelection) else {
+            return nil
+        }
+        return try? PropertyListDecoder().decode(FamilyActivitySelection.self, from: data)
     }
 }

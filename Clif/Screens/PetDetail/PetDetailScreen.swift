@@ -95,10 +95,22 @@ struct PetDetailScreen: View {
                         TrendMiniChart(stats: pet.fullStats)
                     }
 
-                    LimitedAppsButton(
-                        sources: pet.limitedSources,
-                        onTap: { showLimitedApps = true }
-                    )
+                    HStack(spacing: 12) {
+                        LimitedAppsButton(
+                            sources: pet.limitedSources,
+                            onTap: { showLimitedApps = true }
+                        )
+
+                        if !showOverviewActions && pet.canChangeLimitedSources {
+                            EditLimitedSourcesButton(
+                                changesUsed: pet.limitedSourceChangesCount,
+                                changesTotal: Pet.maxLimitedSourceChanges
+                            ) { selection in
+                                let newSources = LimitedSource.from(selection)
+                                petManager.updateLimitedSources(newSources, selection: selection)
+                            }
+                        }
+                    }
 
                     if showOverviewActions {
                         ArchivedPetActionsCard(

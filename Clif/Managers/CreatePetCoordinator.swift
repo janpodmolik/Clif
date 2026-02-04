@@ -185,7 +185,7 @@ final class CreatePetCoordinator {
             return
         }
 
-        let limitedSources = createLimitedSources(from: selectedApps)
+        let limitedSources = LimitedSource.from(selectedApps)
 
         guard let pet = petManager.create(
             name: petName,
@@ -196,6 +196,9 @@ final class CreatePetCoordinator {
             dismiss()
             return
         }
+
+        // Persist selection for pre-populating the picker on edit
+        SharedDefaults.saveFamilyActivitySelection(selectedApps)
 
         // Apply preset (locks it for today, starts monitoring, resets wind)
         ScreenTimeManager.shared.applyDailyPreset(preset, for: pet)
@@ -219,33 +222,4 @@ final class CreatePetCoordinator {
         onComplete = nil
     }
 
-    private func createLimitedSources(from selection: FamilyActivitySelection) -> [LimitedSource] {
-        var sources: [LimitedSource] = []
-
-        for token in selection.applicationTokens {
-            let appSource = AppSource(
-                displayName: "App",
-                applicationToken: token
-            )
-            sources.append(.app(appSource))
-        }
-
-        for token in selection.categoryTokens {
-            let catSource = CategorySource(
-                displayName: "Category",
-                categoryToken: token
-            )
-            sources.append(.category(catSource))
-        }
-
-        for token in selection.webDomainTokens {
-            let webSource = WebsiteSource(
-                displayName: "Website",
-                webDomainToken: token
-            )
-            sources.append(.website(webSource))
-        }
-
-        return sources
-    }
 }
