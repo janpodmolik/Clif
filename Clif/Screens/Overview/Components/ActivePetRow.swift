@@ -39,9 +39,14 @@ struct ActivePetRow: View {
                 Spacer()
 
                 VStack(alignment: .trailing, spacing: 6) {
-                    windIndicator
-                    Spacer()
-                    windProgressIndicator
+                    if pet.isBlown {
+                        blownAwayBadge
+                        Spacer()
+                    } else {
+                        windIndicator
+                        Spacer()
+                        windProgressIndicator
+                    }
                 }
             }
             .fixedSize(horizontal: false, vertical: true)
@@ -49,6 +54,17 @@ struct ActivePetRow: View {
             .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
         }
         .buttonStyle(.plain)
+    }
+
+    private var blownAwayBadge: some View {
+        Text("Blown Away")
+            .font(.caption)
+            .fontWeight(.medium)
+            .padding(.horizontal, 8)
+            .padding(.vertical, 4)
+            .background(.red.opacity(0.15))
+            .foregroundStyle(.red)
+            .clipShape(RoundedRectangle(cornerRadius: 6))
     }
 
     private var windIndicator: some View {
@@ -91,12 +107,12 @@ struct ActivePetRow: View {
     }
 }
 
-#Preview {
-    VStack(spacing: 12) {
-        ActivePetRow(pet: .mock(name: "Fern", phase: 2, windPoints: 20)) {}
-        ActivePetRow(pet: .mock(name: "Ivy", phase: 3, windPoints: 55)) {}
-        ActivePetRow(pet: .mock(name: "Sage", phase: 2, windPoints: 75)) {}
-        ActivePetRow(pet: .mock(name: "Willow", phase: 1, windPoints: 95)) {}
-    }
-    .padding()
+#Preview("Normal") {
+    ActivePetRow(pet: .mock(name: "Fern", phase: 2, windPoints: 45)) {}
+        .padding()
+}
+
+#Preview("Blown Away") {
+    ActivePetRow(pet: .mock(name: "Blown", phase: 2, windPoints: 100, isBlownAway: true)) {}
+        .padding()
 }

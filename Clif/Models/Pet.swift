@@ -375,7 +375,8 @@ extension Pet {
         phase: Int = 2,
         essence: Essence? = .plant,
         windPoints: Double = 0,
-        totalDays: Int = 14
+        totalDays: Int = 14,
+        isBlownAway: Bool = false
     ) -> Pet {
         let petId = UUID()
 
@@ -385,7 +386,7 @@ extension Pet {
         return Pet(
             id: petId,
             name: name,
-            evolutionHistory: .mock(phase: phase, essence: essence, totalDays: totalDays),
+            evolutionHistory: .mock(phase: phase, essence: essence, totalDays: totalDays, isBlown: isBlownAway),
             purpose: "Social Media",
             dailyStats: DailyUsageStat.mockList(petId: petId, days: totalDays),
             limitedSources: LimitedSource.mockList(),
