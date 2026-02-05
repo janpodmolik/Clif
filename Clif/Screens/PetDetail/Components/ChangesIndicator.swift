@@ -6,14 +6,14 @@ struct ChangesIndicator: View {
     let used: Int
     let total: Int
 
-    private let dotSize: CGFloat = 6
-    private let spacing: CGFloat = 4
+    private let dotSize: CGFloat = 8
+    private let spacing: CGFloat = 5
 
     var body: some View {
         HStack(spacing: spacing) {
             ForEach(0..<total, id: \.self) { index in
                 Circle()
-                    .fill(index < used ? Color.primary.opacity(0.5) : Color.primary.opacity(0.15))
+                    .fill(index < used ? Color(.label) : Color.gray.opacity(0.3))
                     .frame(width: dotSize, height: dotSize)
             }
         }

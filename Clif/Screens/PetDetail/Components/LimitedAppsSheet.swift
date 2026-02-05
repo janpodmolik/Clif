@@ -1,12 +1,17 @@
-import SwiftUI
 import FamilyControls
+import SwiftUI
 
 /// Sheet displaying limited apps, categories, and websites grouped by type.
 /// Shows only icon and name (no usage minutes - Apple API limitation).
+/// Optionally shows a sticky footer with edit button when changes are available.
 struct LimitedAppsSheet: View {
     let sources: [LimitedSource]
+    var changesUsed: Int?
+    var changesTotal: Int?
+    var onEdit: ((FamilyActivitySelection) -> Void)?
 
     @Environment(\.dismiss) private var dismiss
+    @State private var showEditSheet = false
 
     private var sourcesWithTokens: [LimitedSource] {
         sources.filter(\.hasToken)
@@ -24,27 +29,38 @@ struct LimitedAppsSheet: View {
         sourcesWithTokens.filter { $0.kind == .website }
     }
 
+    private var canEdit: Bool {
+        guard let used = changesUsed, let total = changesTotal else { return false }
+        return used < total && onEdit != nil
+    }
+
     var body: some View {
         NavigationStack {
-            ScrollView {
-                VStack(spacing: 20) {
-                    if sourcesWithTokens.isEmpty {
-                        emptyState
-                    } else {
-                        if !apps.isEmpty {
-                            sourceSection(title: "Aplikace", icon: "app.fill", sources: apps)
-                        }
+            VStack(spacing: 0) {
+                ScrollView {
+                    VStack(spacing: 20) {
+                        if sourcesWithTokens.isEmpty {
+                            emptyState
+                        } else {
+                            if !apps.isEmpty {
+                                sourceSection(title: "Aplikace", icon: "app.fill", sources: apps)
+                            }
 
-                        if !categories.isEmpty {
-                            sourceSection(title: "Kategorie", icon: "square.grid.2x2.fill", sources: categories)
-                        }
+                            if !categories.isEmpty {
+                                sourceSection(title: "Kategorie", icon: "square.grid.2x2.fill", sources: categories)
+                            }
 
-                        if !websites.isEmpty {
-                            sourceSection(title: "Webové stránky", icon: "globe", sources: websites)
+                            if !websites.isEmpty {
+                                sourceSection(title: "Webové stránky", icon: "globe", sources: websites)
+                            }
                         }
                     }
+                    .padding()
                 }
-                .padding()
+
+                if canEdit {
+                    editFooter
+                }
             }
             .navigationTitle("Sledované aplikace")
             .navigationBarTitleDisplayMode(.inline)
@@ -59,9 +75,54 @@ struct LimitedAppsSheet: View {
                     }
                 }
             }
+            .sheet(isPresented: $showEditSheet) {
+                if let changesUsed, let changesTotal {
+                    EditLimitedSourcesSheet(
+                        changesUsed: changesUsed,
+                        changesTotal: changesTotal
+                    ) { selection in
+                        onEdit?(selection)
+                        dismiss()
+                    }
+                }
+            }
         }
         .presentationDetents([.medium, .large])
         .presentationDragIndicator(.visible)
+    }
+
+    // MARK: - Edit Footer
+
+    private var editFooter: some View {
+        VStack(spacing: 10) {
+            if let used = changesUsed, let total = changesTotal {
+                HStack(spacing: 8) {
+                    ChangesIndicator(used: used, total: total)
+
+                    Text(changesInfoText(remaining: total - used))
+                        .font(.caption)
+                        .foregroundStyle(Color.gray)
+                }
+            }
+
+            Button {
+                showEditSheet = true
+            } label: {
+                Text("Změnit aplikace")
+                    .font(.body.weight(.semibold))
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 14)
+            }
+            .buttonStyle(.borderedProminent)
+            .buttonBorderShape(.capsule)
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 16)
+        .background {
+            Rectangle()
+                .fill(.ultraThinMaterial)
+                .ignoresSafeArea(edges: .bottom)
+        }
     }
 
     // MARK: - Sections
@@ -96,6 +157,17 @@ struct LimitedAppsSheet: View {
         }
         .padding()
         .glassCard()
+    }
+
+    // MARK: - Helpers
+
+    private func changesInfoText(remaining: Int) -> String {
+        switch remaining {
+        case 0: "Žádná zbývající změna"
+        case 1: "Zbývá 1 změna"
+        case 2, 3, 4: "Zbývají \(remaining) změny"
+        default: "Zbývá \(remaining) změn"
+        }
     }
 }
 
@@ -180,7 +252,19 @@ private struct SourceRow: View {
 
 #if DEBUG
 #Preview("With Sources") {
-    LimitedAppsSheet(sources: LimitedSource.mockList())
+    LimitedAppsSheet(
+        sources: LimitedSource.mockList(),
+        changesUsed: 1,
+        changesTotal: 3
+    ) { _ in }
+}
+
+#Preview("No changes left") {
+    LimitedAppsSheet(
+        sources: LimitedSource.mockList(),
+        changesUsed: 3,
+        changesTotal: 3
+    )
 }
 
 #Preview("Empty") {

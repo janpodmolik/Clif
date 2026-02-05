@@ -95,22 +95,10 @@ struct PetDetailScreen: View {
                         TrendMiniChart(stats: pet.fullStats)
                     }
 
-                    HStack(spacing: 12) {
-                        LimitedAppsButton(
-                            sources: pet.limitedSources,
-                            onTap: { showLimitedApps = true }
-                        )
-
-                        if !showOverviewActions && pet.canChangeLimitedSources {
-                            EditLimitedSourcesButton(
-                                changesUsed: pet.limitedSourceChangesCount,
-                                changesTotal: Pet.maxLimitedSourceChanges
-                            ) { selection in
-                                let newSources = LimitedSource.from(selection)
-                                petManager.updateLimitedSources(newSources, selection: selection)
-                            }
-                        }
-                    }
+                    LimitedAppsButton(
+                        sources: pet.limitedSources,
+                        onTap: { showLimitedApps = true }
+                    )
 
                     if showOverviewActions {
                         ArchivedPetActionsCard(
@@ -172,7 +160,15 @@ struct PetDetailScreen: View {
                 }
             }
             .sheet(isPresented: $showLimitedApps) {
-                LimitedAppsSheet(sources: pet.limitedSources)
+                LimitedAppsSheet(
+                    sources: pet.limitedSources,
+                    changesUsed: showOverviewActions ? nil : pet.limitedSourceChangesCount,
+                    changesTotal: showOverviewActions ? nil : Pet.maxLimitedSourceChanges,
+                    onEdit: showOverviewActions ? nil : { selection in
+                        let newSources = LimitedSource.from(selection)
+                        petManager.updateLimitedSources(newSources, selection: selection)
+                    }
+                )
             }
             .sheet(isPresented: $showDeleteConfirmation) {
                 DeletePetSheet(
