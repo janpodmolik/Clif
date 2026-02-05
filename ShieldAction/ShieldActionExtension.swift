@@ -136,11 +136,6 @@ class ShieldActionExtension: ShieldActionDelegate {
         switch action {
         case .primaryButtonPressed:
             logToFile("Primary button (Close App) pressed")
-            sendNotificationWithDeepLink(
-                title: "Otevřít Clif",
-                body: "Klepni pro zobrazení peta",
-                deepLink: DeepLinks.home
-            )
             completionHandler(.close)
 
         case .secondaryButtonPressed:
@@ -166,11 +161,6 @@ class ShieldActionExtension: ShieldActionDelegate {
         switch action {
         case .primaryButtonPressed:
             logger.info("Primary button (Close App) pressed")
-            sendNotificationWithDeepLink(
-                title: "Otevřít Clif",
-                body: "Klepni pro zobrazení peta",
-                deepLink: DeepLinks.home
-            )
             completionHandler(.close)
 
         case .secondaryButtonPressed:
@@ -195,11 +185,6 @@ class ShieldActionExtension: ShieldActionDelegate {
         switch action {
         case .primaryButtonPressed:
             logger.info("Primary button (Close App) pressed")
-            sendNotificationWithDeepLink(
-                title: "Otevřít Clif",
-                body: "Klepni pro zobrazení peta",
-                deepLink: DeepLinks.home
-            )
             completionHandler(.close)
 
         case .secondaryButtonPressed:
