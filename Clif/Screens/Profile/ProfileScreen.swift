@@ -36,6 +36,16 @@ struct ProfileScreen: View {
                     Text("Denní shield ti umožní vybrat si náročnost dne před prvním použitím blokovaných aplikací.")
                 }
 
+                // MARK: - Rewards
+                Section(header: Text("Odměny")) {
+                    HStack {
+                        Label("Coins", systemImage: "u.circle.fill")
+                        Spacer()
+                        Text("\(SharedDefaults.coinsBalance)")
+                            .foregroundStyle(.secondary)
+                    }
+                }
+
                 // MARK: - Essence Catalog
                 Section(header: Text("Kolekce")) {
                     NavigationLink(value: ProfileDestination.essenceCatalog) {

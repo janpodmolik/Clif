@@ -8,6 +8,7 @@ import Foundation
 /// - SharedDefaults+Shield.swift - Shield state and cooldown
 /// - SharedDefaults+Wind.swift - Wind points and monitoring context
 /// - SharedDefaults+DayState.swift - Daily presets and day start shield
+/// - SharedDefaults+Coins.swift - Currency balance storage
 struct SharedDefaults {
 
     // MARK: - Shared Storage

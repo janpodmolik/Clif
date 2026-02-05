@@ -9,6 +9,7 @@ struct HomeScreen: View {
     @Environment(ArchivedPetManager.self) private var archivedPetManager
     @Environment(EssencePickerCoordinator.self) private var essenceCoordinator
     @Environment(CreatePetCoordinator.self) private var createPetCoordinator
+    @Environment(CoinsRewardAnimator.self) private var coinsAnimator
     @Environment(\.colorScheme) private var colorScheme
 
     @State private var windRhythm = WindRhythm()
@@ -384,6 +385,7 @@ struct HomeScreen: View {
                             ),
                             onComplete: {
                                 evolutionAnimator.complete()
+                                coinsAnimator.showReward(CoinRewards.evolution)
                                 if pet.isFullyEvolved {
                                     DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
                                         showSuccessArchivePrompt = true
@@ -410,9 +412,13 @@ struct HomeScreen: View {
             ReplayOverlayView(isVisible: blowAwayAnimator.replayOverlayVisible, petFrame: petFrame)
 
             #if DEBUG
-            debugBumpToggle
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomLeading)
-                .padding(homeCardInset)
+            HStack(spacing: 8) {
+                debugBumpToggle
+                debugCoinsButton
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomLeading)
+            .padding(.horizontal, homeCardInset)
+            .padding(.bottom, 80)
 
 //            EventLogOverlay()
 //                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
@@ -558,6 +564,21 @@ private extension HomeScreen {
             .background(.ultraThinMaterial, in: Capsule())
         }
     }
+
+    var debugCoinsButton: some View {
+        Button {
+            coinsAnimator.showReward(5)
+        } label: {
+            HStack(spacing: 6) {
+                Image(systemName: "u.circle.fill")
+                Text("+5")
+            }
+            .font(.system(size: 12, weight: .medium))
+            .padding(.horizontal, 12)
+            .padding(.vertical, 8)
+            .background(.ultraThinMaterial, in: Capsule())
+        }
+    }
 }
 #endif
 
@@ -567,4 +588,5 @@ private extension HomeScreen {
         .environment(ArchivedPetManager.mock())
         .environment(EssencePickerCoordinator())
         .environment(CreatePetCoordinator())
+        .environment(CoinsRewardAnimator())
 }

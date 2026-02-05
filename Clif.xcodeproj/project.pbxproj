@@ -69,6 +69,17 @@
 		B45862442EE5FAF60088CB78 /* ActivityReportContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = B45862422EE5FAF60088CB78 /* ActivityReportContext.swift */; };
 		B45CF5A52F279E83009B4F06 /* DayStartGreeting.swift in Sources */ = {isa = PBXBuildFile; fileRef = B45CF5A42F279E83009B4F06 /* DayStartGreeting.swift */; };
 		B45CF5A62F279E83009B4F06 /* DayStartGreeting.swift in Sources */ = {isa = PBXBuildFile; fileRef = B45CF5A42F279E83009B4F06 /* DayStartGreeting.swift */; };
+		B472FD572F3549D100C109AA /* SharedDefaults+Coins.swift in Sources */ = {isa = PBXBuildFile; fileRef = B472FD562F3549D100C109AA /* SharedDefaults+Coins.swift */; };
+		B472FD582F3549D100C109AA /* SharedDefaults+Coins.swift in Sources */ = {isa = PBXBuildFile; fileRef = B472FD562F3549D100C109AA /* SharedDefaults+Coins.swift */; };
+		B472FD592F3549D100C109AA /* SharedDefaults+Coins.swift in Sources */ = {isa = PBXBuildFile; fileRef = B472FD562F3549D100C109AA /* SharedDefaults+Coins.swift */; };
+		B472FD5A2F3549D100C109AA /* SharedDefaults+Coins.swift in Sources */ = {isa = PBXBuildFile; fileRef = B472FD562F3549D100C109AA /* SharedDefaults+Coins.swift */; };
+		B472FD5B2F3549D100C109AA /* SharedDefaults+Coins.swift in Sources */ = {isa = PBXBuildFile; fileRef = B472FD562F3549D100C109AA /* SharedDefaults+Coins.swift */; };
+		B472FD5D2F354A7C00C109AA /* CommittedBreakDuration.swift in Sources */ = {isa = PBXBuildFile; fileRef = B472FD5C2F354A7C00C109AA /* CommittedBreakDuration.swift */; };
+		B472FD5F2F354AAE00C109AA /* CoinRewards.swift in Sources */ = {isa = PBXBuildFile; fileRef = B472FD5E2F354AAE00C109AA /* CoinRewards.swift */; };
+		B472FD602F354AAE00C109AA /* CoinRewards.swift in Sources */ = {isa = PBXBuildFile; fileRef = B472FD5E2F354AAE00C109AA /* CoinRewards.swift */; };
+		B472FD612F354AAE00C109AA /* CoinRewards.swift in Sources */ = {isa = PBXBuildFile; fileRef = B472FD5E2F354AAE00C109AA /* CoinRewards.swift */; };
+		B472FD622F354AAE00C109AA /* CoinRewards.swift in Sources */ = {isa = PBXBuildFile; fileRef = B472FD5E2F354AAE00C109AA /* CoinRewards.swift */; };
+		B472FD632F354AAE00C109AA /* CoinRewards.swift in Sources */ = {isa = PBXBuildFile; fileRef = B472FD5E2F354AAE00C109AA /* CoinRewards.swift */; };
 		B47A5F2B2F152D850068232C /* FullUsageStats.swift in Sources */ = {isa = PBXBuildFile; fileRef = B47A5F2A2F152D850068232C /* FullUsageStats.swift */; };
 		B4924ACC2EE57ED90033475C /* DeviceActivity.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B4924ACB2EE57ED90033475C /* DeviceActivity.framework */; };
 		B4924AD42EE57ED90033475C /* DeviceActivityMonitor.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = B4924AC92EE57ED90033475C /* DeviceActivityMonitor.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
@@ -195,6 +206,9 @@
 		B45862302EE5F6F80088CB78 /* DeviceActivityReport.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.extensionkit-extension"; includeInIndex = 0; path = DeviceActivityReport.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		B45862422EE5FAF60088CB78 /* ActivityReportContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityReportContext.swift; sourceTree = "<group>"; };
 		B45CF5A42F279E83009B4F06 /* DayStartGreeting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayStartGreeting.swift; sourceTree = "<group>"; };
+		B472FD562F3549D100C109AA /* SharedDefaults+Coins.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SharedDefaults+Coins.swift"; sourceTree = "<group>"; };
+		B472FD5C2F354A7C00C109AA /* CommittedBreakDuration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommittedBreakDuration.swift; sourceTree = "<group>"; };
+		B472FD5E2F354AAE00C109AA /* CoinRewards.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinRewards.swift; sourceTree = "<group>"; };
 		B47A5F2A2F152D850068232C /* FullUsageStats.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FullUsageStats.swift; sourceTree = "<group>"; };
 		B4924AC92EE57ED90033475C /* DeviceActivityMonitor.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = DeviceActivityMonitor.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		B4924ACB2EE57ED90033475C /* DeviceActivity.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = DeviceActivity.framework; path = System/Library/Frameworks/DeviceActivity.framework; sourceTree = SDKROOT; };
@@ -383,6 +397,7 @@
 		B43998422EE9FCBF0049445F /* Constants */ = {
 			isa = PBXGroup;
 			children = (
+				B472FD5E2F354AAE00C109AA /* CoinRewards.swift */,
 				B45862142EE5B92C0088CB78 /* Constants.swift */,
 			);
 			path = Constants;
@@ -410,6 +425,7 @@
 		B43998452EE9FCE40049445F /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				B472FD5C2F354A7C00C109AA /* CommittedBreakDuration.swift */,
 				B4C64EFC2F2B5EC00054A50E /* BreakType.swift */,
 				B45CF5A42F279E83009B4F06 /* DayStartGreeting.swift */,
 				B4153D3D2F27417F0006FEE3 /* LimitSettings.swift */,
@@ -436,6 +452,7 @@
 		B451D3792F26856C004C534F /* SharedDefaults */ = {
 			isa = PBXGroup;
 			children = (
+				B472FD562F3549D100C109AA /* SharedDefaults+Coins.swift */,
 				B451D3742F26856C004C534F /* SharedDefaults.swift */,
 				B451D3752F26856C004C534F /* SharedDefaults+DayState.swift */,
 				B451D3762F26856C004C534F /* SharedDefaults+Shield.swift */,
@@ -725,6 +742,7 @@
 				B4167E5D2F1FE73400D89B36 /* SnapshotEventType.swift in Sources */,
 				B4167E5F2F1FEF4E00D89B36 /* SnapshotStore.swift in Sources */,
 				B4167E652F1FF93800D89B36 /* SnapshotLogging.swift in Sources */,
+				B472FD5D2F354A7C00C109AA /* CommittedBreakDuration.swift in Sources */,
 				B4167E582F1FE2D800D89B36 /* SnapshotEvent.swift in Sources */,
 				B4D351262F123DD00076C09B /* StatType.swift in Sources */,
 				B4D351272F123DD00076C09B /* DailyUsageStat.swift in Sources */,
@@ -736,6 +754,8 @@
 				B49387A02F0E428B0090C730 /* WindLevel.swift in Sources */,
 				B45862162EE5B92C0088CB78 /* Constants.swift in Sources */,
 				B4EVO1012F0E00010001A001 /* Blob.swift in Sources */,
+				B472FD632F354AAE00C109AA /* CoinRewards.swift in Sources */,
+				B472FD5B2F3549D100C109AA /* SharedDefaults+Coins.swift in Sources */,
 				B4EVO1022F0E00010001A002 /* EvolutionPhase.swift in Sources */,
 				B47A5F2B2F152D850068232C /* FullUsageStats.swift in Sources */,
 				B4EVO1032F0E00010001A003 /* EvolutionPath.swift in Sources */,
@@ -759,11 +779,13 @@
 				B451D3842F26856C004C534F /* SharedDefaults.swift in Sources */,
 				B4153D472F2741D10006FEE3 /* WindNotification.swift in Sources */,
 				B4C6518B2F2B602A0054A50E /* BreakType.swift in Sources */,
+				B472FD582F3549D100C109AA /* SharedDefaults+Coins.swift in Sources */,
 				B451D3852F26856C004C534F /* SharedDefaults+DayState.swift in Sources */,
 				B451D3862F26856C004C534F /* SharedDefaults+Shield.swift in Sources */,
 				B451D3872F26856C004C534F /* SharedDefaults+Tokens.swift in Sources */,
 				B4F9397D2F2C9D340012773D /* BreakNotification.swift in Sources */,
 				B451D3882F26856C004C534F /* SharedDefaults+Wind.swift in Sources */,
+				B472FD5F2F354AAE00C109AA /* CoinRewards.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -781,11 +803,13 @@
 				B451D37E2F26856C004C534F /* SharedDefaults+Wind.swift in Sources */,
 				B4153D412F2741A40006FEE3 /* WindNotification.swift in Sources */,
 				B4C6518A2F2B602A0054A50E /* BreakType.swift in Sources */,
+				B472FD572F3549D100C109AA /* SharedDefaults+Coins.swift in Sources */,
 				B451D20B2F24C78E004C534F /* WindLevel.swift in Sources */,
 				B451D2112F24FEF0004C534F /* ExtensionLogger.swift in Sources */,
 				B4167E5C2F1FE73400D89B36 /* SnapshotEventType.swift in Sources */,
 				B4F939792F2C9D340012773D /* BreakNotification.swift in Sources */,
 				B4167E602F1FEF4E00D89B36 /* SnapshotStore.swift in Sources */,
+				B472FD612F354AAE00C109AA /* CoinRewards.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -796,6 +820,7 @@
 				B49387992F0E428B0090C730 /* WindConfig.swift in Sources */,
 				B493879B2F0E428B0090C730 /* WindLevel.swift in Sources */,
 				B4F9397B2F2C9D340012773D /* BreakNotification.swift in Sources */,
+				B472FD5A2F3549D100C109AA /* SharedDefaults+Coins.swift in Sources */,
 				B45862152EE5B92C0088CB78 /* Constants.swift in Sources */,
 				B4EVO2012F0E00010001A001 /* Blob.swift in Sources */,
 				B4EVO2022F0E00010001A002 /* EvolutionPhase.swift in Sources */,
@@ -809,6 +834,7 @@
 				B451D2122F24FEF0004C534F /* ExtensionLogger.swift in Sources */,
 				B4EVO2042F0E00010001A004 /* PetDisplayable.swift in Sources */,
 				B45CF5A52F279E83009B4F06 /* DayStartGreeting.swift in Sources */,
+				B472FD602F354AAE00C109AA /* CoinRewards.swift in Sources */,
 				B4ESS2012F0E00010001A001 /* Essence.swift in Sources */,
 				B4C64EFF2F2B5ECE0054A50E /* BreakType.swift in Sources */,
 				B4ANI2012F0E00010001B001 /* IdleConfig.swift in Sources */,
@@ -832,11 +858,13 @@
 				B4153D482F2741D10006FEE3 /* WindNotification.swift in Sources */,
 				B451D38C2F26856C004C534F /* SharedDefaults+Tokens.swift in Sources */,
 				B4C6518C2F2B602A0054A50E /* BreakType.swift in Sources */,
+				B472FD592F3549D100C109AA /* SharedDefaults+Coins.swift in Sources */,
 				B451D38D2F26856C004C534F /* SharedDefaults+Wind.swift in Sources */,
 				B451D20F2F24FEF0004C534F /* ExtensionLogger.swift in Sources */,
 				B4167E622F1FF91800D89B36 /* SnapshotEvent.swift in Sources */,
 				B4F9397A2F2C9D340012773D /* BreakNotification.swift in Sources */,
 				B4167E632F1FF92500D89B36 /* SnapshotStore.swift in Sources */,
+				B472FD622F354AAE00C109AA /* CoinRewards.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

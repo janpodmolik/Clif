@@ -9,6 +9,7 @@ final class ShieldState {
     static let shared = ShieldState()
 
     private(set) var currentBreakType: BreakType? = SharedDefaults.activeBreakType
+    private(set) var lastEarnedCoins: Int = 0
 
     var isActive: Bool { currentBreakType != nil }
 
@@ -17,6 +18,14 @@ final class ShieldState {
     /// Call this after any shield state change to update observers.
     func refresh() {
         currentBreakType = SharedDefaults.activeBreakType
+    }
+
+    func setEarnedCoins(_ amount: Int) {
+        lastEarnedCoins = amount
+    }
+
+    func clearEarnedCoins() {
+        lastEarnedCoins = 0
     }
 }
 
@@ -187,6 +196,16 @@ final class ShieldManager {
 
         // Cancel any scheduled break end notification
         BreakNotification.cancelScheduledCommittedBreakEnd()
+
+        // Award coins for successful committed breaks
+        if success, SharedDefaults.activeBreakType == .committed {
+            let durationMinutes = SharedDefaults.committedBreakDuration ?? 0
+            let coins = CoinRewards.forBreak(minutes: durationMinutes)
+            if coins > 0 {
+                SharedDefaults.addCoins(coins)
+                ShieldState.shared.setEarnedCoins(coins)
+            }
+        }
 
         // Only apply break reduction for successful breaks
         // Failed committed breaks (violation) don't reduce wind - pet is blown away

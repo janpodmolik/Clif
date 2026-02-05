@@ -72,6 +72,7 @@ struct EvolutionHistory: Codable, Equatable {
         guard self.essence == nil else { return }
         self.essence = essence
         lastProgressDate = Date()
+        SharedDefaults.addCoins(CoinRewards.evolution)
     }
 
     mutating func recordEvolution(to phase: Int) {
@@ -82,6 +83,7 @@ struct EvolutionHistory: Codable, Equatable {
         )
         events.append(event)
         lastProgressDate = Date()
+        SharedDefaults.addCoins(CoinRewards.evolution)
     }
 
     mutating func markAsBlown() {

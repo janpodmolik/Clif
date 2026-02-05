@@ -39,6 +39,7 @@ struct ContentView: View {
     @State private var showPremium = false
     @State private var essenceCoordinator = EssencePickerCoordinator()
     @State private var createPetCoordinator = CreatePetCoordinator()
+    @State private var coinsAnimator = CoinsRewardAnimator()
     @State private var showMockSheet = false
 
     @Environment(\.scenePhase) private var scenePhase
@@ -83,10 +84,30 @@ struct ContentView: View {
 
                 EssencePickerOverlay()
                 CreatePetOverlay(screenHeight: geometry.size.height)
+
+                // Coins reward tag overlay - positioned above Profile tab
+                GeometryReader { overlayGeo in
+                    let tabBarWidth = overlayGeo.size.width - 40 // minus horizontal padding
+                    let mainTabsWidth = tabBarWidth - 55 - 10 // minus action button and spacing
+                    let tabWidth = mainTabsWidth / 3
+                    let profileTabCenterX = 20 + tabWidth * 2.5 // 20 padding + 2.5 tabs (center of 3rd)
+
+                    CoinRewardTag(
+                        amount: coinsAnimator.amount,
+                        isVisible: coinsAnimator.isShowingTag,
+                        isSlidingDown: coinsAnimator.isSlidingDown
+                    )
+                    .position(
+                        x: profileTabCenterX,
+                        y: overlayGeo.size.height - tabBarHeight - 50
+                    )
+                }
+                .allowsHitTesting(false)
             }
         }
         .environment(essenceCoordinator)
         .environment(createPetCoordinator)
+        .environment(coinsAnimator)
         .preferredColorScheme(isDarkModeEnabled ? .dark : .light)
         .onReceive(NotificationCenter.default.publisher(for: .selectPet)) { _ in
             activeTab = .home
@@ -130,6 +151,12 @@ struct ContentView: View {
                 ShieldState.shared.refresh()
             }
         }
+        .onChange(of: shieldState.lastEarnedCoins) { _, coins in
+            if coins > 0 {
+                coinsAnimator.showReward(coins)
+                ShieldState.shared.clearEarnedCoins()
+            }
+        }
     }
 
     // MARK: - Tab Bar
@@ -141,12 +168,40 @@ struct ContentView: View {
                 tabBarContent()
             }
             .frame(height: tabBarHeight)
+            .overlay {
+                profileTabPulseOverlay()
+            }
         } else {
             HStack(spacing: 10) {
                 tabBarContentFallback()
             }
             .frame(height: tabBarHeight)
+            .overlay {
+                profileTabPulseOverlay()
+            }
         }
+    }
+
+    @ViewBuilder
+    private func profileTabPulseOverlay() -> some View {
+        GeometryReader { geo in
+            let mainTabsWidth = geo.size.width - 55 - 10 // minus action button width and spacing
+            let tabWidth = mainTabsWidth / 3
+            let profileTabCenterX = tabWidth * 2.5 // center of 3rd tab
+
+            VStack(spacing: 3) {
+                Image(systemName: "person.fill")
+                    .font(.title3)
+                Text(AppTab.profile.rawValue)
+                    .font(.system(size: 10))
+                    .fontWeight(.medium)
+            }
+            .foregroundStyle(.orange)
+            .scaleEffect(coinsAnimator.tabPulseScale)
+            .opacity(coinsAnimator.tabPulseOpacity)
+            .position(x: profileTabCenterX, y: geo.size.height / 2)
+        }
+        .allowsHitTesting(false)
     }
 
     @available(iOS 26.0, *)

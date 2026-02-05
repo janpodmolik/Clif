@@ -45,7 +45,7 @@ struct PremiumSheet: View {
                     Button {
                         // TODO: Open coin shop
                     } label: {
-                        Label("Koupit Coins", systemImage: "dollarsign.circle.fill")
+                        Label("Koupit Coins", systemImage: "u.circle.fill")
                             .font(.subheadline.weight(.medium))
                     }
                 }

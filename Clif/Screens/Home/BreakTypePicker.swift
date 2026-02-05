@@ -18,9 +18,9 @@ struct BreakTypePicker: View {
 
     private var durationSteps: [Int] {
         #if DEBUG
-        return [0, 5, 10, 15, 20, 30, 45, 60, 90, 120]
+        return [0] + CommittedBreakDuration.allMinutes
         #else
-        return [5, 10, 15, 20, 30, 45, 60, 90, 120]
+        return CommittedBreakDuration.allMinutes
         #endif
     }
 
@@ -127,10 +127,23 @@ struct BreakTypePicker: View {
     private var selectionInfo: some View {
         let minutes = isUntilEndOfDay ? calculateMinutesToMidnight() : selectedMinutes
         let label = minutes == 0 ? "20s" : "\(minutes) min"
-        return Text(label)
-            .font(.system(size: 48, weight: .bold, design: .rounded))
-            .foregroundStyle(BreakType.committed.color)
-            .contentTransition(.numericText())
+        let coins = CoinRewards.forBreak(minutes: minutes)
+
+        return VStack(spacing: 4) {
+            Text(label)
+                .font(.system(size: 48, weight: .bold, design: .rounded))
+                .foregroundStyle(BreakType.committed.color)
+                .contentTransition(.numericText())
+
+            if coins > 0 {
+                HStack(spacing: 4) {
+                    Image(systemName: "u.circle.fill")
+                    Text("+\(coins)")
+                }
+                .font(.system(size: 16, weight: .semibold))
+                .foregroundStyle(.orange)
+            }
+        }
     }
 
     private var durationSlider: some View {
