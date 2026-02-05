@@ -74,8 +74,8 @@ class ShieldConfigurationExtension: ShieldConfigurationDataSource {
             iconName = "wind"
             backgroundColor = UIColor.systemRed.withAlphaComponent(0.1)
         } else {
-            subtitleText = "Vítr: \(Int(windPoints))% (\(windLevel.label)) - Dej si pauzu"
-            iconName = windLevel == .none ? "sun.max.fill" : "wind"
+            subtitleText = "Vítr se uklidňuje..."
+            iconName = "wind"
             backgroundColor = UIColor.systemBackground
         }
 
