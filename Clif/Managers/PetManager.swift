@@ -104,11 +104,20 @@ final class PetManager {
                 #if DEBUG
                 print("[PetManager] authorizationStatus changed = \(status)")
                 #endif
-                // Ignore .notDetermined — framework hasn't resolved yet (cold start).
-                // Only react to definitive revocation.
-                guard status != .notDetermined else { return }
+
+                // Track successful authorization for revocation detection
+                if status == .approved {
+                    SharedDefaults.wasEverAuthorized = true
+                }
+
                 guard let pet, !pet.isBlownAway, !needsReauthorization else { return }
-                if status != .approved {
+
+                // Detect revocation: .notDetermined after previous .approved means user revoked permission.
+                // On cold start without prior authorization, wasEverAuthorized is false so we ignore.
+                let isRevoked = (status == .notDetermined && SharedDefaults.wasEverAuthorized)
+                    || status == .denied
+
+                if isRevoked {
                     needsReauthorization = true
                 }
             }

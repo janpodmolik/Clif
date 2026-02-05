@@ -33,6 +33,15 @@ struct SharedDefaults {
         set { defaults?.set(newValue, forKey: DefaultsKeys.lastMonitorUpdate) }
     }
 
+    // MARK: - Authorization
+
+    /// Tracks if user ever granted Screen Time authorization.
+    /// Used to detect revocation: if wasEverAuthorized && status == .notDetermined → revoked.
+    static var wasEverAuthorized: Bool {
+        get { defaults?.bool(forKey: DefaultsKeys.wasEverAuthorized) ?? false }
+        set { defaults?.set(newValue, forKey: DefaultsKeys.wasEverAuthorized) }
+    }
+
     // MARK: - Sync
 
     /// Forces synchronization of UserDefaults (important for cross-process communication).

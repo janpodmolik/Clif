@@ -111,4 +111,8 @@ enum DefaultsKeys {
     // MARK: - Daily Reset
 
     static let lastDayResetDate = "lastDayResetDate"
+
+    // MARK: - Authorization
+
+    static let wasEverAuthorized = "wasEverAuthorized"
 }
