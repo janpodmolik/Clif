@@ -62,12 +62,12 @@ struct ActivePetActionsCard: View {
 
     private var blownAwayActions: some View {
         HStack(spacing: 16) {
-            ActionButton(icon: "trash", label: "Delete", color: .red) {
-                onAction(.delete)
-            }
-            Spacer()
             ActionButton(icon: "memories", label: "Replay", color: .blue) {
                 onAction(.replay)
+            }
+            Spacer()
+            ActionButton(icon: "trash", label: "Delete", color: .red) {
+                onAction(.delete)
             }
         }
     }

@@ -132,7 +132,8 @@ struct PetDetailScreen: View {
                                     pet.evolve()
                                 }
                             case .blowAway: onAction(.blowAway)
-                            case .replay: onAction(.replay)
+                            case .replay:
+                                onAction(.replay)
                             case .delete: showDeleteConfirmation = true
                             case .archive:
                                 guard pet.windLevel == .none else {

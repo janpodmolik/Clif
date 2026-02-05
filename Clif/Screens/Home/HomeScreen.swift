@@ -144,6 +144,11 @@ struct HomeScreen: View {
                     case .progress:
                         pendingEssencePicker = true
                         showPetDetail = false
+                    case .replay:
+                        showPetDetail = false
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                            handleReplay()
+                        }
                     default:
                         break
                     }
