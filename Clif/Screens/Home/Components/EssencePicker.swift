@@ -174,7 +174,7 @@ private struct EssenceStagingCard: View {
                 .glassBackground(cornerRadius: CardStyle.cornerRadius)
             }
         }
-        .transaction { $0.animation = nil }
+        .animation(nil, value: isDragging)
     }
 }
 
