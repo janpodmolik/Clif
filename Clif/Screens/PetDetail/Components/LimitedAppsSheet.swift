@@ -29,36 +29,39 @@ struct LimitedAppsSheet: View {
         sourcesWithTokens.filter { $0.kind == .website }
     }
 
+    private var showFooter: Bool {
+        changesUsed != nil && changesTotal != nil && onEdit != nil
+    }
+
     private var canEdit: Bool {
         guard let used = changesUsed, let total = changesTotal else { return false }
-        return used < total && onEdit != nil
+        return used < total
     }
 
     var body: some View {
         NavigationStack {
-            VStack(spacing: 0) {
-                ScrollView {
-                    VStack(spacing: 20) {
-                        if sourcesWithTokens.isEmpty {
-                            emptyState
-                        } else {
-                            if !apps.isEmpty {
-                                sourceSection(title: "Aplikace", icon: "app.fill", sources: apps)
-                            }
+            ScrollView {
+                VStack(spacing: 20) {
+                    if sourcesWithTokens.isEmpty {
+                        emptyState
+                    } else {
+                        if !apps.isEmpty {
+                            sourceSection(title: "Aplikace", icon: "app.fill", sources: apps)
+                        }
 
-                            if !categories.isEmpty {
-                                sourceSection(title: "Kategorie", icon: "square.grid.2x2.fill", sources: categories)
-                            }
+                        if !categories.isEmpty {
+                            sourceSection(title: "Kategorie", icon: "square.grid.2x2.fill", sources: categories)
+                        }
 
-                            if !websites.isEmpty {
-                                sourceSection(title: "Webové stránky", icon: "globe", sources: websites)
-                            }
+                        if !websites.isEmpty {
+                            sourceSection(title: "Webové stránky", icon: "globe", sources: websites)
                         }
                     }
-                    .padding()
                 }
-
-                if canEdit {
+                .padding()
+            }
+            .safeAreaInset(edge: .bottom) {
+                if showFooter {
                     editFooter
                 }
             }
@@ -115,12 +118,13 @@ struct LimitedAppsSheet: View {
             }
             .buttonStyle(.borderedProminent)
             .buttonBorderShape(.capsule)
+            .disabled(!canEdit)
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 16)
         .background {
             Rectangle()
-                .fill(.ultraThinMaterial)
+                .fill(Color(.systemBackground))
                 .ignoresSafeArea(edges: .bottom)
         }
     }
@@ -145,7 +149,8 @@ struct LimitedAppsSheet: View {
                 }
             }
             .padding(.vertical, 8)
-            .glassCard()
+            .background(Color(.secondarySystemGroupedBackground))
+            .clipShape(RoundedRectangle(cornerRadius: 16))
         }
     }
 
