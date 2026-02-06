@@ -110,6 +110,10 @@ struct ContentView: View {
         .onReceive(NotificationCenter.default.publisher(for: .selectPet)) { _ in
             activeTab = .home
         }
+        .onReceive(NotificationCenter.default.publisher(for: .showEssenceCatalog)) { _ in
+            activeTab = .profile
+            navigationPaths[.profile] = NavigationPath([ProfileDestination.essenceCatalog])
+        }
         #if DEBUG
         .onReceive(NotificationCenter.default.publisher(for: .showMockSheet)) { _ in
             showMockSheet = true

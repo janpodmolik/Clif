@@ -61,9 +61,7 @@ struct PetDetailScreen: View {
                     )
 
                     if pet.isBlob {
-                        NoEssenceCard {
-                            // TODO: Navigate to inventory
-                        }
+                        NoEssenceCard()
                     } else {
                         EssenceInfoCard(evolutionHistory: pet.evolutionHistory)
                     }

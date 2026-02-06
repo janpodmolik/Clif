@@ -1,7 +1,8 @@
 import SwiftUI
 
 struct NoEssenceCard: View {
-    let onTap: () -> Void
+    @Environment(\.openURL) private var openURL
+    @Environment(\.dismiss) private var dismiss
 
     var body: some View {
         HStack(spacing: 16) {
@@ -16,7 +17,7 @@ struct NoEssenceCard: View {
                 Text("Zatím bez esence")
                     .font(.headline)
 
-                Text("Najdi esenci ve svém inventáři")
+                Text("Podívej se na dostupné esence v katalogu")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
             }
@@ -30,16 +31,15 @@ struct NoEssenceCard: View {
         .padding()
         .glassCard()
         .onTapGesture {
-            onTap()
+            dismiss()
+            openURL(URL(string: "clif://essenceCatalog")!)
         }
     }
 }
 
 #if DEBUG
 #Preview {
-    NoEssenceCard {
-        print("Open inventory")
-    }
-    .padding()
+    NoEssenceCard()
+        .padding()
 }
 #endif
