@@ -7,10 +7,19 @@ struct BreakTypePicker: View {
     var onSelectFree: () -> Void
     var onConfirmCommitted: (Int) -> Void
 
-    @State private var selection: BreakType = .free
-    @State private var selectedMinutes: Int = 30
+    @State private var selection: BreakType
+    @State private var selectedMinutes: Int
     @State private var isUntilEndOfDay = false
     @State private var showConfirmation = false
+    @State private var didAppear = false
+
+    init(onSelectFree: @escaping () -> Void, onConfirmCommitted: @escaping (Int) -> Void) {
+        self.onSelectFree = onSelectFree
+        self.onConfirmCommitted = onConfirmCommitted
+        // Initialize from persisted preferences
+        _selection = State(initialValue: SharedDefaults.preferredBreakType)
+        _selectedMinutes = State(initialValue: SharedDefaults.preferredCommittedMinutes)
+    }
 
     private var currentPet: Pet? { petManager.currentPet }
     private var currentWind: Double { currentPet?.windPoints ?? 0 }
@@ -57,6 +66,18 @@ struct BreakTypePicker: View {
         } message: {
             Text("Předčasné ukončení tohoto breaku způsobí okamžitou ztrátu tvého peta.")
         }
+        .task {
+            // Wait for sheet presentation animation to complete (~0.35s)
+            // before enabling interaction to prevent race condition
+            try? await Task.sleep(for: .milliseconds(400))
+            didAppear = true
+        }
+        .onChange(of: selectedMinutes) { _, newValue in
+            // Persist committed break duration when changed (skip "until end of day" and debug 0)
+            if didAppear, newValue > 0 {
+                SharedDefaults.preferredCommittedMinutes = newValue
+            }
+        }
     }
 
     // MARK: - Segmented Picker
@@ -65,9 +86,11 @@ struct BreakTypePicker: View {
         HStack(spacing: 0) {
             ForEach(BreakType.selectableCases, id: \.self) { type in
                 Button {
+                    guard didAppear else { return }
                     withAnimation(.snappy(duration: 0.25)) {
                         selection = type
                         isUntilEndOfDay = false
+                        SharedDefaults.preferredBreakType = type
                     }
                 } label: {
                     HStack(spacing: 6) {
@@ -78,6 +101,7 @@ struct BreakTypePicker: View {
                     .foregroundStyle(selection == type ? .white : .primary)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 12)
+                    .contentShape(Capsule())
                     .background(
                         Capsule()
                             .fill(selection == type ? type.color : Color.clear)

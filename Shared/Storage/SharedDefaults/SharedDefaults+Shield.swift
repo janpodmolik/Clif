@@ -84,4 +84,31 @@ extension SharedDefaults {
         committedBreakDuration = nil
         windZeroNotified = false
     }
+
+    // MARK: - Break Picker Preferences
+
+    /// User's preferred break type for picker (persisted across sessions).
+    static var preferredBreakType: BreakType {
+        get {
+            guard let raw = defaults?.string(forKey: DefaultsKeys.preferredBreakType),
+                  let type = BreakType(rawValue: raw),
+                  BreakType.selectableCases.contains(type) else {
+                return .free
+            }
+            return type
+        }
+        set {
+            defaults?.set(newValue.rawValue, forKey: DefaultsKeys.preferredBreakType)
+        }
+    }
+
+    /// User's preferred committed break duration in minutes (persisted across sessions).
+    /// Returns 30 as default if not set or zero.
+    static var preferredCommittedMinutes: Int {
+        get {
+            let value = defaults?.integer(forKey: DefaultsKeys.preferredCommittedMinutes) ?? 0
+            return value > 0 ? value : 30
+        }
+        set { defaults?.set(newValue, forKey: DefaultsKeys.preferredCommittedMinutes) }
+    }
 }

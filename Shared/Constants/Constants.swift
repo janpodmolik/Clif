@@ -104,6 +104,11 @@ enum DefaultsKeys {
     static let committedBreakDuration = "committedBreakDuration"
     static let windZeroNotified = "windZeroNotified"
 
+    // MARK: - Break Picker Preferences
+
+    static let preferredBreakType = "preferredBreakType"
+    static let preferredCommittedMinutes = "preferredCommittedMinutes"
+
     // MARK: - Cumulative Tracking
 
     static let cumulativeBaseline = "cumulativeBaseline"
