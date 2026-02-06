@@ -15,7 +15,7 @@ struct CoinRewardTag: View {
         .foregroundStyle(.white)
         .padding(.horizontal, 16)
         .padding(.vertical, 12)
-        .background(.orange, in: Capsule())
+        .background(Color("PremiumGold"), in: Capsule())
         .offset(y: isSlidingDown ? 60 : 0)
         .opacity(isVisible ? 1 : 0)
         .scaleEffect(isVisible ? 1 : 0.5)

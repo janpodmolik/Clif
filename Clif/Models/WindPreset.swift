@@ -85,7 +85,7 @@ enum WindPreset: String, Codable, CaseIterable {
     var themeColor: Color {
         switch self {
         case .gentle: .green
-        case .balanced: .orange
+        case .balanced: .blue
         case .intense: .red
         }
     }

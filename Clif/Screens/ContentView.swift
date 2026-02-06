@@ -194,7 +194,7 @@ struct ContentView: View {
     }
 
     private var premiumGoldColor: Color {
-        Color(red: 0.9, green: 0.7, blue: 0.3)
+        Color("PremiumGold")
     }
 
     @ViewBuilder
