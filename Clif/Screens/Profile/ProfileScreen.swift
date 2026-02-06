@@ -10,6 +10,7 @@ struct ProfileScreen: View {
     @Environment(EssenceCatalogManager.self) private var catalogManager
     @AppStorage("isDarkModeEnabled") private var isDarkModeEnabled: Bool = false
     @State private var limitSettings = SharedDefaults.limitSettings
+    @State private var showPremiumSheet = false
     @Binding var navigationPath: NavigationPath
 
     var body: some View {
@@ -34,16 +35,6 @@ struct ProfileScreen: View {
                     Text("Upozornění")
                 } footer: {
                     Text("Denní shield ti umožní vybrat si náročnost dne před prvním použitím blokovaných aplikací.")
-                }
-
-                // MARK: - Rewards
-                Section(header: Text("Odměny")) {
-                    HStack {
-                        Label("Coins", systemImage: "u.circle.fill")
-                        Spacer()
-                        Text("\(SharedDefaults.coinsBalance)")
-                            .foregroundStyle(.secondary)
-                    }
                 }
 
                 // MARK: - Essence Catalog
@@ -81,6 +72,26 @@ struct ProfileScreen: View {
                 #endif
             }
             .navigationTitle("Profil")
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        showPremiumSheet = true
+                    } label: {
+                        HStack(spacing: 6) {
+                            Image(systemName: "u.circle.fill")
+                                .foregroundStyle(Color("PremiumGold"))
+                            Text("\(SharedDefaults.coinsBalance)")
+                                .fontWeight(.semibold)
+                        }
+                        .font(.subheadline)
+                        .padding(.horizontal, 8)
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            .sheet(isPresented: $showPremiumSheet) {
+                PremiumSheet()
+            }
             .navigationDestination(for: ProfileDestination.self) { destination in
                 switch destination {
                 case .notifications:
