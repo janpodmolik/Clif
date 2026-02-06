@@ -31,24 +31,14 @@ struct ConfirmationSheetAction: Identifiable {
 struct ConfirmationSheet<Content: View>: View {
     let navigationTitle: String
     let height: CGFloat
-    let content: Content
+    @ViewBuilder let content: () -> Content
 
     @Environment(\.dismiss) private var dismiss
-
-    init(
-        navigationTitle: String,
-        height: CGFloat,
-        @ViewBuilder content: () -> Content
-    ) {
-        self.navigationTitle = navigationTitle
-        self.height = height
-        self.content = content()
-    }
 
     var body: some View {
         NavigationStack {
             VStack(spacing: 24) {
-                content
+                content()
                 Spacer()
             }
             .padding(24)

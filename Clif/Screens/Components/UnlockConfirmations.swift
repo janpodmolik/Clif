@@ -8,6 +8,8 @@ struct UnlockConfirmations: ViewModifier {
 
     @Environment(PetManager.self) private var petManager
 
+    private var shieldState: ShieldState { .shared }
+
     func body(content: Content) -> some View {
         content
             .sheet(isPresented: $showCommittedConfirmation) {
@@ -28,6 +30,12 @@ struct UnlockConfirmations: ViewModifier {
                         ShieldManager.shared.processSafetyShieldUnlock()
                     }
                 )
+            }
+            .onChange(of: shieldState.isActive) { _, isActive in
+                if !isActive {
+                    showCommittedConfirmation = false
+                    showSafetyConfirmation = false
+                }
             }
     }
 }
