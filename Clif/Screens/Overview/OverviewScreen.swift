@@ -1,4 +1,5 @@
 import SwiftUI
+import Combine
 
 struct OverviewScreen: View {
     @Environment(PetManager.self) private var petManager
@@ -7,6 +8,7 @@ struct OverviewScreen: View {
     @State private var selectedActivePet: Pet?
     @State private var selectedArchivedPet: ArchivedPet?
     @State private var historyViewMode: HistoryViewMode = .list
+    @State private var refreshTick: Int = 0
 
     enum HistoryViewMode {
         case list, grid
@@ -56,6 +58,12 @@ struct OverviewScreen: View {
             ArchivedPetDetailScreen(pet: pet)
                 .presentationDetents([.large])
         }
+        .onReceive(Timer.publish(every: 1.0, on: .main, in: .common).autoconnect()) { _ in
+            refreshTick += 1
+        }
+        .onReceive(NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)) { _ in
+            refreshTick += 1
+        }
     }
 
     private var headerSection: some View {
@@ -73,7 +81,7 @@ struct OverviewScreen: View {
                 .font(.headline)
 
             if let pet = activePet {
-                ActivePetRow(pet: pet) {
+                ActivePetRow(refreshTick: refreshTick) {
                     selectedActivePet = pet
                 }
             } else {

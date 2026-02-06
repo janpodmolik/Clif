@@ -309,10 +309,10 @@ private extension PetManager {
 // MARK: - Mock Data
 
 extension PetManager {
-    static func mock(withPet: Bool = true) -> PetManager {
+    static func mock(withPet: Bool = true, isBlownAway: Bool = false) -> PetManager {
         let manager = PetManager()
         if withPet {
-            manager.pet = Pet.mock()
+            manager.pet = Pet.mock(isBlownAway: isBlownAway)
         }
         return manager
     }

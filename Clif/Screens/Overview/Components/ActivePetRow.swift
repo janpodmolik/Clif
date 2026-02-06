@@ -1,10 +1,23 @@
 import SwiftUI
 
 struct ActivePetRow: View {
-    let pet: Pet
+    @Environment(PetManager.self) private var petManager
+    var refreshTick: Int = 0
     let onTap: () -> Void
 
+    private var pet: Pet? {
+        petManager.currentPet
+    }
+
     var body: some View {
+        // refreshTick forces SwiftUI to re-evaluate this view and re-read pet from SharedDefaults
+        let _ = refreshTick
+        if let pet {
+            content(for: pet)
+        }
+    }
+
+    private func content(for pet: Pet) -> some View {
         Button(action: onTap) {
             HStack(alignment: .center, spacing: 14) {
                 Image(pet.assetName(for: pet.windLevel))
@@ -26,11 +39,12 @@ struct ActivePetRow: View {
                     HStack(spacing: 12) {
                         HStack(spacing: 4) {
                             Image(systemName: "calendar")
-                                .foregroundStyle(.green)
                             Text("\(pet.totalDays) dní")
                         }
 
-                        Text("🧬 \(pet.currentPhase)/\(pet.evolutionHistory.maxPhase)")
+                        if !pet.isBlob {
+                            Text("🧬 \(pet.currentPhase)/\(pet.evolutionHistory.maxPhase)")
+                        }
                     }
                     .font(.caption)
                     .foregroundStyle(.secondary)
@@ -43,9 +57,9 @@ struct ActivePetRow: View {
                         blownAwayBadge
                         Spacer()
                     } else {
-                        windIndicator
+                        windIndicator(for: pet)
                         Spacer()
-                        windProgressIndicator
+                        windProgressIndicator(for: pet)
                     }
                 }
             }
@@ -67,20 +81,25 @@ struct ActivePetRow: View {
             .clipShape(RoundedRectangle(cornerRadius: 6))
     }
 
-    private var windIndicator: some View {
-        HStack(spacing: 4) {
-            Image(systemName: pet.windLevel.icon)
-            Text(pet.windLevel.label)
+    private func windIndicator(for pet: Pet) -> some View {
+        let effectiveLevel = WindLevel.from(progress: CGFloat(pet.effectiveWindPoints / 100.0))
+        let color: Color = pet.isOnBreak ? .cyan : effectiveLevel.color
+        return HStack(spacing: 4) {
+            Image(systemName: effectiveLevel.icon)
+            Text(effectiveLevel.label)
         }
         .font(.caption)
-        .foregroundStyle(pet.windLevel.color)
+        .foregroundStyle(color)
     }
 
-    private var windProgressIndicator: some View {
-        VStack(alignment: .trailing, spacing: 4) {
-            Text("\(Int(pet.windPoints))%")
+    private func windProgressIndicator(for pet: Pet) -> some View {
+        let color = windProgressColor(for: pet)
+        let wind = pet.effectiveWindPoints
+        let progress = max(wind / 100.0, 0)
+        return VStack(alignment: .trailing, spacing: 4) {
+            Text("\(Int(wind))%")
                 .font(.caption2)
-                .foregroundStyle(windProgressColor)
+                .foregroundStyle(color)
 
             GeometryReader { geometry in
                 ZStack(alignment: .leading) {
@@ -88,31 +107,31 @@ struct ActivePetRow: View {
                         .fill(Color.secondary.opacity(0.2))
 
                     RoundedRectangle(cornerRadius: 2)
-                        .fill(windProgressColor)
-                        .frame(width: geometry.size.width * pet.windProgress)
+                        .fill(color)
+                        .frame(width: geometry.size.width * progress)
                 }
             }
             .frame(width: 50, height: 4)
         }
     }
 
-    private var windProgressColor: Color {
-        if pet.windProgress >= 0.8 {
-            return .red
-        } else if pet.windProgress >= 0.5 {
-            return .orange
-        } else {
-            return .green
+    private func windProgressColor(for pet: Pet) -> Color {
+        if pet.isOnBreak {
+            return .cyan
         }
+        let effectiveLevel = WindLevel.from(progress: CGFloat(pet.effectiveWindPoints / 100.0))
+        return effectiveLevel.color
     }
 }
 
 #Preview("Normal") {
-    ActivePetRow(pet: .mock(name: "Fern", phase: 2, windPoints: 45)) {}
+    ActivePetRow {}
         .padding()
+        .environment(PetManager.mock())
 }
 
 #Preview("Blown Away") {
-    ActivePetRow(pet: .mock(name: "Blown", phase: 2, windPoints: 100, isBlownAway: true)) {}
+    ActivePetRow {}
         .padding()
+        .environment(PetManager.mock(isBlownAway: true))
 }
