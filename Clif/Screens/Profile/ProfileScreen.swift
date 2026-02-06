@@ -101,8 +101,9 @@ struct ProfileScreen: View {
                             Text("\(SharedDefaults.coinsBalance)")
                                 .fontWeight(.semibold)
                         }
-                        .font(.subheadline)
-                        .padding(.horizontal, 8)
+                        .font(.body)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 6)
                     }
                     .buttonStyle(.plain)
                 }
