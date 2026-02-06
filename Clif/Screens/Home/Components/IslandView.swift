@@ -54,10 +54,16 @@ struct IslandView<TransitionContent: View>: View {
         self.onFrameChange = onFrameChange
     }
 
-    // Internal tap state
-    @State private var internalTapTime: TimeInterval = -1
+    // Animation state
+    @State private var reactionStartTime: TimeInterval = -1
     @State private var currentTapType: TapAnimationType = .none
     @State private var currentTapConfig: TapConfig = .none
+    @State private var lastAnimationTime: Date = .distantPast
+    @State private var autoPlayTimer: Timer?
+
+    // Animation constants
+    private let animationCooldown: TimeInterval = 1.0
+    private let autoPlayInterval: ClosedRange<Double> = 8...12
 
     // Speech bubble state
     @State private var speechBubbleState = SpeechBubbleState()
@@ -190,7 +196,7 @@ struct IslandView<TransitionContent: View>: View {
                     bendCurve: windConfig.bendCurve,
                     swayAmount: windConfig.swayAmount,
                     rotationAmount: windConfig.rotationAmount,
-                    tapTime: internalTapTime,
+                    tapTime: reactionStartTime,
                     tapType: currentTapType,
                     tapConfig: currentTapConfig,
                     idleConfig: pet.idleConfig,
@@ -219,15 +225,17 @@ struct IslandView<TransitionContent: View>: View {
                     }
                 }
                 .onTapGesture {
-                    triggerTap(for: pet)
+                    handleTap(for: pet)
                 }
                 .contentTransition(.opacity)
                 .animation(.easeInOut(duration: 0.5), value: windProgress)
                 .onAppear {
                     speechBubbleState.startAutoTriggers(windLevel: windLevel)
+                    startAutoPlay(for: pet)
                 }
                 .onDisappear {
                     speechBubbleState.stopAutoTriggers()
+                    stopAutoPlay()
                 }
                 .onChange(of: windLevel) { _, newValue in
                     speechBubbleState.updateWindLevel(newValue)
@@ -295,20 +303,47 @@ struct IslandView<TransitionContent: View>: View {
 
     // MARK: - Actions
 
-    private func triggerTap(for pet: any PetDisplayable) {
+    private func playAnimation(for pet: any PetDisplayable, withHaptics: Bool) {
+        guard Date().timeIntervalSince(lastAnimationTime) >= animationCooldown else { return }
+        lastAnimationTime = Date()
+
         let tapType = randomTapType()
         let tapConfig = pet.tapConfig(for: tapType)
 
         currentTapType = tapType
         currentTapConfig = tapConfig
-        internalTapTime = Date().timeIntervalSinceReferenceDate
+        reactionStartTime = Date().timeIntervalSinceReferenceDate
 
-        // Haptic feedback
-        let generator = UIImpactFeedbackGenerator(style: tapType.hapticStyle)
-        generator.impactOccurred()
+        if withHaptics {
+            let generator = UIImpactFeedbackGenerator(style: tapType.hapticStyle)
+            generator.impactOccurred()
+        }
 
         // Attempt to trigger speech bubble (30% chance)
         speechBubbleState.triggerOnTap(windLevel: windLevel)
+    }
+
+    private func handleTap(for pet: any PetDisplayable) {
+        playAnimation(for: pet, withHaptics: true)
+    }
+
+    // MARK: - Auto Play
+
+    private func startAutoPlay(for pet: any PetDisplayable) {
+        scheduleNextAutoPlay(for: pet)
+    }
+
+    private func stopAutoPlay() {
+        autoPlayTimer?.invalidate()
+        autoPlayTimer = nil
+    }
+
+    private func scheduleNextAutoPlay(for pet: any PetDisplayable) {
+        let delay = Double.random(in: autoPlayInterval)
+        autoPlayTimer = Timer.scheduledTimer(withTimeInterval: delay, repeats: false) { [self] _ in
+            playAnimation(for: pet, withHaptics: false)
+            scheduleNextAutoPlay(for: pet)
+        }
     }
 }
 
