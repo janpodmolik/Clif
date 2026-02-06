@@ -93,11 +93,12 @@ final class PetManager {
 
     /// Observes FamilyControls authorization status reactively.
     /// `AuthorizationCenter.shared.authorizationStatus` starts as `.notDetermined` on cold launch
-    /// and asynchronously resolves to the real value. Synchronous reads in `.active` phase race
-    /// against this, causing false positives. The `$authorizationStatus` publisher only emits
-    /// once the framework has resolved the actual status, avoiding that race.
+    /// and asynchronously resolves to the real value. We use `.dropFirst()` to skip the initial
+    /// `.notDetermined` emission, which is not a real status change but just the default value
+    /// before the framework loads the actual state. This prevents false revocation detection.
     private func observeAuthorizationStatus() {
         authorizationCancellable = AuthorizationCenter.shared.$authorizationStatus
+            .dropFirst()
             .receive(on: DispatchQueue.main)
             .sink { [weak self] status in
                 guard let self else { return }
@@ -108,6 +109,9 @@ final class PetManager {
                 // Track successful authorization for revocation detection
                 if status == .approved {
                     SharedDefaults.wasEverAuthorized = true
+                    // Clear any pending reauthorization (fixes race: .notDetermined emits before .approved)
+                    needsReauthorization = false
+                    return
                 }
 
                 guard let pet, !pet.isBlownAway, !needsReauthorization else { return }
