@@ -8,10 +8,23 @@ struct LimitedAppsSheet: View {
     let sources: [LimitedSource]
     var changesUsed: Int?
     var changesTotal: Int?
+    var activeBreakType: BreakType?
+    var windLevel: WindLevel = .none
     var onEdit: ((FamilyActivitySelection) -> Void)?
+    var onEndFreeBreak: (() -> Void)?
 
     @Environment(\.dismiss) private var dismiss
     @State private var showEditSheet = false
+    @State private var showBlockedAlert: BlockedReason?
+
+    private enum BlockedReason: Identifiable {
+        case freeBreakCalm   // free break, wind == 0 -> can end break
+        case freeBreakWindy  // free break, wind > 0 -> wait for wind to drop
+        case otherBreak      // committed/safety break
+        case windNotCalm     // no break, wind > 0
+
+        var id: Self { self }
+    }
 
     private var sourcesWithTokens: [LimitedSource] {
         sources.filter(\.hasToken)
@@ -33,9 +46,27 @@ struct LimitedAppsSheet: View {
         changesUsed != nil && changesTotal != nil && onEdit != nil
     }
 
-    private var canEdit: Bool {
+    private var hasChangesRemaining: Bool {
         guard let used = changesUsed, let total = changesTotal else { return false }
         return used < total
+    }
+
+    private var blockedReason: BlockedReason? {
+        let isWindCalm = windLevel == .none
+
+        if let breakType = activeBreakType {
+            if breakType == .free {
+                return isWindCalm ? .freeBreakCalm : .freeBreakWindy
+            } else {
+                return .otherBreak
+            }
+        }
+
+        if !isWindCalm {
+            return .windNotCalm
+        }
+
+        return nil
     }
 
     var body: some View {
@@ -89,6 +120,28 @@ struct LimitedAppsSheet: View {
                     }
                 }
             }
+            .alert("Nelze změnit aplikace", isPresented: .init(
+                get: { showBlockedAlert != nil },
+                set: { if !$0 { showBlockedAlert = nil } }
+            ), presenting: showBlockedAlert) { reason in
+                if case .freeBreakCalm = reason {
+                    Button("Ukončit pauzu", role: .destructive) {
+                        onEndFreeBreak?()
+                    }
+                }
+                Button("Rozumím", role: .cancel) {}
+            } message: { reason in
+                switch reason {
+                case .freeBreakCalm:
+                    Text("Během aktivní pauzy nelze měnit sledované aplikace. Nejdřív ukonči pauzu.")
+                case .freeBreakWindy:
+                    Text("Změna je možná pouze při klidném větru (0%). Počkej, až ti vítr během pauzy klesne.")
+                case .otherBreak:
+                    Text("Během aktivní pauzy nelze měnit sledované aplikace.")
+                case .windNotCalm:
+                    Text("Změna sledovaných aplikací je možná pouze při klidném větru (0%).")
+                }
+            }
         }
         .presentationDetents([.medium, .large])
         .presentationDragIndicator(.visible)
@@ -109,16 +162,20 @@ struct LimitedAppsSheet: View {
             }
 
             Button {
-                showEditSheet = true
+                if let reason = blockedReason {
+                    showBlockedAlert = reason
+                } else {
+                    showEditSheet = true
+                }
             } label: {
                 Text("Změnit aplikace")
                     .font(.body.weight(.semibold))
                     .foregroundStyle(Color(.systemBackground))
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 14)
-                    .background(canEdit ? Color(.label) : Color.gray.opacity(0.3), in: Capsule())
+                    .background(hasChangesRemaining ? Color(.label) : Color.gray.opacity(0.3), in: Capsule())
             }
-            .disabled(!canEdit)
+            .disabled(!hasChangesRemaining)
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 16)
@@ -260,8 +317,43 @@ private struct SourceRow: View {
     LimitedAppsSheet(
         sources: LimitedSource.mockList(),
         changesUsed: 1,
-        changesTotal: 3
-    ) { _ in }
+        changesTotal: 3,
+        onEdit: { _ in }
+    )
+}
+
+#Preview("Free Break - Wind Calm") {
+    LimitedAppsSheet(
+        sources: LimitedSource.mockList(),
+        changesUsed: 1,
+        changesTotal: 3,
+        activeBreakType: .free,
+        windLevel: .none,
+        onEdit: { _ in },
+        onEndFreeBreak: {}
+    )
+}
+
+#Preview("Free Break - Wind Not Calm") {
+    LimitedAppsSheet(
+        sources: LimitedSource.mockList(),
+        changesUsed: 1,
+        changesTotal: 3,
+        activeBreakType: .free,
+        windLevel: .medium,
+        onEdit: { _ in },
+        onEndFreeBreak: {}
+    )
+}
+
+#Preview("Wind Not Calm") {
+    LimitedAppsSheet(
+        sources: LimitedSource.mockList(),
+        changesUsed: 1,
+        changesTotal: 3,
+        windLevel: .medium,
+        onEdit: { _ in }
+    )
 }
 
 #Preview("No changes left") {

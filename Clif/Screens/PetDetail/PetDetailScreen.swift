@@ -163,9 +163,14 @@ struct PetDetailScreen: View {
                     sources: pet.limitedSources,
                     changesUsed: showOverviewActions ? nil : pet.limitedSourceChangesCount,
                     changesTotal: showOverviewActions ? nil : Pet.maxLimitedSourceChanges,
+                    activeBreakType: pet.activeBreak?.type,
+                    windLevel: pet.windLevel,
                     onEdit: showOverviewActions ? nil : { selection in
                         let newSources = LimitedSource.from(selection)
                         petManager.updateLimitedSources(newSources, selection: selection)
+                    },
+                    onEndFreeBreak: showOverviewActions ? nil : {
+                        ShieldManager.shared.turnOff(success: true)
                     }
                 )
             }
