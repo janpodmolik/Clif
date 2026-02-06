@@ -83,21 +83,19 @@ struct ContentView: View {
                 EssencePickerOverlay()
                 CreatePetOverlay(screenHeight: geometry.size.height)
 
-                // Coins reward tag overlay - positioned above Profile tab
+                // Coins reward tag overlay
                 GeometryReader { overlayGeo in
-                    let tabBarWidth = overlayGeo.size.width - 40 // minus horizontal padding
-                    let mainTabsWidth = tabBarWidth - 55 - 10 // minus action button and spacing
-                    let tabWidth = mainTabsWidth / 3
-                    let profileTabCenterX = 20 + tabWidth * 2.5 // 20 padding + 2.5 tabs (center of 3rd)
+                    let w = overlayGeo.size.width
+                    let h = overlayGeo.size.height
+                    // Profile tab is the 3rd of 3 tabs in the left capsule.
+                    // Layout: |--20--[  tabs capsule  ]--10--[55 btn]--20--|
+                    let tabsCapsuleWidth = w - 40 - 55 - 10
+                    let profileTabCenterX = 20 + tabsCapsuleWidth * (5.0 / 6.0)
 
-                    CoinRewardTag(
-                        amount: coinsAnimator.amount,
-                        isVisible: coinsAnimator.isShowingTag,
-                        isSlidingDown: coinsAnimator.isSlidingDown
-                    )
-                    .position(
-                        x: profileTabCenterX,
-                        y: overlayGeo.size.height - tabBarHeight - 50
+                    BigTagRewardView(
+                        animator: coinsAnimator,
+                        startPosition: CGPoint(x: w / 2, y: h * 0.62),
+                        endPosition: CGPoint(x: profileTabCenterX, y: h - tabBarHeight - 10)
                     )
                 }
                 .allowsHitTesting(false)
