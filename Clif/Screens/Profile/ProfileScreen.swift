@@ -1,7 +1,6 @@
 import SwiftUI
 
 enum ProfileDestination: Hashable {
-    case notifications
     case essenceCatalog
 }
 
@@ -16,23 +15,27 @@ struct ProfileScreen: View {
     var body: some View {
         NavigationStack(path: $navigationPath) {
             Form {
-                // MARK: - Notifications & Shield
+                // MARK: - Notifications
                 Section {
-                    NavigationLink(value: ProfileDestination.notifications) {
-                        HStack {
-                            Label("Notifikace", systemImage: "bell.fill")
-                            Spacer()
-                            Text("\(limitSettings.enabledNotifications.count) aktivních")
-                                .foregroundStyle(.secondary)
+                    Picker(selection: $limitSettings.notificationMode) {
+                        ForEach(NotificationMode.allCases, id: \.self) { mode in
+                            Text(mode.label).tag(mode)
                         }
+                    } label: {
+                        Label("Notifikace", systemImage: "bell.fill")
                     }
+                } header: {
+                    Text("Upozornění")
+                } footer: {
+                    Text(limitSettings.notificationMode.description)
+                }
 
+                // MARK: - Day Start Shield
+                Section {
                     Toggle(isOn: $limitSettings.dayStartShieldEnabled) {
                         Label("Denní shield", systemImage: "calendar")
                     }
                     .tint(.blue)
-                } header: {
-                    Text("Upozornění")
                 } footer: {
                     Text("Denní shield ti umožní vybrat si náročnost dne před prvním použitím blokovaných aplikací.")
                 }
@@ -57,6 +60,20 @@ struct ProfileScreen: View {
                     .tint(.purple)
                 }
 
+                // MARK: - About
+                Section(header: Text("O aplikaci")) {
+                    HStack {
+                        Label("Verze", systemImage: "info.circle")
+                        Spacer()
+                        Text(appVersion)
+                            .foregroundStyle(.secondary)
+                    }
+
+                    Link(destination: URL(string: "mailto:support@clifapp.com")!) {
+                        Label("Napsat podporu", systemImage: "envelope")
+                    }
+                }
+
                 #if DEBUG
                 Section(header: Text("Debug")) {
                     Button("Delete Active Pet", role: .destructive) {
@@ -71,6 +88,7 @@ struct ProfileScreen: View {
                 }
                 #endif
             }
+            .safeAreaPadding(.bottom, 80)
             .navigationTitle("Profil")
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
@@ -94,8 +112,6 @@ struct ProfileScreen: View {
             }
             .navigationDestination(for: ProfileDestination.self) { destination in
                 switch destination {
-                case .notifications:
-                    NotificationSettingsView(settings: $limitSettings)
                 case .essenceCatalog:
                     EssenceCatalogScreen()
                 }
@@ -104,6 +120,12 @@ struct ProfileScreen: View {
                 SharedDefaults.limitSettings = newValue
             }
         }
+    }
+
+    private var appVersion: String {
+        let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "?"
+        let build = Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "?"
+        return "\(version) (\(build))"
     }
 
     #if DEBUG
