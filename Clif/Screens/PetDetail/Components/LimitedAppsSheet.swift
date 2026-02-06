@@ -113,11 +113,11 @@ struct LimitedAppsSheet: View {
             } label: {
                 Text("Změnit aplikace")
                     .font(.body.weight(.semibold))
+                    .foregroundStyle(Color(.systemBackground))
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 14)
+                    .background(canEdit ? Color(.label) : Color.gray.opacity(0.3), in: Capsule())
             }
-            .buttonStyle(.borderedProminent)
-            .buttonBorderShape(.capsule)
             .disabled(!canEdit)
         }
         .padding(.horizontal, 16)

@@ -155,22 +155,12 @@ struct EditLimitedSourcesSheet: View {
         } label: {
             Text("Uložit změny")
                 .font(.body.weight(.semibold))
-                .foregroundStyle(hasEditSelection ? Color(.systemBackground) : Color.gray)
+                .foregroundStyle(Color(.systemBackground))
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 14)
-                .background(saveButtonBackground)
+                .background(hasEditSelection ? Color(.label) : Color.gray.opacity(0.3), in: Capsule())
         }
         .disabled(!hasEditSelection)
-    }
-
-    @ViewBuilder
-    private var saveButtonBackground: some View {
-        let shape = Capsule()
-        if hasEditSelection {
-            shape.fill(Color(.label))
-        } else {
-            shape.fill(Color.gray.opacity(0.2))
-        }
     }
 
     @ViewBuilder
