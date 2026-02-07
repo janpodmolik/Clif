@@ -1,8 +1,7 @@
 import SwiftUI
 
 struct NoEssenceCard: View {
-    @Environment(\.openURL) private var openURL
-    @Environment(\.dismiss) private var dismiss
+    @State private var showEssenceCatalog = false
 
     var body: some View {
         HStack(spacing: 16) {
@@ -29,10 +28,27 @@ struct NoEssenceCard: View {
                 .foregroundStyle(.secondary)
         }
         .padding()
+        .contentShape(Rectangle())
         .glassCard()
         .onTapGesture {
-            dismiss()
-            openURL(URL(string: "clif://essenceCatalog")!)
+            showEssenceCatalog = true
+        }
+        .sheet(isPresented: $showEssenceCatalog) {
+            NavigationStack {
+                EssenceCatalogScreen()
+                    .toolbar {
+                        ToolbarItem(placement: .topBarTrailing) {
+                            Button {
+                                showEssenceCatalog = false
+                            } label: {
+                                Image(systemName: "xmark")
+                                    .font(.system(size: 16))
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+                    }
+            }
+            .presentationDetents([.large])
         }
     }
 }
