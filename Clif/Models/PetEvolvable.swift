@@ -29,6 +29,9 @@ extension PetEvolvable {
 
     // MARK: - Evolution Timing
 
+    /// Total days the pet has been alive (day 1 = creation day).
+    var totalDays: Int { daysSinceCreation + 1 }
+
     /// Days since pet was created.
     var daysSinceCreation: Int {
         Calendar.current.dateComponents(

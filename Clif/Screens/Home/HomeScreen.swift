@@ -465,7 +465,7 @@ struct HomeScreen: View {
         #if DEBUG
         HomeCardView(
             pet: pet,
-            streakCount: 7, // TODO: get from streak manager
+            streakCount: pet.totalDays,
             showDetailButton: true,
             windProgress: windProgress,
             debugBumpState: debugBumpState,
@@ -474,7 +474,7 @@ struct HomeScreen: View {
         #else
         HomeCardView(
             pet: pet,
-            streakCount: 7, // TODO: get from streak manager
+            streakCount: pet.totalDays,
             showDetailButton: true,
             windProgress: windProgress,
             onAction: { handleAction($0, for: pet) }
