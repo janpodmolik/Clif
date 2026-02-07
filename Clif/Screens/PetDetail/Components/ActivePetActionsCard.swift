@@ -14,6 +14,7 @@ struct ActivePetActionsCard: View {
     let isBlob: Bool
     let isFullyEvolved: Bool
     let canProgress: Bool
+    let canArchiveEarly: Bool
     let isBlownAway: Bool
     var themeColor: Color = .green
     var onAction: (ActivePetAction) -> Void = { _ in }
@@ -38,9 +39,16 @@ struct ActivePetActionsCard: View {
     }
 
     private var normalActions: some View {
-        HStack(spacing: 16) {
-            ActionButton(icon: "wind", label: "Blow Away", color: .red) {
-                showBlowAwayConfirmation = true
+        HStack(alignment: .top, spacing: 16) {
+            VStack(alignment: .leading, spacing: 8) {
+                ActionButton(icon: "wind", label: "Blow Away", color: .red) {
+                    showBlowAwayConfirmation = true
+                }
+                if canArchiveEarly {
+                    ActionButton(icon: "archivebox", label: "Archive", color: .secondary) {
+                        onAction(.archive)
+                    }
+                }
             }
             Spacer()
             progressSection
@@ -79,6 +87,7 @@ struct ActivePetActionsCard: View {
         isBlob: false,
         isFullyEvolved: false,
         canProgress: false,
+        canArchiveEarly: false,
         isBlownAway: false
     )
     .padding()
@@ -89,6 +98,7 @@ struct ActivePetActionsCard: View {
         isBlob: true,
         isFullyEvolved: false,
         canProgress: true,
+        canArchiveEarly: false,
         isBlownAway: false
     )
     .padding()
@@ -99,6 +109,18 @@ struct ActivePetActionsCard: View {
         isBlob: false,
         isFullyEvolved: false,
         canProgress: true,
+        canArchiveEarly: false,
+        isBlownAway: false
+    )
+    .padding()
+}
+
+#Preview("Early Archive") {
+    ActivePetActionsCard(
+        isBlob: false,
+        isFullyEvolved: false,
+        canProgress: false,
+        canArchiveEarly: true,
         isBlownAway: false
     )
     .padding()
@@ -109,6 +131,7 @@ struct ActivePetActionsCard: View {
         isBlob: false,
         isFullyEvolved: true,
         canProgress: false,
+        canArchiveEarly: false,
         isBlownAway: false,
         themeColor: .green
     )
@@ -120,6 +143,7 @@ struct ActivePetActionsCard: View {
         isBlob: false,
         isFullyEvolved: false,
         canProgress: false,
+        canArchiveEarly: false,
         isBlownAway: true
     )
     .padding()

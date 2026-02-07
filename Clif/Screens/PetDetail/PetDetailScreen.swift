@@ -26,6 +26,12 @@ struct PetDetailScreen: View {
         pet.isBlob ? pet.canUseEssence : pet.canEvolve
     }
 
+    /// Can archive early: has essence, not fully evolved, not blown, 3+ days old
+    private var canArchiveEarly: Bool {
+        !pet.isBlob && !pet.isFullyEvolved && !pet.isBlown
+            && pet.daysSinceCreation >= PetManager.minimumArchiveDays
+    }
+
     /// daysUntilEssence for blob, daysUntilEvolution for evolved
     private var daysUntilProgress: Int? {
         pet.isBlob ? pet.daysUntilEssence : pet.daysUntilEvolution
@@ -114,6 +120,7 @@ struct PetDetailScreen: View {
                             isBlob: pet.isBlob,
                             isFullyEvolved: pet.isFullyEvolved && !pet.isBlown,
                             canProgress: canProgress,
+                            canArchiveEarly: canArchiveEarly,
                             isBlownAway: pet.isBlown,
                             themeColor: themeColor
                         ) { action in
@@ -138,7 +145,11 @@ struct PetDetailScreen: View {
                                     showWindNotCalmAlert = true
                                     return
                                 }
-                                showArchiveConfirmation = true
+                                if pet.isFullyEvolved {
+                                    showArchiveConfirmation = true
+                                } else {
+                                    showDeleteConfirmation = true
+                                }
                             }
                         }
                     }
