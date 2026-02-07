@@ -391,7 +391,10 @@ private struct IslandFramePreferenceKey: PreferenceKey {
     static var defaultValue: CGRect = .zero
 
     static func reduce(value: inout CGRect, nextValue: () -> CGRect) {
-        value = nextValue()
+        let next = nextValue()
+        if next != .zero {
+            value = next
+        }
     }
 }
 
