@@ -19,27 +19,27 @@ struct TapConfig: Equatable, Hashable {
             return .none
         case .wiggle:
             return TapConfig(
-                intensity: 8,       // pixels of horizontal displacement
-                decayRate: 8.0,     // fast decay
-                frequency: 40       // Hz - rapid oscillation
+                intensity: 15,
+                decayRate: 5.0,
+                frequency: 35,
             )
         case .squeeze:
             return TapConfig(
-                intensity: 0.1,     // 10% vertical compression
-                decayRate: 6.0,     // medium decay
-                frequency: 12       // Hz - spring-like
+                intensity: 0.5,
+                decayRate: 8.0,
+                frequency: 25,
             )
         case .jiggle:
             return TapConfig(
-                intensity: 15,      // pixels of wave displacement
-                decayRate: 5.0,     // medium-slow decay
-                frequency: 15       // Hz - jelly wobble
+                intensity: 20,
+                decayRate: 3.5,
+                frequency: 20,
             )
         case .bounce:
             return TapConfig(
-                intensity: 0.15,    // 15% vertical displacement
-                decayRate: 4.0,     // medium decay for jump settle
-                frequency: 8        // Hz for oscillation on landing
+                intensity: 0.2,
+                decayRate: 4.0,
+                frequency: 8,
             )
         }
     }
