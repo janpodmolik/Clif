@@ -1,4 +1,5 @@
 import SwiftUI
+import Combine
 
 struct PressableButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
@@ -28,12 +29,13 @@ enum AppTab: String, CaseIterable {
 }
 
 struct ContentView: View {
-    @AppStorage("isDarkModeEnabled")
-    private var isDarkModeEnabled: Bool = false
+    @AppStorage("appearanceMode")
+    private var appearanceMode: AppearanceMode = .automatic
 
     @Environment(PetManager.self) private var petManager
 
     @State private var activeTab: AppTab = .home
+    @State private var isDaytime: Bool = SkyGradient.isDaytime()
     @State private var navigationPaths: [AppTab: NavigationPath] = [:]
     @State private var showSearch = false
     @State private var showPremium = false
@@ -104,7 +106,10 @@ struct ContentView: View {
         .environment(essenceCoordinator)
         .environment(createPetCoordinator)
         .environment(coinsAnimator)
-        .preferredColorScheme(isDarkModeEnabled ? .dark : .light)
+        .preferredColorScheme(resolvedColorScheme)
+        .onReceive(Timer.publish(every: 60, on: .main, in: .common).autoconnect()) { _ in
+            isDaytime = SkyGradient.isDaytime()
+        }
         .onReceive(NotificationCenter.default.publisher(for: .selectPet)) { _ in
             activeTab = .home
         }
@@ -315,6 +320,19 @@ struct ContentView: View {
         .background(.ultraThinMaterial, in: Capsule())
 
         actionButtonFallback()
+    }
+
+    // MARK: - Appearance
+
+    private var resolvedColorScheme: ColorScheme? {
+        switch appearanceMode {
+        case .automatic:
+            return isDaytime ? .light : .dark
+        case .light:
+            return .light
+        case .dark:
+            return .dark
+        }
     }
 
     // MARK: - Mock Sheet (DEBUG)

@@ -69,6 +69,7 @@
 		B45862442EE5FAF60088CB78 /* ActivityReportContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = B45862422EE5FAF60088CB78 /* ActivityReportContext.swift */; };
 		B45CF5A52F279E83009B4F06 /* DayStartGreeting.swift in Sources */ = {isa = PBXBuildFile; fileRef = B45CF5A42F279E83009B4F06 /* DayStartGreeting.swift */; };
 		B45CF5A62F279E83009B4F06 /* DayStartGreeting.swift in Sources */ = {isa = PBXBuildFile; fileRef = B45CF5A42F279E83009B4F06 /* DayStartGreeting.swift */; };
+		B461E30C2F37806900DD127E /* AppearanceSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = B461E30B2F37806900DD127E /* AppearanceSettings.swift */; };
 		B472FD572F3549D100C109AA /* SharedDefaults+Coins.swift in Sources */ = {isa = PBXBuildFile; fileRef = B472FD562F3549D100C109AA /* SharedDefaults+Coins.swift */; };
 		B472FD582F3549D100C109AA /* SharedDefaults+Coins.swift in Sources */ = {isa = PBXBuildFile; fileRef = B472FD562F3549D100C109AA /* SharedDefaults+Coins.swift */; };
 		B472FD592F3549D100C109AA /* SharedDefaults+Coins.swift in Sources */ = {isa = PBXBuildFile; fileRef = B472FD562F3549D100C109AA /* SharedDefaults+Coins.swift */; };
@@ -206,6 +207,7 @@
 		B45862302EE5F6F80088CB78 /* DeviceActivityReport.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.extensionkit-extension"; includeInIndex = 0; path = DeviceActivityReport.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		B45862422EE5FAF60088CB78 /* ActivityReportContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityReportContext.swift; sourceTree = "<group>"; };
 		B45CF5A42F279E83009B4F06 /* DayStartGreeting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayStartGreeting.swift; sourceTree = "<group>"; };
+		B461E30B2F37806900DD127E /* AppearanceSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppearanceSettings.swift; sourceTree = "<group>"; };
 		B472FD562F3549D100C109AA /* SharedDefaults+Coins.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SharedDefaults+Coins.swift"; sourceTree = "<group>"; };
 		B472FD5C2F354A7C00C109AA /* CommittedBreakDuration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommittedBreakDuration.swift; sourceTree = "<group>"; };
 		B472FD5E2F354AAE00C109AA /* CoinRewards.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinRewards.swift; sourceTree = "<group>"; };
@@ -425,6 +427,7 @@
 		B43998452EE9FCE40049445F /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				B461E30B2F37806900DD127E /* AppearanceSettings.swift */,
 				B472FD5C2F354A7C00C109AA /* CommittedBreakDuration.swift */,
 				B4C64EFC2F2B5EC00054A50E /* BreakType.swift */,
 				B45CF5A42F279E83009B4F06 /* DayStartGreeting.swift */,
@@ -734,6 +737,7 @@
 				B451D3802F26856C004C534F /* SharedDefaults+DayState.swift in Sources */,
 				B451D3812F26856C004C534F /* SharedDefaults+Shield.swift in Sources */,
 				B451D3822F26856C004C534F /* SharedDefaults+Tokens.swift in Sources */,
+				B461E30C2F37806900DD127E /* AppearanceSettings.swift in Sources */,
 				B4153D3F2F27417F0006FEE3 /* LimitSettings.swift in Sources */,
 				B45CF5A62F279E83009B4F06 /* DayStartGreeting.swift in Sources */,
 				B4153D422F2741A40006FEE3 /* WindNotification.swift in Sources */,

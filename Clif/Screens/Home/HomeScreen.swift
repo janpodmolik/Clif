@@ -10,7 +10,10 @@ struct HomeScreen: View {
     @Environment(EssencePickerCoordinator.self) private var essenceCoordinator
     @Environment(CreatePetCoordinator.self) private var createPetCoordinator
     @Environment(CoinsRewardAnimator.self) private var coinsAnimator
-    @Environment(\.colorScheme) private var colorScheme
+
+    @AppStorage("appearanceMode") private var appearanceMode: AppearanceMode = .automatic
+    @AppStorage("selectedDayTheme") private var dayTheme: DayTheme = .morningHaze
+    @AppStorage("selectedNightTheme") private var nightTheme: NightTheme = .deepNight
 
     @State private var windRhythm = WindRhythm()
     @State private var blowAwayAnimator = BlowAwayAnimator()
@@ -33,6 +36,8 @@ struct HomeScreen: View {
     #if DEBUG
     /// Debug state for testing bump visibility (evolve/blown buttons)
     @State private var debugBumpState: DebugBumpState = .actual
+    /// Debug override for time-of-day (0.0–1.0). nil = use real time.
+    @State private var debugTimeOverride: Double? = nil
     #endif
 
     private let homeCardInset: CGFloat = 16
@@ -112,6 +117,16 @@ struct HomeScreen: View {
                 } else if let pet = currentPet {
                     petPage(pet, geometry: geometry)
                 }
+
+                #if DEBUG
+                // Global debug time slider (visible with or without pet)
+                if currentPet == nil {
+                    debugTimeSlider
+                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomLeading)
+                        .padding(.horizontal, homeCardInset)
+                        .padding(.bottom, 80)
+                }
+                #endif
             }
             .onAppear {
                 currentScreenWidth = geometry.size.width
@@ -260,10 +275,26 @@ struct HomeScreen: View {
 
     @ViewBuilder
     private var background: some View {
-        if colorScheme == .dark {
-            NightBackgroundView()
+        #if DEBUG
+        if let time = debugTimeOverride {
+            AutomaticBackgroundView(timeOverride: time)
         } else {
-            DayBackgroundView()
+            defaultBackground
+        }
+        #else
+        defaultBackground
+        #endif
+    }
+
+    @ViewBuilder
+    private var defaultBackground: some View {
+        switch appearanceMode {
+        case .automatic:
+            AutomaticBackgroundView()
+        case .light:
+            DayBackgroundView(theme: dayTheme)
+        case .dark:
+            NightBackgroundView(theme: nightTheme)
         }
     }
 
@@ -412,16 +443,17 @@ struct HomeScreen: View {
             ReplayOverlayView(isVisible: blowAwayAnimator.replayOverlayVisible, petFrame: petFrame)
 
             #if DEBUG
-            HStack(spacing: 8) {
-                debugBumpToggle
-                debugCoinsButton
+            VStack(spacing: 8) {
+                debugTimeSlider
+
+                HStack(spacing: 8) {
+                    debugBumpToggle
+                    debugCoinsButton
+                }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomLeading)
             .padding(.horizontal, homeCardInset)
             .padding(.bottom, 80)
-
-//            EventLogOverlay()
-//                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
             #endif
         }
     }
@@ -578,6 +610,46 @@ private extension HomeScreen {
             .padding(.vertical, 8)
             .background(.ultraThinMaterial, in: Capsule())
         }
+    }
+
+    var debugTimeSlider: some View {
+        VStack(spacing: 4) {
+            HStack {
+                Text(debugTimeOverride != nil ? debugTimeLabel : "Time: auto")
+                    .font(.system(size: 11, weight: .medium, design: .monospaced))
+                Spacer()
+                Button(debugTimeOverride != nil ? "Reset" : "Override") {
+                    if debugTimeOverride != nil {
+                        debugTimeOverride = nil
+                    } else {
+                        debugTimeOverride = SkyGradient.timeOfDay()
+                    }
+                }
+                .font(.system(size: 11, weight: .medium))
+            }
+
+            if debugTimeOverride != nil {
+                Slider(
+                    value: Binding(
+                        get: { debugTimeOverride ?? 0 },
+                        set: { debugTimeOverride = $0 }
+                    ),
+                    in: 0...1
+                )
+                .tint(.white)
+            }
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 8)
+        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12))
+    }
+
+    private var debugTimeLabel: String {
+        guard let time = debugTimeOverride else { return "" }
+        let totalSeconds = time * 24 * 60 * 60
+        let hours = Int(totalSeconds) / 3600
+        let minutes = (Int(totalSeconds) % 3600) / 60
+        return String(format: "Time: %02d:%02d", hours, minutes)
     }
 }
 #endif
