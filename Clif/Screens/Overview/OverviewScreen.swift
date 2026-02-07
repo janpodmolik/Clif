@@ -7,6 +7,7 @@ struct OverviewScreen: View {
 
     @State private var selectedActivePet: Pet?
     @State private var selectedArchivedPet: ArchivedPet?
+    @State private var selectedEssenceRecord: EssenceRecord?
     @State private var historyViewMode: HistoryViewMode = .list
     @State private var refreshTick: Int = 0
 
@@ -29,7 +30,10 @@ struct OverviewScreen: View {
                     .padding(.horizontal, 20)
 
                 EssenceCollectionCarousel(
-                    records: archivedPetManager.essenceRecords(currentPet: petManager.currentPet)
+                    records: archivedPetManager.essenceRecords(currentPet: petManager.currentPet),
+                    onTap: { record in
+                        selectedEssenceRecord = record
+                    }
                 )
                 .padding(.horizontal, 20)
 
@@ -57,6 +61,12 @@ struct OverviewScreen: View {
         .sheet(item: $selectedArchivedPet) { pet in
             ArchivedPetDetailScreen(pet: pet)
                 .presentationDetents([.large])
+        }
+        .sheet(item: $selectedEssenceRecord) { record in
+            EssenceDetailSheet(
+                record: record,
+                summaries: archivedPetManager.summaries
+            )
         }
         .onReceive(Timer.publish(every: 1.0, on: .main, in: .common).autoconnect()) { _ in
             refreshTick += 1

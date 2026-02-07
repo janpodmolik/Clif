@@ -5,6 +5,8 @@ struct EssenceCatalogScreen: View {
     @Environment(ArchivedPetManager.self) private var archivedPetManager
     @Environment(PetManager.self) private var petManager
 
+    @State private var selectedEssenceRecord: EssenceRecord?
+
     private let columns = [
         GridItem(.flexible(), spacing: 12),
         GridItem(.flexible(), spacing: 12),
@@ -24,6 +26,12 @@ struct EssenceCatalogScreen: View {
         }
         .navigationTitle("Katalog Essencí")
         .navigationBarTitleDisplayMode(.inline)
+        .sheet(item: $selectedEssenceRecord) { record in
+            EssenceDetailSheet(
+                record: record,
+                summaries: archivedPetManager.summaries
+            )
+        }
     }
 
     // MARK: - Subviews
@@ -43,10 +51,20 @@ struct EssenceCatalogScreen: View {
     private var essenceGrid: some View {
         LazyVGrid(columns: columns, spacing: 12) {
             ForEach(catalogManager.catalogEntries) { entry in
+                let record = essenceRecord(for: entry.essence)
                 EssenceCatalogGridItem(
                     entry: entry,
-                    essenceRecord: essenceRecord(for: entry.essence)
+                    essenceRecord: record
                 )
+                .onTapGesture {
+                    guard entry.isUnlocked else { return }
+                    selectedEssenceRecord = record ?? EssenceRecord(
+                        id: entry.essence.rawValue,
+                        essence: entry.essence,
+                        bestPhase: nil,
+                        petCount: 0
+                    )
+                }
             }
 
             ForEach(comingSoonEssences, id: \.self) { name in

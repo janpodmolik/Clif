@@ -4,9 +4,13 @@ struct SearchSheet: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(ArchivedPetManager.self) private var archivedPetManager
 
-    @State private var filter = PetSearchFilter()
+    @State private var filter: PetSearchFilter
     @State private var selectedArchivedPet: ArchivedPet?
     @State private var activeFilterSheet: FilterType?
+
+    init(initialFilter: PetSearchFilter = PetSearchFilter()) {
+        _filter = State(initialValue: initialFilter)
+    }
 
     private enum FilterType: Identifiable {
         case status

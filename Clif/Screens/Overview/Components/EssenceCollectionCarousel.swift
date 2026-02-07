@@ -2,7 +2,7 @@ import SwiftUI
 
 // MARK: - Data Model
 
-struct EssenceRecord: Identifiable {
+struct EssenceRecord: Identifiable, Hashable {
     let id: String
     let essence: Essence
     let bestPhase: Int?
@@ -15,6 +15,7 @@ struct EssenceRecord: Identifiable {
 
 struct EssenceCollectionCarousel: View {
     let records: [EssenceRecord]
+    var onTap: ((EssenceRecord) -> Void)?
 
     @State private var scrollTarget: Int? = 0
 
@@ -62,6 +63,8 @@ struct EssenceCollectionCarousel: View {
             HStack(spacing: 0) {
                 ForEach(Array(records.enumerated()), id: \.element.id) { index, record in
                     EssenceCard(record: record, height: cardHeight)
+                        .contentShape(Rectangle())
+                        .onTapGesture { onTap?(record) }
                         .containerRelativeFrame(.horizontal)
                         .frame(height: cardHeight)
                         .scrollTransition(.interactive, axis: .horizontal) { content, phase in
