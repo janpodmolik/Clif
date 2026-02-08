@@ -12,6 +12,7 @@ struct MainApp: App {
     @State private var petManager = PetManager()
     @State private var archivedPetManager = ArchivedPetManager()
     @State private var essenceCatalogManager = EssenceCatalogManager()
+    @State private var authManager = AuthManager()
 
     init() {
         print("🟢 MainApp init")
@@ -26,11 +27,12 @@ struct MainApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .withDeepLinkHandling()
                 .environment(petManager)
                 .environment(archivedPetManager)
                 .environment(essenceCatalogManager)
+                .environment(authManager)
                 .onAppear { print("🟢 ContentView appeared") }
-                .withDeepLinkHandling()
         }
         .onChange(of: scenePhase) { _, newPhase in
             handleScenePhaseChange(newPhase)

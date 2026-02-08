@@ -356,4 +356,5 @@ struct ContentView: View {
         .environment(PetManager.mock())
         .environment(ArchivedPetManager.mock())
         .environment(EssenceCatalogManager.mock())
+        .environment(AuthManager.mock())
 }

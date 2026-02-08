@@ -536,12 +536,6 @@ struct DebugView: View {
                 debugNavigationRow("Pet History Row", icon: "list.bullet.rectangle", color: .indigo) {
                     PetHistoryRowDebugView()
                 }
-
-                Divider()
-
-                debugNavigationRow("Supabase Test", icon: "server.rack", color: .purple) {
-                    SupabaseTestView()
-                }
             }
         }
     }

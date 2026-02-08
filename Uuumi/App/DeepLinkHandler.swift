@@ -1,14 +1,24 @@
 import SwiftUI
 
 struct DeepLinkModifier: ViewModifier {
+    @Environment(AuthManager.self) private var authManager
+
     func body(content: Content) -> some View {
         content
             .onOpenURL { url in
-                DeepLinkHandler.handle(url)
+                if url.scheme == "uuumi", url.host == "auth" {
+                    authManager.handleOAuthCallback(url: url)
+                } else {
+                    DeepLinkHandler.handle(url)
+                }
             }
             .onReceive(NotificationCenter.default.publisher(for: .deepLinkReceived)) { notification in
                 if let url = notification.object as? URL {
-                    DeepLinkHandler.handle(url)
+                    if url.scheme == "uuumi", url.host == "auth" {
+                        authManager.handleOAuthCallback(url: url)
+                    } else {
+                        DeepLinkHandler.handle(url)
+                    }
                 }
             }
     }

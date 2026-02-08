@@ -1,4 +1,5 @@
 import SwiftUI
+import Supabase
 
 enum ProfileDestination: Hashable {
     case essenceCatalog
@@ -7,18 +8,41 @@ enum ProfileDestination: Hashable {
 struct ProfileScreen: View {
     @Environment(PetManager.self) private var petManager
     @Environment(EssenceCatalogManager.self) private var catalogManager
+    @Environment(AuthManager.self) private var authManager
     @AppStorage("appearanceMode") private var appearanceMode: AppearanceMode = .automatic
     @AppStorage("selectedDayTheme") private var dayTheme: DayTheme = .morningHaze
     @AppStorage("selectedNightTheme") private var nightTheme: NightTheme = .deepNight
     @State private var limitSettings = SharedDefaults.limitSettings
     @State private var showPremiumSheet = false
+    @State private var showAuthSheet = false
+    @State private var showAccountSheet = false
+    @State private var pendingSignOut = false
     @Binding var navigationPath: NavigationPath
 
     var body: some View {
         NavigationStack(path: $navigationPath) {
             Form {
-                // MARK: - Notifications
+                // MARK: - Profile Header
                 Section {
+                    profileHeader
+                        .listRowInsets(EdgeInsets())
+                        .listRowBackground(Color.clear)
+                }
+
+                // MARK: - Účet
+                if authManager.isAuthenticated {
+                    Section(header: Text("Účet")) {
+                        Button {
+                            showAccountSheet = true
+                        } label: {
+                            Label("Účet", systemImage: "person")
+                        }
+                        .tint(.primary)
+                    }
+                }
+
+                // MARK: - Přizpůsobit
+                Section(header: Text("Přizpůsobit")) {
                     Picker(selection: $limitSettings.notificationMode) {
                         ForEach(NotificationMode.allCases, id: \.self) { mode in
                             Text(mode.label).tag(mode)
@@ -26,42 +50,18 @@ struct ProfileScreen: View {
                     } label: {
                         Label("Notifikace", systemImage: "bell.fill")
                     }
-                } header: {
-                    Text("Upozornění")
-                } footer: {
-                    Text(limitSettings.notificationMode.description)
-                }
 
-                // MARK: - Day Start Shield
-                Section {
                     Toggle(isOn: $limitSettings.dayStartShieldEnabled) {
                         Label("Denní shield", systemImage: "calendar")
                     }
                     .tint(.blue)
-                } footer: {
-                    Text("Denní shield ti umožní vybrat si náročnost dne před prvním použitím blokovaných aplikací.")
-                }
 
-                // MARK: - Essence Catalog
-                Section(header: Text("Kolekce")) {
-                    NavigationLink(value: ProfileDestination.essenceCatalog) {
-                        HStack {
-                            Label("Katalog Essencí", systemImage: "sparkles")
-                            Spacer()
-                            Text("\(catalogManager.unlockedEssences.count)/\(Essence.allCases.count)")
-                                .foregroundStyle(.secondary)
-                        }
-                    }
-                }
-
-                // MARK: - Appearance
-                Section {
                     Picker(selection: $appearanceMode) {
                         ForEach(AppearanceMode.allCases, id: \.self) { mode in
                             Label(mode.label, systemImage: mode.icon).tag(mode)
                         }
                     } label: {
-                        Label("Režim", systemImage: "paintbrush.fill")
+                        Label("Vzhled", systemImage: "paintbrush.fill")
                     }
 
                     switch appearanceMode {
@@ -82,16 +82,23 @@ struct ProfileScreen: View {
                             gradient: \.gradient
                         )
                     }
-                } header: {
-                    Text("Vzhled")
-                } footer: {
-                    if appearanceMode == .automatic {
-                        Text("Pozadí se mění automaticky podle denní doby.")
+
+                }
+
+                // MARK: - Kolekce
+                Section(header: Text("Kolekce")) {
+                    NavigationLink(value: ProfileDestination.essenceCatalog) {
+                        HStack {
+                            Label("Katalog Essencí", systemImage: "sparkles")
+                            Spacer()
+                            Text("\(catalogManager.unlockedEssences.count)/\(Essence.allCases.count)")
+                                .foregroundStyle(.secondary)
+                        }
                     }
                 }
 
-                // MARK: - About
-                Section(header: Text("O aplikaci")) {
+                // MARK: - Pomoc
+                Section(header: Text("Pomoc")) {
                     HStack {
                         Label("Verze", systemImage: "info.circle")
                         Spacer()
@@ -119,7 +126,6 @@ struct ProfileScreen: View {
                 #endif
             }
             .safeAreaPadding(.bottom, 80)
-            .navigationTitle("Profil")
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
@@ -141,6 +147,17 @@ struct ProfileScreen: View {
             .sheet(isPresented: $showPremiumSheet) {
                 PremiumSheet()
             }
+            .fullScreenCover(isPresented: $showAuthSheet) {
+                AuthProvidersSheet()
+            }
+            .fullScreenCover(isPresented: $showAccountSheet, onDismiss: {
+                if pendingSignOut {
+                    pendingSignOut = false
+                    Task { await authManager.signOut() }
+                }
+            }) {
+                AccountScreen(onSignOut: { pendingSignOut = true })
+            }
             .navigationDestination(for: ProfileDestination.self) { destination in
                 switch destination {
                 case .essenceCatalog:
@@ -150,7 +167,91 @@ struct ProfileScreen: View {
             .onChange(of: limitSettings) { _, newValue in
                 SharedDefaults.limitSettings = newValue
             }
+            .alert("Chyba", isPresented: hasAuthError, presenting: authManager.error) { _ in
+                Button("OK") { authManager.clearError() }
+            } message: { error in
+                Text(error.localizedDescription)
+            }
         }
+    }
+
+    // MARK: - Profile Header
+
+    @ViewBuilder
+    private var profileHeader: some View {
+        VStack(spacing: 12) {
+            // Avatar — tappable to account/auth
+            Button {
+                if authManager.isAuthenticated {
+                    showAccountSheet = true
+                } else {
+                    showAuthSheet = true
+                }
+            } label: {
+                Image(systemName: "person.crop.circle.fill")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 80, height: 80)
+                    .foregroundStyle(authManager.isAuthenticated ? .secondary : Color(.systemGray3))
+            }
+            .buttonStyle(.plain)
+
+            // Name / subtitle
+            VStack(spacing: 4) {
+                if authManager.isAuthenticated {
+                    Text(displayName)
+                        .font(.title3.weight(.bold))
+                    if let createdAt = authManager.currentUser?.createdAt {
+                        Text("Členem od \(createdAt.formatted(.dateTime.month(.wide).year()))")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                } else {
+                    Text("Host")
+                        .font(.title3.weight(.bold))
+                    Text("Ahoj, hoste! Pojďme se lépe poznat.\nVytvoř si účet, nebo se přihlas.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
+                }
+            }
+
+            // CTA button (only when not authenticated)
+            if !authManager.isAuthenticated {
+                Button {
+                    showAuthSheet = true
+                } label: {
+                    Text("Register / Login")
+                        .font(.body.weight(.semibold))
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 50)
+                        .background(Color(.tertiarySystemFill))
+                        .foregroundStyle(.primary)
+                        .clipShape(Capsule())
+                }
+                .buttonStyle(.plain)
+                .padding(.top, 4)
+            }
+        }
+        .padding(.vertical, 20)
+        .frame(maxWidth: .infinity)
+    }
+
+    // MARK: - Helpers
+
+    private var displayName: String {
+        if let name = authManager.currentUser?.userMetadata["full_name"],
+           case .string(let value) = name, !value.isEmpty {
+            return value
+        }
+        return authManager.userEmail?.components(separatedBy: "@").first ?? "Uživatel"
+    }
+
+    private var hasAuthError: Binding<Bool> {
+        Binding(
+            get: { authManager.error != nil },
+            set: { if !$0 { authManager.clearError() } }
+        )
     }
 
     private var appVersion: String {
@@ -214,4 +315,5 @@ private struct ThemePicker<T: Hashable & Identifiable>: View {
     ProfileScreen(navigationPath: .constant(NavigationPath()))
         .environment(PetManager.mock())
         .environment(EssenceCatalogManager.mock())
+        .environment(AuthManager.mock())
 }
