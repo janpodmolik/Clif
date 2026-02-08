@@ -148,7 +148,7 @@ struct WindPresetComparisonSheet: View {
             .navigationTitle("Wind Presets")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
+                ToolbarItem(placement: .topBarLeading) {
                     Button {
                         dismiss()
                     } label: {

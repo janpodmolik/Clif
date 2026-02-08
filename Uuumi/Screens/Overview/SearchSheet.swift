@@ -80,23 +80,23 @@ struct SearchSheet: View {
             .navigationTitle("Hledat")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    if filter.hasActiveFilters {
-                        Button("Reset") {
-                            withAnimation {
-                                filter.reset()
-                            }
-                        }
-                    }
-                }
-
-                ToolbarItem(placement: .primaryAction) {
+                ToolbarItem(placement: .topBarLeading) {
                     Button {
                         dismiss()
                     } label: {
                         Image(systemName: "xmark")
                             .font(.body.weight(.semibold))
                             .foregroundStyle(.secondary)
+                    }
+                }
+
+                ToolbarItem(placement: .topBarTrailing) {
+                    if filter.hasActiveFilters {
+                        Button("Reset") {
+                            withAnimation {
+                                filter.reset()
+                            }
+                        }
                     }
                 }
             }
@@ -109,9 +109,8 @@ struct SearchSheet: View {
         .sheet(item: $activeFilterSheet) { type in
             filterSheet(for: type)
         }
-        .sheet(item: $selectedArchivedPet) { pet in
+        .fullScreenCover(item: $selectedArchivedPet) { pet in
             ArchivedPetDetailScreen(pet: pet)
-                .presentationDetents([.large])
         }
     }
 

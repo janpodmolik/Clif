@@ -45,7 +45,7 @@ struct DebugView: View {
             }
             .navigationTitle("Debug")
             .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
+                ToolbarItem(placement: .topBarLeading) {
                     Button {
                         dismiss()
                     } label: {

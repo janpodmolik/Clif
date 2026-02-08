@@ -99,7 +99,7 @@ struct LimitedAppsSheet: View {
             .navigationTitle("Sledované aplikace")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
+                ToolbarItem(placement: .topBarLeading) {
                     Button {
                         dismiss()
                     } label: {

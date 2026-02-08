@@ -33,7 +33,7 @@ struct StatusFilterSheet: View {
             .navigationTitle("Stav")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .primaryAction) {
+                ToolbarItem(placement: .topBarLeading) {
                     Button {
                         dismiss()
                     } label: {
@@ -122,7 +122,17 @@ struct DateFilterSheet: View {
             .navigationTitle("Období")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button {
+                        dismiss()
+                    } label: {
+                        Image(systemName: "xmark")
+                            .font(.body.weight(.semibold))
+                            .foregroundStyle(.secondary)
+                    }
+                }
+
+                ToolbarItem(placement: .topBarTrailing) {
                     if isFiltered {
                         Button("Reset") {
                             dateRange = .all
@@ -130,16 +140,6 @@ struct DateFilterSheet: View {
                             customEnd = nil
                             dismiss()
                         }
-                    }
-                }
-
-                ToolbarItem(placement: .primaryAction) {
-                    Button {
-                        dismiss()
-                    } label: {
-                        Image(systemName: "xmark")
-                            .font(.body.weight(.semibold))
-                            .foregroundStyle(.secondary)
                     }
                 }
             }
@@ -238,23 +238,23 @@ struct DurationFilterSheet: View {
             .navigationTitle("Délka života")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    if isFiltered {
-                        Button("Reset") {
-                            minDuration = PetSearchFilter.durationRange.lowerBound
-                            maxDuration = PetSearchFilter.durationRange.upperBound
-                            dismiss()
-                        }
-                    }
-                }
-
-                ToolbarItem(placement: .primaryAction) {
+                ToolbarItem(placement: .topBarLeading) {
                     Button {
                         dismiss()
                     } label: {
                         Image(systemName: "xmark")
                             .font(.body.weight(.semibold))
                             .foregroundStyle(.secondary)
+                    }
+                }
+
+                ToolbarItem(placement: .topBarTrailing) {
+                    if isFiltered {
+                        Button("Reset") {
+                            minDuration = PetSearchFilter.durationRange.lowerBound
+                            maxDuration = PetSearchFilter.durationRange.upperBound
+                            dismiss()
+                        }
                     }
                 }
             }
@@ -313,23 +313,23 @@ struct EssenceFilterSheet: View {
             .navigationTitle("Essence")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button(allSelected ? "Odvybrat vše" : "Vybrat vše") {
-                        if allSelected {
-                            selection = []
-                        } else {
-                            selection = Set(Essence.allCases)
-                        }
-                    }
-                }
-
-                ToolbarItem(placement: .primaryAction) {
+                ToolbarItem(placement: .topBarLeading) {
                     Button {
                         dismiss()
                     } label: {
                         Image(systemName: "xmark")
                             .font(.body.weight(.semibold))
                             .foregroundStyle(.secondary)
+                    }
+                }
+
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button(allSelected ? "Odvybrat vše" : "Vybrat vše") {
+                        if allSelected {
+                            selection = []
+                        } else {
+                            selection = Set(Essence.allCases)
+                        }
                     }
                 }
             }

@@ -35,7 +35,7 @@ struct DayDetailSheet: View {
             .navigationTitle(dateFormatter.string(from: day.date))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
+                ToolbarItem(placement: .topBarLeading) {
                     Button {
                         dismiss()
                     } label: {

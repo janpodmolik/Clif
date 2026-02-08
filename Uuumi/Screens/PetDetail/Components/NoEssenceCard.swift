@@ -37,7 +37,7 @@ struct NoEssenceCard: View {
             NavigationStack {
                 EssenceCatalogScreen()
                     .toolbar {
-                        ToolbarItem(placement: .topBarTrailing) {
+                        ToolbarItem(placement: .topBarLeading) {
                             Button {
                                 showEssenceCatalog = false
                             } label: {

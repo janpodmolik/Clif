@@ -139,7 +139,7 @@ struct HomeScreen: View {
                 currentScreenWidth = newWidth
             }
         }
-        .sheet(isPresented: $showPetDetail, onDismiss: {
+        .fullScreenCover(isPresented: $showPetDetail, onDismiss: {
             if blowAwayAnimator.pendingBlowAway {
                 blowAwayAnimator.pendingBlowAway = false
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
@@ -169,7 +169,6 @@ struct HomeScreen: View {
                         break
                     }
                 }
-                .presentationDetents([.large])
             }
         }
         .sheet(isPresented: $showPresetPicker) {

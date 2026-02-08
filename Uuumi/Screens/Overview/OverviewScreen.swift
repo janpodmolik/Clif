@@ -50,17 +50,15 @@ struct OverviewScreen: View {
         .onAppear {
             archivedPetManager.loadSummariesIfNeeded()
         }
-        .sheet(item: $selectedActivePet) { pet in
+        .fullScreenCover(item: $selectedActivePet) { pet in
             PetDetailScreen(
                 pet: pet,
                 showOverviewActions: true,
                 onAction: { handlePetAction($0, for: pet) }
             )
-            .presentationDetents([.large])
         }
-        .sheet(item: $selectedArchivedPet) { pet in
+        .fullScreenCover(item: $selectedArchivedPet) { pet in
             ArchivedPetDetailScreen(pet: pet)
-                .presentationDetents([.large])
         }
         .sheet(item: $selectedEssenceRecord) { record in
             EssenceDetailSheet(
