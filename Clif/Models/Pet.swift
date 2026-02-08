@@ -53,7 +53,6 @@ final class Pet: Identifiable, PetPresentable, PetEvolvable {
     var limitedSources: [LimitedSource]
     private(set) var limitedSourceChangesCount: Int
 
-    var totalDays: Int { dailyStats.count }
     var applicationTokens: Set<ApplicationToken> { limitedSources.applicationTokens }
     var categoryTokens: Set<ActivityCategoryToken> { limitedSources.categoryTokens }
     var webDomainTokens: Set<WebDomainToken> { limitedSources.webDomainTokens }
