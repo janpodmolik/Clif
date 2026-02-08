@@ -27,6 +27,12 @@ final class AuthManager {
         }
     }
 
+    enum SignUpResult {
+        case success
+        case confirmationRequired
+        case emailAlreadyUsed
+    }
+
     enum AuthError: LocalizedError {
         case invalidCredential
         case missingNonce
@@ -192,12 +198,20 @@ final class AuthManager {
 
     // MARK: - Email + Password
 
-    func signUpWithEmail(_ email: String, password: String) async {
+    func signUpWithEmail(_ email: String, password: String) async -> SignUpResult? {
         error = nil
         do {
-            try await client.auth.signUp(email: email, password: password)
+            let response = try await client.auth.signUp(email: email, password: password)
+            if response.user.identities?.isEmpty ?? true {
+                return .emailAlreadyUsed
+            }
+            if response.session != nil {
+                return .success
+            }
+            return .confirmationRequired
         } catch {
             self.error = .supabase(error)
+            return nil
         }
     }
 

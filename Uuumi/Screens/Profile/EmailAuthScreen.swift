@@ -11,6 +11,8 @@ struct EmailAuthScreen: View {
     @State private var showPasswordReset = false
     @State private var resetEmail = ""
     @State private var showResetConfirmation = false
+    @State private var localError: String?
+    @State private var showConfirmationInfo = false
 
     var body: some View {
         NavigationStack {
@@ -37,35 +39,64 @@ struct EmailAuthScreen: View {
                             .textContentType(.emailAddress)
                             .padding()
                             .background(Color(.secondarySystemGroupedBackground))
-                            .clipShape(RoundedRectangle(cornerRadius: 12))
+                            .clipShape(Capsule())
                             .overlay(
-                                RoundedRectangle(cornerRadius: 12)
+                                Capsule()
                                     .strokeBorder(Color(.separator), lineWidth: 0.5)
                             )
 
-                        SecureField("Heslo", text: $password)
-                            .textContentType(isSignUp ? .newPassword : .password)
-                            .padding()
-                            .background(Color(.secondarySystemGroupedBackground))
-                            .clipShape(RoundedRectangle(cornerRadius: 12))
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 12)
-                                    .strokeBorder(Color(.separator), lineWidth: 0.5)
-                            )
+                        VStack(alignment: .leading, spacing: 4) {
+                            SecureField("Heslo", text: $password)
+                                .textContentType(isSignUp ? .newPassword : .password)
+                                .padding()
+                                .background(Color(.secondarySystemGroupedBackground))
+                                .clipShape(Capsule())
+                                .overlay(
+                                    Capsule()
+                                        .strokeBorder(Color(.separator), lineWidth: 0.5)
+                                )
+
+                            if isSignUp {
+                                Text("Minimálně 8 znaků")
+                                    .font(.caption2)
+                                    .foregroundStyle(.secondary)
+                                    .padding(.leading, 16)
+                            }
+                        }
 
                         Button {
                             Task {
                                 isLoading = true
+                                authManager.clearError()
                                 if isSignUp {
-                                    await authManager.signUpWithEmail(email, password: password)
+                                    let result = await authManager.signUpWithEmail(email, password: password)
+                                    isLoading = false
+                                    switch result {
+                                    case .confirmationRequired:
+                                        showConfirmationInfo = true
+                                    case .emailAlreadyUsed:
+                                        localError = "Tento email je již registrovaný. Zkus se přihlásit."
+                                    case .success:
+                                        break // onChange(of: isAuthenticated) handles dismiss
+                                    case nil:
+                                        if let error = authManager.error {
+                                            localError = error.localizedDescription
+                                            authManager.clearError()
+                                        }
+                                    }
                                 } else {
                                     await authManager.signInWithEmail(email, password: password)
+                                    isLoading = false
+                                    if let error = authManager.error {
+                                        localError = error.localizedDescription
+                                        authManager.clearError()
+                                    }
                                 }
-                                isLoading = false
                             }
                         } label: {
                             if isLoading {
                                 ProgressView()
+                                    .tint(.white)
                                     .frame(maxWidth: .infinity)
                                     .frame(height: 50)
                             } else {
@@ -75,8 +106,10 @@ struct EmailAuthScreen: View {
                                     .frame(height: 50)
                             }
                         }
-                        .buttonStyle(.borderedProminent)
-                        .disabled(email.isEmpty || password.count < 6 || isLoading)
+                        .foregroundStyle(isFormValid ? .white : Color(.tertiaryLabel))
+                        .background(isFormValid ? Color.accentColor : Color(.tertiarySystemFill))
+                        .clipShape(Capsule())
+                        .disabled(!isFormValid)
                         .padding(.top, 4)
 
                         HStack {
@@ -110,10 +143,15 @@ struct EmailAuthScreen: View {
                     }
                 }
             }
-            .alert("Chyba", isPresented: hasError, presenting: authManager.error) { _ in
-                Button("OK") { authManager.clearError() }
-            } message: { error in
-                Text(error.localizedDescription)
+            .alert("Chyba", isPresented: hasLocalError) {
+                Button("OK") { localError = nil }
+            } message: {
+                Text(localError ?? "")
+            }
+            .alert("Ověř svůj email", isPresented: $showConfirmationInfo) {
+                Button("OK") { dismiss() }
+            } message: {
+                Text("Poslali jsme ti potvrzovací odkaz na \(email). Klikni na něj a pak se přihlas.")
             }
             .alert("Odkaz odeslán", isPresented: $showResetConfirmation) {
                 Button("OK") { }
@@ -167,10 +205,14 @@ struct EmailAuthScreen: View {
 
     // MARK: - Helpers
 
-    private var hasError: Binding<Bool> {
+    private var isFormValid: Bool {
+        !email.isEmpty && password.count >= 8 && !isLoading
+    }
+
+    private var hasLocalError: Binding<Bool> {
         Binding(
-            get: { authManager.error != nil },
-            set: { if !$0 { authManager.clearError() } }
+            get: { localError != nil },
+            set: { if !$0 { localError = nil } }
         )
     }
 }
