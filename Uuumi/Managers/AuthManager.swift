@@ -1,4 +1,5 @@
 import Foundation
+import UIKit
 import Supabase
 import AuthenticationServices
 import CryptoKit
@@ -159,11 +160,31 @@ final class AuthManager {
     func signInWithGoogle() async {
         error = nil
         do {
-            try await client.auth.signInWithOAuth(
+            let oauthURL = try await client.auth.getOAuthSignInURL(
                 provider: .google,
                 redirectTo: URL(string: "uuumi://auth/callback"),
                 queryParams: [(name: "prompt", value: "select_account")]
             )
+
+            let callbackURL = try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<URL, Error>) in
+                let session = ASWebAuthenticationSession(
+                    url: oauthURL,
+                    callbackURLScheme: "uuumi"
+                ) { url, error in
+                    if let url {
+                        continuation.resume(returning: url)
+                    } else if let error {
+                        continuation.resume(throwing: error)
+                    }
+                }
+                session.prefersEphemeralWebBrowserSession = false
+                session.presentationContextProvider = OAuthPresentationContext.shared
+                session.start()
+            }
+
+            _ = try await client.auth.session(from: callbackURL)
+        } catch let error as ASWebAuthenticationSessionError where error.code == .canceledLogin {
+            // User cancelled — do nothing
         } catch {
             self.error = .supabase(error)
         }
@@ -254,6 +275,19 @@ final class AuthManager {
         let data = Data(input.utf8)
         let hash = SHA256.hash(data: data)
         return hash.compactMap { String(format: "%02x", $0) }.joined()
+    }
+}
+
+// MARK: - OAuth Presentation Context
+
+private final class OAuthPresentationContext: NSObject, ASWebAuthenticationPresentationContextProviding {
+    static let shared = OAuthPresentationContext()
+
+    func presentationAnchor(for session: ASWebAuthenticationSession) -> ASPresentationAnchor {
+        UIApplication.shared.connectedScenes
+            .compactMap { $0 as? UIWindowScene }
+            .flatMap(\.windows)
+            .first(where: \.isKeyWindow) ?? ASPresentationAnchor()
     }
 }
 
