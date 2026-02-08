@@ -192,7 +192,7 @@
 /* Begin PBXFileReference section */
 		B4153D3D2F27417F0006FEE3 /* LimitSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LimitSettings.swift; sourceTree = "<group>"; };
 		B4153D402F2741A40006FEE3 /* WindNotification.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindNotification.swift; sourceTree = "<group>"; };
-		B4159A322EE56ED700BAE49D /* Clif.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Clif.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		B4159A322EE56ED700BAE49D /* Uuumi.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Uuumi.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B4167E532F1FE2D800D89B36 /* SnapshotEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SnapshotEvent.swift; sourceTree = "<group>"; };
 		B4167E5B2F1FE73400D89B36 /* SnapshotEventType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SnapshotEventType.swift; sourceTree = "<group>"; };
 		B4167E5E2F1FEF4E00D89B36 /* SnapshotStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SnapshotStore.swift; sourceTree = "<group>"; };
@@ -237,12 +237,12 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		B44706472EE95EAE00174BFB /* Exceptions for "Clif" folder in "Clif" target */ = {
+		B44706472EE95EAE00174BFB /* Exceptions for "Uuumi" folder in "Uuumi" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
 			);
-			target = B4159A312EE56ED700BAE49D /* Clif */;
+			target = B4159A312EE56ED700BAE49D /* Uuumi */;
 		};
 		B458623D2EE5F6F80088CB78 /* Exceptions for "DeviceActivityReport" folder in "DeviceActivityReport" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
@@ -275,12 +275,12 @@
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		B4159A342EE56ED700BAE49D /* Clif */ = {
+		B4159A342EE56ED700BAE49D /* Uuumi */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				B44706472EE95EAE00174BFB /* Exceptions for "Clif" folder in "Clif" target */,
+				B44706472EE95EAE00174BFB /* Exceptions for "Uuumi" folder in "Uuumi" target */,
 			);
-			path = Clif;
+			path = Uuumi;
 			sourceTree = "<group>";
 		};
 		B45862312EE5F6F80088CB78 /* DeviceActivityReport */ = {
@@ -365,7 +365,7 @@
 			isa = PBXGroup;
 			children = (
 				B4924AF62EE5807E0033475C /* Shared */,
-				B4159A342EE56ED700BAE49D /* Clif */,
+				B4159A342EE56ED700BAE49D /* Uuumi */,
 				B4924ACD2EE57ED90033475C /* DeviceActivityMonitor */,
 				B4924AE32EE57EEE0033475C /* ShieldConfiguration */,
 				B45862312EE5F6F80088CB78 /* DeviceActivityReport */,
@@ -378,7 +378,7 @@
 		B4159A332EE56ED700BAE49D /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				B4159A322EE56ED700BAE49D /* Clif.app */,
+				B4159A322EE56ED700BAE49D /* Uuumi.app */,
 				B4924AC92EE57ED90033475C /* DeviceActivityMonitor.appex */,
 				B4924ADE2EE57EEE0033475C /* ShieldConfiguration.appex */,
 				B45862302EE5F6F80088CB78 /* DeviceActivityReport.appex */,
@@ -515,9 +515,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		B4159A312EE56ED700BAE49D /* Clif */ = {
+		B4159A312EE56ED700BAE49D /* Uuumi */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = B4159A3D2EE56ED800BAE49D /* Build configuration list for PBXNativeTarget "Clif" */;
+			buildConfigurationList = B4159A3D2EE56ED800BAE49D /* Build configuration list for PBXNativeTarget "Uuumi" */;
 			buildPhases = (
 				B4159A2E2EE56ED700BAE49D /* Sources */,
 				B4159A2F2EE56ED700BAE49D /* Frameworks */,
@@ -534,14 +534,14 @@
 				B4C4C0992EE7FECE00E469E8 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
-				B4159A342EE56ED700BAE49D /* Clif */,
+				B4159A342EE56ED700BAE49D /* Uuumi */,
 			);
-			name = Clif;
+			name = Uuumi;
 			packageProductDependencies = (
 				B45862242EE5D0A60088CB78 /* Supabase */,
 			);
-			productName = Clif;
-			productReference = B4159A322EE56ED700BAE49D /* Clif.app */;
+			productName = Uuumi;
+			productReference = B4159A322EE56ED700BAE49D /* Uuumi.app */;
 			productType = "com.apple.product-type.application";
 		};
 		B458622F2EE5F6F80088CB78 /* DeviceActivityReport */ = {
@@ -659,7 +659,7 @@
 					};
 				};
 			};
-			buildConfigurationList = B4159A2D2EE56ED700BAE49D /* Build configuration list for PBXProject "Clif" */;
+			buildConfigurationList = B4159A2D2EE56ED700BAE49D /* Build configuration list for PBXProject "Uuumi" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -676,7 +676,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				B4159A312EE56ED700BAE49D /* Clif */,
+				B4159A312EE56ED700BAE49D /* Uuumi */,
 				B4924AC82EE57ED90033475C /* DeviceActivityMonitor */,
 				B4924ADD2EE57EEE0033475C /* ShieldConfiguration */,
 				B458622F2EE5F6F80088CB78 /* DeviceActivityReport */,
@@ -1021,7 +1021,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = Clif/Clif.entitlements;
+				CODE_SIGN_ENTITLEMENTS = Uuumi/Uuumi.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
@@ -1031,8 +1031,8 @@
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = Clif/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = Clif;
+				INFOPLIST_FILE = Uuumi/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Uuumi;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
@@ -1049,7 +1049,7 @@
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 15.7;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.janpodmolik.Clif;
+				PRODUCT_BUNDLE_IDENTIFIER = com.janpodmolik.Uuumi;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				REGISTER_APP_GROUPS = YES;
@@ -1072,7 +1072,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = Clif/Clif.entitlements;
+				CODE_SIGN_ENTITLEMENTS = Uuumi/Uuumi.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
@@ -1082,8 +1082,8 @@
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = Clif/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = Clif;
+				INFOPLIST_FILE = Uuumi/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Uuumi;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
@@ -1100,7 +1100,7 @@
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 15.7;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.janpodmolik.Clif;
+				PRODUCT_BUNDLE_IDENTIFIER = com.janpodmolik.Uuumi;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				REGISTER_APP_GROUPS = YES;
@@ -1137,7 +1137,7 @@
 					"@executable_path/../../Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.janpodmolik.Clif.DeviceActivityReport;
+				PRODUCT_BUNDLE_IDENTIFIER = com.janpodmolik.Uuumi.DeviceActivityReport;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = iphoneos;
@@ -1174,7 +1174,7 @@
 					"@executable_path/../../Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.janpodmolik.Clif.DeviceActivityReport;
+				PRODUCT_BUNDLE_IDENTIFIER = com.janpodmolik.Uuumi.DeviceActivityReport;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = iphoneos;
@@ -1212,7 +1212,7 @@
 					"@executable_path/../../Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.janpodmolik.Clif.DeviceActivityMonitor;
+				PRODUCT_BUNDLE_IDENTIFIER = com.janpodmolik.Uuumi.DeviceActivityMonitor;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = iphoneos;
@@ -1249,7 +1249,7 @@
 					"@executable_path/../../Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.janpodmolik.Clif.DeviceActivityMonitor;
+				PRODUCT_BUNDLE_IDENTIFIER = com.janpodmolik.Uuumi.DeviceActivityMonitor;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = iphoneos;
@@ -1287,7 +1287,7 @@
 					"@executable_path/../../Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.janpodmolik.Clif.ShieldConfiguration;
+				PRODUCT_BUNDLE_IDENTIFIER = com.janpodmolik.Uuumi.ShieldConfiguration;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = iphoneos;
@@ -1324,7 +1324,7 @@
 					"@executable_path/../../Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.janpodmolik.Clif.ShieldConfiguration;
+				PRODUCT_BUNDLE_IDENTIFIER = com.janpodmolik.Uuumi.ShieldConfiguration;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = iphoneos;
@@ -1362,7 +1362,7 @@
 					"@executable_path/../../Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.janpodmolik.Clif.ShieldAction;
+				PRODUCT_BUNDLE_IDENTIFIER = com.janpodmolik.Uuumi.ShieldAction;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
@@ -1394,7 +1394,7 @@
 					"@executable_path/../../Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.janpodmolik.Clif.ShieldAction;
+				PRODUCT_BUNDLE_IDENTIFIER = com.janpodmolik.Uuumi.ShieldAction;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
@@ -1411,7 +1411,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		B4159A2D2EE56ED700BAE49D /* Build configuration list for PBXProject "Clif" */ = {
+		B4159A2D2EE56ED700BAE49D /* Build configuration list for PBXProject "Uuumi" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				B4159A3B2EE56ED800BAE49D /* Debug */,
@@ -1420,7 +1420,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		B4159A3D2EE56ED800BAE49D /* Build configuration list for PBXNativeTarget "Clif" */ = {
+		B4159A3D2EE56ED800BAE49D /* Build configuration list for PBXNativeTarget "Uuumi" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				B4159A3E2EE56ED800BAE49D /* Debug */,

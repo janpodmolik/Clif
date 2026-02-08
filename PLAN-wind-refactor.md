@@ -81,7 +81,7 @@ wind = (cumulativeSeconds - totalBreakReduction) / limitSeconds * 100
 
 ### User Flow
 1. **Uživatel používá apps** → wind roste (thresholdy, notifikace)
-2. **Uživatel chce break** → jde do Clif app, zapne shield manuálně (tlačítko)
+2. **Uživatel chce break** → jde do Uuumi app, zapne shield manuálně (tlačítko)
 3. **Během breaku** → shield blokuje apps, wind se automaticky redukuje (podle fallRate)
 4. **Uživatel chce pokračovat** → unlock v app → shield se vypne, thresholdy se restartují
 
@@ -257,8 +257,8 @@ Z analýzy logu (2026-01-25 10:40-10:41) byly identifikovány tyto problémy:
 | `Shared/Models/Evolution/WindLevel.swift` | LimitSettings: - `shieldActivationLevel`, - `shieldCooldownSeconds` | ✅ |
 | `Shared/Wind/WindCalculator.swift` | + Nový soubor - single source of truth pro wind výpočty | ✅ |
 | `DeviceActivityMonitor/DeviceActivityMonitorExtension.swift` | Absolutní výpočet via WindCalculator, pouze notifikace | ✅ |
-| `Clif/Managers/ScreenTimeManager.swift` | + `applyBreakReduction()` via WindCalculator, dynamický target | ✅ |
-| `Clif/Models/Pet.swift` | `effectiveWindPoints` via WindCalculator | ✅ |
+| `Uuumi/Managers/ScreenTimeManager.swift` | + `applyBreakReduction()` via WindCalculator, dynamický target | ✅ |
+| `Uuumi/Models/Pet.swift` | `effectiveWindPoints` via WindCalculator | ✅ |
 | `ShieldAction/ShieldActionExtension.swift` | - `lastUnlockAt` nastavování | ✅ |
 | `ai-rules/wind-system.md` | Aktualizovat dokumentaci | ⏳ |
 

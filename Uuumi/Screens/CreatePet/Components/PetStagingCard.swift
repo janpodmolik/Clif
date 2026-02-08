@@ -16,7 +16,7 @@ struct PetStagingCard: View {
     }
 
     private var glowColor: Color {
-        colorScheme == .dark ? .white : .accentColor
+        colorScheme == .dark ? .white : .green
     }
 
     var body: some View {

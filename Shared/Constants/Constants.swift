@@ -3,7 +3,7 @@ import Foundation
 /// Centralized constants for the app
 enum AppConstants {
     /// App Group identifier for sharing data between app and extensions
-    static let appGroupIdentifier = "group.com.janpodmolik.Clif"
+    static let appGroupIdentifier = "group.com.janpodmolik.Uuumi"
 
     /// Default monitoring limit in minutes (minutes until blow away for debug)
     static let defaultMonitoringLimitMinutes = 25
@@ -12,7 +12,7 @@ enum AppConstants {
     static let minimumThresholdSeconds = 6
 
     /// Logging subsystem identifier
-    static let loggingSubsystem = "com.janpodmolik.Clif"
+    static let loggingSubsystem = "com.janpodmolik.Uuumi"
 
     // MARK: - Timing
 
@@ -32,19 +32,19 @@ enum AppConstants {
 
 /// Logging category identifiers
 enum LogCategories {
-    static let extensionSubsystem = "com.janpodmolik.Clif.DeviceActivityMonitor"
-    static let shieldSubsystem = "com.janpodmolik.Clif.ShieldConfiguration"
+    static let extensionSubsystem = "com.janpodmolik.Uuumi.DeviceActivityMonitor"
+    static let shieldSubsystem = "com.janpodmolik.Uuumi.ShieldConfiguration"
 }
 
 /// Deep link URLs for navigation
 enum DeepLinks {
-    static let shield = "clif://shield"
-    static let home = "clif://home"
-    static let presetPicker = "clif://preset-picker"
+    static let shield = "uuumi://shield"
+    static let home = "uuumi://home"
+    static let presetPicker = "uuumi://preset-picker"
 
     /// Creates a pet-specific deep link
     static func pet(_ id: UUID) -> String {
-        "clif://pet/\(id.uuidString)"
+        "uuumi://pet/\(id.uuidString)"
     }
 }
 
@@ -55,7 +55,7 @@ enum EventNames {
 
 /// Darwin notification names for cross-process IPC (extension → main app)
 enum DarwinNotifications {
-    static let safetyShieldActivated = "com.janpodmolik.Clif.safetyShieldActivated"
+    static let safetyShieldActivated = "com.janpodmolik.Uuumi.SafetyShieldActivated"
 }
 
 /// UserDefaults keys

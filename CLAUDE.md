@@ -1,8 +1,8 @@
-# Clif - Screen Time Management App
+# Uuumi - Screen Time Management App
 
 ## Core Concept
 
-Clif je screen time management app s virtuálním mazlíčkem (pet). Pet žije na plovoucím ostrově a reaguje na uživatelovo používání telefonu:
+Uuumi je screen time management app s virtuálním mazlíčkem (pet). Pet žije na plovoucím ostrově a reaguje na uživatelovo používání telefonu:
 
 - **Wind System**: Čím více času strávíš v blokovaných aplikacích, tím silnější vítr fouká na peta
 - **Mood**: Pet má náladu (happy/neutral/sad) podle síly větru
@@ -17,7 +17,7 @@ Clif je screen time management app s virtuálním mazlíčkem (pet). Pet žije n
 
 ## Repository Architecture
 
-- `Clif/` - Main iOS app (iOS 18+)
+- `Uuumi/` - Main iOS app (iOS 18+)
   - `App/` - Entry point, deep linking
   - `Managers/` - Business logic (ScreenTimeManager)
   - `Screens/` - UI screens (Home, Profile, Overview, StrictMode)
@@ -30,7 +30,7 @@ Clif je screen time management app s virtuálním mazlíčkem (pet). Pet žije n
 
 ## Common Commands
 
-- Build: `xcodebuild -scheme Clif -destination 'platform=iOS Simulator'`
+- Build: `xcodebuild -scheme Uuumi -destination 'platform=iOS Simulator'`
 - Run: Open in Xcode, Cmd+R
 
 ## Dependencies
@@ -52,7 +52,7 @@ When creating new Swift files, always remove the default Xcode header comment bl
 ```swift
 //
 //  FileName.swift
-//  Clif
+//  Uuumi
 //
 //  Created by Jan Podmolík on XX.XX.XXXX.
 //

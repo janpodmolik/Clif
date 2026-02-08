@@ -26,7 +26,7 @@ private enum DeepLinkHandler {
         print("[DeepLink] Received: \(url)")
         #endif
 
-        guard url.scheme == "clif" else { return }
+        guard url.scheme == "uuumi" else { return }
 
         switch url.host {
         case "shield":

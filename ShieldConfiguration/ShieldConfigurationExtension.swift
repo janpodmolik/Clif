@@ -41,7 +41,7 @@ class ShieldConfigurationExtension: ShieldConfigurationDataSource {
                 text: "Jak náročný den chceš mít?",
                 color: .secondaryLabel
             ),
-            primaryButtonLabel: ShieldConfiguration.Label(text: "Otevřít Clif", color: .white),
+            primaryButtonLabel: ShieldConfiguration.Label(text: "Otevřít Uuumi", color: .white),
             primaryButtonBackgroundColor: .systemBlue,
             secondaryButtonLabel: nil
         )
@@ -84,7 +84,7 @@ class ShieldConfigurationExtension: ShieldConfigurationDataSource {
             backgroundBlurStyle: .systemMaterial,
             backgroundColor: backgroundColor,
             icon: UIImage(systemName: iconName),
-            title: ShieldConfiguration.Label(text: "Clif", color: .label),
+            title: ShieldConfiguration.Label(text: "Uuumi", color: .label),
             subtitle: ShieldConfiguration.Label(text: subtitleText, color: .secondaryLabel),
             primaryButtonLabel: ShieldConfiguration.Label(text: "Zavřít app", color: .white),
             primaryButtonBackgroundColor: .systemGray,

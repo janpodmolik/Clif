@@ -1,4 +1,4 @@
-# Clif 🧗
+# Uuumi 🧗
 
 > *Screen time management through emotional connection*
 > *Správa času u obrazovky skrze emoční propojení*
@@ -7,7 +7,7 @@
 
 ## 🎯 Koncept
 
-Clif je iOS aplikace, která pomáhá omezit čas strávený v rozptylujících aplikacích vytvořením záměrné bariéry a emoční motivace prostřednictvím vyvíjející se postavy.
+Uuumi je iOS aplikace, která pomáhá omezit čas strávený v rozptylujících aplikacích vytvořením záměrné bariéry a emoční motivace prostřednictvím vyvíjející se postavy.
 
 **Inspirace:** ScreenZen, Brainrot, Opal
 

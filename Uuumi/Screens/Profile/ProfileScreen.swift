@@ -99,7 +99,7 @@ struct ProfileScreen: View {
                             .foregroundStyle(.secondary)
                     }
 
-                    Link(destination: URL(string: "mailto:support@clifapp.com")!) {
+                    Link(destination: URL(string: "mailto:support@uuumi.app")!) {
                         Label("Napsat podporu", systemImage: "envelope")
                     }
                 }

@@ -12,7 +12,7 @@ import os.log
 class ShieldActionExtension: ShieldActionDelegate {
 
     let store = ManagedSettingsStore()
-    let logger = Logger(subsystem: "com.janpodmolik.Clif.ShieldAction", category: "ShieldAction")
+    let logger = Logger(subsystem: "com.janpodmolik.Uuumi.ShieldAction", category: "ShieldAction")
 
     private func logToFile(_ message: String) {
         ExtensionLogger.log(message, prefix: "[ShieldAction]")
@@ -30,7 +30,7 @@ class ShieldActionExtension: ShieldActionDelegate {
         content.interruptionLevel = .timeSensitive
 
         let request = UNNotificationRequest(
-            identifier: "clif-\(UUID().uuidString)",
+            identifier: "uuumi-\(UUID().uuidString)",
             content: content,
             trigger: nil
         )
@@ -113,7 +113,7 @@ class ShieldActionExtension: ShieldActionDelegate {
         // Send notification to open app - shield stays active until user unlocks in app
         sendNotificationWithDeepLink(
             title: "Odemknout aplikace",
-            body: "Klepni pro otevření Clif a odemčení",
+            body: "Klepni pro otevření Uuumi a odemčení",
             deepLink: DeepLinks.home
         )
 

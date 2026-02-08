@@ -1,4 +1,4 @@
-# Clif Monetizace - Freemium Model
+# Uuumi Monetizace - Freemium Model
 
 ## Přehled
 

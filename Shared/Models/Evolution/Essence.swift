@@ -57,5 +57,5 @@ enum EssenceRarity: String, Codable {
 }
 
 extension UTType {
-    static let essence = UTType(exportedAs: "com.clif.essence")
+    static let essence = UTType(exportedAs: "com.uuumi.essence")
 }

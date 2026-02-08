@@ -90,7 +90,7 @@ Autor aplikace **Brainrot** (screen time app s vizualizací "rotujícího mozku"
 
 ---
 
-## 6. Aplikovatelné na Clif
+## 6. Aplikovatelné na Uuumi
 
 | Brainrot | Náš potenciální přístup |
 |----------|------------------------|

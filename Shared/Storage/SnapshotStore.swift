@@ -13,7 +13,7 @@ final class SnapshotStore {
     private let fileManager = FileManager.default
     private let encoder: JSONEncoder
     private let decoder: JSONDecoder
-    private let queue = DispatchQueue(label: "com.clif.snapshotstore", qos: .utility)
+    private let queue = DispatchQueue(label: "com.uuumi.snapshotstore", qos: .utility)
 
     /// File URL for the JSONL log in App Group container.
     private var logFileURL: URL? {

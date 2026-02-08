@@ -10,7 +10,7 @@ struct PremiumSheet: View {
                     .font(.system(size: 48))
                     .foregroundStyle(.yellow)
 
-                Text("Clif Premium")
+                Text("Uuumi Premium")
                     .font(.title.weight(.bold))
 
                 Text("Odemkni plný potenciál svých petů.")

@@ -26,9 +26,9 @@ MAIN APP                              EXTENSIONS (separate processes, ~6MB limit
 | File | Location | Purpose |
 |------|----------|---------|
 | DeviceActivityMonitorExtension | `DeviceActivityMonitor/` | Receives system callbacks on app usage, calculates wind delta, activates shields |
-| ScreenTimeManager | `Clif/Managers/` | Main app singleton - authorization, monitoring, unlock processing |
+| ScreenTimeManager | `Uuumi/Managers/` | Main app singleton - authorization, monitoring, unlock processing |
 | SharedDefaults | `Shared/Storage/` | App Group UserDefaults wrapper for cross-process state |
-| WindPreset | `Clif/Models/` | Difficulty presets: gentle/balanced/intense with rise/fall rates |
+| WindPreset | `Uuumi/Models/` | Difficulty presets: gentle/balanced/intense with rise/fall rates |
 | WindLevel | `Shared/Models/Evolution/` | Wind zones (none/low/medium/high) + LimitSettings config |
 | Constants | `Shared/Constants/` | DefaultsKeys, maxThresholds=20, minimumThresholdSeconds=6 |
 
@@ -38,7 +38,7 @@ MAIN APP                              EXTENSIONS (separate processes, ~6MB limit
 |------|----------|---------|
 | ShieldConfigurationExtension | `ShieldConfiguration/` | Shield UI - morning mode vs usage mode with wind % display |
 | ShieldActionExtension | `ShieldAction/` | Handles shield button taps, break violations, blow away at 100% |
-| ActiveBreak + BreakType | `Clif/Models/` | Break model with free (1.0x) vs committed (1.5x) fall rate multiplier |
+| ActiveBreak + BreakType | `Uuumi/Models/` | Break model with free (1.0x) vs committed (1.5x) fall rate multiplier |
 | BlowAwayNotification | `Shared/Notifications/` | Shared helper for blow away notification |
 
 ## Logging Files

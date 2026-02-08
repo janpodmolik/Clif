@@ -16,10 +16,10 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "B458622F2EE5F6F80088CB78"
-               BuildableName = "DeviceActivityReport.appex"
-               BlueprintName = "DeviceActivityReport"
-               ReferencedContainer = "container:Clif.xcodeproj">
+               BlueprintIdentifier = "B4924ADD2EE57EEE0033475C"
+               BuildableName = "ShieldConfiguration.appex"
+               BlueprintName = "ShieldConfiguration"
+               ReferencedContainer = "container:Uuumi.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
          <BuildActionEntry
@@ -31,9 +31,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "B4159A312EE56ED700BAE49D"
-               BuildableName = "Clif.app"
-               BlueprintName = "Clif"
-               ReferencedContainer = "container:Clif.xcodeproj">
+               BuildableName = "Uuumi.app"
+               BlueprintName = "Uuumi"
+               ReferencedContainer = "container:Uuumi.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -59,9 +59,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "B4159A312EE56ED700BAE49D"
-            BuildableName = "Clif.app"
-            BlueprintName = "Clif"
-            ReferencedContainer = "container:Clif.xcodeproj">
+            BuildableName = "Uuumi.app"
+            BlueprintName = "Uuumi"
+            ReferencedContainer = "container:Uuumi.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
    </LaunchAction>
@@ -78,9 +78,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "B4159A312EE56ED700BAE49D"
-            BuildableName = "Clif.app"
-            BlueprintName = "Clif"
-            ReferencedContainer = "container:Clif.xcodeproj">
+            BuildableName = "Uuumi.app"
+            BlueprintName = "Uuumi"
+            ReferencedContainer = "container:Uuumi.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>

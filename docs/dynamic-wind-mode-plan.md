@@ -192,13 +192,13 @@ DefaultsKeys.activeDynamicPets
 
 ## DTO Architektura
 
-**Umístění:** `Clif/DTOs/`
+**Umístění:** `Uuumi/DTOs/`
 
 **Naming:** `{Model}DTO` (např. `DailyPetDTO`, `DynamicPetDTO`)
 
 **Struktura:**
 ```
-Clif/DTOs/
+Uuumi/DTOs/
   DailyPetDTO.swift
   DynamicPetDTO.swift
   ArchivedDailyPetDTO.swift

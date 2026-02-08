@@ -5,7 +5,7 @@ Extensions run in separate processes with limited resources.
 All cross-process communication MUST go through App Groups.
 </primary-directive>
 
-## Extension Types in Clif
+## Extension Types in Uuumi
 
 | Extension | Purpose | Trigger |
 |-----------|---------|---------|
