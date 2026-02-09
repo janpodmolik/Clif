@@ -117,6 +117,11 @@ enum DefaultsKeys {
 
     static let lastDayResetDate = "lastDayResetDate"
 
+    // MARK: - Hourly Aggregate
+
+    static let hourlyAggregate = "hourlyAggregate"
+    static let hourlyAggregateDate = "hourlyAggregateDate"
+
     // MARK: - Authorization
 
     static let wasEverAuthorized = "wasEverAuthorized"

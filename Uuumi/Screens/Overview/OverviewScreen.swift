@@ -11,6 +11,11 @@ struct OverviewScreen: View {
     @State private var showSearch = false
     @State private var historyViewMode: HistoryViewMode = .list
     @State private var refreshTick: Int = 0
+    @State private var hourlyAggregate: HourlyAggregate?
+
+    init(hourlyAggregate: HourlyAggregate? = nil) {
+        _hourlyAggregate = State(initialValue: hourlyAggregate)
+    }
 
     enum HistoryViewMode {
         case list, grid
@@ -30,6 +35,8 @@ struct OverviewScreen: View {
                 headerSection
                     .padding(.horizontal, 20)
 
+                dailyPatternSection
+
                 EssenceCollectionCarousel(
                     records: archivedPetManager.essenceRecords(currentPet: petManager.currentPet),
                     onTap: { record in
@@ -47,8 +54,9 @@ struct OverviewScreen: View {
             .padding(.top, 20)
         }
         .background(OverviewBackground())
-        .onAppear {
+        .task {
             archivedPetManager.loadSummariesIfNeeded()
+            await loadHourlyAggregate()
         }
         .fullScreenCover(item: $selectedActivePet) { pet in
             PetDetailScreen(
@@ -129,6 +137,14 @@ struct OverviewScreen: View {
         .padding(.vertical, 32)
     }
 
+    @ViewBuilder
+    private var dailyPatternSection: some View {
+        if let aggregate = hourlyAggregate, aggregate.dayCount >= 2 {
+            DailyPatternCard(aggregate: aggregate)
+                .padding(.horizontal, 20)
+        }
+    }
+
     private var historySection: some View {
         VStack(alignment: .leading, spacing: 14) {
             HStack {
@@ -200,6 +216,27 @@ struct OverviewScreen: View {
         .padding(.vertical, 32)
     }
 
+    // MARK: - Hourly Aggregate
+
+    private func loadHourlyAggregate() async {
+        // Skip if already set (e.g. from init for previews)
+        if hourlyAggregate != nil { return }
+
+        // Use cache if fresh (computed today)
+        if !SharedDefaults.isHourlyAggregateStale, let cached = SharedDefaults.hourlyAggregate {
+            hourlyAggregate = cached
+            return
+        }
+
+        let store = SnapshotStore.shared
+        let computed = await Task.detached(priority: .userInitiated) {
+            store.computeHourlyAggregate()
+        }.value
+
+        SharedDefaults.hourlyAggregate = computed
+        hourlyAggregate = computed
+    }
+
     // MARK: - Actions
 
     private func handlePetAction(_ action: PetDetailAction, for pet: Pet) {
@@ -239,7 +276,7 @@ private struct OverviewBackground: View {
 }
 
 #Preview {
-    OverviewScreen()
+    OverviewScreen(hourlyAggregate: .mock())
         .environment(PetManager.mock())
         .environment(ArchivedPetManager.mock())
 }

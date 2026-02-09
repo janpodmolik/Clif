@@ -134,6 +134,16 @@
 		B4F9397B2F2C9D340012773D /* BreakNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4F939782F2C9D340012773D /* BreakNotification.swift */; };
 		B4F9397C2F2C9D340012773D /* BreakNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4F939782F2C9D340012773D /* BreakNotification.swift */; };
 		B4F9397D2F2C9D340012773D /* BreakNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4F939782F2C9D340012773D /* BreakNotification.swift */; };
+		B4HA00022F40000100AA0002 /* HourlyAggregate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4HA00012F40000100AA0001 /* HourlyAggregate.swift */; };
+		B4HA00032F40000100AA0003 /* HourlyAggregate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4HA00012F40000100AA0001 /* HourlyAggregate.swift */; };
+		B4HA00042F40000100AA0004 /* HourlyAggregate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4HA00012F40000100AA0001 /* HourlyAggregate.swift */; };
+		B4HA00052F40000100AA0005 /* HourlyAggregate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4HA00012F40000100AA0001 /* HourlyAggregate.swift */; };
+		B4HA00062F40000100AA0006 /* HourlyAggregate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4HA00012F40000100AA0001 /* HourlyAggregate.swift */; };
+		B4HA00122F40000100BB0002 /* SharedDefaults+HourlyAggregate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4HA00112F40000100BB0001 /* SharedDefaults+HourlyAggregate.swift */; };
+		B4HA00132F40000100BB0003 /* SharedDefaults+HourlyAggregate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4HA00112F40000100BB0001 /* SharedDefaults+HourlyAggregate.swift */; };
+		B4HA00142F40000100BB0004 /* SharedDefaults+HourlyAggregate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4HA00112F40000100BB0001 /* SharedDefaults+HourlyAggregate.swift */; };
+		B4HA00152F40000100BB0005 /* SharedDefaults+HourlyAggregate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4HA00112F40000100BB0001 /* SharedDefaults+HourlyAggregate.swift */; };
+		B4HA00162F40000100BB0006 /* SharedDefaults+HourlyAggregate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4HA00112F40000100BB0001 /* SharedDefaults+HourlyAggregate.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -240,6 +250,8 @@
 		B4EVO0032F0E00010001A003 /* EvolutionPath.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EvolutionPath.swift; sourceTree = "<group>"; };
 		B4EVO0042F0E00010001A004 /* PetDisplayable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PetDisplayable.swift; sourceTree = "<group>"; };
 		B4F939782F2C9D340012773D /* BreakNotification.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BreakNotification.swift; sourceTree = "<group>"; };
+		B4HA00012F40000100AA0001 /* HourlyAggregate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HourlyAggregate.swift; sourceTree = "<group>"; };
+		B4HA00112F40000100BB0001 /* SharedDefaults+HourlyAggregate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SharedDefaults+HourlyAggregate.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -446,6 +458,7 @@
 				B4D351252F123DD00076C09B /* StatType.swift */,
 				B49387962F0E428B0090C730 /* Evolution */,
 				B49387972F0E428B0090C730 /* WindConfig.swift */,
+				B4HA00012F40000100AA0001 /* HourlyAggregate.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -468,6 +481,7 @@
 				B451D3762F26856C004C534F /* SharedDefaults+Shield.swift */,
 				B451D3772F26856C004C534F /* SharedDefaults+Tokens.swift */,
 				B451D3782F26856C004C534F /* SharedDefaults+Wind.swift */,
+				B4HA00112F40000100BB0001 /* SharedDefaults+HourlyAggregate.swift */,
 			);
 			path = SharedDefaults;
 			sourceTree = "<group>";
@@ -768,6 +782,8 @@
 				B4EVO1012F0E00010001A001 /* Blob.swift in Sources */,
 				B472FD632F354AAE00C109AA /* CoinRewards.swift in Sources */,
 				B472FD5B2F3549D100C109AA /* SharedDefaults+Coins.swift in Sources */,
+				B4HA00022F40000100AA0002 /* HourlyAggregate.swift in Sources */,
+				B4HA00122F40000100BB0002 /* SharedDefaults+HourlyAggregate.swift in Sources */,
 				B4EVO1022F0E00010001A002 /* EvolutionPhase.swift in Sources */,
 				B47A5F2B2F152D850068232C /* FullUsageStats.swift in Sources */,
 				B4EVO1032F0E00010001A003 /* EvolutionPath.swift in Sources */,
@@ -793,6 +809,8 @@
 				B4153D472F2741D10006FEE3 /* WindNotification.swift in Sources */,
 				B4C6518B2F2B602A0054A50E /* BreakType.swift in Sources */,
 				B472FD582F3549D100C109AA /* SharedDefaults+Coins.swift in Sources */,
+				B4HA00032F40000100AA0003 /* HourlyAggregate.swift in Sources */,
+				B4HA00132F40000100BB0003 /* SharedDefaults+HourlyAggregate.swift in Sources */,
 				B451D3852F26856C004C534F /* SharedDefaults+DayState.swift in Sources */,
 				B451D3862F26856C004C534F /* SharedDefaults+Shield.swift in Sources */,
 				B451D3872F26856C004C534F /* SharedDefaults+Tokens.swift in Sources */,
@@ -818,6 +836,8 @@
 				B4153D412F2741A40006FEE3 /* WindNotification.swift in Sources */,
 				B4C6518A2F2B602A0054A50E /* BreakType.swift in Sources */,
 				B472FD572F3549D100C109AA /* SharedDefaults+Coins.swift in Sources */,
+				B4HA00042F40000100AA0004 /* HourlyAggregate.swift in Sources */,
+				B4HA00142F40000100BB0004 /* SharedDefaults+HourlyAggregate.swift in Sources */,
 				B451D20B2F24C78E004C534F /* WindLevel.swift in Sources */,
 				B451D2112F24FEF0004C534F /* ExtensionLogger.swift in Sources */,
 				B4167E5C2F1FE73400D89B36 /* SnapshotEventType.swift in Sources */,
@@ -835,6 +855,8 @@
 				B493879B2F0E428B0090C730 /* WindLevel.swift in Sources */,
 				B4F9397B2F2C9D340012773D /* BreakNotification.swift in Sources */,
 				B472FD5A2F3549D100C109AA /* SharedDefaults+Coins.swift in Sources */,
+				B4HA00052F40000100AA0005 /* HourlyAggregate.swift in Sources */,
+				B4HA00152F40000100BB0005 /* SharedDefaults+HourlyAggregate.swift in Sources */,
 				B45862152EE5B92C0088CB78 /* Constants.swift in Sources */,
 				B4EVO2012F0E00010001A001 /* Blob.swift in Sources */,
 				B4EVO2022F0E00010001A002 /* EvolutionPhase.swift in Sources */,
@@ -875,6 +897,8 @@
 				B451D38C2F26856C004C534F /* SharedDefaults+Tokens.swift in Sources */,
 				B4C6518C2F2B602A0054A50E /* BreakType.swift in Sources */,
 				B472FD592F3549D100C109AA /* SharedDefaults+Coins.swift in Sources */,
+				B4HA00062F40000100AA0006 /* HourlyAggregate.swift in Sources */,
+				B4HA00162F40000100BB0006 /* SharedDefaults+HourlyAggregate.swift in Sources */,
 				B451D38D2F26856C004C534F /* SharedDefaults+Wind.swift in Sources */,
 				B451D20F2F24FEF0004C534F /* ExtensionLogger.swift in Sources */,
 				B4167E622F1FF91800D89B36 /* SnapshotEvent.swift in Sources */,
