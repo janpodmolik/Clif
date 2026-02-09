@@ -124,7 +124,7 @@ struct HomeScreen: View {
                     debugTimeSlider
                         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomLeading)
                         .padding(.horizontal, homeCardInset)
-                        .padding(.bottom, 80)
+                        .padding(.bottom, 16)
                 }
                 #endif
             }
@@ -452,7 +452,7 @@ struct HomeScreen: View {
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomLeading)
             .padding(.horizontal, homeCardInset)
-            .padding(.bottom, 80)
+            .padding(.bottom, 16)
             #endif
         }
     }

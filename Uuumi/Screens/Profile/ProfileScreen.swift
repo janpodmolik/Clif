@@ -13,6 +13,7 @@ struct ProfileScreen: View {
     @AppStorage("appearanceMode") private var appearanceMode: AppearanceMode = .automatic
     @AppStorage("selectedDayTheme") private var dayTheme: DayTheme = .morningHaze
     @AppStorage("selectedNightTheme") private var nightTheme: NightTheme = .deepNight
+    @AppStorage("lockButtonSide") private var lockButtonSide: LockButtonSide = .trailing
     @State private var limitSettings = SharedDefaults.limitSettings
     @State private var showPremiumSheet = false
     @State private var showAuthSheet = false
@@ -39,6 +40,13 @@ struct ProfileScreen: View {
                             Label("Účet", systemImage: "person")
                         }
                         .tint(.primary)
+
+                        Button {
+                            showPremiumSheet = true
+                        } label: {
+                            Label("Uuumium", systemImage: "crown.fill")
+                                .foregroundStyle(Color("PremiumGold"))
+                        }
                     }
                 }
 
@@ -57,6 +65,14 @@ struct ProfileScreen: View {
                         Label("Denní shield", systemImage: "calendar")
                     }
                     .tint(.blue)
+
+                    Picker(selection: $lockButtonSide) {
+                        ForEach(LockButtonSide.allCases, id: \.self) { side in
+                            Text(side.label).tag(side)
+                        }
+                    } label: {
+                        Label("Lock tlačítko", systemImage: "lock.fill")
+                    }
 
                     Picker(selection: $appearanceMode) {
                         ForEach(AppearanceMode.allCases, id: \.self) { mode in
@@ -127,7 +143,6 @@ struct ProfileScreen: View {
                 }
                 #endif
             }
-            .safeAreaPadding(.bottom, 80)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {

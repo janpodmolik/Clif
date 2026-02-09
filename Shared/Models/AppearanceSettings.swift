@@ -20,6 +20,17 @@ enum AppearanceMode: String, CaseIterable, Codable {
     }
 }
 
+enum LockButtonSide: String, CaseIterable, Codable {
+    case trailing, leading
+
+    var label: String {
+        switch self {
+        case .trailing: "Vpravo"
+        case .leading: "Vlevo"
+        }
+    }
+}
+
 enum DayTheme: String, CaseIterable, Codable, Identifiable {
     case morningHaze
     case clearSky

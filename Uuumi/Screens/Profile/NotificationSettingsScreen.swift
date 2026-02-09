@@ -79,7 +79,6 @@ struct NotificationSettingsScreen: View {
             }
             .headerProminence(.increased)
         }
-        .safeAreaPadding(.bottom, 80)
         .navigationTitle("Notifikace")
         .navigationBarTitleDisplayMode(.inline)
         .onChange(of: limitSettings) { _, newValue in

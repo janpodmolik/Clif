@@ -8,6 +8,7 @@ struct OverviewScreen: View {
     @State private var selectedActivePet: Pet?
     @State private var selectedArchivedPet: ArchivedPet?
     @State private var selectedEssenceRecord: EssenceRecord?
+    @State private var showSearch = false
     @State private var historyViewMode: HistoryViewMode = .list
     @State private var refreshTick: Int = 0
 
@@ -44,7 +45,6 @@ struct OverviewScreen: View {
                     .padding(.horizontal, 20)
             }
             .padding(.top, 20)
-            .padding(.bottom, 110)
         }
         .background(OverviewBackground())
         .onAppear {
@@ -59,6 +59,9 @@ struct OverviewScreen: View {
         }
         .fullScreenCover(item: $selectedArchivedPet) { pet in
             ArchivedPetDetailScreen(pet: pet)
+        }
+        .sheet(isPresented: $showSearch) {
+            SearchSheet()
         }
         .sheet(item: $selectedEssenceRecord) { record in
             EssenceDetailSheet(
@@ -75,11 +78,23 @@ struct OverviewScreen: View {
     }
 
     private var headerSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("Přehled")
-                .font(.system(size: 32, weight: .bold))
-            Text("Historie tvých petů a času u obrazovky.")
-                .foregroundStyle(.secondary)
+        HStack(alignment: .top) {
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Přehled")
+                    .font(.system(size: 32, weight: .bold))
+                Text("Historie tvých petů a času u obrazovky.")
+                    .foregroundStyle(.secondary)
+            }
+            Spacer()
+            Button {
+                showSearch = true
+            } label: {
+                Image(systemName: "magnifyingglass")
+                    .font(.title2)
+                    .foregroundStyle(.primary)
+                    .frame(width: 36, height: 36)
+            }
+            .buttonStyle(.plain)
         }
     }
 

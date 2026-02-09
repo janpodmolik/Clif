@@ -31,14 +31,14 @@ enum AppTab: String, CaseIterable {
 struct ContentView: View {
     @AppStorage("appearanceMode")
     private var appearanceMode: AppearanceMode = .automatic
+    @AppStorage("lockButtonSide")
+    private var lockButtonSide: LockButtonSide = .trailing
 
     @Environment(PetManager.self) private var petManager
 
     @State private var activeTab: AppTab = .home
     @State private var isDaytime: Bool = SkyGradient.isDaytime()
     @State private var navigationPaths: [AppTab: NavigationPath] = [:]
-    @State private var showSearch = false
-    @State private var showPremium = false
     @State private var essenceCoordinator = EssencePickerCoordinator()
     @State private var createPetCoordinator = CreatePetCoordinator()
     @State private var coinsAnimator = CoinsRewardAnimator()
@@ -53,8 +53,6 @@ struct ContentView: View {
 
     private var shieldState: ShieldState { ShieldState.shared }
 
-    private let tabBarHeight: CGFloat = 55
-
     #if DEBUG
     @State private var showPetDebug = false
     #endif
@@ -63,41 +61,48 @@ struct ContentView: View {
         GeometryReader { geometry in
             ZStack {
                 TabView(selection: $activeTab) {
-                    Tab(value: .home) {
+                    Tab("Home", systemImage: "house", value: .home) {
                         HomeScreen()
-                            .toolbarVisibility(.hidden, for: .tabBar)
                     }
-                    Tab(value: .overview) {
+                    Tab("Přehled", systemImage: "chart.bar", value: .overview) {
                         OverviewScreen()
-                            .toolbarVisibility(.hidden, for: .tabBar)
                     }
-                    Tab(value: .profile) {
+                    Tab("Profil", systemImage: "person", value: .profile) {
                         ProfileScreen(navigationPath: navigationPathBinding(for: .profile))
-                            .toolbarVisibility(.hidden, for: .tabBar)
                     }
                 }
                 .tint(.primary)
-                .safeAreaInset(edge: .bottom, spacing: 0) {
-                    customTabBar()
-                        .padding(.horizontal, 20)
-                }
 
                 EssencePickerOverlay()
                 CreatePetOverlay(screenHeight: geometry.size.height)
+
+                // Floating lock button — Home tab only, hidden during overlays
+                if activeTab == .home && !essenceCoordinator.isShowing && !createPetCoordinator.isShowing {
+                    VStack {
+                        Spacer()
+                        HStack {
+                            if lockButtonSide == .trailing { Spacer() }
+                            floatingLockButton()
+                            if lockButtonSide == .leading { Spacer() }
+                        }
+                        .padding(lockButtonSide == .trailing ? .trailing : .leading, 20)
+                        .padding(.bottom, geometry.size.height * 0.25)
+                    }
+                    .ignoresSafeArea(edges: .bottom)
+                    .allowsHitTesting(true)
+                }
 
                 // Coins reward tag overlay
                 GeometryReader { overlayGeo in
                     let w = overlayGeo.size.width
                     let h = overlayGeo.size.height
-                    // Profile tab is the 3rd of 3 tabs in the left capsule.
-                    // Layout: |--20--[  tabs capsule  ]--10--[55 btn]--20--|
-                    let tabsCapsuleWidth = w - 40 - 55 - 10
-                    let profileTabCenterX = 20 + tabsCapsuleWidth * (5.0 / 6.0)
+                    let tabBarCenter = geometry.safeAreaInsets.bottom / 2
+                    let profileTabCenterX = w * (5.0 / 6.0)
 
                     BigTagRewardView(
                         animator: coinsAnimator,
                         startPosition: CGPoint(x: w / 2, y: h * 0.62),
-                        endPosition: CGPoint(x: profileTabCenterX, y: h - tabBarHeight - 10)
+                        endPosition: CGPoint(x: profileTabCenterX, y: h - tabBarCenter)
                     )
                 }
                 .allowsHitTesting(false)
@@ -122,12 +127,6 @@ struct ContentView: View {
             showMockSheet = true
         }
         #endif
-        .sheet(isPresented: $showSearch) {
-            SearchSheet()
-        }
-        .sheet(isPresented: $showPremium) {
-            PremiumSheet()
-        }
         .sheet(isPresented: $showMockSheet) {
             mockSheetContent
                 .presentationDetents([.medium])
@@ -164,102 +163,41 @@ struct ContentView: View {
         }
     }
 
-    // MARK: - Tab Bar
+    // MARK: - Floating Lock Button
 
     @ViewBuilder
-    private func customTabBar() -> some View {
+    private func floatingLockButton() -> some View {
         if #available(iOS 26.0, *) {
-            GlassEffectContainer(spacing: 10) {
-                tabBarContent()
-            }
-            .frame(height: tabBarHeight)
+            lockButton()
+                .glassEffect(.regular.interactive(), in: .circle)
         } else {
-            HStack(spacing: 10) {
-                tabBarContentFallback()
-            }
-            .frame(height: tabBarHeight)
+            lockButton()
+                .background(.ultraThinMaterial, in: Circle())
         }
     }
 
-    @available(iOS 26.0, *)
     @ViewBuilder
-    private func tabBarContent() -> some View {
-        HStack(spacing: 10) {
-            SwiftUITabBar(
-                activeTab: $activeTab,
-                onReselect: { tab in popToRoot(for: tab) },
-                tabSymbol: { $0.symbol },
-                pulsingTab: .profile,
-                coinsAnimator: coinsAnimator
-            )
-            .padding(.horizontal, 4)
-            .frame(height: tabBarHeight)
-            .glassEffect(.regular.interactive(), in: .capsule)
-
-            actionButtonGlass()
-        }
-    }
-
-    private var premiumGoldColor: Color {
-        Color("PremiumGold")
-    }
-
-    @ViewBuilder
-    @available(iOS 26.0, *)
-    private func actionButtonGlass() -> some View {
-        actionButton()
-            .glassEffect(.regular.interactive(), in: .circle)
-    }
-
-    @ViewBuilder
-    private func actionButtonFallback() -> some View {
-        actionButton()
-            .background(.ultraThinMaterial, in: Circle())
-    }
-
-    @ViewBuilder
-    private func actionButton() -> some View {
+    private func lockButton() -> some View {
         Button {
-            handleActionButtonTap()
+            UIImpactFeedbackGenerator(style: .light).impactOccurred()
+            handleHomeActionTap()
         } label: {
-            actionButtonIcon
-                .font(.title2.weight(.semibold))
-                .contentTransition(.symbolEffect(.replace))
-                .frame(width: 55, height: 55)
+            Group {
+                if petManager.currentPet != nil {
+                    Image(systemName: shieldState.isActive ? "lock.fill" : "lock.open.fill")
+                } else {
+                    Image(systemName: "plus")
+                }
+            }
+            .font(.title2.weight(.semibold))
+            .contentTransition(.symbolEffect(.replace))
+            .frame(width: 55, height: 55)
         }
         .contentShape(Circle().inset(by: -10))
         .buttonStyle(.pressableButton)
     }
 
-    @ViewBuilder
-    private var actionButtonIcon: some View {
-        switch activeTab {
-        case .home:
-            // Show lock if pet exists, otherwise plus for creation
-            if petManager.currentPet != nil {
-                Image(systemName: shieldState.isActive ? "lock.fill" : "lock.open.fill")
-            } else {
-                Image(systemName: "plus")
-            }
-        case .overview:
-            Image(systemName: "magnifyingglass")
-        case .profile:
-            Image(systemName: "crown.fill")
-                .foregroundStyle(premiumGoldColor)
-        }
-    }
-
-    private func handleActionButtonTap() {
-        UIImpactFeedbackGenerator(style: .light).impactOccurred()
-        switch activeTab {
-        case .home:
-            handleHomeActionTap()
-        case .overview:
-            showSearch = true
-        case .profile:
-            showPremium = true
-        }
-    }
+    // MARK: - Lock Actions
 
     private func handleHomeActionTap() {
         // No pet = pet creation flow
@@ -292,34 +230,13 @@ struct ContentView: View {
         ShieldManager.shared.turnOn(breakType: type, durationMinutes: durationMinutes)
     }
 
-    private static let navigableTabs: Set<AppTab> = [.profile]
-
-    private func popToRoot(for tab: AppTab) {
-        guard Self.navigableTabs.contains(tab) else { return }
-        navigationPaths[tab] = NavigationPath()
-    }
+    // MARK: - Navigation
 
     private func navigationPathBinding(for tab: AppTab) -> Binding<NavigationPath> {
         Binding(
             get: { navigationPaths[tab, default: NavigationPath()] },
             set: { navigationPaths[tab] = $0 }
         )
-    }
-
-    @ViewBuilder
-    private func tabBarContentFallback() -> some View {
-        SwiftUITabBar(
-            activeTab: $activeTab,
-            onReselect: { tab in popToRoot(for: tab) },
-            tabSymbol: { $0.symbol },
-            pulsingTab: .profile,
-            coinsAnimator: coinsAnimator
-        )
-        .padding(.horizontal, 4)
-        .frame(height: tabBarHeight)
-        .background(.ultraThinMaterial, in: Capsule())
-
-        actionButtonFallback()
     }
 
     // MARK: - Appearance

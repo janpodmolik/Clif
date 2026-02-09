@@ -15,7 +15,6 @@ final class CoinsRewardAnimator {
 
     private(set) var isAnimating = false
     private(set) var amount = 0
-    private(set) var isPulsingTab = false
     private(set) var phase: BigTagPhase = .idle
 
     // MARK: - API
@@ -37,7 +36,6 @@ final class CoinsRewardAnimator {
         let holdDuration: Double = 0.95
         let flyDuration: Double = 0.5
         let arriveDuration: Double = 0.15
-        let pulseHoldDuration: Double = 0.4
 
         var elapsed: Double = 0
 
@@ -66,20 +64,18 @@ final class CoinsRewardAnimator {
         }
         elapsed += flyDuration
 
-        // Phase 4: Arrive, trigger tab pulse
+        // Phase 4: Arrive
         DispatchQueue.main.asyncAfter(deadline: .now() + elapsed) { [weak self] in
             guard let self else { return }
             withAnimation(.easeOut(duration: arriveDuration)) {
                 self.phase = .arrived
             }
-            self.isPulsingTab = true
         }
-        elapsed += arriveDuration + pulseHoldDuration
+        elapsed += arriveDuration
 
         // Phase 5: Cleanup
         DispatchQueue.main.asyncAfter(deadline: .now() + elapsed) { [weak self] in
             guard let self else { return }
-            self.isPulsingTab = false
             self.phase = .idle
             self.isAnimating = false
         }
