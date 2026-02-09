@@ -4,8 +4,7 @@ enum BigTagPhase: Equatable {
     case idle
     case popIn
     case pause
-    case flyToTab
-    case arrived
+    case burst
 }
 
 @Observable
@@ -34,8 +33,7 @@ final class CoinsRewardAnimator {
 
         let popInDuration: Double = 0.35
         let holdDuration: Double = 0.95
-        let flyDuration: Double = 0.5
-        let arriveDuration: Double = 0.15
+        let burstDuration: Double = 0.65
 
         var elapsed: Double = 0
 
@@ -54,26 +52,16 @@ final class CoinsRewardAnimator {
         }
         elapsed += holdDuration
 
-        // Phase 3: Fly to tab
-        let flyStart = elapsed
-        DispatchQueue.main.asyncAfter(deadline: .now() + flyStart) { [weak self] in
-            guard let self else { return }
-            withAnimation(.easeInOut(duration: flyDuration)) {
-                self.phase = .flyToTab
-            }
-        }
-        elapsed += flyDuration
-
-        // Phase 4: Arrive
+        // Phase 3: Burst — tag scales up + particles fly out
         DispatchQueue.main.asyncAfter(deadline: .now() + elapsed) { [weak self] in
             guard let self else { return }
-            withAnimation(.easeOut(duration: arriveDuration)) {
-                self.phase = .arrived
+            withAnimation(.easeOut(duration: burstDuration)) {
+                self.phase = .burst
             }
         }
-        elapsed += arriveDuration
+        elapsed += burstDuration
 
-        // Phase 5: Cleanup
+        // Phase 4: Cleanup
         DispatchQueue.main.asyncAfter(deadline: .now() + elapsed) { [weak self] in
             guard let self else { return }
             self.phase = .idle

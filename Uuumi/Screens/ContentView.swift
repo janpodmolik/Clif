@@ -73,11 +73,8 @@ struct ContentView: View {
                 }
                 .tint(.primary)
 
-                EssencePickerOverlay()
-                CreatePetOverlay(screenHeight: geometry.size.height)
-
-                // Floating lock button — Home tab only, hidden during overlays
-                if activeTab == .home && !essenceCoordinator.isShowing && !createPetCoordinator.isShowing {
+                // Floating lock button — Home tab only, hidden during pet creation
+                if activeTab == .home && !createPetCoordinator.isShowing {
                     VStack {
                         Spacer()
                         HStack {
@@ -92,17 +89,14 @@ struct ContentView: View {
                     .allowsHitTesting(true)
                 }
 
+                EssencePickerOverlay()
+                CreatePetOverlay(screenHeight: geometry.size.height)
+
                 // Coins reward tag overlay
                 GeometryReader { overlayGeo in
-                    let w = overlayGeo.size.width
-                    let h = overlayGeo.size.height
-                    let tabBarCenter = geometry.safeAreaInsets.bottom / 2
-                    let profileTabCenterX = w * (5.0 / 6.0)
-
                     BigTagRewardView(
                         animator: coinsAnimator,
-                        startPosition: CGPoint(x: w / 2, y: h * 0.62),
-                        endPosition: CGPoint(x: profileTabCenterX, y: h - tabBarCenter)
+                        position: CGPoint(x: overlayGeo.size.width / 2, y: overlayGeo.size.height * 0.62)
                     )
                 }
                 .allowsHitTesting(false)
