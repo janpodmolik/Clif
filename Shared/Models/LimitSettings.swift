@@ -1,12 +1,10 @@
 import Foundation
 
-/// Notification verbosity level for wind warnings.
+/// Legacy notification mode. Kept only for backward-compatible decoding.
+/// New code should use `NotificationSettings` instead.
 enum NotificationMode: String, Codable, CaseIterable {
-    /// No notifications
     case off
-    /// Only critical (85%) notification
     case important
-    /// All notifications (25%, 60%, 85%)
     case all
 
     var label: String {
@@ -16,36 +14,17 @@ enum NotificationMode: String, Codable, CaseIterable {
         case .all: return "Všechny"
         }
     }
-
-    var description: String {
-        switch self {
-        case .off: return "Žádné notifikace o větru"
-        case .important: return "Upozorní jen při kritickém větru (85%)"
-        case .all: return "Upozorní při 25%, 60% a 85%"
-        }
-    }
-
-    func shouldSend(_ notification: WindNotification) -> Bool {
-        switch self {
-        case .off: return false
-        case .important: return notification == .critical
-        case .all: return true
-        }
-    }
 }
 
 /// User-configurable settings for notifications and safety shield.
 /// Stored in SharedDefaults for access from both app and extensions.
 /// Note: Shields are activated manually (break button) or at 100% (safety shield).
-struct LimitSettings: Codable, Equatable {
+struct LimitSettings: Equatable {
 
     // MARK: - Notification Settings
 
-    /// Notification verbosity level.
-    var notificationMode: NotificationMode = .all
-
-    /// Legacy: migrated to notificationMode. Kept for backwards compatibility decoding.
-    private var enabledNotifications: Set<WindNotification>?
+    /// Granular notification preferences (replaces legacy notificationMode).
+    var notifications: NotificationSettings = .default
 
     // MARK: - Day Start Shield
 
@@ -62,4 +41,40 @@ struct LimitSettings: Codable, Equatable {
     // MARK: - Defaults
 
     static let `default` = LimitSettings()
+}
+
+// MARK: - Codable (with migration from legacy NotificationMode)
+
+extension LimitSettings: Codable {
+
+    private enum CodingKeys: String, CodingKey {
+        case notifications
+        case notificationMode       // legacy — read-only for migration
+        case dayStartShieldEnabled
+        case disableSafetyShield
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+
+        // Decode new notifications if present, otherwise migrate from legacy mode
+        if let notifications = try container.decodeIfPresent(NotificationSettings.self, forKey: .notifications) {
+            self.notifications = notifications
+        } else if let mode = try container.decodeIfPresent(NotificationMode.self, forKey: .notificationMode) {
+            self.notifications = .migrated(from: mode)
+        } else {
+            self.notifications = .default
+        }
+
+        self.dayStartShieldEnabled = try container.decodeIfPresent(Bool.self, forKey: .dayStartShieldEnabled) ?? true
+        self.disableSafetyShield = try container.decodeIfPresent(Bool.self, forKey: .disableSafetyShield) ?? false
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(notifications, forKey: .notifications)
+        try container.encode(dayStartShieldEnabled, forKey: .dayStartShieldEnabled)
+        try container.encode(disableSafetyShield, forKey: .disableSafetyShield)
+        // notificationMode is intentionally NOT encoded — migration is one-way
+    }
 }

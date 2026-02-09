@@ -3,6 +3,7 @@ import Supabase
 
 enum ProfileDestination: Hashable {
     case essenceCatalog
+    case notificationSettings
 }
 
 struct ProfileScreen: View {
@@ -43,12 +44,13 @@ struct ProfileScreen: View {
 
                 // MARK: - Přizpůsobit
                 Section(header: Text("Přizpůsobit")) {
-                    Picker(selection: $limitSettings.notificationMode) {
-                        ForEach(NotificationMode.allCases, id: \.self) { mode in
-                            Text(mode.label).tag(mode)
+                    NavigationLink(value: ProfileDestination.notificationSettings) {
+                        HStack {
+                            Label("Notifikace", systemImage: "bell.fill")
+                            Spacer()
+                            Text(limitSettings.notifications.masterEnabled ? "Zapnuto" : "Vypnuto")
+                                .foregroundStyle(.secondary)
                         }
-                    } label: {
-                        Label("Notifikace", systemImage: "bell.fill")
                     }
 
                     Toggle(isOn: $limitSettings.dayStartShieldEnabled) {
@@ -162,6 +164,8 @@ struct ProfileScreen: View {
                 switch destination {
                 case .essenceCatalog:
                     EssenceCatalogScreen()
+                case .notificationSettings:
+                    NotificationSettingsScreen()
                 }
             }
             .onChange(of: limitSettings) { _, newValue in
@@ -231,7 +235,7 @@ struct ProfileScreen: View {
                 }
                 .buttonStyle(.plain)
                 .padding(.top, 4)
-            }
+            }   
         }
         .padding(.vertical, 20)
         .frame(maxWidth: .infinity)

@@ -20,9 +20,9 @@ enum WindNotification: Int, CaseIterable, Codable, Hashable {
 
     var title: String {
         switch self {
-        case .light: return "🍃"
-        case .strong: return "💨"
-        case .critical: return "🌪️"
+        case .light: return "Lehký vítr"
+        case .strong: return "Silný vítr"
+        case .critical: return "Kritický vítr"
         }
     }
 

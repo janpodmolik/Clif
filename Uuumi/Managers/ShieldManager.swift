@@ -164,7 +164,8 @@ final class ShieldManager {
         SharedDefaults.committedBreakDuration = durationMinutes
 
         // Schedule notification for committed break end
-        if breakType == .committed, let minutes = durationMinutes {
+        if breakType == .committed, let minutes = durationMinutes,
+           SharedDefaults.limitSettings.notifications.shouldSendBreak(.committedBreakEnded) {
             let seconds: TimeInterval = minutes == 0 ? 20 : TimeInterval(minutes * 60)
             let fireDate = now.addingTimeInterval(seconds)
             BreakNotification.scheduleCommittedBreakEnd(at: fireDate)
@@ -266,13 +267,17 @@ final class ShieldManager {
         case .free:
             if !SharedDefaults.windZeroNotified, SharedDefaults.effectiveWind <= 0 {
                 SharedDefaults.windZeroNotified = true
-                BreakNotification.freeBreakWindZero.send()
+                if SharedDefaults.limitSettings.notifications.shouldSendBreak(.freeBreakWindZero) {
+                    BreakNotification.freeBreakWindZero.send()
+                }
             }
 
         case .safety:
             if !SharedDefaults.windZeroNotified, SharedDefaults.effectiveWind <= 0 {
                 SharedDefaults.windZeroNotified = true
-                BreakNotification.safetyBreakWindZero.send()
+                if SharedDefaults.limitSettings.notifications.shouldSendBreak(.safetyBreakWindZero) {
+                    BreakNotification.safetyBreakWindZero.send()
+                }
             }
         }
     }

@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		B41045D16C031199972A8469 /* NotificationSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = B40CCE351C80317FA3B1799D /* NotificationSettings.swift */; };
 		B4153D3E2F27417F0006FEE3 /* LimitSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4153D3D2F27417F0006FEE3 /* LimitSettings.swift */; };
 		B4153D3F2F27417F0006FEE3 /* LimitSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4153D3D2F27417F0006FEE3 /* LimitSettings.swift */; };
 		B4153D412F2741A40006FEE3 /* WindNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4153D402F2741A40006FEE3 /* WindNotification.swift */; };
@@ -27,6 +28,7 @@
 		B4167E622F1FF91800D89B36 /* SnapshotEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4167E532F1FE2D800D89B36 /* SnapshotEvent.swift */; };
 		B4167E632F1FF92500D89B36 /* SnapshotStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4167E5E2F1FEF4E00D89B36 /* SnapshotStore.swift */; };
 		B4167E652F1FF93800D89B36 /* SnapshotLogging.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4167E642F1FF93800D89B36 /* SnapshotLogging.swift */; };
+		B42C833F8B9D2434E465E150 /* NotificationSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = B40CCE351C80317FA3B1799D /* NotificationSettings.swift */; };
 		B451D20A2F24C74F004C534F /* WindLevel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B49387952F0E428B0090C730 /* WindLevel.swift */; };
 		B451D20B2F24C78E004C534F /* WindLevel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B49387952F0E428B0090C730 /* WindLevel.swift */; };
 		B451D20C2F24C78E004C534F /* WindLevel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B49387952F0E428B0090C730 /* WindLevel.swift */; };
@@ -70,6 +72,8 @@
 		B45CF5A52F279E83009B4F06 /* DayStartGreeting.swift in Sources */ = {isa = PBXBuildFile; fileRef = B45CF5A42F279E83009B4F06 /* DayStartGreeting.swift */; };
 		B45CF5A62F279E83009B4F06 /* DayStartGreeting.swift in Sources */ = {isa = PBXBuildFile; fileRef = B45CF5A42F279E83009B4F06 /* DayStartGreeting.swift */; };
 		B461E30C2F37806900DD127E /* AppearanceSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = B461E30B2F37806900DD127E /* AppearanceSettings.swift */; };
+		B465CE0C8FADC1A606CB0FB3 /* NotificationSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = B40CCE351C80317FA3B1799D /* NotificationSettings.swift */; };
+		B46FF15117FC695A07A0CA6E /* NotificationSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = B40CCE351C80317FA3B1799D /* NotificationSettings.swift */; };
 		B472FD572F3549D100C109AA /* SharedDefaults+Coins.swift in Sources */ = {isa = PBXBuildFile; fileRef = B472FD562F3549D100C109AA /* SharedDefaults+Coins.swift */; };
 		B472FD582F3549D100C109AA /* SharedDefaults+Coins.swift in Sources */ = {isa = PBXBuildFile; fileRef = B472FD562F3549D100C109AA /* SharedDefaults+Coins.swift */; };
 		B472FD592F3549D100C109AA /* SharedDefaults+Coins.swift in Sources */ = {isa = PBXBuildFile; fileRef = B472FD562F3549D100C109AA /* SharedDefaults+Coins.swift */; };
@@ -82,6 +86,7 @@
 		B472FD622F354AAE00C109AA /* CoinRewards.swift in Sources */ = {isa = PBXBuildFile; fileRef = B472FD5E2F354AAE00C109AA /* CoinRewards.swift */; };
 		B472FD632F354AAE00C109AA /* CoinRewards.swift in Sources */ = {isa = PBXBuildFile; fileRef = B472FD5E2F354AAE00C109AA /* CoinRewards.swift */; };
 		B47A5F2B2F152D850068232C /* FullUsageStats.swift in Sources */ = {isa = PBXBuildFile; fileRef = B47A5F2A2F152D850068232C /* FullUsageStats.swift */; };
+		B47D627746685257BDD640FB /* NotificationSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = B40CCE351C80317FA3B1799D /* NotificationSettings.swift */; };
 		B4924ACC2EE57ED90033475C /* DeviceActivity.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B4924ACB2EE57ED90033475C /* DeviceActivity.framework */; };
 		B4924AD42EE57ED90033475C /* DeviceActivityMonitor.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = B4924AC92EE57ED90033475C /* DeviceActivityMonitor.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		B4924AE02EE57EEE0033475C /* ManagedSettings.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B4924ADF2EE57EEE0033475C /* ManagedSettings.framework */; };
@@ -190,6 +195,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		B40CCE351C80317FA3B1799D /* NotificationSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationSettings.swift; sourceTree = "<group>"; };
 		B4153D3D2F27417F0006FEE3 /* LimitSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LimitSettings.swift; sourceTree = "<group>"; };
 		B4153D402F2741A40006FEE3 /* WindNotification.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindNotification.swift; sourceTree = "<group>"; };
 		B4159A322EE56ED700BAE49D /* Uuumi.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Uuumi.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -432,6 +438,7 @@
 				B4C64EFC2F2B5EC00054A50E /* BreakType.swift */,
 				B45CF5A42F279E83009B4F06 /* DayStartGreeting.swift */,
 				B4153D3D2F27417F0006FEE3 /* LimitSettings.swift */,
+				B40CCE351C80317FA3B1799D /* NotificationSettings.swift */,
 				B4167E542F1FE2D800D89B36 /* Snapshot */,
 				B47A5F2A2F152D850068232C /* FullUsageStats.swift */,
 				B4ANI0002F0E00010001B000 /* Animation */,
@@ -739,6 +746,7 @@
 				B451D3822F26856C004C534F /* SharedDefaults+Tokens.swift in Sources */,
 				B461E30C2F37806900DD127E /* AppearanceSettings.swift in Sources */,
 				B4153D3F2F27417F0006FEE3 /* LimitSettings.swift in Sources */,
+				B47D627746685257BDD640FB /* NotificationSettings.swift in Sources */,
 				B45CF5A62F279E83009B4F06 /* DayStartGreeting.swift in Sources */,
 				B4153D422F2741A40006FEE3 /* WindNotification.swift in Sources */,
 				B451D3832F26856C004C534F /* SharedDefaults+Wind.swift in Sources */,
@@ -776,6 +784,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				B4153D442F2741C30006FEE3 /* LimitSettings.swift in Sources */,
+				B42C833F8B9D2434E465E150 /* NotificationSettings.swift in Sources */,
 				B4F8F9EC2FEC35C900E9E6D8 /* Constants.swift in Sources */,
 				B451D20C2F24C78E004C534F /* WindLevel.swift in Sources */,
 				B451D20E2F24FEF0004C534F /* ExtensionLogger.swift in Sources */,
@@ -798,6 +807,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				B4153D3E2F27417F0006FEE3 /* LimitSettings.swift in Sources */,
+				B41045D16C031199972A8469 /* NotificationSettings.swift in Sources */,
 				B45862172EE5B92C0088CB78 /* Constants.swift in Sources */,
 				B4167E552F1FE2D800D89B36 /* SnapshotEvent.swift in Sources */,
 				B451D37A2F26856C004C534F /* SharedDefaults.swift in Sources */,
@@ -844,6 +854,7 @@
 				B4ANI2012F0E00010001B001 /* IdleConfig.swift in Sources */,
 				B4ANI2022F0E00010001B002 /* TapAnimationType.swift in Sources */,
 				B4153D432F2741C30006FEE3 /* LimitSettings.swift in Sources */,
+				B46FF15117FC695A07A0CA6E /* NotificationSettings.swift in Sources */,
 				B4ANI2032F0E00010001B003 /* TapConfig.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -853,6 +864,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				B4153D452F2741C30006FEE3 /* LimitSettings.swift in Sources */,
+				B465CE0C8FADC1A606CB0FB3 /* NotificationSettings.swift in Sources */,
 				B4C4C0A02EE7FF0900E469E8 /* Constants.swift in Sources */,
 				B4167E612F1FF91200D89B36 /* SnapshotEventType.swift in Sources */,
 				B451D20A2F24C74F004C534F /* WindLevel.swift in Sources */,

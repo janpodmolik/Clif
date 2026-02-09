@@ -163,8 +163,8 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
         }
 
         let settings = SharedDefaults.limitSettings
-        guard settings.notificationMode.shouldSend(notification) else {
-            ExtensionLogger.log("[Notification] Skipped wind_\(notification.percentage)% - disabled by mode '\(settings.notificationMode.rawValue)'")
+        guard settings.notifications.shouldSendWind(notification) else {
+            ExtensionLogger.log("[Notification] Skipped wind_\(notification.percentage)% - disabled in settings")
             return
         }
 
