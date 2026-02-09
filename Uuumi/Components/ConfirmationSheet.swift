@@ -44,17 +44,7 @@ struct ConfirmationSheet<Content: View>: View {
             .padding(24)
             .navigationTitle(navigationTitle)
             .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    Button {
-                        dismiss()
-                    } label: {
-                        Image(systemName: "xmark")
-                            .font(.system(size: 14))
-                            .foregroundStyle(.secondary)
-                    }
-                }
-            }
+            .dismissButton()
         }
         .presentationDetents([.height(height)])
         .presentationDragIndicator(.visible)

@@ -132,17 +132,7 @@ struct EmailAuthScreen: View {
                 }
                 .padding(.horizontal, 24)
             }
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button {
-                        dismiss()
-                    } label: {
-                        Image(systemName: "xmark")
-                            .font(.system(size: 16))
-                            .foregroundStyle(.secondary)
-                    }
-                }
-            }
+            .dismissButton(placement: .topBarTrailing)
             .alert("Chyba", isPresented: hasLocalError) {
                 Button("OK") { localError = nil }
             } message: {

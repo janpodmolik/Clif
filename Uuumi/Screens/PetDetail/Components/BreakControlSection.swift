@@ -147,17 +147,7 @@ struct WindPresetComparisonSheet: View {
             }
             .navigationTitle("Wind Presets")
             .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    Button {
-                        dismiss()
-                    } label: {
-                        Image(systemName: "xmark")
-                            .font(.system(size: 16))
-                            .foregroundStyle(.secondary)
-                    }
-                }
-            }
+            .dismissButton()
         }
         .presentationDetents([.medium, .large])
     }

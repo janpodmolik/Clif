@@ -32,17 +32,7 @@ struct StatusFilterSheet: View {
             .listStyle(.insetGrouped)
             .navigationTitle("Stav")
             .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    Button {
-                        dismiss()
-                    } label: {
-                        Image(systemName: "xmark")
-                            .font(.body.weight(.semibold))
-                            .foregroundStyle(.secondary)
-                    }
-                }
-            }
+            .dismissButton()
         }
         .tint(.primary)
         .presentationDetents([.medium])
@@ -121,17 +111,8 @@ struct DateFilterSheet: View {
             .listStyle(.insetGrouped)
             .navigationTitle("Období")
             .navigationBarTitleDisplayMode(.inline)
+            .dismissButton()
             .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    Button {
-                        dismiss()
-                    } label: {
-                        Image(systemName: "xmark")
-                            .font(.body.weight(.semibold))
-                            .foregroundStyle(.secondary)
-                    }
-                }
-
                 ToolbarItem(placement: .topBarTrailing) {
                     if isFiltered {
                         Button("Reset") {
@@ -237,17 +218,8 @@ struct DurationFilterSheet: View {
             .listStyle(.insetGrouped)
             .navigationTitle("Délka života")
             .navigationBarTitleDisplayMode(.inline)
+            .dismissButton()
             .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    Button {
-                        dismiss()
-                    } label: {
-                        Image(systemName: "xmark")
-                            .font(.body.weight(.semibold))
-                            .foregroundStyle(.secondary)
-                    }
-                }
-
                 ToolbarItem(placement: .topBarTrailing) {
                     if isFiltered {
                         Button("Reset") {
@@ -312,17 +284,8 @@ struct EssenceFilterSheet: View {
             .listStyle(.insetGrouped)
             .navigationTitle("Essence")
             .navigationBarTitleDisplayMode(.inline)
+            .dismissButton()
             .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    Button {
-                        dismiss()
-                    } label: {
-                        Image(systemName: "xmark")
-                            .font(.body.weight(.semibold))
-                            .foregroundStyle(.secondary)
-                    }
-                }
-
                 ToolbarItem(placement: .topBarTrailing) {
                     Button(allSelected ? "Odvybrat vše" : "Vybrat vše") {
                         if allSelected {

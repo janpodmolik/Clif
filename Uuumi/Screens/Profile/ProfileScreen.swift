@@ -32,21 +32,21 @@ struct ProfileScreen: View {
                 }
 
                 // MARK: - Účet
-                if authManager.isAuthenticated {
-                    Section(header: Text("Účet")) {
+                Section(header: Text("Účet")) {
+                    if authManager.isAuthenticated {
                         Button {
                             showAccountSheet = true
                         } label: {
                             Label("Účet", systemImage: "person")
                         }
                         .tint(.primary)
+                    }
 
-                        Button {
-                            showPremiumSheet = true
-                        } label: {
-                            Label("Uuumium", systemImage: "crown.fill")
-                                .foregroundStyle(Color("PremiumGold"))
-                        }
+                    Button {
+                        showPremiumSheet = true
+                    } label: {
+                        Label("Uuumium", systemImage: "crown.fill")
+                            .foregroundStyle(Color("PremiumGold"))
                     }
                 }
 

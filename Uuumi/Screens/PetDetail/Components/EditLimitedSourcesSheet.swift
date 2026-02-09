@@ -52,17 +52,7 @@ struct EditLimitedSourcesSheet: View {
                 footer
             }
             .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    Button {
-                        dismiss()
-                    } label: {
-                        Image(systemName: "xmark")
-                            .font(.system(size: 16))
-                            .foregroundStyle(.secondary)
-                    }
-                }
-            }
+            .dismissButton()
             .alert("Změnit sledované aplikace?", isPresented: $showConfirmation) {
                 Button("Změnit", role: .destructive) {
                     onSave?(editSelection)

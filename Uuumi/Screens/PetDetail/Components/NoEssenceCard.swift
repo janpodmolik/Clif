@@ -36,17 +36,7 @@ struct NoEssenceCard: View {
         .sheet(isPresented: $showEssenceCatalog) {
             NavigationStack {
                 EssenceCatalogScreen()
-                    .toolbar {
-                        ToolbarItem(placement: .topBarLeading) {
-                            Button {
-                                showEssenceCatalog = false
-                            } label: {
-                                Image(systemName: "xmark")
-                                    .font(.system(size: 16))
-                                    .foregroundStyle(.secondary)
-                            }
-                        }
-                    }
+                    .dismissButton { showEssenceCatalog = false }
             }
             .presentationDetents([.large])
         }

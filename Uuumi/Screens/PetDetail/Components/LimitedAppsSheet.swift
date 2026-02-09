@@ -98,17 +98,7 @@ struct LimitedAppsSheet: View {
             }
             .navigationTitle("Sledované aplikace")
             .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    Button {
-                        dismiss()
-                    } label: {
-                        Image(systemName: "xmark")
-                            .font(.system(size: 14))
-                            .foregroundStyle(.secondary)
-                    }
-                }
-            }
+            .dismissButton()
             .sheet(isPresented: $showEditSheet) {
                 if let changesUsed, let changesTotal {
                     EditLimitedSourcesSheet(

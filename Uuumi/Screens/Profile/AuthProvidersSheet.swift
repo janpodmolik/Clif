@@ -38,17 +38,7 @@ struct AuthProvidersSheet: View {
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(Color(.systemBackground))
-            .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    Button {
-                        dismiss()
-                    } label: {
-                        Image(systemName: "xmark")
-                            .font(.system(size: 16))
-                            .foregroundStyle(.secondary)
-                    }
-                }
-            }
+            .dismissButton()
             .alert("Chyba", isPresented: hasError, presenting: authManager.error) { _ in
                 Button("OK") { authManager.clearError() }
             } message: { error in

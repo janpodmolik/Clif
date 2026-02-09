@@ -44,17 +44,7 @@ struct EssenceDetailSheet: View {
             }
             .navigationTitle(path.displayName)
             .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    Button {
-                        dismiss()
-                    } label: {
-                        Image(systemName: "xmark")
-                            .font(.body.weight(.semibold))
-                            .foregroundStyle(.secondary)
-                    }
-                }
-            }
+            .dismissButton()
         }
         .tint(.primary)
         .presentationDetents([.large])

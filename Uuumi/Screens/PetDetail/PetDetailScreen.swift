@@ -158,17 +158,6 @@ struct PetDetailScreen: View {
             }
             .navigationTitle(pet.name)
             .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    Button {
-                        dismiss()
-                    } label: {
-                        Image(systemName: "xmark")
-                            .font(.system(size: 16))
-                            .foregroundStyle(.secondary)
-                    }
-                }
-            }
             .sheet(isPresented: $showLimitedApps) {
                 LimitedAppsSheet(
                     sources: pet.limitedSources,
@@ -210,6 +199,7 @@ struct PetDetailScreen: View {
                 )
             }
             .windNotCalmAlert(isPresented: $showWindNotCalmAlert)
+            .dismissButton()
         }
     }
 }

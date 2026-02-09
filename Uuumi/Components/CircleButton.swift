@@ -13,6 +13,7 @@ struct CircleButton: View {
                     .font(.system(size: 16, weight: .medium))
                     .foregroundStyle(.primary)
                     .frame(width: size, height: size)
+                    .contentShape(Circle())
             }
             .buttonStyle(.plain)
             .glassEffect(.regular.interactive(), in: .circle)
@@ -22,6 +23,7 @@ struct CircleButton: View {
                     .font(.system(size: 16, weight: .medium))
                     .foregroundStyle(.primary)
                     .frame(width: size, height: size)
+                    .contentShape(Circle())
             }
             .buttonStyle(.plain)
             .background(.ultraThinMaterial, in: .circle)

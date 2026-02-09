@@ -33,16 +33,9 @@ struct CreatePetMultiStep: View {
                         }
                     }
                 }
-
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button {
-                        coordinator.dismiss()
-                    } label: {
-                        Image(systemName: "xmark")
-                            .font(.system(size: 16))
-                            .foregroundStyle(.secondary)
-                    }
-                }
+            }
+            .dismissButton(placement: .topBarTrailing) {
+                coordinator.dismiss()
             }
         }
     }

@@ -115,16 +115,8 @@ struct AccountScreen: View {
             .frame(maxWidth: .infinity)
             .navigationTitle("Účet")
             .navigationBarTitleDisplayMode(.inline)
+            .dismissButton()
             .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    Button {
-                        dismiss()
-                    } label: {
-                        Image(systemName: "xmark")
-                            .font(.system(size: 16))
-                            .foregroundStyle(.secondary)
-                    }
-                }
                 ToolbarItem(placement: .topBarTrailing) {
                     // TODO: Save display name to Supabase user metadata
                     Button {

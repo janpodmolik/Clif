@@ -34,17 +34,7 @@ struct DayDetailSheet: View {
             .padding()
             .navigationTitle(dateFormatter.string(from: day.date))
             .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    Button {
-                        dismiss()
-                    } label: {
-                        Image(systemName: "xmark")
-                            .font(.system(size: 14))
-                            .foregroundStyle(.secondary)
-                    }
-                }
-            }
+            .dismissButton()
             .onAppear {
                 loadSnapshots()
             }

@@ -79,17 +79,8 @@ struct SearchSheet: View {
             .background(Color(.systemGroupedBackground))
             .navigationTitle("Hledat")
             .navigationBarTitleDisplayMode(.inline)
+            .dismissButton()
             .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    Button {
-                        dismiss()
-                    } label: {
-                        Image(systemName: "xmark")
-                            .font(.body.weight(.semibold))
-                            .foregroundStyle(.secondary)
-                    }
-                }
-
                 ToolbarItem(placement: .topBarTrailing) {
                     if filter.hasActiveFilters {
                         Button("Reset") {
