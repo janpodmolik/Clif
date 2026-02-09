@@ -258,6 +258,21 @@ final class PetManager {
         )
     }
 
+    /// Re-registers monitoring thresholds on foreground return.
+    /// Uses restartMonitoring (no flag resets) to ensure thresholds are fresh
+    /// even if another Family Controls app disrupted monitoring in the background.
+    func ensureMonitoringActive() {
+        guard let pet = pet,
+              !pet.isBlownAway,
+              !pet.limitedSources.isEmpty,
+              SharedDefaults.monitoredPetId == pet.id,
+              !SharedDefaults.isShieldActive else {
+            return
+        }
+
+        ScreenTimeManager.shared.restartMonitoring()
+    }
+
     // MARK: - Daily Reset
 
     /// Performs daily reset if needed (new day since last activity).

@@ -48,6 +48,10 @@ struct MainApp: App {
             // Resume break monitoring (timer is lost when app is suspended/terminated)
             ShieldManager.shared.resumeBreakMonitoringIfNeeded()
 
+            // Re-register monitoring thresholds to recover from external disruptions
+            // (e.g., another Family Controls app being uninstalled, iOS clearing schedules)
+            petManager.ensureMonitoringActive()
+
             // Check for blow-away state when returning to foreground
             // (windPoints is computed from SharedDefaults - no sync needed)
             petManager.performDailyResetIfNeeded()
