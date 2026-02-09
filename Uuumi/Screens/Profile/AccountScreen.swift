@@ -91,6 +91,25 @@ struct AccountScreen: View {
                 .buttonStyle(.plain)
                 .foregroundStyle(.red)
                 .disabled(isDeleting)
+                .confirmationDialog(
+                    "Opravdu chceš smazat účet?",
+                    isPresented: $showDeleteConfirmation,
+                    titleVisibility: .visible
+                ) {
+                    Button("Smazat účet", role: .destructive) {
+                        Task {
+                            isDeleting = true
+                            let success = await authManager.deleteAccount()
+                            isDeleting = false
+                            if success {
+                                dismiss()
+                            }
+                        }
+                    }
+                    Button("Zrušit", role: .cancel) { }
+                } message: {
+                    Text("Tato akce je nevratná. Všechna data spojená s účtem budou smazána.")
+                }
                 .padding(.bottom, 16)
             }
             .frame(maxWidth: .infinity)
@@ -115,26 +134,7 @@ struct AccountScreen: View {
                             .font(.system(size: 16))
                             .foregroundStyle(.secondary)
                     }
-                }
-            }
-            .confirmationDialog(
-                "Opravdu chceš smazat účet?",
-                isPresented: $showDeleteConfirmation,
-                titleVisibility: .visible
-            ) {
-                Button("Smazat účet", role: .destructive) {
-                    Task {
-                        isDeleting = true
-                        let success = await authManager.deleteAccount()
-                        isDeleting = false
-                        if success {
-                            dismiss()
-                        }
-                    }
-                }
-                Button("Zrušit", role: .cancel) { }
-            } message: {
-                Text("Tato akce je nevratná. Všechna data spojená s účtem budou smazána.")
+                }   
             }
             .onAppear {
                 if let name = authManager.currentUser?.userMetadata["full_name"],
