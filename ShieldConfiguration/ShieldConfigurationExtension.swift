@@ -60,13 +60,14 @@ class ShieldConfigurationExtension: ShieldConfigurationDataSource {
 
         if SharedDefaults.activeBreakType == .safety {
             let effectiveWind = SharedDefaults.effectiveWind
-            if effectiveWind >= 80 {
-                subtitleText = "Počkej, až vítr klesne pod 80%. Odemčení teď = ztráta mazlíčka!"
+            let unlockThreshold = Double(SharedDefaults.limitSettings.safetyUnlockThreshold)
+            if effectiveWind >= unlockThreshold {
+                subtitleText = "Počkej, až vítr klesne pod \(Int(unlockThreshold)) %. Odemčení teď = ztráta mazlíčka!"
             } else {
-                subtitleText = "Vítr klesl pod 80%! Můžeš bezpečně odemknout."
+                subtitleText = "Vítr klesl pod \(Int(unlockThreshold)) %! Můžeš bezpečně odemknout."
             }
             iconName = "shield.fill"
-            backgroundColor = effectiveWind >= 80
+            backgroundColor = effectiveWind >= unlockThreshold
                 ? UIColor.systemRed.withAlphaComponent(0.1)
                 : UIColor.systemGreen.withAlphaComponent(0.1)
         } else if windPoints >= 100 {

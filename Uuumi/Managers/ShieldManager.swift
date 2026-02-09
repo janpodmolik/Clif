@@ -261,7 +261,13 @@ final class ShieldManager {
                 $0 == 0 ? TimeInterval(20) : TimeInterval($0 * 60)
             }
             if let duration, Date().timeIntervalSince(activatedAt) >= duration {
+                let shouldAutoLock = SharedDefaults.limitSettings.autoLockAfterCommittedBreak
                 turnOff(success: true)
+                if shouldAutoLock {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
+                        self?.turnOn(breakType: .free, durationMinutes: nil)
+                    }
+                }
             }
 
         case .free:
@@ -365,9 +371,9 @@ final class ShieldManager {
         case blownAway  // wind at or above high threshold, pet lost
     }
 
-    /// Whether the current safety shield can be safely unlocked (wind below high threshold).
+    /// Whether the current safety shield can be safely unlocked (wind below configured threshold).
     var isSafetyUnlockSafe: Bool {
-        SharedDefaults.effectiveWind < WindLevel.high.threshold
+        SharedDefaults.effectiveWind < Double(SharedDefaults.limitSettings.safetyUnlockThreshold)
     }
 
     /// Processes safety shield unlock. Returns whether the unlock is safe or results in blow away.
@@ -382,7 +388,8 @@ final class ShieldManager {
         applyBreakReduction()
 
         // Use monitoredWindPoints (updated by applyBreakReduction) as the source of truth
-            let result: SafetyUnlockResult = SharedDefaults.monitoredWindPoints < WindLevel.high.threshold ? .safe : .blownAway
+        let unlockThreshold = Double(SharedDefaults.limitSettings.safetyUnlockThreshold)
+        let result: SafetyUnlockResult = SharedDefaults.monitoredWindPoints < unlockThreshold ? .safe : .blownAway
 
         logBreakEnded(success: result == .safe)
         deactivateStore()

@@ -1,7 +1,7 @@
 import SwiftUI
 import Combine
 
-/// Reactive safety unlock sheet that transitions UI when wind drops below 80%.
+/// Reactive safety unlock sheet that transitions UI when wind drops below the configured threshold.
 /// Instead of dismissing when safe, shows a green "safe to unlock" state with animation.
 struct SafetyUnlockSheet: View {
     var onUnlockDangerous: () -> Void = {}
@@ -9,6 +9,10 @@ struct SafetyUnlockSheet: View {
 
     @State private var refreshTick = 0
     @Environment(\.dismiss) private var dismiss
+
+    private var unlockThreshold: Int {
+        SharedDefaults.limitSettings.safetyUnlockThreshold
+    }
 
     private var isSafe: Bool {
         let _ = refreshTick
@@ -23,7 +27,7 @@ struct SafetyUnlockSheet: View {
             ConfirmationHeader(
                 icon: isSafe ? "checkmark.shield.fill" : "exclamationmark.triangle.fill",
                 iconColor: isSafe ? .green : .orange,
-                title: isSafe ? "Vítr klesl pod 80%" : "Vítr je nad 80%",
+                title: isSafe ? "Vítr klesl pod \(unlockThreshold) %" : "Vítr je nad \(unlockThreshold) %",
                 subtitle: isSafe
                     ? "Můžeš bezpečně odemknout bez ztráty mazlíčka."
                     : "Odemčení teď způsobí ztrátu tvého mazlíčka."
@@ -35,7 +39,7 @@ struct SafetyUnlockSheet: View {
                 ConfirmationAction(
                     icon: "lock.open.fill",
                     title: "Odemknout bezpečně",
-                    subtitle: "Vítr je pod 80%",
+                    subtitle: "Vítr je pod \(unlockThreshold) %",
                     foregroundColor: .green,
                     background: .tinted(.green)
                 ) {
@@ -47,7 +51,7 @@ struct SafetyUnlockSheet: View {
                 ConfirmationAction(
                     icon: "lock.trianglebadge.exclamationmark.fill",
                     title: "Odemknout a ztratit peta",
-                    subtitle: "Vítr je stále nad 80%",
+                    subtitle: "Vítr je stále nad \(unlockThreshold) %",
                     foregroundColor: .red,
                     background: .tinted(.red)
                 ) {

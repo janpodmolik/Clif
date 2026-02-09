@@ -4,6 +4,7 @@ import Supabase
 enum ProfileDestination: Hashable {
     case essenceCatalog
     case notificationSettings
+    case shieldSettings
 }
 
 struct ProfileScreen: View {
@@ -61,10 +62,9 @@ struct ProfileScreen: View {
                         }
                     }
 
-                    Toggle(isOn: $limitSettings.dayStartShieldEnabled) {
-                        Label("Denní shield", systemImage: "calendar")
+                    NavigationLink(value: ProfileDestination.shieldSettings) {
+                        Label("Shield", systemImage: "shield.fill")
                     }
-                    .tint(.blue)
 
                     Picker(selection: $lockButtonSide) {
                         ForEach(LockButtonSide.allCases, id: \.self) { side in
@@ -181,6 +181,8 @@ struct ProfileScreen: View {
                     EssenceCatalogScreen()
                 case .notificationSettings:
                     NotificationSettingsScreen()
+                case .shieldSettings:
+                    ShieldSettingsScreen()
                 }
             }
             .onChange(of: limitSettings) { _, newValue in

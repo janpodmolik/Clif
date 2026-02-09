@@ -140,7 +140,8 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
 
         checkWindNotification(oldWind: oldWindPoints, newWind: newWindPoints)
 
-        if newWindPoints >= 100 {
+        let safetyThreshold = Double(SharedDefaults.limitSettings.safetyShieldActivationThreshold)
+        if newWindPoints >= safetyThreshold {
             checkSafetyShield()
         }
 

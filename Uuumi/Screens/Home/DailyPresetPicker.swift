@@ -60,10 +60,7 @@ struct DailyPresetPicker: View {
             .navigationBarTitleDisplayMode(.inline)
         }
         .onAppear {
-            // Pre-select current pet's preset if available
-            if let pet = currentPet {
-                selectedPreset = pet.preset
-            }
+            selectedPreset = WindPreset(rawValue: SharedDefaults.limitSettings.defaultWindPresetRaw) ?? .balanced
         }
     }
 
