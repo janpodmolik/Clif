@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 enum BigTagPhase: Equatable {
     case idle
@@ -33,13 +34,14 @@ final class CoinsRewardAnimator {
 
         let popInDuration: Double = 0.35
         let holdDuration: Double = 0.95
-        let burstDuration: Double = 0.65
+        let burstDuration: Double = 1.0
 
         var elapsed: Double = 0
 
         // Phase 1: Pop in at large scale
         DispatchQueue.main.async { [weak self] in
             guard let self else { return }
+            UIImpactFeedbackGenerator(style: .medium).impactOccurred()
             withAnimation(.spring(duration: popInDuration, bounce: 0.4)) {
                 self.phase = .popIn
             }
@@ -55,6 +57,7 @@ final class CoinsRewardAnimator {
         // Phase 3: Burst — tag scales up + particles fly out
         DispatchQueue.main.asyncAfter(deadline: .now() + elapsed) { [weak self] in
             guard let self else { return }
+            UINotificationFeedbackGenerator().notificationOccurred(.success)
             withAnimation(.easeOut(duration: burstDuration)) {
                 self.phase = .burst
             }

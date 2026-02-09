@@ -144,6 +144,9 @@ struct ContentView: View {
             )
         }
         .unlockConfirmations(showCommitted: $showCommittedUnlock, showSafety: $showSafetyUnlock)
+        .onChange(of: activeTab) {
+            UISelectionFeedbackGenerator().selectionChanged()
+        }
         .onChange(of: scenePhase) { _, newPhase in
             if newPhase == .active {
                 ShieldState.shared.refresh()

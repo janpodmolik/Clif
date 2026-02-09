@@ -144,7 +144,7 @@ private struct BurstParticleView: View {
             .onChange(of: isBursting) { _, bursting in
                 if bursting {
                     progress = 0
-                    withAnimation(.easeOut(duration: 0.55).delay(particle.delay)) {
+                    withAnimation(.easeOut(duration: 0.85).delay(particle.delay)) {
                         progress = 1
                     }
                 }
