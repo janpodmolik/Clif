@@ -63,6 +63,11 @@ final class PetManager {
     func archive(id: UUID, using archivedPetManager: ArchivedPetManager) {
         guard let currentPet = pet, currentPet.id == id else { return }
 
+        // End active break first so it gets logged to SnapshotStore
+        if SharedDefaults.isShieldActive {
+            ShieldManager.shared.turnOff(success: true)
+        }
+
         // Stop monitoring and clear all data
         ScreenTimeManager.shared.stopMonitoringAndClear()
 
@@ -160,6 +165,11 @@ final class PetManager {
     /// Removes the active pet without archiving.
     func delete(id: UUID) {
         guard let currentPet = pet, currentPet.id == id else { return }
+
+        // End active break first so it gets logged to SnapshotStore
+        if SharedDefaults.isShieldActive {
+            ShieldManager.shared.turnOff(success: true)
+        }
 
         // Stop monitoring and clear all data before deleting
         ScreenTimeManager.shared.stopMonitoringAndClear()
