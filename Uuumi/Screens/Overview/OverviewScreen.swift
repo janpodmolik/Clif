@@ -139,7 +139,7 @@ struct OverviewScreen: View {
 
     @ViewBuilder
     private var dailyPatternSection: some View {
-        if let aggregate = hourlyAggregate, aggregate.dayCount >= 2 {
+        if let aggregate = hourlyAggregate, aggregate.dayCount >= 1 {
             DailyPatternCard(aggregate: aggregate)
                 .padding(.horizontal, 20)
         }

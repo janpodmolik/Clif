@@ -338,10 +338,7 @@ final class ShieldManager {
         guard let petId = SharedDefaults.monitoredPetId,
               let activatedAt = SharedDefaults.shieldActivatedAt else { return }
 
-        let actualMinutes = Int(Date().timeIntervalSince(activatedAt) / 60)
-
-        // Skip breaks shorter than 1 minute
-        guard actualMinutes >= 1 else { return }
+        let actualMinutes = max(1, Int(ceil(Date().timeIntervalSince(activatedAt) / 60)))
 
         SnapshotLogging.logBreakEnded(
             petId: petId,

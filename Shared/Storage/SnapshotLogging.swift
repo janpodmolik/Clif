@@ -21,7 +21,7 @@ enum SnapshotLogging {
             eventType: .breakStarted(type: breakType)
         )
 
-        SnapshotStore.shared.append(event)
+        SnapshotStore.shared.appendSync(event)
     }
 
     /// Logs a breakEnded event.
@@ -47,7 +47,7 @@ enum SnapshotLogging {
             eventType: .breakEnded(actualMinutes: actualMinutes, success: success)
         )
 
-        SnapshotStore.shared.append(event)
+        SnapshotStore.shared.appendSync(event)
     }
 
     /// Logs a dailyReset event.
