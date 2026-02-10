@@ -9,7 +9,7 @@ struct WindTimelineChart: View {
 
     @State private var selectedPoint: ChartDataPoint?
 
-    private var dataPoints: [ChartDataPoint] {
+    private var rawDataPoints: [ChartDataPoint] {
         snapshots
             .compactMap { event -> ChartDataPoint? in
                 switch event.eventType {
@@ -32,6 +32,29 @@ struct WindTimelineChart: View {
                 }
             }
             .sorted { $0.timestamp < $1.timestamp }
+    }
+
+    /// Merges multiple events logged in the exact same second into a single
+    /// point. Monotone interpolation in Swift Charts expects strictly
+    /// increasing x-values; duplicate timestamps were causing the area to
+    /// self-intersect and the line to stay at baseline.
+    private var dataPoints: [ChartDataPoint] {
+        let merged = rawDataPoints.reduce(into: [Date: ChartDataPoint]()) { acc, point in
+            if let existing = acc[point.timestamp] {
+                // Keep the higher wind value (most visible) and merge flags/payloads
+                let mergedPoint = ChartDataPoint(
+                    timestamp: point.timestamp,
+                    windPoints: max(existing.windPoints, point.windPoints),
+                    cumulativeSeconds: point.cumulativeSeconds ?? existing.cumulativeSeconds,
+                    isBreakEvent: existing.isBreakEvent || point.isBreakEvent
+                )
+                acc[point.timestamp] = mergedPoint
+            } else {
+                acc[point.timestamp] = point
+            }
+        }
+
+        return merged.values.sorted { $0.timestamp < $1.timestamp }
     }
 
     private var hasData: Bool {
@@ -66,19 +89,21 @@ struct WindTimelineChart: View {
     private var chartView: some View {
         Chart {
             ForEach(dataPoints) { point in
-                LineMark(
-                    x: .value("Čas", point.timestamp),
-                    y: .value("Vítr", point.windPoints)
-                )
-                .interpolationMethod(.monotone)
-                .foregroundStyle(windGradient)
-
                 AreaMark(
                     x: .value("Čas", point.timestamp),
                     y: .value("Vítr", point.windPoints)
                 )
                 .interpolationMethod(.monotone)
                 .foregroundStyle(areaGradient)
+            }
+
+            ForEach(dataPoints) { point in
+                LineMark(
+                    x: .value("Čas", point.timestamp),
+                    y: .value("Vítr", point.windPoints)
+                )
+                .interpolationMethod(.monotone)
+                .foregroundStyle(windGradient)
             }
 
             // Limit line at 100%
