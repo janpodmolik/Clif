@@ -101,9 +101,7 @@ struct EvolutionTransitionView: View {
                 }
                 .scaleEffect(cameraScale)
                 .offset(shakeOffset)
-                .onChange(of: currentTransform) { _, newValue in
-                    updateCameraTransform(newValue)
-                }
+                .preference(key: CameraTransformPreferenceKey.self, value: currentTransform)
                 .onChange(of: progress >= squashStartPoint()) { _, reached in
                     if reached && !hasTriggeredSustainedHaptic {
                         let duration = max(0, (flashTriggerPoint() - squashStartPoint()) * config.duration)
@@ -124,6 +122,10 @@ struct EvolutionTransitionView: View {
                     }
                 }
             }
+        }
+        .onPreferenceChange(CameraTransformPreferenceKey.self) { newValue in
+            guard let binding = cameraTransform else { return }
+            binding.wrappedValue = newValue
         }
         .onAppear {
             if isActive && startTime == nil {
@@ -371,13 +373,6 @@ struct EvolutionTransitionView: View {
         systemSound?.play()
     }
 
-    private func updateCameraTransform(_ transform: EvolutionCameraTransform) {
-        guard let binding = cameraTransform else { return }
-        DispatchQueue.main.async {
-            binding.wrappedValue = transform
-        }
-    }
-
     private func resetCameraTransform() {
         guard let binding = cameraTransform else { return }
         DispatchQueue.main.async {
@@ -391,6 +386,14 @@ struct EvolutionCameraTransform: Equatable {
     var offset: CGSize
 
     static let identity = EvolutionCameraTransform(scale: 1.0, offset: .zero)
+}
+
+private struct CameraTransformPreferenceKey: PreferenceKey {
+    static var defaultValue: EvolutionCameraTransform = .identity
+
+    static func reduce(value: inout EvolutionCameraTransform, nextValue: () -> EvolutionCameraTransform) {
+        value = nextValue()
+    }
 }
 
 // MARK: - Glow Burst Shader

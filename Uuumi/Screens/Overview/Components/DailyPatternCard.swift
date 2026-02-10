@@ -147,7 +147,8 @@ struct DailyPatternCard: View {
             ForEach(0..<24, id: \.self) { hour in
                 BarMark(
                     x: .value("Hour", hour),
-                    y: .value("Minutes", averages[hour])
+                    y: .value("Minutes", averages[hour]),
+                    width: .fixed(8)
                 )
                 .foregroundStyle(barColor(for: hour))
                 .cornerRadius(3)

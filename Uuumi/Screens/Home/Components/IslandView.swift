@@ -178,8 +178,16 @@ struct IslandView<TransitionContent: View>: View {
         }
         .padding(.top, petHeight * 0.6)
         .offset(y: petOffset)
-        .onPreferenceChange(IslandFramePreferenceKey.self) { frame in
-            onFrameChange?(frame)
+        .background {
+            GeometryReader { proxy in
+                Color.clear
+                    .onChange(of: proxy.frame(in: .global)) { _, newFrame in
+                        onFrameChange?(newFrame)
+                    }
+                    .onAppear {
+                        onFrameChange?(proxy.frame(in: .global))
+                    }
+            }
         }
     }
 
@@ -239,15 +247,6 @@ struct IslandView<TransitionContent: View>: View {
                 .shadow(color: .white.opacity(archiveGlowRadius > 0 ? 0.8 : 0), radius: archiveGlowRadius)
                 .opacity(isEvolutionTransitioning ? 0.0 : 1.0)
                 .allowsHitTesting(!isEvolutionTransitioning)
-                .background {
-                    GeometryReader { proxy in
-                        Color.clear
-                            .preference(
-                                key: IslandFramePreferenceKey.self,
-                                value: proxy.frame(in: .global)
-                            )
-                    }
-                }
                 .onTapGesture {
                     handleTap(for: pet)
                 }
@@ -319,15 +318,6 @@ struct IslandView<TransitionContent: View>: View {
                     .opacity(isVisible ? 1 : 0)
             }
             .scaleEffect(Blob.shared.displayScale, anchor: .bottom)
-            .background {
-                GeometryReader { proxy in
-                    Color.clear
-                        .preference(
-                            key: IslandFramePreferenceKey.self,
-                            value: proxy.frame(in: .global)
-                        )
-                }
-            }
     }
 
     // MARK: - Actions
@@ -424,16 +414,6 @@ private struct PetImageSizeKey: PreferenceKey {
     }
 }
 
-private struct IslandFramePreferenceKey: PreferenceKey {
-    static var defaultValue: CGRect = .zero
-
-    static func reduce(value: inout CGRect, nextValue: () -> CGRect) {
-        let next = nextValue()
-        if next != .zero {
-            value = next
-        }
-    }
-}
 
 // MARK: - Preview
 

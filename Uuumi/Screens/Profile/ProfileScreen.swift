@@ -49,6 +49,15 @@ struct ProfileScreen: View {
                         Label("Uuumium", systemImage: "crown.fill")
                             .foregroundStyle(Color("PremiumGold"))
                     }
+
+                    NavigationLink(value: ProfileDestination.essenceCatalog) {
+                        HStack {
+                            Label("Katalog Essencí", systemImage: "sparkles")
+                            Spacer()
+                            Text("\(catalogManager.unlockedEssences.count)/\(Essence.allCases.count)")
+                                .foregroundStyle(.secondary)
+                        }
+                    }
                 }
 
                 // MARK: - Přizpůsobit
@@ -101,18 +110,6 @@ struct ProfileScreen: View {
                         )
                     }
 
-                }
-
-                // MARK: - Kolekce
-                Section(header: Text("Kolekce")) {
-                    NavigationLink(value: ProfileDestination.essenceCatalog) {
-                        HStack {
-                            Label("Katalog Essencí", systemImage: "sparkles")
-                            Spacer()
-                            Text("\(catalogManager.unlockedEssences.count)/\(Essence.allCases.count)")
-                                .foregroundStyle(.secondary)
-                        }
-                    }
                 }
 
                 // MARK: - Pomoc
