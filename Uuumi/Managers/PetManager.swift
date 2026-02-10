@@ -334,13 +334,21 @@ private extension PetManager {
 // MARK: - Mock Data
 
 extension PetManager {
-    static func mock(withPet: Bool = true, isBlownAway: Bool = false) -> PetManager {
+    static func mock(withPet: Bool = true, phase: Int = 2, essence: Essence? = .plant, isBlownAway: Bool = false) -> PetManager {
         let manager = PetManager()
         if withPet {
-            manager.pet = Pet.mock(isBlownAway: isBlownAway)
+            manager.pet = Pet.mock(phase: phase, essence: essence, isBlownAway: isBlownAway)
         }
         return manager
     }
+
+    #if DEBUG
+    /// Replaces the current pet with a mock pet for debug testing.
+    func debugReplacePet(phase: Int = 3, essence: Essence? = .plant) {
+        pet = Pet.mock(phase: phase, essence: essence)
+        saveActivePet()
+    }
+    #endif
 }
 
 import SwiftUI

@@ -8,4 +8,5 @@ enum PetDetailAction {
     case showOnHomepage
     case progress      // evolve or use essence
     case breakHistory  // show break history sheet
+    case archive       // archive with ascension animation
 }

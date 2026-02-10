@@ -179,7 +179,7 @@ struct PetDetailScreen: View {
                     petName: pet.name,
                     showArchiveOption: pet.daysSinceCreation >= PetManager.minimumArchiveDays,
                     onArchive: {
-                        petManager.archive(id: pet.id, using: archivedPetManager)
+                        onAction(.archive)
                         dismiss()
                     },
                     onDelete: {
@@ -193,7 +193,7 @@ struct PetDetailScreen: View {
                     petName: pet.name,
                     themeColor: themeColor,
                     onArchive: {
-                        petManager.archive(id: pet.id, using: archivedPetManager)
+                        onAction(.archive)
                         dismiss()
                     }
                 )

@@ -47,6 +47,9 @@ struct PetAnimationEffect: ViewModifier {
     /// When provided, uses rhythm's wave value instead of computing locally.
     let windRhythm: WindRhythm?
 
+    /// When true, all animation effects are frozen — no TimelineView, no shader, no rotation.
+    let frozen: Bool
+
     // Callback for exporting transform values to overlays
     let onTransformUpdate: ((PetAnimationTransform) -> Void)?
 
@@ -107,7 +110,9 @@ struct PetAnimationEffect: ViewModifier {
     }
 
     func body(content: Content) -> some View {
-        if reduceMotion {
+        if frozen {
+            content
+        } else if reduceMotion {
             // When reduce motion is enabled, show static pet with wind-based rotation only
             let staticRotation = intensity > 0 ? Double(-intensity * direction * rotationAmount * 3) : 0.0
             content
@@ -245,6 +250,7 @@ extension View {
         peakMode: Bool = false,
         screenWidth: CGFloat? = nil,
         windRhythm: WindRhythm? = nil,
+        frozen: Bool = false,
         onTransformUpdate: ((PetAnimationTransform) -> Void)? = nil
     ) -> some View {
         modifier(PetAnimationEffect(
@@ -261,6 +267,7 @@ extension View {
             peakMode: peakMode,
             screenWidth: screenWidth,
             windRhythm: windRhythm,
+            frozen: frozen,
             onTransformUpdate: onTransformUpdate
         ))
     }

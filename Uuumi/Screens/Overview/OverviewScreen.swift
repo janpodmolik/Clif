@@ -246,7 +246,7 @@ struct OverviewScreen: View {
             if let url = URL(string: DeepLinks.pet(pet.id)) {
                 UIApplication.shared.open(url)
             }
-        case .blowAway, .replay, .delete, .progress, .breakHistory:
+        case .blowAway, .replay, .delete, .progress, .breakHistory, .archive:
             break // TODO: Implement remaining actions
         }
     }

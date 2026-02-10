@@ -77,6 +77,8 @@ struct HomeCardView: View {
     /// Debug override for bump state testing
     var debugBumpState: DebugBumpState = .actual
     #endif
+    /// When true, bump is hidden (e.g. during ascension animation)
+    var hideBump: Bool = false
     var onAction: (HomeCardAction) -> Void = { _ in }
 
     @State private var isBreakPulsing = false
@@ -135,7 +137,7 @@ struct HomeCardView: View {
 
     /// Whether bump should be visible (driven by actual state for shape/layout animation)
     private var isBumpVisible: Bool {
-        currentBumpType != nil
+        !hideBump && currentBumpType != nil
     }
 
     /// Target bump width (non-zero when bump should be visible and measured)
@@ -233,6 +235,25 @@ struct HomeCardView: View {
                     // Only clear if still hidden (no new bump appeared)
                     if currentBumpType == nil {
                         cachedBumpType = nil
+                    }
+                }
+            }
+        }
+        .onChange(of: hideBump) { _, shouldHide in
+            if shouldHide {
+                withAnimation(.easeOut(duration: HomeCardAnimation.contentHideDuration)) {
+                    showBumpContent = false
+                }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+                    if hideBump {
+                        cachedBumpType = nil
+                    }
+                }
+            } else if let bumpType = currentBumpType {
+                cachedBumpType = bumpType
+                DispatchQueue.main.asyncAfter(deadline: .now() + HomeCardAnimation.contentShowDelay) {
+                    withAnimation(.spring(duration: 0.25, bounce: 0.3)) {
+                        showBumpContent = true
                     }
                 }
             }

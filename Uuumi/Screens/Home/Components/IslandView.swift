@@ -19,6 +19,10 @@ struct IslandView<TransitionContent: View>: View {
     var blowAwayOffsetX: CGFloat = 0
     var blowAwayRotation: CGFloat = 0
     var isBlowingAway: Bool = false
+    var archiveOffsetY: CGFloat = 0
+    var archiveStretchAmount: CGFloat = 0
+    var archiveGlowRadius: CGFloat = 0
+    var isAscending: Bool = false
     var showEssenceDropZone: Bool = false
     var isEssenceHighlighted: Bool = false
     var isEssenceOnTarget: Bool = false
@@ -33,6 +37,10 @@ struct IslandView<TransitionContent: View>: View {
         blowAwayOffsetX: CGFloat = 0,
         blowAwayRotation: CGFloat = 0,
         isBlowingAway: Bool = false,
+        archiveOffsetY: CGFloat = 0,
+        archiveStretchAmount: CGFloat = 0,
+        archiveGlowRadius: CGFloat = 0,
+        isAscending: Bool = false,
         showEssenceDropZone: Bool = false,
         isEssenceHighlighted: Bool = false,
         isEssenceOnTarget: Bool = false,
@@ -46,6 +54,10 @@ struct IslandView<TransitionContent: View>: View {
         self.blowAwayOffsetX = blowAwayOffsetX
         self.blowAwayRotation = blowAwayRotation
         self.isBlowingAway = isBlowingAway
+        self.archiveOffsetY = archiveOffsetY
+        self.archiveStretchAmount = archiveStretchAmount
+        self.archiveGlowRadius = archiveGlowRadius
+        self.isAscending = isAscending
         self.showEssenceDropZone = showEssenceDropZone
         self.isEssenceHighlighted = isEssenceHighlighted
         self.isEssenceOnTarget = isEssenceOnTarget
@@ -156,7 +168,7 @@ struct IslandView<TransitionContent: View>: View {
             }
 
             // Speech bubble overlay - only for pet content, hidden during blow away and evolution transition
-            if case .pet = content, !isBlowingAway, !isEvolutionTransitioning, let config = speechBubbleState.currentConfig {
+            if case .pet = content, !isBlowingAway, !isAscending, !isEvolutionTransitioning, let config = speechBubbleState.currentConfig {
                 SpeechBubbleView(
                     config: config,
                     isVisible: speechBubbleState.isVisible,
@@ -202,6 +214,7 @@ struct IslandView<TransitionContent: View>: View {
                     idleConfig: pet.idleConfig,
                     screenWidth: screenWidth,
                     windRhythm: windRhythm,
+                    frozen: isAscending,
                     onTransformUpdate: { transform in
                         petTransform = PetAnimationTransform(
                             rotation: transform.rotation,
@@ -213,6 +226,17 @@ struct IslandView<TransitionContent: View>: View {
                 .scaleEffect(pet.displayScale, anchor: .bottom)
                 .offset(x: blowAwayOffsetX)
                 .rotationEffect(.degrees(blowAwayRotation), anchor: .bottom)
+                .offset(y: archiveOffsetY)
+                .visualEffect { content, proxy in
+                    content.distortionEffect(
+                        ShaderLibrary.ascensionStretch(
+                            .float(Float(archiveStretchAmount)),
+                            .float2(proxy.size)
+                        ),
+                        maxSampleOffset: CGSize(width: 0, height: proxy.size.height * 3)
+                    )
+                }
+                .shadow(color: .white.opacity(archiveGlowRadius > 0 ? 0.8 : 0), radius: archiveGlowRadius)
                 .opacity(isEvolutionTransitioning ? 0.0 : 1.0)
                 .allowsHitTesting(!isEvolutionTransitioning)
                 .background {
@@ -241,6 +265,11 @@ struct IslandView<TransitionContent: View>: View {
                     speechBubbleState.updateWindLevel(newValue)
                 }
                 .onChange(of: isBlowingAway) { _, newValue in
+                    if newValue {
+                        speechBubbleState.hide()
+                    }
+                }
+                .onChange(of: isAscending) { _, newValue in
                     if newValue {
                         speechBubbleState.hide()
                     }
@@ -355,6 +384,10 @@ extension IslandView where TransitionContent == EmptyView {
         blowAwayOffsetX: CGFloat = 0,
         blowAwayRotation: CGFloat = 0,
         isBlowingAway: Bool = false,
+        archiveOffsetY: CGFloat = 0,
+        archiveStretchAmount: CGFloat = 0,
+        archiveGlowRadius: CGFloat = 0,
+        isAscending: Bool = false,
         showEssenceDropZone: Bool = false,
         isEssenceHighlighted: Bool = false,
         isEssenceOnTarget: Bool = false,
@@ -367,6 +400,10 @@ extension IslandView where TransitionContent == EmptyView {
             blowAwayOffsetX: blowAwayOffsetX,
             blowAwayRotation: blowAwayRotation,
             isBlowingAway: isBlowingAway,
+            archiveOffsetY: archiveOffsetY,
+            archiveStretchAmount: archiveStretchAmount,
+            archiveGlowRadius: archiveGlowRadius,
+            isAscending: isAscending,
             showEssenceDropZone: showEssenceDropZone,
             isEssenceHighlighted: isEssenceHighlighted,
             isEssenceOnTarget: isEssenceOnTarget,

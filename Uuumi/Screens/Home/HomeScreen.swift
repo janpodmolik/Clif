@@ -17,7 +17,9 @@ struct HomeScreen: View {
 
     @State private var windRhythm = WindRhythm()
     @State private var blowAwayAnimator = BlowAwayAnimator()
+    @State private var ascensionAnimator = AscensionAnimator()
     @State private var currentScreenWidth: CGFloat?
+    @State private var currentScreenHeight: CGFloat?
     @State private var showPetDetail = false
     @State private var showPresetPicker = false
     @State private var showDeleteSheet = false
@@ -111,32 +113,57 @@ struct HomeScreen: View {
             ZStack {
                 background
 
-                if isInCreationMode || currentPet == nil {
-                    // Show empty island during pet creation or when no pet exists
-                    emptyIslandPage(geometry: geometry)
-                } else if let pet = currentPet {
-                    petPage(pet, geometry: geometry)
+                // Pet-specific layers (wind lines, replay overlay) — only when pet exists
+                if let pet = currentPet, !isInCreationMode {
+                    petOverlays(pet, geometry: geometry)
                 }
 
+                // Single persistent island — content switches between pet and drop zone
+                islandView(geometry: geometry)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
+                    .ignoresSafeArea(.container, edges: .bottom)
+
+                // Card layer — switches between homeCard and emptyIslandCard
+                ZStack {
+                    if let pet = currentPet, !isInCreationMode {
+                        homeCard(for: pet, windProgress: pet.windProgress)
+                            .offset(y: ascensionAnimator.cardOffsetY)
+                            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
+                            .padding(homeCardInset)
+                            .transition(.move(edge: .top).combined(with: .opacity))
+                    } else if !isInCreationMode {
+                        emptyIslandCard
+                            .modifier(HomeCardBackgroundModifier(cornerRadius: homeCardCornerRadius))
+                            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
+                            .padding(homeCardInset)
+                            .transition(.move(edge: .top).combined(with: .opacity))
+                    }
+                }
+                .animation(.easeInOut(duration: 0.5), value: currentPet == nil)
+                .animation(.easeInOut(duration: 0.5), value: isInCreationMode)
+
                 #if DEBUG
-                // Global debug time slider (visible with or without pet)
-                if currentPet == nil {
-                    debugTimeSlider
-                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomLeading)
-                        .padding(.horizontal, homeCardInset)
-                        .padding(.bottom, 16)
+                if !isInCreationMode {
+                    HomeDebugOverlay(
+                        debugBumpState: $debugBumpState,
+                        debugTimeOverride: $debugTimeOverride,
+                        refreshTick: $refreshTick,
+                        hasPet: currentPet != nil
+                    )
                 }
                 #endif
             }
             .onAppear {
                 currentScreenWidth = geometry.size.width
+                currentScreenHeight = geometry.size.height
                 // If pet was blown in background, set off-screen immediately
                 if currentPet?.isBlownAway == true {
                     blowAwayAnimator.setBlownState(screenWidth: geometry.size.width)
                 }
             }
-            .onChange(of: geometry.size.width) { _, newWidth in
-                currentScreenWidth = newWidth
+            .onChange(of: geometry.size) { _, newSize in
+                currentScreenWidth = newSize.width
+                currentScreenHeight = newSize.height
             }
         }
         .fullScreenCover(isPresented: $showPetDetail, onDismiss: {
@@ -144,6 +171,13 @@ struct HomeScreen: View {
                 blowAwayAnimator.pendingBlowAway = false
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
                     petManager.blowAwayCurrentPet(reason: .userChoice)
+                }
+            }
+            if ascensionAnimator.pendingArchive, let pet = currentPet {
+                ascensionAnimator.pendingArchive = false
+                let petId = pet.id
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                    triggerAscension(petId: petId)
                 }
             }
             if pendingEssencePicker, let pet = currentPet {
@@ -156,6 +190,9 @@ struct HomeScreen: View {
                     switch action {
                     case .blowAway:
                         blowAwayAnimator.pendingBlowAway = true
+                        showPetDetail = false
+                    case .archive:
+                        ascensionAnimator.pendingArchive = true
                         showPetDetail = false
                     case .progress:
                         pendingEssencePicker = true
@@ -181,7 +218,11 @@ struct HomeScreen: View {
                     petName: pet.name,
                     showArchiveOption: pet.daysSinceCreation >= PetManager.minimumArchiveDays,
                     onArchive: {
-                        petManager.archive(id: pet.id, using: archivedPetManager)
+                        let petId = pet.id
+                        showDeleteSheet = false
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                            triggerAscension(petId: petId)
+                        }
                     },
                     onDelete: {
                         petManager.delete(id: pet.id)
@@ -195,7 +236,11 @@ struct HomeScreen: View {
                     petName: pet.name,
                     themeColor: pet.themeColor,
                     onArchive: {
-                        petManager.archive(id: pet.id, using: archivedPetManager)
+                        let petId = pet.id
+                        showSuccessArchivePrompt = false
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                            triggerAscension(petId: petId)
+                        }
                     }
                 )
             }
@@ -261,6 +306,7 @@ struct HomeScreen: View {
         .onChange(of: currentPet?.id) { _, _ in
             // Reset animators when pet changes (e.g. deleted + new pet created)
             blowAwayAnimator.reset()
+            ascensionAnimator.reset()
             evolutionAnimator.reset()
         }
         .onChange(of: currentPet?.isBlownAway) { oldValue, newValue in
@@ -297,91 +343,14 @@ struct HomeScreen: View {
         }
     }
 
-    // MARK: - Empty Island (Pet Creation)
+    // MARK: - Shared Island
 
-    private func emptyIslandPage(geometry: GeometryProxy) -> some View {
-        ZStack {
-            // Island with drop zone
-            IslandView(
-                screenHeight: geometry.size.height,
-                screenWidth: geometry.size.width,
-                content: createPetCoordinator.isDropping
-                    ? .dropZone(
-                        isHighlighted: isDropZoneHighlighted,
-                        isOnTarget: createPetCoordinator.dragState.isOnTarget,
-                        isVisible: true
-                    )
-                    : .dropZone(isHighlighted: false, isOnTarget: false, isVisible: false),
-                onFrameChange: { frame in
-                    dropZoneFrame = frame
-                }
-            )
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
-            .ignoresSafeArea(.container, edges: .bottom)
-
-            // Show empty island card only when not in creation mode
-            if !isInCreationMode {
-                emptyIslandCard
-                    .modifier(HomeCardBackgroundModifier(cornerRadius: homeCardCornerRadius))
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
-                    .padding(homeCardInset)
-                    .transition(.opacity.combined(with: .scale(scale: 0.95)))
-            }
-        }
-    }
-
-    // MARK: - Empty Island Card
-
-    private var emptyIslandCard: some View {
-        EmptyIslandCard {
-            Task {
-                await requestAuthorizationAndCreatePet()
-            }
-        }
-    }
-
-    private func reauthorize() async {
-        do {
-            try await AuthorizationCenter.shared.requestAuthorization(for: .individual)
-            petManager.handleReauthorizationSuccess()
-        } catch {
-            // Authorization failed — keep sheet open so next .active cycle re-triggers
-            petManager.needsReauthorization = false
-        }
-    }
-
-    private func requestAuthorizationAndCreatePet() async {
-        let status = AuthorizationCenter.shared.authorizationStatus
-        if status == .approved {
-            createPetCoordinator.show { _ in }
-            return
-        }
-
-        do {
-            try await AuthorizationCenter.shared.requestAuthorization(for: .individual)
-            createPetCoordinator.show { _ in }
-        } catch {
-            showAuthorizationAlert = true
-        }
-    }
-
-    // MARK: - Single Pet Page
-
-    private func petPage(_ pet: Pet, geometry: GeometryProxy) -> some View {
-        // Force recalculation when refreshTick changes (used to trigger SwiftUI update)
-        let _ = refreshTick
-        // Capture effective wind progress (recalculated each tick when shield active)
-        let effectiveProgress = pet.windProgress
-
-        return ZStack {
-            WindLinesView(
-                windProgress: blowAwayAnimator.windBurstActive ? 1.0 : effectiveProgress,
-                direction: 1.0,
-                windAreaTop: 0.25,
-                windAreaBottom: 0.50,
-                overrideConfig: blowAwayAnimator.windBurstActive ? .burst : nil,
-                windRhythm: blowAwayAnimator.windBurstActive ? nil : windRhythm
-            )
+    @ViewBuilder
+    private func islandView(geometry: GeometryProxy) -> some View {
+        if let pet = currentPet, !isInCreationMode {
+            // Force recalculation when refreshTick changes
+            let _ = refreshTick
+            let effectiveProgress = pet.windProgress
 
             IslandView(
                 screenHeight: geometry.size.height,
@@ -395,6 +364,10 @@ struct HomeScreen: View {
                 blowAwayOffsetX: blowAwayAnimator.offsetX,
                 blowAwayRotation: blowAwayAnimator.rotation,
                 isBlowingAway: blowAwayAnimator.isBlowingAway,
+                archiveOffsetY: ascensionAnimator.petOffsetY,
+                archiveStretchAmount: ascensionAnimator.stretchAmount,
+                archiveGlowRadius: ascensionAnimator.glowRadius,
+                isAscending: ascensionAnimator.isAnimating,
                 showEssenceDropZone: essenceCoordinator.hasSelectedEssence,
                 isEssenceHighlighted: isEssenceDropZoneHighlighted,
                 isEssenceOnTarget: isEssenceOnTarget,
@@ -432,31 +405,82 @@ struct HomeScreen: View {
             )
             .scaleEffect(evolutionAnimator.cameraTransform.scale, anchor: .top)
             .offset(evolutionAnimator.cameraTransform.offset)
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
-            .ignoresSafeArea(.container, edges: .bottom)
-
-            homeCard(for: pet, windProgress: effectiveProgress)
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
-                .padding(homeCardInset)
-
-            ReplayOverlayView(isVisible: blowAwayAnimator.replayOverlayVisible, petFrame: petFrame)
-
-            #if DEBUG
-            VStack(spacing: 8) {
-                debugTimeSlider
-
-                HStack(spacing: 8) {
-                    debugBumpToggle
-                    debugCoinsButton
+        } else {
+            IslandView(
+                screenHeight: geometry.size.height,
+                screenWidth: geometry.size.width,
+                content: createPetCoordinator.isDropping
+                    ? .dropZone(
+                        isHighlighted: isDropZoneHighlighted,
+                        isOnTarget: createPetCoordinator.dragState.isOnTarget,
+                        isVisible: true
+                    )
+                    : .dropZone(isHighlighted: false, isOnTarget: false, isVisible: false),
+                onFrameChange: { frame in
+                    dropZoneFrame = frame
                 }
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomLeading)
-            .padding(.horizontal, homeCardInset)
-            .padding(.bottom, 16)
-            #endif
+            )
         }
     }
 
+    // MARK: - Pet Overlays (wind lines, replay)
+
+    private func petOverlays(_ pet: Pet, geometry: GeometryProxy) -> some View {
+        let _ = refreshTick
+        let effectiveProgress = pet.windProgress
+
+        return ZStack {
+            WindLinesView(
+                windProgress: blowAwayAnimator.windBurstActive ? 1.0 : effectiveProgress,
+                direction: 1.0,
+                windAreaTop: 0.25,
+                windAreaBottom: 0.50,
+                overrideConfig: blowAwayAnimator.windBurstActive ? .burst : nil,
+                windRhythm: blowAwayAnimator.windBurstActive ? nil : windRhythm
+            )
+
+            ReplayOverlayView(isVisible: blowAwayAnimator.replayOverlayVisible, petFrame: petFrame)
+        }
+    }
+
+    // MARK: - Empty Island Card
+
+    private var emptyIslandCard: some View {
+        EmptyIslandCard {
+            Task {
+                await requestAuthorizationAndCreatePet()
+            }
+        }
+    }
+
+    private func reauthorize() async {
+        do {
+            try await AuthorizationCenter.shared.requestAuthorization(for: .individual)
+            petManager.handleReauthorizationSuccess()
+        } catch {
+            // Authorization failed — keep sheet open so next .active cycle re-triggers
+            petManager.needsReauthorization = false
+        }
+    }
+
+    private func requestAuthorizationAndCreatePet() async {
+        let status = AuthorizationCenter.shared.authorizationStatus
+        if status == .approved {
+            withAnimation(.easeInOut(duration: 0.5)) {
+                createPetCoordinator.show { _ in }
+            }
+            return
+        }
+
+        do {
+            try await AuthorizationCenter.shared.requestAuthorization(for: .individual)
+            withAnimation(.easeInOut(duration: 0.5)) {
+                createPetCoordinator.show { _ in }
+            }
+        } catch {
+            showAuthorizationAlert = true
+        }
+    }
 
     // MARK: - Home Card
 
@@ -468,6 +492,7 @@ struct HomeScreen: View {
             showDetailButton: true,
             windProgress: windProgress,
             debugBumpState: debugBumpState,
+            hideBump: ascensionAnimator.isAnimating,
             onAction: { handleAction($0, for: pet) }
         )
         #else
@@ -476,6 +501,7 @@ struct HomeScreen: View {
             streakCount: pet.totalDays,
             showDetailButton: true,
             windProgress: windProgress,
+            hideBump: ascensionAnimator.isAnimating,
             onAction: { handleAction($0, for: pet) }
         )
         #endif
@@ -501,6 +527,18 @@ struct HomeScreen: View {
                 return
             }
             showSuccessArchivePrompt = true
+        }
+    }
+
+    // MARK: - Archive Ascension
+
+    private func triggerAscension(petId: UUID) {
+        guard !ascensionAnimator.isAnimating else { return }
+        let screenHeight = currentScreenHeight ?? 800
+        ascensionAnimator.trigger(screenHeight: screenHeight) { [petManager, archivedPetManager] in
+            // Archive without animation — pet is already off-screen.
+            // The empty island card slides in via its own transition.
+            petManager.archive(id: petId, using: archivedPetManager)
         }
     }
 
@@ -565,93 +603,6 @@ private struct HomeCardBackgroundModifier: ViewModifier {
         )
     }
 }
-
-// MARK: - Debug Bump Toggle
-
-#if DEBUG
-private extension HomeScreen {
-    var debugBumpToggle: some View {
-        Menu {
-            ForEach(DebugBumpState.allCases, id: \.self) { state in
-                Button {
-                    debugBumpState = state
-                } label: {
-                    HStack {
-                        Text(state.rawValue)
-                        if debugBumpState == state {
-                            Image(systemName: "checkmark")
-                        }
-                    }
-                }
-            }
-        } label: {
-            HStack(spacing: 6) {
-                Image(systemName: "ladybug.fill")
-                Text(debugBumpState.rawValue)
-            }
-            .font(.system(size: 12, weight: .medium))
-            .padding(.horizontal, 12)
-            .padding(.vertical, 8)
-            .background(.ultraThinMaterial, in: Capsule())
-        }
-    }
-
-    var debugCoinsButton: some View {
-        Button {
-            coinsAnimator.showReward(5)
-        } label: {
-            HStack(spacing: 6) {
-                Image(systemName: "u.circle.fill")
-                Text("+5")
-            }
-            .font(.system(size: 12, weight: .medium))
-            .padding(.horizontal, 12)
-            .padding(.vertical, 8)
-            .background(.ultraThinMaterial, in: Capsule())
-        }
-    }
-
-    var debugTimeSlider: some View {
-        VStack(spacing: 4) {
-            HStack {
-                Text(debugTimeOverride != nil ? debugTimeLabel : "Time: auto")
-                    .font(.system(size: 11, weight: .medium, design: .monospaced))
-                Spacer()
-                Button(debugTimeOverride != nil ? "Reset" : "Override") {
-                    if debugTimeOverride != nil {
-                        debugTimeOverride = nil
-                    } else {
-                        debugTimeOverride = SkyGradient.timeOfDay()
-                    }
-                }
-                .font(.system(size: 11, weight: .medium))
-            }
-
-            if debugTimeOverride != nil {
-                Slider(
-                    value: Binding(
-                        get: { debugTimeOverride ?? 0 },
-                        set: { debugTimeOverride = $0 }
-                    ),
-                    in: 0...1
-                )
-                .tint(.white)
-            }
-        }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 8)
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12))
-    }
-
-    private var debugTimeLabel: String {
-        guard let time = debugTimeOverride else { return "" }
-        let totalSeconds = time * 24 * 60 * 60
-        let hours = Int(totalSeconds) / 3600
-        let minutes = (Int(totalSeconds) % 3600) / 60
-        return String(format: "Time: %02d:%02d", hours, minutes)
-    }
-}
-#endif
 
 #Preview {
     HomeScreen()
