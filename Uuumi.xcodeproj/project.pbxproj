@@ -101,6 +101,7 @@
 		B493879B2F0E428B0090C730 /* WindLevel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B49387952F0E428B0090C730 /* WindLevel.swift */; };
 		B493879E2F0E428B0090C730 /* WindConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = B49387972F0E428B0090C730 /* WindConfig.swift */; };
 		B49387A02F0E428B0090C730 /* WindLevel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B49387952F0E428B0090C730 /* WindLevel.swift */; };
+		B4A181BE2F3B273400CDA090 /* SnapshotLogging.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4167E642F1FF93800D89B36 /* SnapshotLogging.swift */; };
 		B4ANI1012F0E00010001B001 /* IdleConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4ANI0012F0E00010001B001 /* IdleConfig.swift */; };
 		B4ANI1022F0E00010001B002 /* TapAnimationType.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4ANI0022F0E00010001B002 /* TapAnimationType.swift */; };
 		B4ANI1032F0E00010001B003 /* TapConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4ANI0032F0E00010001B003 /* TapConfig.swift */; };
@@ -283,6 +284,14 @@
 			);
 			target = B4924ADD2EE57EEE0033475C /* ShieldConfiguration */;
 		};
+		B4A184CA2F3B27BB00CDA090 /* Exceptions for "Uuumi" folder in "DeviceActivityMonitor" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Debug/DebugConfig.swift,
+				Models/WindPreset.swift,
+			);
+			target = B4924AC82EE57ED90033475C /* DeviceActivityMonitor */;
+		};
 		B4C4C09B2EE7FECE00E469E8 /* Exceptions for "ShieldAction" folder in "ShieldAction" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
@@ -297,6 +306,7 @@
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
 				B44706472EE95EAE00174BFB /* Exceptions for "Uuumi" folder in "Uuumi" target */,
+				B4A184CA2F3B27BB00CDA090 /* Exceptions for "Uuumi" folder in "DeviceActivityMonitor" target */,
 			);
 			path = Uuumi;
 			sourceTree = "<group>";
@@ -827,6 +837,7 @@
 				B4153D3E2F27417F0006FEE3 /* LimitSettings.swift in Sources */,
 				B41045D16C031199972A8469 /* NotificationSettings.swift in Sources */,
 				B45862172EE5B92C0088CB78 /* Constants.swift in Sources */,
+				B4A181BE2F3B273400CDA090 /* SnapshotLogging.swift in Sources */,
 				B4167E552F1FE2D800D89B36 /* SnapshotEvent.swift in Sources */,
 				B451D37A2F26856C004C534F /* SharedDefaults.swift in Sources */,
 				B451D37B2F26856C004C534F /* SharedDefaults+DayState.swift in Sources */,

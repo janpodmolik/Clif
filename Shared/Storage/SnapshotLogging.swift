@@ -50,6 +50,35 @@ enum SnapshotLogging {
         SnapshotStore.shared.appendSync(event)
     }
 
+    /// Processes a midnight break result: logs breakEnded and awards coins.
+    /// Call this after `SharedDefaults.endBreakAtMidnight(cutoff:)`.
+    static func processMidnightBreak(_ result: SharedDefaults.MidnightBreakResult) -> Int {
+        // Log breakEnded for yesterday (Calendar-based, DST-safe)
+        if let petId = result.petId {
+            let yesterday = Calendar.current.date(byAdding: .day, value: -1, to: result.cutoff) ?? result.cutoff
+            let yesterdayDateString = SnapshotEvent.dateString(from: yesterday)
+            SnapshotStore.shared.appendSync(SnapshotEvent(
+                petId: petId,
+                date: yesterdayDateString,
+                timestamp: result.cutoff,
+                windPoints: result.windPoints,
+                eventType: .breakEnded(actualMinutes: result.actualMinutes, success: true)
+            ))
+        }
+
+        // Award coins for committed breaks
+        var coins = 0
+        if result.breakType == .committed {
+            coins = CoinRewards.forBreak(minutes: result.actualMinutes)
+            if coins > 0 {
+                SharedDefaults.addCoins(coins)
+                SharedDefaults.pendingMidnightCoinsAwarded = coins
+            }
+        }
+
+        return coins
+    }
+
     /// Logs a dailyReset event.
     /// Call this at midnight rollover.
     static func logDailyReset(

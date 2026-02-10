@@ -24,6 +24,9 @@ enum SnapshotEventType: Codable, Equatable {
     /// System day end marker.
     case systemDayEnd
 
+    /// Committed break auto-locked into a free break.
+    case breakAutoLocked
+
     /// Daily preset was selected.
     case presetSelected(preset: String)
 
@@ -73,6 +76,9 @@ enum SnapshotEventType: Codable, Equatable {
         case "systemDayEnd":
             self = .systemDayEnd
 
+        case "breakAutoLocked":
+            self = .breakAutoLocked
+
         case "presetSelected":
             let preset = try container.decode(String.self, forKey: .preset)
             self = .presetSelected(preset: preset)
@@ -111,6 +117,9 @@ enum SnapshotEventType: Codable, Equatable {
 
         case .systemDayEnd:
             try container.encode("systemDayEnd", forKey: .type)
+
+        case .breakAutoLocked:
+            try container.encode("breakAutoLocked", forKey: .type)
 
         case .presetSelected(let preset):
             try container.encode("presetSelected", forKey: .type)

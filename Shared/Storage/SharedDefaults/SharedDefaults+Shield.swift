@@ -85,6 +85,57 @@ extension SharedDefaults {
         windZeroNotified = false
     }
 
+    // MARK: - Midnight Break Reset
+
+    /// Coins awarded by extension during midnight committed break reset.
+    /// Main app reads this to show earned coins badge, then clears it.
+    static var pendingMidnightCoinsAwarded: Int {
+        get { defaults?.integer(forKey: DefaultsKeys.pendingMidnightCoinsAwarded) ?? 0 }
+        set { defaults?.set(newValue, forKey: DefaultsKeys.pendingMidnightCoinsAwarded) }
+    }
+
+    /// Result of ending a break at midnight (or simulated midnight in debug).
+    struct MidnightBreakResult {
+        let breakType: BreakType
+        let actualMinutes: Int
+        let windPoints: Double
+        let petId: UUID?
+        let cutoff: Date
+    }
+
+    /// Ends any active break at a given cutoff time and resets shield flags.
+    /// Returns computed result if a break was active, nil otherwise.
+    ///
+    /// Callers are responsible for:
+    /// - Logging `breakEnded` snapshot event
+    /// - Awarding coins for committed breaks
+    /// - Deactivating ManagedSettingsStore
+    ///
+    /// - Parameter cutoff: The logical end time. For real midnight, use `Calendar.current.startOfDay(for: Date())`.
+    ///   For debug simulation, use `Date()`.
+    static func endBreakAtMidnight(cutoff: Date) -> MidnightBreakResult? {
+        guard let breakType = activeBreakType,
+              let breakStartedAt = breakStartedAt else {
+            return nil
+        }
+
+        let elapsed = cutoff.timeIntervalSince(breakStartedAt)
+        let actualMinutes = Int(round(max(0, elapsed) / 60))
+        let windPoints = monitoredWindPoints
+        let petId = monitoredPetId
+
+        resetShieldFlags()
+        synchronize()
+
+        return MidnightBreakResult(
+            breakType: breakType,
+            actualMinutes: actualMinutes,
+            windPoints: windPoints,
+            petId: petId,
+            cutoff: cutoff
+        )
+    }
+
     // MARK: - Break Picker Preferences
 
     /// User's preferred break type for picker (persisted across sessions).

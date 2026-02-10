@@ -229,13 +229,31 @@ final class ShieldManager {
     // MARK: - Break Completion Monitoring
 
     /// Restores break monitoring after app returns to foreground.
-    /// Checks immediately if break already expired, then starts timer for ongoing breaks.
+    /// Processes any pending midnight coins, checks if break expired, then starts timer.
     func resumeBreakMonitoringIfNeeded() {
+        processPendingMidnightCoins()
+
         guard SharedDefaults.isShieldActive, SharedDefaults.activeBreakType != nil else { return }
         checkBreakCompletion()
         // If checkBreakCompletion ended the break, no need to start timer
         guard SharedDefaults.isShieldActive else { return }
         startBreakCompletionMonitoring()
+    }
+
+    /// Processes pending midnight coins left by the extension.
+    /// Coins were already added by the extension — this handles UI feedback only.
+    private func processPendingMidnightCoins() {
+        let coins = SharedDefaults.pendingMidnightCoinsAwarded
+        guard coins > 0 else { return }
+
+        ShieldState.shared.setEarnedCoins(coins)
+        SharedDefaults.pendingMidnightCoinsAwarded = 0
+
+        #if DEBUG
+        print("[ShieldManager] Processed midnight coins: \(coins)")
+        #endif
+
+        ShieldState.shared.refresh()
     }
 
     private func startBreakCompletionMonitoring() {
@@ -264,9 +282,15 @@ final class ShieldManager {
                 let shouldAutoLock = SharedDefaults.limitSettings.autoLockAfterCommittedBreak
                 turnOff(success: true)
                 if shouldAutoLock {
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
-                        self?.turnOn(breakType: .free, durationMinutes: nil)
+                    // Log the committed → free transition
+                    if let petId = SharedDefaults.monitoredPetId {
+                        SnapshotStore.shared.appendSync(SnapshotEvent(
+                            petId: petId,
+                            windPoints: SharedDefaults.monitoredWindPoints,
+                            eventType: .breakAutoLocked
+                        ))
                     }
+                    turnOn(breakType: .free, durationMinutes: nil)
                 }
             }
 
@@ -338,7 +362,7 @@ final class ShieldManager {
         guard let petId = SharedDefaults.monitoredPetId,
               let activatedAt = SharedDefaults.shieldActivatedAt else { return }
 
-        let actualMinutes = max(1, Int(ceil(Date().timeIntervalSince(activatedAt) / 60)))
+        let actualMinutes = Int(round(Date().timeIntervalSince(activatedAt) / 60))
 
         SnapshotLogging.logBreakEnded(
             petId: petId,

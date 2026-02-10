@@ -20,8 +20,10 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
         ExtensionLogger.log("[Extension] isNewDay=\(isNewDay), lastResetDate=\(String(describing: SharedDefaults.lastDayResetDate))")
 
         if isNewDay {
-            // NEW DAY - perform full reset
             ExtensionLogger.log("[Extension] NEW DAY - performing daily reset")
+
+            // End any active break at midnight BEFORE resetting day state
+            handleMidnightBreakReset()
 
             // Reset wind and activate day start shield
             let didReset = SharedDefaults.performDailyResetIfNeeded()
@@ -91,6 +93,27 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
 
             processThresholdEvent(currentSeconds: currentSeconds)
         }
+    }
+
+    // MARK: - Midnight Break Reset
+
+    /// Ends any active break at midnight using shared logic, then deactivates ManagedSettingsStore.
+    private func handleMidnightBreakReset() {
+        let midnight = Calendar.current.startOfDay(for: Date())
+
+        guard let result = SharedDefaults.endBreakAtMidnight(cutoff: midnight) else {
+            ExtensionLogger.log("[Extension] No active break at midnight")
+            return
+        }
+
+        let coins = SnapshotLogging.processMidnightBreak(result)
+
+        // Deactivate ManagedSettingsStore (extension-specific, not in shared logic)
+        store.shield.applications = nil
+        store.shield.applicationCategories = nil
+        store.shield.webDomains = nil
+
+        ExtensionLogger.log("[Extension] Midnight break reset: type=\(result.breakType), actualMinutes=\(result.actualMinutes), coins=\(coins)")
     }
 
     // MARK: - Threshold Processing

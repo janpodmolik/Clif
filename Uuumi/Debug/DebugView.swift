@@ -447,10 +447,39 @@ struct DebugView: View {
                     simulateSafetyShield()
                 }
                 .tint(.purple)
+
+                Button("Midnight Reset") {
+                    simulateMidnightReset()
+                }
+                .tint(.orange)
             }
             .buttonStyle(.bordered)
             .controlSize(.small)
         }
+    }
+
+    /// Simulates what the extension does at midnight: ends any active break.
+    /// Start a break first (committed or free), then tap this to simulate midnight.
+    private func simulateMidnightReset() {
+        func log(_ message: String) {
+            ExtensionLogger.log(message, prefix: "[DebugMidnight]")
+            print(message)
+        }
+
+        guard let result = SharedDefaults.endBreakAtMidnight(cutoff: Date()) else {
+            log("No active break — start a break first")
+            return
+        }
+
+        let coins = SnapshotLogging.processMidnightBreak(result)
+
+        // Deactivate ManagedSettingsStore (in-app equivalent of what extension does)
+        ShieldManager.shared.clear()
+
+        // Simulate what the main app does on foreground return
+        ShieldManager.shared.resumeBreakMonitoringIfNeeded()
+
+        log("Midnight reset: type=\(result.breakType), minutes=\(result.actualMinutes), coins=\(coins)")
     }
 
     /// Simulates what the extension does when wind reaches 100%:

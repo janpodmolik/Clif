@@ -79,7 +79,7 @@ class ShieldActionExtension: ShieldActionDelegate {
             return
         }
 
-        let actualMinutes = Int(Date().timeIntervalSince(breakStartedAt) / 60)
+        let actualMinutes = Int(round(Date().timeIntervalSince(breakStartedAt) / 60))
         let windPoints = SharedDefaults.monitoredWindPoints
 
         let event = SnapshotEvent(
