@@ -72,7 +72,7 @@ enum SnapshotLogging {
             coins = CoinRewards.forBreak(minutes: result.actualMinutes)
             if coins > 0 {
                 SharedDefaults.addCoins(coins)
-                SharedDefaults.pendingMidnightCoinsAwarded = coins
+                SharedDefaults.pendingCoinsAwarded += coins
             }
         }
 

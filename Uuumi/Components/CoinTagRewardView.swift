@@ -1,12 +1,12 @@
 import SwiftUI
 
-struct BigTagRewardView: View {
+struct CoinTagRewardView: View {
     let animator: CoinsRewardAnimator
     let position: CGPoint
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
-    private var phase: BigTagPhase { animator.phase }
+    private var phase: CoinTagPhase { animator.phase }
 
     var body: some View {
         if phase != .idle {

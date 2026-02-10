@@ -85,13 +85,13 @@ extension SharedDefaults {
         windZeroNotified = false
     }
 
-    // MARK: - Midnight Break Reset
+    // MARK: - Pending Coin Rewards
 
-    /// Coins awarded by extension during midnight committed break reset.
-    /// Main app reads this to show earned coins badge, then clears it.
-    static var pendingMidnightCoinsAwarded: Int {
-        get { defaults?.integer(forKey: DefaultsKeys.pendingMidnightCoinsAwarded) ?? 0 }
-        set { defaults?.set(newValue, forKey: DefaultsKeys.pendingMidnightCoinsAwarded) }
+    /// Coins awarded while the app was not visible (background break end, midnight reset, etc.).
+    /// Main app reads this on foreground to show reward animation, then clears it.
+    static var pendingCoinsAwarded: Int {
+        get { defaults?.integer(forKey: DefaultsKeys.pendingCoinsAwarded) ?? 0 }
+        set { defaults?.set(newValue, forKey: DefaultsKeys.pendingCoinsAwarded) }
     }
 
     /// Result of ending a break at midnight (or simulated midnight in debug).

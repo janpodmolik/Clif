@@ -109,9 +109,9 @@ enum DefaultsKeys {
     static let preferredBreakType = "preferredBreakType"
     static let preferredCommittedMinutes = "preferredCommittedMinutes"
 
-    // MARK: - Midnight Break Reset
+    // MARK: - Pending Coin Rewards
 
-    static let pendingMidnightCoinsAwarded = "pendingMidnightCoinsAwarded"
+    static let pendingCoinsAwarded = "pendingCoinsAwarded"
 
     // MARK: - Cumulative Tracking
 

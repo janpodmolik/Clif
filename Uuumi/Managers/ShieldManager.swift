@@ -1,6 +1,7 @@
 import Foundation
 import ManagedSettings
 import FamilyControls
+import UIKit
 
 /// Observable state wrapper for shield status.
 /// Use this in SwiftUI views to reactively update when shield state changes.
@@ -136,6 +137,7 @@ final class ShieldManager {
     func toggle(success: Bool = true) {
         if SharedDefaults.isShieldActive {
             turnOff(success: success)
+            processPendingCoins()
         } else {
             turnOn(breakType: .free, durationMinutes: nil)
         }
@@ -198,13 +200,13 @@ final class ShieldManager {
         // Cancel any scheduled break end notification
         BreakNotification.cancelScheduledCommittedBreakEnd()
 
-        // Award coins for successful committed breaks
+        // Award coins for successful committed breaks (persisted for deferred display)
         if success, SharedDefaults.activeBreakType == .committed {
             let durationMinutes = SharedDefaults.committedBreakDuration ?? 0
             let coins = CoinRewards.forBreak(minutes: durationMinutes)
             if coins > 0 {
                 SharedDefaults.addCoins(coins)
-                ShieldState.shared.setEarnedCoins(coins)
+                SharedDefaults.pendingCoinsAwarded += coins
             }
         }
 
@@ -229,31 +231,33 @@ final class ShieldManager {
     // MARK: - Break Completion Monitoring
 
     /// Restores break monitoring after app returns to foreground.
-    /// Processes any pending midnight coins, checks if break expired, then starts timer.
+    /// Ends expired breaks, processes pending coin rewards, then resumes timer if needed.
     func resumeBreakMonitoringIfNeeded() {
-        processPendingMidnightCoins()
+        // End expired breaks first (may persist new pending coins via turnOff)
+        if SharedDefaults.isShieldActive, SharedDefaults.activeBreakType != nil {
+            checkBreakCompletion()
+        }
 
-        guard SharedDefaults.isShieldActive, SharedDefaults.activeBreakType != nil else { return }
-        checkBreakCompletion()
-        // If checkBreakCompletion ended the break, no need to start timer
+        // Show reward animation for any pending coins (from background turnOff, midnight reset, or just-completed break)
+        processPendingCoins()
+
+        // Resume timer if break is still active
         guard SharedDefaults.isShieldActive else { return }
         startBreakCompletionMonitoring()
     }
 
-    /// Processes pending midnight coins left by the extension.
-    /// Coins were already added by the extension — this handles UI feedback only.
-    private func processPendingMidnightCoins() {
-        let coins = SharedDefaults.pendingMidnightCoinsAwarded
+    /// Processes pending coin rewards persisted while the app was not visible.
+    /// Coins were already added to balance — this triggers the UI reward animation only.
+    private func processPendingCoins() {
+        let coins = SharedDefaults.pendingCoinsAwarded
         guard coins > 0 else { return }
 
         ShieldState.shared.setEarnedCoins(coins)
-        SharedDefaults.pendingMidnightCoinsAwarded = 0
+        SharedDefaults.pendingCoinsAwarded = 0
 
         #if DEBUG
-        print("[ShieldManager] Processed midnight coins: \(coins)")
+        print("[ShieldManager] Processed pending coins: \(coins)")
         #endif
-
-        ShieldState.shared.refresh()
     }
 
     private func startBreakCompletionMonitoring() {
@@ -281,6 +285,10 @@ final class ShieldManager {
             if let duration, Date().timeIntervalSince(activatedAt) >= duration {
                 let shouldAutoLock = SharedDefaults.limitSettings.autoLockAfterCommittedBreak
                 turnOff(success: true)
+                // Show reward immediately only if app is in foreground (timer can briefly fire in background)
+                if UIApplication.shared.applicationState == .active {
+                    processPendingCoins()
+                }
                 if shouldAutoLock {
                     // Log the committed → free transition
                     if let petId = SharedDefaults.monitoredPetId {
@@ -383,6 +391,7 @@ final class ShieldManager {
         }
 
         turnOff(success: true)
+        processPendingCoins()
     }
 
     // MARK: - Safety Shield Unlock

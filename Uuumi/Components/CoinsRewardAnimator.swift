@@ -1,7 +1,7 @@
 import SwiftUI
 import UIKit
 
-enum BigTagPhase: Equatable {
+enum CoinTagPhase: Equatable {
     case idle
     case popIn
     case pause
@@ -15,7 +15,7 @@ final class CoinsRewardAnimator {
 
     private(set) var isAnimating = false
     private(set) var amount = 0
-    private(set) var phase: BigTagPhase = .idle
+    private(set) var phase: CoinTagPhase = .idle
 
     // MARK: - API
 
@@ -24,12 +24,12 @@ final class CoinsRewardAnimator {
         amount = coins
         isAnimating = true
 
-        runBigTagAnimation()
+        runCoinTagAnimation()
     }
 
-    // MARK: - Big Tag Animation
+    // MARK: - Coin Tag Animation
 
-    private func runBigTagAnimation() {
+    private func runCoinTagAnimation() {
         phase = .idle
 
         let popInDuration: Double = 0.35

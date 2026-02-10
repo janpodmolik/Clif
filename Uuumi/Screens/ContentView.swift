@@ -94,7 +94,7 @@ struct ContentView: View {
 
                 // Coins reward tag overlay
                 GeometryReader { overlayGeo in
-                    BigTagRewardView(
+                    CoinTagRewardView(
                         animator: coinsAnimator,
                         position: CGPoint(x: overlayGeo.size.width / 2, y: overlayGeo.size.height * 0.62)
                     )
