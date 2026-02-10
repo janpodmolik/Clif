@@ -14,6 +14,11 @@ struct HourlyAggregate: Codable, Equatable {
         return hourlyTotals.map { $0 / Double(dayCount) }
     }
 
+    /// Average total daily screen time in minutes (sum of all hourly averages).
+    var totalDailyAverage: Double {
+        hourlyAverages.reduce(0, +)
+    }
+
     /// Hour (0-23) with highest average usage, or nil if no data.
     var peakHour: Int? {
         let averages = hourlyAverages

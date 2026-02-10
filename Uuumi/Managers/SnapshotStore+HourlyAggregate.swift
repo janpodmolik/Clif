@@ -1,14 +1,20 @@
 import Foundation
 
 extension SnapshotStore {
-    /// Computes hourly usage aggregate from all usageThreshold events.
+    /// Computes hourly usage aggregate from usageThreshold events.
     /// For each day, calculates per-hour usage deltas from consecutive cumulative values,
     /// then averages across all days.
-    func computeHourlyAggregate() -> HourlyAggregate {
+    /// - Parameter daysLimit: When set, only includes events from the last N days.
+    func computeHourlyAggregate(daysLimit: Int? = nil) -> HourlyAggregate {
         let allEvents = loadAll()
 
+        let cutoffDate: String? = daysLimit.map { limit in
+            let cutoff = Calendar.current.date(byAdding: .day, value: -limit, to: Date()) ?? Date()
+            return SnapshotEvent.dateString(from: cutoff)
+        }
+
         // Filter to usageThreshold events only
-        struct ThresholdPoint {
+        struct ThresholdPoint: Sendable {
             let date: String
             let timestamp: Date
             let cumulativeSeconds: Int
@@ -16,6 +22,7 @@ extension SnapshotStore {
 
         var points: [ThresholdPoint] = []
         for event in allEvents {
+            if let cutoff = cutoffDate, event.date < cutoff { continue }
             if case .usageThreshold(let cumulativeSeconds) = event.eventType {
                 points.append(ThresholdPoint(
                     date: event.date,

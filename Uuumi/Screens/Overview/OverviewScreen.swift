@@ -12,6 +12,7 @@ struct OverviewScreen: View {
     @State private var historyViewMode: HistoryViewMode = .list
     @State private var refreshTick: Int = 0
     @State private var hourlyAggregate: HourlyAggregate?
+    @State private var daysLimit: Int?
 
     init(hourlyAggregate: HourlyAggregate? = nil) {
         _hourlyAggregate = State(initialValue: hourlyAggregate)
@@ -140,8 +141,11 @@ struct OverviewScreen: View {
     @ViewBuilder
     private var dailyPatternSection: some View {
         if let aggregate = hourlyAggregate, aggregate.dayCount >= 1 {
-            DailyPatternCard(aggregate: aggregate)
+            DailyPatternCard(aggregate: aggregate, daysLimit: $daysLimit)
                 .padding(.horizontal, 20)
+                .onChange(of: daysLimit) {
+                    Task { await loadHourlyAggregate(force: true) }
+                }
         }
     }
 
@@ -218,22 +222,24 @@ struct OverviewScreen: View {
 
     // MARK: - Hourly Aggregate
 
-    private func loadHourlyAggregate() async {
-        // Skip if already set (e.g. from init for previews)
-        if hourlyAggregate != nil { return }
+    private func loadHourlyAggregate(force: Bool = false) async {
+        // Skip if already set (e.g. from init for previews) unless forced
+        if !force && hourlyAggregate != nil { return }
 
         // Use cache if fresh (computed today)
-        if !SharedDefaults.isHourlyAggregateStale, let cached = SharedDefaults.hourlyAggregate {
+        if !force && !SharedDefaults.isHourlyAggregateStale(daysLimit: daysLimit),
+           let cached = SharedDefaults.hourlyAggregate(daysLimit: daysLimit) {
             hourlyAggregate = cached
             return
         }
 
         let store = SnapshotStore.shared
+        let limit = daysLimit
         let computed = await Task.detached(priority: .userInitiated) {
-            store.computeHourlyAggregate()
+            store.computeHourlyAggregate(daysLimit: limit)
         }.value
 
-        SharedDefaults.hourlyAggregate = computed
+        SharedDefaults.setHourlyAggregate(computed, daysLimit: limit)
         hourlyAggregate = computed
     }
 
