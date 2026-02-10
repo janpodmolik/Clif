@@ -39,7 +39,10 @@ struct EmptyIslandCard: View {
     // MARK: - Create Button
 
     private var createButton: some View {
-        Button(action: onCreatePet) {
+        Button {
+            HapticType.impactMedium.trigger()
+            onCreatePet()
+        } label: {
             HStack(spacing: 8) {
                 Image(systemName: "plus")
                     .font(.system(size: 14, weight: .semibold))

@@ -73,8 +73,8 @@ struct ContentView: View {
                 }
                 .tint(.primary)
 
-                // Floating lock button — Home tab only, hidden during pet creation
-                if activeTab == .home && !createPetCoordinator.isShowing {
+                // Floating lock button — Home tab only, requires active pet, hidden during pet creation
+                if activeTab == .home && petManager.currentPet != nil && !createPetCoordinator.isShowing {
                     VStack {
                         Spacer()
                         HStack {
@@ -179,16 +179,10 @@ struct ContentView: View {
             UIImpactFeedbackGenerator(style: .light).impactOccurred()
             handleHomeActionTap()
         } label: {
-            Group {
-                if petManager.currentPet != nil {
-                    Image(systemName: shieldState.isActive ? "lock.fill" : "lock.open.fill")
-                } else {
-                    Image(systemName: "plus")
-                }
-            }
-            .font(.title2.weight(.semibold))
-            .contentTransition(.symbolEffect(.replace))
-            .frame(width: 55, height: 55)
+            Image(systemName: shieldState.isActive ? "lock.fill" : "lock.open.fill")
+                .font(.title2.weight(.semibold))
+                .contentTransition(.symbolEffect(.replace))
+                .frame(width: 55, height: 55)
         }
         .contentShape(Circle().inset(by: -10))
         .buttonStyle(.pressableButton)
@@ -197,17 +191,6 @@ struct ContentView: View {
     // MARK: - Lock Actions
 
     private func handleHomeActionTap() {
-        // No pet = pet creation flow
-        guard petManager.currentPet != nil else {
-            #if DEBUG
-            createPetCoordinator.showDropOnly { _ in }
-            #else
-            createPetCoordinator.show { _ in }
-            #endif
-            return
-        }
-
-        // Toggle lock/unlock
         if shieldState.isActive {
             handleUnlock()
         } else {

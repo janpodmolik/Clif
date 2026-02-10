@@ -23,6 +23,7 @@ struct CreatePetMultiStep: View {
                 ToolbarItem(placement: .topBarLeading) {
                     if coordinator.currentStep.canGoBack {
                         Button {
+                            HapticType.impactLight.trigger()
                             withAnimation(.easeInOut(duration: 0.25)) {
                                 coordinator.previousStep()
                             }
@@ -91,6 +92,7 @@ struct CreatePetMultiStep: View {
 
     private var nextButton: some View {
         Button {
+            HapticType.impactMedium.trigger()
             if coordinator.currentStep.isLast {
                 coordinator.proceedToDrop()
             } else {

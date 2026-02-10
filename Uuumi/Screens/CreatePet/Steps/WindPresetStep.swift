@@ -19,7 +19,10 @@ struct WindPresetStep: View {
                     WindPresetCard(
                         preset: preset,
                         isSelected: coordinator.preset == preset,
-                        onTap: { coordinator.preset = preset }
+                        onTap: {
+                            HapticType.impactLight.trigger()
+                            coordinator.preset = preset
+                        }
                     )
                 }
             }
