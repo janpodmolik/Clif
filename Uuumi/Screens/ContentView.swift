@@ -116,6 +116,9 @@ struct ContentView: View {
             activeTab = .profile
             navigationPaths[.profile] = NavigationPath([ProfileDestination.essenceCatalog])
         }
+        .onReceive(NotificationCenter.default.publisher(for: .showBreakTypePicker)) { _ in
+            showBreakTypePicker = true
+        }
         #if DEBUG
         .onReceive(NotificationCenter.default.publisher(for: .showMockSheet)) { _ in
             showMockSheet = true

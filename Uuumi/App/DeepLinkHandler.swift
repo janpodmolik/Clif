@@ -87,6 +87,7 @@ extension Notification.Name {
     static let selectPet = Notification.Name("selectPet")
     static let showPresetPicker = Notification.Name("showPresetPicker")
     static let showEssenceCatalog = Notification.Name("showEssenceCatalog")
+    static let showBreakTypePicker = Notification.Name("showBreakTypePicker")
     #if DEBUG
     static let showMockSheet = Notification.Name("showMockSheet")
     #endif

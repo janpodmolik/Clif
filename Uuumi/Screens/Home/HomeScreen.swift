@@ -260,7 +260,7 @@ struct HomeScreen: View {
                 )
             }
         }
-        .windNotCalmAlert(isPresented: $showWindNotCalmAlert)
+        .windNotCalmSheet(isPresented: $showWindNotCalmAlert)
         .alert(
             "Přístup k času u obrazovky",
             isPresented: $showAuthorizationAlert

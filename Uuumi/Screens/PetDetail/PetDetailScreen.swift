@@ -198,7 +198,7 @@ struct PetDetailScreen: View {
                     }
                 )
             }
-            .windNotCalmAlert(isPresented: $showWindNotCalmAlert)
+            .windNotCalmSheet(isPresented: $showWindNotCalmAlert)
             .dismissButton()
         }
     }
