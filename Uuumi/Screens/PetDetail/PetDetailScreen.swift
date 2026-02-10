@@ -16,6 +16,7 @@ struct PetDetailScreen: View {
     @State private var showDeleteConfirmation = false
     @State private var showArchiveConfirmation = false
     @State private var showWindNotCalmAlert = false
+    @State private var showBreakTypePicker = false
 
     private var themeColor: Color {
         pet.themeColor
@@ -198,7 +199,19 @@ struct PetDetailScreen: View {
                     }
                 )
             }
-            .windNotCalmSheet(isPresented: $showWindNotCalmAlert)
+            .windNotCalmSheet(isPresented: $showWindNotCalmAlert, onStartBreak: {
+                showBreakTypePicker = true
+            })
+            .sheet(isPresented: $showBreakTypePicker) {
+                BreakTypePicker(
+                    onSelectFree: {
+                        ShieldManager.shared.turnOn(breakType: .free, durationMinutes: nil)
+                    },
+                    onConfirmCommitted: { durationMinutes in
+                        ShieldManager.shared.turnOn(breakType: .committed, durationMinutes: durationMinutes)
+                    }
+                )
+            }
             .dismissButton()
         }
     }

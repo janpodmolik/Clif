@@ -4,8 +4,10 @@ import Combine
 // MARK: - Sheet
 
 struct WindNotCalmSheet: View {
+    @Binding var isPresented: Bool
+    var onStartBreak: (() -> Void)?
+
     @State private var refreshTick = 0
-    @Environment(\.dismiss) private var dismiss
 
     private var isSafe: Bool {
         let _ = refreshTick
@@ -38,7 +40,7 @@ struct WindNotCalmSheet: View {
                     foregroundColor: .green,
                     background: .tinted(.green)
                 ) {
-                    dismiss()
+                    isPresented = false
                 }
                 .transition(.blurReplace)
             } else {
@@ -47,9 +49,15 @@ struct WindNotCalmSheet: View {
                     title: "Spustit pauzu",
                     subtitle: "Sníží vítr během pauzy"
                 ) {
-                    dismiss()
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                        NotificationCenter.default.post(name: .showBreakTypePicker, object: nil)
+                    isPresented = false
+                    if let onStartBreak {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                            onStartBreak()
+                        }
+                    } else {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                            NotificationCenter.default.post(name: .showBreakTypePicker, object: nil)
+                        }
                     }
                 }
                 .transition(.blurReplace)
@@ -66,18 +74,19 @@ struct WindNotCalmSheet: View {
 
 private struct WindNotCalmSheetModifier: ViewModifier {
     @Binding var isPresented: Bool
+    var onStartBreak: (() -> Void)?
 
     func body(content: Content) -> some View {
         content
             .sheet(isPresented: $isPresented) {
-                WindNotCalmSheet()
+                WindNotCalmSheet(isPresented: $isPresented, onStartBreak: onStartBreak)
             }
     }
 }
 
 extension View {
-    func windNotCalmSheet(isPresented: Binding<Bool>) -> some View {
-        modifier(WindNotCalmSheetModifier(isPresented: isPresented))
+    func windNotCalmSheet(isPresented: Binding<Bool>, onStartBreak: (() -> Void)? = nil) -> some View {
+        modifier(WindNotCalmSheetModifier(isPresented: isPresented, onStartBreak: onStartBreak))
     }
 }
 
@@ -87,7 +96,7 @@ extension View {
 #Preview("Wind Active") {
     Text("Tap to show")
         .sheet(isPresented: .constant(true)) {
-            WindNotCalmSheet()
+            WindNotCalmSheet(isPresented: .constant(true))
         }
 }
 #endif
