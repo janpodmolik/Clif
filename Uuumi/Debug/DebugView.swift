@@ -6,6 +6,7 @@ import DeviceActivity
 struct DebugView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(PetManager.self) private var petManager
+    @Environment(StoreManager.self) private var storeManager
     @StateObject private var manager = ScreenTimeManager.shared
     @State private var isPickerPresented = false
     @State private var extensionLog = ""
@@ -22,6 +23,7 @@ struct DebugView: View {
             ScrollView {
                 VStack(spacing: 12) {
                     petEvolutionSection
+                    premiumSection
 
                     if !manager.isAuthorized {
                         authorizationSection
@@ -165,6 +167,46 @@ struct DebugView: View {
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
+        }
+    }
+
+    // MARK: - Premium
+
+    private var premiumSection: some View {
+        sectionCard("Premium", icon: "crown.fill", tint: Color("PremiumGold")) {
+            VStack(alignment: .leading, spacing: 3) {
+                debugRow("isPremium", storeManager.isPremium ? "Yes" : "No")
+                debugRow("productId", storeManager.activeProductId ?? "nil")
+                if let exp = storeManager.expirationDate {
+                    debugRow("Expires", exp.formatted(.dateTime.day().month().year().hour().minute()))
+                }
+                debugRow("Products loaded", "\(storeManager.products.count)")
+            }
+
+            Divider()
+
+            FlowLayout(spacing: 8) {
+                Button(storeManager.isPremium ? "Deactivate" : "Activate") {
+                    if storeManager.isPremium {
+                        storeManager.debugSetPremium(false)
+                    } else {
+                        storeManager.debugSetPremium(true)
+                    }
+                }
+                .tint(storeManager.isPremium ? .red : .green)
+
+                Button("Refresh Entitlements") {
+                    Task { await storeManager.checkCurrentEntitlements() }
+                }
+                .tint(.blue)
+
+                Button("Load Products") {
+                    Task { await storeManager.forceLoadProducts() }
+                }
+                .tint(.purple)
+            }
+            .buttonStyle(.bordered)
+            .controlSize(.small)
         }
     }
 
@@ -771,6 +813,7 @@ private struct FlowLayout: Layout {
 #Preview {
     DebugView()
         .environment(PetManager.mock())
+        .environment(StoreManager.mock())
 }
 
 // MARK: - Debug Overlay

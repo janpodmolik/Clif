@@ -11,6 +11,7 @@ struct ProfileScreen: View {
     @Environment(PetManager.self) private var petManager
     @Environment(EssenceCatalogManager.self) private var catalogManager
     @Environment(AuthManager.self) private var authManager
+    @Environment(StoreManager.self) private var storeManager
     @AppStorage("appearanceMode") private var appearanceMode: AppearanceMode = .automatic
     @AppStorage("selectedDayTheme") private var dayTheme: DayTheme = .morningHaze
     @AppStorage("selectedNightTheme") private var nightTheme: NightTheme = .deepNight
@@ -46,8 +47,16 @@ struct ProfileScreen: View {
                     Button {
                         showPremiumSheet = true
                     } label: {
-                        Label("Uuumium", systemImage: "crown.fill")
-                            .foregroundStyle(Color("PremiumGold"))
+                        HStack {
+                            Label("Uuumium", systemImage: "crown.fill")
+                                .foregroundStyle(Color("PremiumGold"))
+                            if storeManager.isPremium {
+                                Spacer()
+                                Text("Aktivní")
+                                    .font(.caption.weight(.medium))
+                                    .foregroundStyle(Color("PremiumGold"))
+                            }
+                        }
                     }
 
                     NavigationLink(value: ProfileDestination.essenceCatalog) {
@@ -334,4 +343,5 @@ private struct ThemePicker<T: Hashable & Identifiable>: View {
         .environment(PetManager.mock())
         .environment(EssenceCatalogManager.mock())
         .environment(AuthManager.mock())
+        .environment(StoreManager.mock())
 }

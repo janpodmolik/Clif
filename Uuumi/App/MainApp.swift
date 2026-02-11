@@ -13,6 +13,7 @@ struct MainApp: App {
     @State private var archivedPetManager = ArchivedPetManager()
     @State private var essenceCatalogManager = EssenceCatalogManager()
     @State private var authManager = AuthManager()
+    @State private var storeManager = StoreManager()
 
     init() {
         print("🟢 MainApp init")
@@ -32,6 +33,7 @@ struct MainApp: App {
                 .environment(archivedPetManager)
                 .environment(essenceCatalogManager)
                 .environment(authManager)
+                .environment(storeManager)
                 .onAppear { print("🟢 ContentView appeared") }
         }
         .onChange(of: scenePhase) { _, newPhase in
