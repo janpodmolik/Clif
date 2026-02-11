@@ -110,6 +110,7 @@ final class ScreenTimeManager: ObservableObject {
         // Restart monitoring with new preset
         startMonitoring(
             petId: pet.id,
+            petName: pet.name,
             limitSeconds: limitSeconds,
             limitedSources: pet.limitedSources
         )
@@ -122,10 +123,12 @@ final class ScreenTimeManager: ObservableObject {
     ///
     /// - Parameters:
     ///   - petId: UUID of the pet being monitored
+    ///   - petName: Display name of the pet (for shield subtitle)
     ///   - limitSeconds: Screen time limit in seconds (minutesToBlowAway * 60 from preset)
     ///   - limitedSources: Pet's limited sources containing tokens to monitor
     func startMonitoring(
         petId: UUID,
+        petName: String,
         limitSeconds: Int,
         limitedSources: [LimitedSource]
     ) {
@@ -149,6 +152,7 @@ final class ScreenTimeManager: ObservableObject {
 
         // Update monitoring context for extensions
         SharedDefaults.monitoredPetId = petId
+        SharedDefaults.monitoredPetName = petName
         SharedDefaults.setInt(limitSeconds, forKey: DefaultsKeys.monitoringLimitSeconds)
 
         // Reset all shield flags - fresh monitoring start means no shield blocking wind
@@ -236,6 +240,7 @@ final class ScreenTimeManager: ObservableObject {
 
         // Clear monitoring context and shield flags
         SharedDefaults.monitoredPetId = nil
+        SharedDefaults.monitoredPetName = nil
         SharedDefaults.resetShieldFlags()
 
         #if DEBUG
@@ -247,6 +252,7 @@ final class ScreenTimeManager: ObservableObject {
     func stopAllMonitoring() {
         center.stopMonitoring()
         SharedDefaults.monitoredPetId = nil
+        SharedDefaults.monitoredPetName = nil
         #if DEBUG
         print("[ScreenTimeManager] Stopped all monitoring")
         #endif

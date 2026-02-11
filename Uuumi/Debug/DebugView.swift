@@ -313,6 +313,7 @@ struct DebugView: View {
 
         ScreenTimeManager.shared.startMonitoring(
             petId: pet.id,
+            petName: pet.name,
             limitSeconds: limitSeconds,
             limitedSources: pet.limitedSources
         )

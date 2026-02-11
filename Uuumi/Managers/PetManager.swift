@@ -201,6 +201,7 @@ final class PetManager {
         let limitSeconds = Int(pet.preset.minutesToBlowAway * 60)
         ScreenTimeManager.shared.startMonitoring(
             petId: pet.id,
+            petName: pet.name,
             limitSeconds: limitSeconds,
             limitedSources: pet.limitedSources
         )
@@ -253,6 +254,7 @@ final class PetManager {
 
         ScreenTimeManager.shared.startMonitoring(
             petId: pet.id,
+            petName: pet.name,
             limitSeconds: limitSeconds,
             limitedSources: pet.limitedSources
         )

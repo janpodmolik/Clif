@@ -48,43 +48,14 @@ class ShieldConfigurationExtension: ShieldConfigurationDataSource {
     }
 
     private func getUsageShieldConfiguration() -> ShieldConfiguration {
-        logToFile("getUsageShieldConfiguration() START")
-        let windPoints = SharedDefaults.monitoredWindPoints
-        logToFile("windPoints=\(windPoints)")
-        let windLevel = WindLevel.from(windPoints: windPoints)
-        logToFile("windLevel=\(windLevel.rawValue) (\(windLevel.label))")
+        let petName = SharedDefaults.monitoredPetName
+        let subtitleText = petName.map { "Blokováno pro \($0)" } ?? "Blokováno"
 
-        let subtitleText: String
-        let iconName: String
-        let backgroundColor: UIColor
-
-        if SharedDefaults.activeBreakType == .safety {
-            let effectiveWind = SharedDefaults.effectiveWind
-            let unlockThreshold = Double(SharedDefaults.limitSettings.safetyUnlockThreshold)
-            if effectiveWind >= unlockThreshold {
-                subtitleText = "Počkej, až vítr klesne pod \(Int(unlockThreshold)) %. Odemčení teď = ztráta mazlíčka!"
-            } else {
-                subtitleText = "Vítr klesl pod \(Int(unlockThreshold)) %! Můžeš bezpečně odemknout."
-            }
-            iconName = "shield.fill"
-            backgroundColor = effectiveWind >= unlockThreshold
-                ? UIColor.systemRed.withAlphaComponent(0.1)
-                : UIColor.systemGreen.withAlphaComponent(0.1)
-        } else if windPoints >= 100 {
-            subtitleText = "Další používání pravděpodobně odfoukne mazlíčka!"
-            iconName = "wind"
-            backgroundColor = UIColor.systemRed.withAlphaComponent(0.1)
-        } else {
-            subtitleText = "Vítr se uklidňuje..."
-            iconName = "wind"
-            backgroundColor = UIColor.systemBackground
-        }
-
-        logToFile("getUsageShieldConfiguration() returning config with subtitle: \(subtitleText)")
+        logToFile("getUsageShieldConfiguration() subtitle: \(subtitleText)")
         return ShieldConfiguration(
             backgroundBlurStyle: .systemMaterial,
-            backgroundColor: backgroundColor,
-            icon: UIImage(systemName: iconName),
+            backgroundColor: UIColor.systemBackground,
+            icon: UIImage(systemName: "wind"),
             title: ShieldConfiguration.Label(text: "Uuumi", color: .label),
             subtitle: ShieldConfiguration.Label(text: subtitleText, color: .secondaryLabel),
             primaryButtonLabel: ShieldConfiguration.Label(text: "Zavřít app", color: .white),

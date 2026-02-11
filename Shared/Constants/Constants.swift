@@ -69,6 +69,7 @@ enum DefaultsKeys {
     // MARK: - Monitoring Context (lightweight data for extensions)
 
     static let monitoredPetId = "monitoredPetId"
+    static let monitoredPetName = "monitoredPetName"
     static let monitoredWindPoints = "monitoredWindPoints"
     static let monitoringLimitSeconds = "monitoringLimitSeconds"
     static let monitoredLastThresholdSeconds = "monitoredLastThresholdSeconds"

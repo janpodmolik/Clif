@@ -15,6 +15,12 @@ extension SharedDefaults {
         }
     }
 
+    /// Pet name for display in shield extension.
+    static var monitoredPetName: String? {
+        get { defaults?.string(forKey: DefaultsKeys.monitoredPetName) }
+        set { defaults?.set(newValue, forKey: DefaultsKeys.monitoredPetName) }
+    }
+
     /// Current wind points for the monitored pet (updated by extension on each threshold).
     /// Note: Uses fresh UserDefaults instance for reads to ensure cross-process sync.
     static var monitoredWindPoints: Double {
