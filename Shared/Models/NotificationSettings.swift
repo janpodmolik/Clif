@@ -21,10 +21,32 @@ struct NotificationSettings: Codable, Equatable {
     /// Covers both free break and safety break wind-zero notifications.
     var breakWindZero: Bool = true
 
+    // MARK: - Wind Reminder
+
+    /// Reminder when wind stays high (≥50%) for 30 min without a break.
+    var windReminder: Bool = true
+
     // MARK: - Summaries & Reminders
 
     var dailySummary: Bool = true
     var evolutionReady: Bool = true
+
+    // MARK: - Codable
+
+    init() {}
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        masterEnabled = try container.decodeIfPresent(Bool.self, forKey: .masterEnabled) ?? true
+        windLight = try container.decodeIfPresent(Bool.self, forKey: .windLight) ?? true
+        windStrong = try container.decodeIfPresent(Bool.self, forKey: .windStrong) ?? true
+        windCritical = try container.decodeIfPresent(Bool.self, forKey: .windCritical) ?? true
+        breakCommittedEnded = try container.decodeIfPresent(Bool.self, forKey: .breakCommittedEnded) ?? true
+        breakWindZero = try container.decodeIfPresent(Bool.self, forKey: .breakWindZero) ?? true
+        windReminder = try container.decodeIfPresent(Bool.self, forKey: .windReminder) ?? true
+        dailySummary = try container.decodeIfPresent(Bool.self, forKey: .dailySummary) ?? true
+        evolutionReady = try container.decodeIfPresent(Bool.self, forKey: .evolutionReady) ?? true
+    }
 
     // MARK: - Defaults
 
@@ -47,6 +69,10 @@ struct NotificationSettings: Codable, Equatable {
         case .committedBreakEnded: return breakCommittedEnded
         case .freeBreakWindZero, .safetyBreakWindZero: return breakWindZero
         }
+    }
+
+    func shouldSendWindReminder() -> Bool {
+        masterEnabled && windReminder
     }
 
     // MARK: - Migration

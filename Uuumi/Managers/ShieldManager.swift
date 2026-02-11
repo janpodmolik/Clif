@@ -64,6 +64,7 @@ final class ShieldManager {
     /// Refreshes UI state and starts break completion monitoring.
     private func handleSafetyShieldActivatedByExtension() {
         guard SharedDefaults.activeBreakType == .safety else { return }
+        WindReminderNotification.cancel { print($0) }
         ShieldState.shared.refresh()
         startBreakCompletionMonitoring()
     }
@@ -186,6 +187,8 @@ final class ShieldManager {
                 breakType: breakTypePayload
             )
         }
+
+        WindReminderNotification.cancel { print($0) }
 
         ShieldState.shared.refresh()
         startBreakCompletionMonitoring()

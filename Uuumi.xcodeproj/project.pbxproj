@@ -136,6 +136,11 @@
 		B4F9397B2F2C9D340012773D /* BreakNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4F939782F2C9D340012773D /* BreakNotification.swift */; };
 		B4F9397C2F2C9D340012773D /* BreakNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4F939782F2C9D340012773D /* BreakNotification.swift */; };
 		B4F9397D2F2C9D340012773D /* BreakNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4F939782F2C9D340012773D /* BreakNotification.swift */; };
+		B4WIND0022F40A0000000002 /* WindReminderNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4WIND0012F40A0000000001 /* WindReminderNotification.swift */; };
+		B4WIND0032F40A0000000003 /* WindReminderNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4WIND0012F40A0000000001 /* WindReminderNotification.swift */; };
+		B4WIND0042F40A0000000004 /* WindReminderNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4WIND0012F40A0000000001 /* WindReminderNotification.swift */; };
+		B4WIND0052F40A0000000005 /* WindReminderNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4WIND0012F40A0000000001 /* WindReminderNotification.swift */; };
+		B4WIND0062F40A0000000006 /* WindReminderNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4WIND0012F40A0000000001 /* WindReminderNotification.swift */; };
 		B4HA00022F40000100AA0002 /* HourlyAggregate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4HA00012F40000100AA0001 /* HourlyAggregate.swift */; };
 		B4HA00032F40000100AA0003 /* HourlyAggregate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4HA00012F40000100AA0001 /* HourlyAggregate.swift */; };
 		B4HA00042F40000100AA0004 /* HourlyAggregate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4HA00012F40000100AA0001 /* HourlyAggregate.swift */; };
@@ -210,6 +215,7 @@
 		B40CCE351C80317FA3B1799D /* NotificationSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationSettings.swift; sourceTree = "<group>"; };
 		B4153D3D2F27417F0006FEE3 /* LimitSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LimitSettings.swift; sourceTree = "<group>"; };
 		B4153D402F2741A40006FEE3 /* WindNotification.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindNotification.swift; sourceTree = "<group>"; };
+		B4WIND0012F40A0000000001 /* WindReminderNotification.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindReminderNotification.swift; sourceTree = "<group>"; };
 		B4159A322EE56ED700BAE49D /* Uuumi.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Uuumi.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B4167E532F1FE2D800D89B36 /* SnapshotEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SnapshotEvent.swift; sourceTree = "<group>"; };
 		B4167E5B2F1FE73400D89B36 /* SnapshotEventType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SnapshotEventType.swift; sourceTree = "<group>"; };
@@ -481,6 +487,7 @@
 			children = (
 				B4153D402F2741A40006FEE3 /* WindNotification.swift */,
 				B4F939782F2C9D340012773D /* BreakNotification.swift */,
+				B4WIND0012F40A0000000001 /* WindReminderNotification.swift */,
 			);
 			path = Notifications;
 			sourceTree = "<group>";
@@ -779,6 +786,7 @@
 				B4153D422F2741A40006FEE3 /* WindNotification.swift in Sources */,
 				B451D3832F26856C004C534F /* SharedDefaults+Wind.swift in Sources */,
 				B4F9397C2F2C9D340012773D /* BreakNotification.swift in Sources */,
+				B4WIND0022F40A0000000002 /* WindReminderNotification.swift in Sources */,
 				B4167E5D2F1FE73400D89B36 /* SnapshotEventType.swift in Sources */,
 				B4167E5F2F1FEF4E00D89B36 /* SnapshotStore.swift in Sources */,
 				B4167E652F1FF93800D89B36 /* SnapshotLogging.swift in Sources */,
@@ -829,6 +837,7 @@
 				B451D3862F26856C004C534F /* SharedDefaults+Shield.swift in Sources */,
 				B451D3872F26856C004C534F /* SharedDefaults+Tokens.swift in Sources */,
 				B4F9397D2F2C9D340012773D /* BreakNotification.swift in Sources */,
+				B4WIND0032F40A0000000003 /* WindReminderNotification.swift in Sources */,
 				B451D3882F26856C004C534F /* SharedDefaults+Wind.swift in Sources */,
 				B472FD5F2F354AAE00C109AA /* CoinRewards.swift in Sources */,
 			);
@@ -857,6 +866,7 @@
 				B451D2112F24FEF0004C534F /* ExtensionLogger.swift in Sources */,
 				B4167E5C2F1FE73400D89B36 /* SnapshotEventType.swift in Sources */,
 				B4F939792F2C9D340012773D /* BreakNotification.swift in Sources */,
+				B4WIND0042F40A0000000004 /* WindReminderNotification.swift in Sources */,
 				B4167E602F1FEF4E00D89B36 /* SnapshotStore.swift in Sources */,
 				B472FD612F354AAE00C109AA /* CoinRewards.swift in Sources */,
 			);
@@ -869,6 +879,7 @@
 				B49387992F0E428B0090C730 /* WindConfig.swift in Sources */,
 				B493879B2F0E428B0090C730 /* WindLevel.swift in Sources */,
 				B4F9397B2F2C9D340012773D /* BreakNotification.swift in Sources */,
+				B4WIND0052F40A0000000005 /* WindReminderNotification.swift in Sources */,
 				B472FD5A2F3549D100C109AA /* SharedDefaults+Coins.swift in Sources */,
 				B4HA00052F40000100AA0005 /* HourlyAggregate.swift in Sources */,
 				B4HA00152F40000100BB0005 /* SharedDefaults+HourlyAggregate.swift in Sources */,
@@ -918,6 +929,7 @@
 				B451D20F2F24FEF0004C534F /* ExtensionLogger.swift in Sources */,
 				B4167E622F1FF91800D89B36 /* SnapshotEvent.swift in Sources */,
 				B4F9397A2F2C9D340012773D /* BreakNotification.swift in Sources */,
+				B4WIND0062F40A0000000006 /* WindReminderNotification.swift in Sources */,
 				B4167E632F1FF92500D89B36 /* SnapshotStore.swift in Sources */,
 				B472FD622F354AAE00C109AA /* CoinRewards.swift in Sources */,
 			);

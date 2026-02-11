@@ -22,6 +22,10 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
         if isNewDay {
             ExtensionLogger.log("[Extension] NEW DAY - performing daily reset")
 
+            WindReminderNotification.cancel { message in
+                ExtensionLogger.log(message)
+            }
+
             // End any active break at midnight BEFORE resetting day state
             handleMidnightBreakReset()
 
@@ -162,6 +166,7 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
         SharedDefaults.monitoredWindPoints = newWindPoints
 
         checkWindNotification(oldWind: oldWindPoints, newWind: newWindPoints)
+        checkWindReminder(newWind: newWindPoints)
 
         let safetyThreshold = Double(SharedDefaults.limitSettings.safetyShieldActivationThreshold)
         if newWindPoints >= safetyThreshold {
@@ -197,6 +202,26 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
         }
     }
 
+    // MARK: - Wind Reminder
+
+    /// Schedules or cancels the wind reminder notification based on current wind level.
+    /// At ≥50% wind (medium+), schedules a reminder 30 min from now (resets on each threshold event).
+    /// Below 50%, cancels any pending reminder.
+    private func checkWindReminder(newWind: Double) {
+        let settings = SharedDefaults.limitSettings
+        guard settings.notifications.shouldSendWindReminder() else { return }
+
+        if newWind >= WindReminderNotification.windThreshold {
+            WindReminderNotification.schedule { message in
+                ExtensionLogger.log(message)
+            }
+        } else {
+            WindReminderNotification.cancel { message in
+                ExtensionLogger.log(message)
+            }
+        }
+    }
+
     // MARK: - Safety Shield
 
     private func checkSafetyShield() {
@@ -223,6 +248,10 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
         // Notify the main app so it can refresh ShieldState immediately
         let center = CFNotificationCenterGetDarwinNotifyCenter()
         CFNotificationCenterPostNotification(center, CFNotificationName(DarwinNotifications.safetyShieldActivated as CFString), nil, nil, true)
+
+        WindReminderNotification.cancel { message in
+            ExtensionLogger.log(message)
+        }
 
         ExtensionLogger.log("[SafetyShield] Activated with .safety break type")
     }

@@ -38,6 +38,13 @@ struct NotificationSettingsScreen: View {
                     isOn: notifications.windCritical,
                     disabled: disabled
                 )
+
+                NotificationToggleRow(
+                    title: "Připomenutí vysokého větru",
+                    description: "Upozornění po 30 minutách vysokého větru bez aktivní pauzy.",
+                    isOn: notifications.windReminder,
+                    disabled: disabled
+                )
             }
             .headerProminence(.increased)
 
