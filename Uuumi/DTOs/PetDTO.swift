@@ -13,16 +13,40 @@ struct PetDTO: Codable {
     let limitedSourceChangesCount: Int
     let breakHistory: [CompletedBreak]
 
+    init(
+        id: UUID,
+        name: String,
+        evolutionHistory: EvolutionHistory,
+        purpose: String?,
+        preset: WindPreset,
+        dailyStats: [DailyUsageStat],
+        limitedSources: [LimitedSource],
+        limitedSourceChangesCount: Int,
+        breakHistory: [CompletedBreak]
+    ) {
+        self.id = id
+        self.name = name
+        self.evolutionHistory = evolutionHistory
+        self.purpose = purpose
+        self.preset = preset
+        self.dailyStats = dailyStats
+        self.limitedSources = limitedSources
+        self.limitedSourceChangesCount = limitedSourceChangesCount
+        self.breakHistory = breakHistory
+    }
+
     init(from pet: Pet) {
-        self.id = pet.id
-        self.name = pet.name
-        self.evolutionHistory = pet.evolutionHistory
-        self.purpose = pet.purpose
-        self.preset = pet.preset
-        self.dailyStats = pet.dailyStats
-        self.limitedSources = pet.limitedSources
-        self.limitedSourceChangesCount = pet.limitedSourceChangesCount
-        self.breakHistory = pet.breakHistory
+        self.init(
+            id: pet.id,
+            name: pet.name,
+            evolutionHistory: pet.evolutionHistory,
+            purpose: pet.purpose,
+            preset: pet.preset,
+            dailyStats: pet.dailyStats,
+            limitedSources: pet.limitedSources,
+            limitedSourceChangesCount: pet.limitedSourceChangesCount,
+            breakHistory: pet.breakHistory
+        )
     }
 
     init(from decoder: Decoder) throws {
