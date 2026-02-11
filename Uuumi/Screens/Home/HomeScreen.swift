@@ -447,9 +447,7 @@ struct HomeScreen: View {
 
     private var emptyIslandCard: some View {
         EmptyIslandCard {
-            Task {
-                await requestAuthorizationAndCreatePet()
-            }
+            await requestAuthorizationAndCreatePet()
         }
     }
 

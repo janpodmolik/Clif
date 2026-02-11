@@ -2,7 +2,9 @@ import SwiftUI
 
 /// Card displayed on empty island prompting user to create their first pet.
 struct EmptyIslandCard: View {
-    var onCreatePet: () -> Void
+    var onCreatePet: () async -> Void
+
+    @State private var isLoading = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -41,11 +43,21 @@ struct EmptyIslandCard: View {
     private var createButton: some View {
         Button {
             HapticType.impactMedium.trigger()
-            onCreatePet()
+            isLoading = true
+            Task {
+                await onCreatePet()
+                isLoading = false
+            }
         } label: {
             HStack(spacing: 8) {
-                Image(systemName: "plus")
-                    .font(.system(size: 14, weight: .semibold))
+                if isLoading {
+                    ProgressView()
+                        .tint(.white)
+                        .controlSize(.small)
+                } else {
+                    Image(systemName: "plus")
+                        .font(.system(size: 14, weight: .semibold))
+                }
                 Text("Create Pet")
                     .font(.system(size: 14, weight: .semibold))
             }
@@ -55,6 +67,7 @@ struct EmptyIslandCard: View {
             .background(.blue, in: Capsule())
         }
         .buttonStyle(.plain)
+        .disabled(isLoading)
     }
 }
 
@@ -62,8 +75,10 @@ struct EmptyIslandCard: View {
 
 #if DEBUG
 #Preview {
-    EmptyIslandCard(onCreatePet: {})
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 24))
-        .padding()
+    EmptyIslandCard(onCreatePet: {
+        try? await Task.sleep(for: .seconds(2))
+    })
+    .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 24))
+    .padding()
 }
 #endif
