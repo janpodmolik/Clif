@@ -156,6 +156,7 @@ struct HomeScreen: View {
             .onAppear {
                 currentScreenWidth = geometry.size.width
                 currentScreenHeight = geometry.size.height
+                createPetCoordinator.petHeight = geometry.size.height * 0.10
                 // If pet was blown in background, set off-screen immediately
                 if currentPet?.isBlownAway == true {
                     blowAwayAnimator.setBlownState(screenWidth: geometry.size.width)
@@ -164,6 +165,7 @@ struct HomeScreen: View {
             .onChange(of: geometry.size) { _, newSize in
                 currentScreenWidth = newSize.width
                 currentScreenHeight = newSize.height
+                createPetCoordinator.petHeight = newSize.height * 0.10
             }
         }
         .fullScreenCover(isPresented: $showPetDetail, onDismiss: {

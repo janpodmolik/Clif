@@ -62,6 +62,7 @@ final class CreatePetCoordinator {
 
     var dragState = BlobDragState()
     var petDropFrame: CGRect?
+    var petHeight: CGFloat = 0
 
     // MARK: - Callbacks
 

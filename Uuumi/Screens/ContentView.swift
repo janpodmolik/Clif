@@ -90,7 +90,7 @@ struct ContentView: View {
                 }
 
                 EssencePickerOverlay()
-                CreatePetOverlay(screenHeight: geometry.size.height)
+                CreatePetOverlay()
 
                 // Coins reward tag overlay
                 GeometryReader { overlayGeo in

@@ -1,19 +1,13 @@
 import SwiftUI
 
 struct BlobDragPreview: View {
-    let screenHeight: CGFloat
+    let petHeight: CGFloat
     var dragVelocity: CGSize = .zero
 
     private enum Layout {
         static let maxRotation: CGFloat = 25
         static let velocityDamping: CGFloat = 0.008
-        static let shadowOpacity: CGFloat = 0.25
-        static let shadowRadius: CGFloat = 12
-        static let shadowY: CGFloat = 10
     }
-
-    /// Same calculation as IslandView.petHeight
-    private var imageSize: CGFloat { screenHeight * 0.10 }
 
     private var rotation: Angle {
         // Rotate based on horizontal velocity - feels like physics
@@ -26,15 +20,9 @@ struct BlobDragPreview: View {
         Image(Blob.shared.assetName(for: .none))
             .resizable()
             .scaledToFit()
-            .frame(height: imageSize)
+            .frame(height: petHeight)
             .rotationEffect(rotation, anchor: .top)
             .scaleEffect(Blob.shared.displayScale, anchor: .bottom)
-            .shadow(
-                color: .black.opacity(Layout.shadowOpacity),
-                radius: Layout.shadowRadius,
-                x: 0,
-                y: Layout.shadowY
-            )
             .animation(.interactiveSpring(response: 0.3, dampingFraction: 0.6), value: dragVelocity.width)
     }
 }
@@ -46,7 +34,7 @@ struct BlobDragPreview: View {
             Color.blue.opacity(0.3)
                 .ignoresSafeArea()
 
-            BlobDragPreview(screenHeight: geometry.size.height)
+            BlobDragPreview(petHeight: geometry.size.height * 0.10)
         }
     }
 }

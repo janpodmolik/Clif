@@ -1,8 +1,6 @@
 import SwiftUI
 
 struct CreatePetOverlay: View {
-    let screenHeight: CGFloat
-
     @Environment(CreatePetCoordinator.self) private var coordinator
 
     var body: some View {
@@ -42,7 +40,7 @@ struct CreatePetOverlay: View {
                     }()
 
                     BlobDragPreview(
-                        screenHeight: screenHeight,
+                        petHeight: coordinator.petHeight,
                         dragVelocity: coordinator.dragState.isOnTarget ? .zero : coordinator.dragState.dragVelocity
                     )
                         .position(position)
@@ -61,7 +59,7 @@ struct CreatePetOverlay: View {
 #if DEBUG
 #Preview {
     GeometryReader { geometry in
-        CreatePetOverlay(screenHeight: geometry.size.height)
+        CreatePetOverlay()
             .environment(CreatePetCoordinator())
             .environment(PetManager.mock())
     }
