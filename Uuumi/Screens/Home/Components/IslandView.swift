@@ -178,17 +178,6 @@ struct IslandView<TransitionContent: View>: View {
         }
         .padding(.top, petHeight * 0.6)
         .offset(y: petOffset)
-        .background {
-            GeometryReader { proxy in
-                Color.clear
-                    .onChange(of: proxy.frame(in: .global)) { _, newFrame in
-                        onFrameChange?(newFrame)
-                    }
-                    .onAppear {
-                        onFrameChange?(proxy.frame(in: .global))
-                    }
-            }
-        }
     }
 
     // MARK: - Pet View
@@ -234,6 +223,17 @@ struct IslandView<TransitionContent: View>: View {
                 .scaleEffect(pet.displayScale, anchor: .bottom)
                 .offset(x: blowAwayOffsetX)
                 .rotationEffect(.degrees(blowAwayRotation), anchor: .bottom)
+                .background {
+                    GeometryReader { proxy in
+                        Color.clear
+                            .onChange(of: proxy.frame(in: .global)) { _, newFrame in
+                                onFrameChange?(newFrame)
+                            }
+                            .onAppear {
+                                onFrameChange?(proxy.frame(in: .global))
+                            }
+                    }
+                }
                 .offset(y: archiveOffsetY)
                 .visualEffect { content, proxy in
                     content.distortionEffect(
@@ -318,6 +318,17 @@ struct IslandView<TransitionContent: View>: View {
                     .opacity(isVisible ? 1 : 0)
             }
             .scaleEffect(Blob.shared.displayScale, anchor: .bottom)
+            .background {
+                GeometryReader { proxy in
+                    Color.clear
+                        .onChange(of: proxy.frame(in: .global)) { _, newFrame in
+                            onFrameChange?(newFrame)
+                        }
+                        .onAppear {
+                            onFrameChange?(proxy.frame(in: .global))
+                        }
+                }
+            }
     }
 
     // MARK: - Actions
