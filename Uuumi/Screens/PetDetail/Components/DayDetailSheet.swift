@@ -4,6 +4,7 @@ struct DayDetailSheet: View {
     let day: DailyUsageStat
     let petId: UUID
     let limitMinutes: Int
+    let hourlyBreakdown: DailyHourlyBreakdown?
 
     @Environment(\.dismiss) private var dismiss
     @State private var snapshots: [SnapshotEvent] = []
@@ -140,10 +141,33 @@ struct DayDetailSheet: View {
         .glassCard()
     }
 
+    @ViewBuilder
     private var windTimelineSection: some View {
-        WindTimelineChart(snapshots: snapshots, limitMinutes: limitMinutes)
-            .padding()
-            .glassCard()
+        if !snapshots.isEmpty {
+            WindTimelineChart(snapshots: snapshots, limitMinutes: limitMinutes)
+                .padding()
+                .glassCard()
+        } else if let breakdown = hourlyBreakdown {
+            DayHourlyChart(breakdown: breakdown)
+                .padding()
+                .glassCard()
+        } else {
+            emptyWindState
+        }
+    }
+
+    private var emptyWindState: some View {
+        VStack(spacing: 8) {
+            Image(systemName: "chart.xyaxis.line")
+                .font(.title)
+                .foregroundStyle(.secondary)
+            Text("Detail aktivity není dostupný")
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 32)
+        .glassCard()
     }
 
     private func loadSnapshots() {
@@ -166,7 +190,8 @@ struct DayDetailSheet: View {
     DayDetailSheet(
         day: DailyUsageStat(petId: UUID(), date: Date(), totalMinutes: 127),
         petId: UUID(),
-        limitMinutes: 60
+        limitMinutes: 60,
+        hourlyBreakdown: nil
     )
 }
 
@@ -174,7 +199,25 @@ struct DayDetailSheet: View {
     DayDetailSheet(
         day: DailyUsageStat(petId: UUID(), date: Date(), totalMinutes: 185, wasOverLimit: true),
         petId: UUID(),
-        limitMinutes: 60
+        limitMinutes: 60,
+        hourlyBreakdown: nil
+    )
+}
+
+#Preview("Day Detail - Hourly Fallback") {
+    DayDetailSheet(
+        day: DailyUsageStat(petId: UUID(), date: Date(), totalMinutes: 127),
+        petId: UUID(),
+        limitMinutes: 60,
+        hourlyBreakdown: DailyHourlyBreakdown(
+            date: "2025-01-15",
+            hourlyMinutes: [
+                0, 0, 0, 0, 0, 0,
+                2, 5, 15, 20, 8, 3,
+                1, 5, 10, 12, 18, 25,
+                30, 20, 10, 5, 2, 0
+            ]
+        )
     )
 }
 
@@ -182,7 +225,8 @@ struct DayDetailSheet: View {
     DayDetailSheet(
         day: DailyUsageStat(petId: UUID(), date: Date(), totalMinutes: 0),
         petId: UUID(),
-        limitMinutes: 60
+        limitMinutes: 60,
+        hourlyBreakdown: nil
     )
 }
 

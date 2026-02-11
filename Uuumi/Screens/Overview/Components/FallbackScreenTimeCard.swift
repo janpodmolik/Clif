@@ -39,7 +39,7 @@ struct FallbackScreenTimeCard: View {
         .padding(18)
         .glassCard()
         .sheet(item: $selectedDay) { day in
-            DayDetailSheet(day: day, petId: petId, limitMinutes: limitMinutes)
+            DayDetailSheet(day: day, petId: petId, limitMinutes: limitMinutes, hourlyBreakdown: nil)
         }
     }
 

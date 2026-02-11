@@ -48,7 +48,7 @@ struct DayByDayUsageCard: View {
         .padding(.vertical)
         .glassCard()
         .sheet(item: $selectedDay) { day in
-            DayDetailSheet(day: day, petId: petId, limitMinutes: limitMinutes)
+            DayDetailSheet(day: day, petId: petId, limitMinutes: limitMinutes, hourlyBreakdown: nil)
         }
     }
 
