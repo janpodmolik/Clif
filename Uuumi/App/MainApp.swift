@@ -55,15 +55,18 @@ struct MainApp: App {
         case .authenticated:
             if petManager.hasPet {
                 // Local pet exists — check if cloud also has one (potential conflict)
+                // Then upload local settings (local is source of truth)
                 Task {
                     await syncManager.checkForPetConflict(
                         petManager: petManager,
                         archivedPetManager: archivedPetManager
                     )
+                    await syncManager.syncUserData(essenceCatalogManager: essenceCatalogManager)
                 }
             } else {
-                // No local pet — attempt cloud restore (reinstall recovery)
+                // No local pet — restore settings first, then pet (reinstall recovery)
                 Task {
+                    await syncManager.restoreUserData(essenceCatalogManager: essenceCatalogManager)
                     await syncManager.restoreFromCloud(
                         petManager: petManager,
                         archivedPetManager: archivedPetManager
@@ -76,8 +79,8 @@ struct MainApp: App {
             guard case .authenticated = oldState else { return }
             petManager.clearOnSignOut()
             archivedPetManager.clearOnSignOut()
-            // Reset initial sync flag so it can run again for a different account
-            UserDefaults.standard.removeObject(forKey: "hasCompletedInitialSync")
+            essenceCatalogManager.clearOnSignOut()
+            syncManager.clearOnSignOut()
 
         case .loading:
             break
@@ -103,9 +106,16 @@ struct MainApp: App {
             petManager.checkBlowAwayState()
             petManager.refreshDailyStats()
 
-            // Sync active pet to cloud (debounced)
+            // Sync active pet + settings to cloud (debounced)
             Task {
                 await syncManager.syncActivePetIfNeeded(petManager: petManager)
+                await syncManager.syncUserDataIfNeeded(essenceCatalogManager: essenceCatalogManager)
+
+                // Claim admin-granted rewards (coins) and sync updated balance
+                let claimed = await syncManager.claimPendingRewards()
+                if claimed > 0 {
+                    await syncManager.syncUserData(essenceCatalogManager: essenceCatalogManager)
+                }
             }
 
             #if DEBUG
@@ -120,8 +130,9 @@ struct MainApp: App {
             // Skip if initial sync hasn't completed or conflict is pending
             if syncManager.pendingConflict == nil,
                UserDefaults.standard.bool(forKey: "hasCompletedInitialSync") {
-                syncManager.syncInBackground { [petManager, archivedPetManager, syncManager] in
+                syncManager.syncInBackground { [petManager, archivedPetManager, essenceCatalogManager, syncManager] in
                     await syncManager.syncActivePet(petManager: petManager)
+                    await syncManager.syncUserData(essenceCatalogManager: essenceCatalogManager)
                     await syncManager.initialSyncIfNeeded(archivedPetManager: archivedPetManager)
                 }
             }

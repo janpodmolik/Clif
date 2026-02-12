@@ -42,7 +42,7 @@ struct EssenceCatalogScreen: View {
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
 
-            Text("\(catalogManager.unlockedEssences.count)/\(Essence.allCases.count) odemčeno")
+            Text("\(catalogManager.allUnlocked.count)/\(Essence.allCases.count) odemčeno")
                 .font(.caption)
                 .foregroundStyle(.tertiary)
         }

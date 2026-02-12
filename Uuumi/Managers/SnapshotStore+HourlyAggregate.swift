@@ -59,3 +59,28 @@ extension SnapshotStore {
         return HourlyAggregate(hourlyTotals: hourlyTotals, dayCount: dayCount)
     }
 }
+
+// MARK: - HourlyAggregate from DailyHourlyBreakdown (cloud restore fallback)
+
+extension HourlyAggregate {
+    /// Computes an aggregate from per-day hourly breakdowns (cloud restore fallback).
+    /// When SnapshotEvents are unavailable, this allows recomputing filtered variants
+    /// (7d/14d/30d) from synced DailyHourlyBreakdown data.
+    static func fromBreakdowns(_ breakdowns: [DailyHourlyBreakdown], daysLimit: Int? = nil) -> HourlyAggregate {
+        let sorted = breakdowns.sorted { $0.date < $1.date }
+        let filtered: ArraySlice<DailyHourlyBreakdown> = if let limit = daysLimit {
+            sorted.suffix(limit)
+        } else {
+            sorted[...]
+        }
+        guard !filtered.isEmpty else { return .empty }
+
+        var totals = Array(repeating: 0.0, count: 24)
+        for breakdown in filtered {
+            for (hour, minutes) in breakdown.hourlyMinutes.prefix(24).enumerated() {
+                totals[hour] += minutes
+            }
+        }
+        return HourlyAggregate(hourlyTotals: totals, dayCount: filtered.count)
+    }
+}

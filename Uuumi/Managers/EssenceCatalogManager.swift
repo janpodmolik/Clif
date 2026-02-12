@@ -15,8 +15,13 @@ final class EssenceCatalogManager {
 
     // MARK: - Public API
 
+    /// All functionally unlocked essences (explicitly unlocked + defaults).
+    var allUnlocked: Set<Essence> {
+        unlockedEssences.union(Essence.defaultUnlocked)
+    }
+
     func isUnlocked(_ essence: Essence) -> Bool {
-        unlockedEssences.contains(essence)
+        Essence.defaultUnlocked.contains(essence) || unlockedEssences.contains(essence)
     }
 
     var catalogEntries: [CatalogEntry] {
@@ -33,13 +38,25 @@ final class EssenceCatalogManager {
         save()
     }
 
+    /// Restores unlocked essences from cloud backup.
+    func restoreUnlocked(_ essences: Set<Essence>) {
+        unlockedEssences = essences
+        save()
+    }
+
+    /// Clears unlocked essences on sign-out (cloud backup preserved).
+    func clearOnSignOut() {
+        unlockedEssences = []
+        save()
+    }
+
     // MARK: - Persistence
 
     private static let storageKey = "unlockedEssences"
 
     private static func loadUnlocked() -> Set<Essence> {
         guard let rawValues = UserDefaults.standard.stringArray(forKey: storageKey) else {
-            return [.plant]
+            return []
         }
         return Set(rawValues.compactMap { Essence(rawValue: $0) })
     }

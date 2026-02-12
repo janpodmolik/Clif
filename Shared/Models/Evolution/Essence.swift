@@ -12,6 +12,9 @@ enum Essence: String, Codable, CaseIterable, Transferable {
     case plant
     // Future: crystal, flame, water
 
+    /// Essences unlocked by default for all users.
+    static let defaultUnlocked: Set<Essence> = [.plant]
+
     /// Asset path for essence icon: "evolutions/plant/essence"
     var assetName: String {
         "evolutions/\(rawValue)/essence"

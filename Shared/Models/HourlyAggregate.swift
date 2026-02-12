@@ -29,6 +29,7 @@ struct HourlyAggregate: Codable, Equatable {
     static var empty: HourlyAggregate {
         HourlyAggregate(hourlyTotals: Array(repeating: 0, count: 24), dayCount: 0)
     }
+
 }
 
 #if DEBUG

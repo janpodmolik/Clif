@@ -9,11 +9,13 @@ struct HomeScreen: View {
     @Environment(ArchivedPetManager.self) private var archivedPetManager
     @Environment(EssencePickerCoordinator.self) private var essenceCoordinator
     @Environment(CreatePetCoordinator.self) private var createPetCoordinator
+    @Environment(EssenceCatalogManager.self) private var essenceCatalogManager
+    @Environment(SyncManager.self) private var syncManager
     @Environment(CoinsRewardAnimator.self) private var coinsAnimator
 
-    @AppStorage("appearanceMode") private var appearanceMode: AppearanceMode = .automatic
-    @AppStorage("selectedDayTheme") private var dayTheme: DayTheme = .morningHaze
-    @AppStorage("selectedNightTheme") private var nightTheme: NightTheme = .deepNight
+    @AppStorage(DefaultsKeys.appearanceMode) private var appearanceMode: AppearanceMode = .automatic
+    @AppStorage(DefaultsKeys.selectedDayTheme) private var dayTheme: DayTheme = .morningHaze
+    @AppStorage(DefaultsKeys.selectedNightTheme) private var nightTheme: NightTheme = .deepNight
 
     @State private var windRhythm = WindRhythm()
     @State private var blowAwayAnimator = BlowAwayAnimator()
@@ -416,6 +418,7 @@ struct HomeScreen: View {
                             onComplete: {
                                 evolutionAnimator.complete()
                                 coinsAnimator.showReward(CoinRewards.evolution)
+                                Task { await syncManager.syncUserData(essenceCatalogManager: essenceCatalogManager) }
                                 if pet.isFullyEvolved {
                                     DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
                                         showSuccessArchivePrompt = true

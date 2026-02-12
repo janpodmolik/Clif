@@ -16,6 +16,10 @@ final class SyncManager {
     /// HomeScreen observes this to show PetConflictSheet.
     var pendingConflict: PetConflictData?
 
+    /// Total coins from the last `claimPendingRewards()` call. ContentView observes
+    /// this to trigger the coin reward animation; reset to 0 after consuming.
+    var lastClaimedRewards: Int = 0
+
     enum ConflictResolution {
         case keepLocal
         case keepCloud
@@ -27,8 +31,14 @@ final class SyncManager {
     private var backgroundTaskID: UIBackgroundTaskIdentifier = .invalid
     private var client: SupabaseClient { SupabaseConfig.client }
 
-    private var canSync: Bool {
+    private var lastUserDataSyncAttempt: Date?
+
+    private var canSyncPet: Bool {
         lastSyncDate.map { Date().timeIntervalSince($0) > minimumSyncInterval } ?? true
+    }
+
+    private var canSyncUserData: Bool {
+        lastUserDataSyncAttempt.map { Date().timeIntervalSince($0) > minimumSyncInterval } ?? true
     }
 
     // MARK: - Active Pet Sync
@@ -78,7 +88,7 @@ final class SyncManager {
     /// Skips sync when initial sync hasn't completed yet (conflict check / cloud restore)
     /// or when a pet conflict is pending (to avoid overwriting the cloud pet).
     func syncActivePetIfNeeded(petManager: PetManager) async {
-        guard canSync,
+        guard canSyncPet,
               pendingConflict == nil,
               UserDefaults.standard.bool(forKey: "hasCompletedInitialSync")
         else { return }
@@ -206,7 +216,7 @@ final class SyncManager {
         archivedPetManager: ArchivedPetManager
     ) async {
         guard !petManager.hasPet,
-              await currentUserId() != nil else { return }
+              let userId = await currentUserId() else { return }
 
         isSyncing = true
         defer { isSyncing = false }
@@ -216,6 +226,7 @@ final class SyncManager {
             let activePetResponse: [ActivePetSupabaseDTO] = try await client
                 .from("active_pets")
                 .select()
+                .eq("user_id", value: userId.uuidString)
                 .execute()
                 .value
 
@@ -247,6 +258,7 @@ final class SyncManager {
             let archivedResponse: [ArchivedPetSupabaseDTO] = try await client
                 .from("archived_pets")
                 .select()
+                .eq("user_id", value: userId.uuidString)
                 .order("archived_at", ascending: false)
                 .execute()
                 .value
@@ -296,7 +308,7 @@ final class SyncManager {
         guard pendingConflict == nil,
               petManager.hasPet,
               let localPet = petManager.currentPet,
-              await currentUserId() != nil else {
+              let userId = await currentUserId() else {
             print("[SyncManager] checkForPetConflict — guard failed, skipping")
             return
         }
@@ -309,6 +321,7 @@ final class SyncManager {
             let activePetResponse: [ActivePetSupabaseDTO] = try await client
                 .from("active_pets")
                 .select()
+                .eq("user_id", value: userId.uuidString)
                 .execute()
                 .value
 
@@ -316,6 +329,7 @@ final class SyncManager {
             let archivedResponse: [ArchivedPetSupabaseDTO] = try await client
                 .from("archived_pets")
                 .select()
+                .eq("user_id", value: userId.uuidString)
                 .order("archived_at", ascending: false)
                 .execute()
                 .value
@@ -473,6 +487,177 @@ final class SyncManager {
         #endif
     }
 
+    // MARK: - User Data Sync
+
+    /// Uploads current local user data to Supabase (upsert on user_id).
+    func syncUserData(essenceCatalogManager: EssenceCatalogManager) async {
+        guard let userId = await currentUserId() else { return }
+
+        do {
+            let dto = UserDataDTO.fromLocal(
+                userId: userId,
+                essenceCatalogManager: essenceCatalogManager
+            )
+
+            try await client
+                .from("user_data")
+                .upsert(dto, onConflict: "user_id")
+                .execute()
+
+            lastUserDataSyncAttempt = Date()
+            UserDefaults.standard.set(Date(), forKey: DefaultsKeys.lastUserDataSync)
+
+            #if DEBUG
+            print("[SyncManager] User data synced successfully")
+            #endif
+        } catch {
+            lastUserDataSyncAttempt = Date()
+            lastError = error
+            #if DEBUG
+            print("[SyncManager] User data sync failed: \(error)")
+            #endif
+        }
+    }
+
+    /// Syncs user data only if debounce interval has passed.
+    func syncUserDataIfNeeded(essenceCatalogManager: EssenceCatalogManager) async {
+        guard canSyncUserData,
+              pendingConflict == nil,
+              UserDefaults.standard.bool(forKey: "hasCompletedInitialSync")
+        else { return }
+        await syncUserData(essenceCatalogManager: essenceCatalogManager)
+    }
+
+    /// Restores user data from Supabase to local storage.
+    /// Called during cloud restore (fresh install) or sign-in with existing account.
+    func restoreUserData(essenceCatalogManager: EssenceCatalogManager) async {
+        guard let userId = await currentUserId() else { return }
+
+        do {
+            let response: [UserDataDTO] = try await client
+                .from("user_data")
+                .select()
+                .eq("user_id", value: userId.uuidString)
+                .execute()
+                .value
+
+            guard let cloudData = response.first.map(migrateUserDataIfNeeded) else {
+                #if DEBUG
+                print("[SyncManager] No cloud user data found — skipping restore")
+                #endif
+                return
+            }
+
+            let payload = cloudData.data
+
+            // Freshness check: skip restore if local data is newer than cloud.
+            // When editing data manually in Supabase, always update `updated_at` to now()
+            // so that the change propagates to the app on next restore.
+            let localSyncDate = UserDefaults.standard.object(forKey: DefaultsKeys.lastUserDataSync) as? Date
+            let cloudIsNewer = localSyncDate.map { cloudData.updatedAt ?? .distantPast > $0 } ?? true
+
+            if cloudIsNewer {
+                // Tier 1
+                SharedDefaults.coinsBalance = payload.coinsBalance
+
+                let restoredEssences = Set(payload.unlockedEssences.compactMap { Essence(rawValue: $0) })
+                essenceCatalogManager.restoreUnlocked(restoredEssences)
+
+                SharedDefaults.limitSettings = payload.limitSettings
+
+                #if DEBUG
+                print("[SyncManager] User data restored — coins: \(payload.coinsBalance), essences: \(restoredEssences.count)")
+                #endif
+            } else {
+                #if DEBUG
+                print("[SyncManager] Local user data is newer — skipping restore, will upload instead")
+                #endif
+            }
+
+            // If local was newer, push it to cloud to keep everything in sync
+            if !cloudIsNewer {
+                await syncUserData(essenceCatalogManager: essenceCatalogManager)
+            }
+        } catch {
+            lastError = error
+            #if DEBUG
+            print("[SyncManager] User data restore failed: \(error)")
+            #endif
+        }
+    }
+
+    // MARK: - Pending Rewards
+
+    /// Claims unclaimed rewards from Supabase, adds coins locally, and marks them as claimed.
+    /// Returns the total coins claimed (0 if none).
+    @discardableResult
+    func claimPendingRewards() async -> Int {
+        guard let userId = await currentUserId() else { return 0 }
+
+        do {
+            let unclaimed: [PendingRewardDTO] = try await client
+                .from("pending_rewards")
+                .select()
+                .eq("user_id", value: userId.uuidString)
+                .is("claimed_at", value: nil)
+                .execute()
+                .value
+
+            guard !unclaimed.isEmpty else { return 0 }
+
+            let total = unclaimed.reduce(0) { $0 + $1.amount }
+            SharedDefaults.addCoins(total)
+
+            // Mark all as claimed
+            let claimedIds = unclaimed.map(\.id.uuidString)
+            try await client
+                .from("pending_rewards")
+                .update(["claimed_at": Date().ISO8601Format()])
+                .in("id", values: claimedIds)
+                .execute()
+
+            lastClaimedRewards = total
+
+            #if DEBUG
+            print("[SyncManager] Claimed \(unclaimed.count) pending reward(s): +\(total) coins")
+            #endif
+
+            return total
+        } catch {
+            lastError = error
+            #if DEBUG
+            print("[SyncManager] Claim pending rewards failed: \(error)")
+            #endif
+            return 0
+        }
+    }
+
+    // MARK: - Sign-Out Cleanup
+
+    /// Clears all sync-managed local data (settings, caches, disk files).
+    /// Cloud data is preserved for future restore.
+    func clearOnSignOut() {
+        // User data
+        SharedDefaults.coinsBalance = 0
+        SharedDefaults.limitSettings = .default
+
+        // Snapshot data & hourly aggregate cache
+        SnapshotStore.shared.clearAll()
+        for limit in SharedDefaults.supportedDaysLimits {
+            SharedDefaults.setHourlyAggregate(nil, daysLimit: limit)
+        }
+
+        // Cloud-restored hourly breakdown files
+        let hourlyPerDayURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+            .appendingPathComponent("hourly_per_day")
+        try? FileManager.default.removeItem(at: hourlyPerDayURL)
+
+        // Sync state
+        UserDefaults.standard.removeObject(forKey: DefaultsKeys.lastUserDataSync)
+        UserDefaults.standard.removeObject(forKey: "hasCompletedInitialSync")
+        pendingConflict = nil
+    }
+
     // MARK: - Schema Migration
 
     /// Migrates a cloud DTO to the current schema version if needed.
@@ -480,6 +665,14 @@ final class SyncManager {
         switch dto.schemaVersion {
         case 1: return dto // current version
         // case 1: return migrateV1toV2(dto) // future migrations
+        default: return dto
+        }
+    }
+
+    /// Migrates cloud user data DTO to current schema version.
+    private func migrateUserDataIfNeeded(_ dto: UserDataDTO) -> UserDataDTO {
+        switch dto.schemaVersion {
+        case 1: return dto
         default: return dto
         }
     }

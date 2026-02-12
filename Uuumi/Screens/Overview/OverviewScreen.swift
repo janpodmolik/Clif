@@ -237,7 +237,13 @@ struct OverviewScreen: View {
         let store = SnapshotStore.shared
         let limit = daysLimit
         let computed = await Task.detached(priority: .userInitiated) {
-            store.computeHourlyAggregate(daysLimit: limit)
+            let fromSnapshots = store.computeHourlyAggregate(daysLimit: limit)
+            // If snapshots are available, use them (always freshest)
+            if fromSnapshots.dayCount > 0 { return fromSnapshots }
+            // Fallback: recompute from cloud-restored per-day breakdowns on disk
+            let breakdowns = DailyHourlyBreakdown.loadAllFromDisk()
+            guard !breakdowns.isEmpty else { return fromSnapshots }
+            return HourlyAggregate.fromBreakdowns(breakdowns, daysLimit: limit)
         }.value
 
         SharedDefaults.setHourlyAggregate(computed, daysLimit: limit)

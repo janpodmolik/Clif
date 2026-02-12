@@ -13,10 +13,10 @@ struct ProfileScreen: View {
     @Environment(AuthManager.self) private var authManager
     @Environment(StoreManager.self) private var storeManager
     @Environment(SyncManager.self) private var syncManager
-    @AppStorage("appearanceMode") private var appearanceMode: AppearanceMode = .automatic
-    @AppStorage("selectedDayTheme") private var dayTheme: DayTheme = .morningHaze
-    @AppStorage("selectedNightTheme") private var nightTheme: NightTheme = .deepNight
-    @AppStorage("lockButtonSide") private var lockButtonSide: LockButtonSide = .trailing
+    @AppStorage(DefaultsKeys.appearanceMode) private var appearanceMode: AppearanceMode = .automatic
+    @AppStorage(DefaultsKeys.selectedDayTheme) private var dayTheme: DayTheme = .morningHaze
+    @AppStorage(DefaultsKeys.selectedNightTheme) private var nightTheme: NightTheme = .deepNight
+    @AppStorage(DefaultsKeys.lockButtonSide) private var lockButtonSide: LockButtonSide = .trailing
     @State private var limitSettings = SharedDefaults.limitSettings
     @State private var showPremiumSheet = false
     @State private var showAuthSheet = false
@@ -64,7 +64,7 @@ struct ProfileScreen: View {
                         HStack {
                             Label("Katalog Essencí", systemImage: "sparkles")
                             Spacer()
-                            Text("\(catalogManager.unlockedEssences.count)/\(Essence.allCases.count)")
+                            Text("\(catalogManager.allUnlocked.count)/\(Essence.allCases.count)")
                                 .foregroundStyle(.secondary)
                         }
                     }

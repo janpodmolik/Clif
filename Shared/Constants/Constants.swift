@@ -133,4 +133,15 @@ enum DefaultsKeys {
     // MARK: - Post-Reinstall Reselection
 
     static let needsAppReselection = "needsAppReselection"
+
+    // MARK: - User Data Sync
+
+    static let lastUserDataSync = "lastUserDataSync"
+
+    // MARK: - Appearance Preferences
+
+    static let appearanceMode = "appearanceMode"
+    static let selectedDayTheme = "selectedDayTheme"
+    static let selectedNightTheme = "selectedNightTheme"
+    static let lockButtonSide = "lockButtonSide"
 }

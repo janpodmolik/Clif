@@ -29,13 +29,14 @@ enum AppTab: String, CaseIterable {
 }
 
 struct ContentView: View {
-    @AppStorage("appearanceMode")
+    @AppStorage(DefaultsKeys.appearanceMode)
     private var appearanceMode: AppearanceMode = .automatic
-    @AppStorage("lockButtonSide")
+    @AppStorage(DefaultsKeys.lockButtonSide)
     private var lockButtonSide: LockButtonSide = .trailing
 
     @Environment(PetManager.self) private var petManager
     @Environment(ArchivedPetManager.self) private var archivedPetManager
+    @Environment(EssenceCatalogManager.self) private var essenceCatalogManager
     @Environment(SyncManager.self) private var syncManager
 
     @State private var activeTab: AppTab = .home
@@ -161,6 +162,14 @@ struct ContentView: View {
             if coins > 0 {
                 coinsAnimator.showReward(coins)
                 ShieldState.shared.clearEarnedCoins()
+                // Immediately sync coins to cloud so they survive sign-out / force-quit
+                Task { await syncManager.syncUserData(essenceCatalogManager: essenceCatalogManager) }
+            }
+        }
+        .onChange(of: syncManager.lastClaimedRewards) { _, coins in
+            if coins > 0 {
+                coinsAnimator.showReward(coins)
+                syncManager.lastClaimedRewards = 0
             }
         }
         .sheet(item: Bindable(syncManager).pendingConflict) { conflict in
