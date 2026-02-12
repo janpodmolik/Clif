@@ -155,7 +155,6 @@ struct PetHistoryRowDebugView: View {
                 Picker("Archive Reason", selection: $archiveReason) {
                     Text("Blown").tag(ArchiveReason.blown)
                     Text("Completed").tag(ArchiveReason.completed)
-                    Text("Lost").tag(ArchiveReason.lost)
                     Text("Manual").tag(ArchiveReason.manual)
                 }
                 .pickerStyle(.segmented)

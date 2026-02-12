@@ -15,15 +15,14 @@ struct ArchivedPetRow: View {
         Self.relativeDateFormatter.localizedString(for: pet.archivedAt, relativeTo: Date())
     }
 
-    /// Blown and lost pets use faded visual treatment.
+    /// Blown pets use faded visual treatment.
     private var isFaded: Bool {
-        pet.archiveReason == .blown || pet.archiveReason == .lost
+        pet.archiveReason == .blown
     }
 
     private var reasonLabel: (icon: String, text: String, color: Color)? {
         switch pet.archiveReason {
         case .blown: ("wind", "Odfouknut", .red)
-        case .lost: ("icloud.slash", "Ztracen", .secondary)
         case .completed, .manual: nil
         }
     }
@@ -113,7 +112,6 @@ struct ArchivedPetRow: View {
         ArchivedPetRow(pet: .mock(name: "Fern", phase: 4, archiveReason: .completed)) {}
         ArchivedPetRow(pet: .mock(name: "Sprout", phase: 2, archiveReason: .blown)) {}
         ArchivedPetRow(pet: .mock(name: "Moss", phase: 3, archiveReason: .manual)) {}
-        ArchivedPetRow(pet: .mock(name: "Ghost", phase: 1, archiveReason: .lost)) {}
     }
     .padding()
 }

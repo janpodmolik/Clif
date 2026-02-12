@@ -106,7 +106,6 @@ extension PetSearchFilter {
         case all = "Všichni"
         case completed = "Dokončení"
         case blownAway = "Odfouknutí"
-        case lost = "Ztracení"
         case manual = "Archivovaní"
 
         var id: String { rawValue }
@@ -116,7 +115,6 @@ extension PetSearchFilter {
             case .all: "list.bullet"
             case .completed: "checkmark.circle.fill"
             case .blownAway: "wind"
-            case .lost: "icloud.slash"
             case .manual: "archivebox"
             }
         }
@@ -127,7 +125,6 @@ extension PetSearchFilter {
             case .all: nil
             case .completed: .completed
             case .blownAway: .blown
-            case .lost: .lost
             case .manual: .manual
             }
         }

@@ -38,9 +38,10 @@ struct MainApp: App {
                 .environment(syncManager)
                 .onAppear {
                     petManager.syncManager = syncManager
-                    print("🟢 ContentView appeared")
+                    print("🟢 ContentView appeared, authState=\(authManager.authState), hasPet=\(petManager.hasPet)")
                 }
                 .onChange(of: authManager.authState) { oldState, newState in
+                    print("🟢 onChange: \(oldState) → \(newState), hasPet=\(petManager.hasPet)")
                     handleAuthStateChange(from: oldState, to: newState)
                 }
         }
@@ -52,13 +53,22 @@ struct MainApp: App {
     private func handleAuthStateChange(from oldState: AuthManager.AuthState, to newState: AuthManager.AuthState) {
         switch newState {
         case .authenticated:
-            // Authenticated with no local pet — attempt cloud restore (reinstall recovery)
-            guard !petManager.hasPet else { return }
-            Task {
-                await syncManager.restoreFromCloud(
-                    petManager: petManager,
-                    archivedPetManager: archivedPetManager
-                )
+            if petManager.hasPet {
+                // Local pet exists — check if cloud also has one (potential conflict)
+                Task {
+                    await syncManager.checkForPetConflict(
+                        petManager: petManager,
+                        archivedPetManager: archivedPetManager
+                    )
+                }
+            } else {
+                // No local pet — attempt cloud restore (reinstall recovery)
+                Task {
+                    await syncManager.restoreFromCloud(
+                        petManager: petManager,
+                        archivedPetManager: archivedPetManager
+                    )
+                }
             }
 
         case .anonymous:
@@ -107,9 +117,13 @@ struct MainApp: App {
             petManager.savePet()
 
             // Sync to cloud before app is suspended
-            syncManager.syncInBackground { [petManager, archivedPetManager, syncManager] in
-                await syncManager.syncActivePet(petManager: petManager)
-                await syncManager.initialSyncIfNeeded(archivedPetManager: archivedPetManager)
+            // Skip if initial sync hasn't completed or conflict is pending
+            if syncManager.pendingConflict == nil,
+               UserDefaults.standard.bool(forKey: "hasCompletedInitialSync") {
+                syncManager.syncInBackground { [petManager, archivedPetManager, syncManager] in
+                    await syncManager.syncActivePet(petManager: petManager)
+                    await syncManager.initialSyncIfNeeded(archivedPetManager: archivedPetManager)
+                }
             }
 
             #if DEBUG

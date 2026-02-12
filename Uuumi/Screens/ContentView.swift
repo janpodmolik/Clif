@@ -35,6 +35,8 @@ struct ContentView: View {
     private var lockButtonSide: LockButtonSide = .trailing
 
     @Environment(PetManager.self) private var petManager
+    @Environment(ArchivedPetManager.self) private var archivedPetManager
+    @Environment(SyncManager.self) private var syncManager
 
     @State private var activeTab: AppTab = .home
     @State private var isDaytime: Bool = SkyGradient.isDaytime()
@@ -161,6 +163,18 @@ struct ContentView: View {
                 ShieldState.shared.clearEarnedCoins()
             }
         }
+        .sheet(item: Bindable(syncManager).pendingConflict) { conflict in
+            PetConflictSheet(conflict: conflict) { resolution in
+                Task {
+                    await syncManager.resolveConflict(
+                        resolution,
+                        conflict: conflict,
+                        petManager: petManager,
+                        archivedPetManager: archivedPetManager
+                    )
+                }
+            }
+        }
     }
 
     // MARK: - Floating Lock Button
@@ -258,4 +272,5 @@ struct ContentView: View {
         .environment(EssenceCatalogManager.mock())
         .environment(AuthManager.mock())
         .environment(StoreManager.mock())
+        .environment(SyncManager())
 }

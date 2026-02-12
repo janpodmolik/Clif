@@ -13,7 +13,6 @@ struct ArchivedPetHeaderCard: View {
         switch archiveReason {
         case .blown: "Odfouknut"
         case .completed: "Plně evolvován"
-        case .lost: "Ztracen"
         case .manual: "Archivován"
         }
     }
@@ -22,7 +21,6 @@ struct ArchivedPetHeaderCard: View {
         switch archiveReason {
         case .blown: "wind"
         case .completed: "checkmark.circle.fill"
-        case .lost: "icloud.slash"
         case .manual: "archivebox"
         }
     }
@@ -31,7 +29,6 @@ struct ArchivedPetHeaderCard: View {
         switch archiveReason {
         case .blown: .red
         case .completed: .green
-        case .lost: .secondary
         case .manual: .orange
         }
     }
@@ -165,18 +162,6 @@ struct ArchivedPetHeaderCard: View {
         archiveReason: .blown,
         archivedAt: Date(),
         purpose: "Gaming"
-    )
-    .padding()
-}
-
-#Preview("Lost") {
-    ArchivedPetHeaderCard(
-        petName: "Sprout",
-        totalDays: 3,
-        evolutionPhase: 1,
-        createdAt: Calendar.current.date(byAdding: .day, value: -3, to: Date())!,
-        archiveReason: .lost,
-        archivedAt: Date()
     )
     .padding()
 }

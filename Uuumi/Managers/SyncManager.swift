@@ -12,6 +12,15 @@ final class SyncManager {
     private(set) var lastSyncDate: Date?
     private(set) var lastError: Error?
 
+    /// Set when a sign-in detects both a local pet and a cloud pet (different IDs).
+    /// HomeScreen observes this to show PetConflictSheet.
+    var pendingConflict: PetConflictData?
+
+    enum ConflictResolution {
+        case keepLocal
+        case keepCloud
+    }
+
     // MARK: - Private
 
     private let minimumSyncInterval: TimeInterval = 30
@@ -66,8 +75,13 @@ final class SyncManager {
     }
 
     /// Syncs the active pet only if debounce interval has passed.
+    /// Skips sync when initial sync hasn't completed yet (conflict check / cloud restore)
+    /// or when a pet conflict is pending (to avoid overwriting the cloud pet).
     func syncActivePetIfNeeded(petManager: PetManager) async {
-        guard canSync else { return }
+        guard canSync,
+              pendingConflict == nil,
+              UserDefaults.standard.bool(forKey: "hasCompletedInitialSync")
+        else { return }
         await syncActivePet(petManager: petManager)
     }
 
@@ -237,18 +251,13 @@ final class SyncManager {
                 .execute()
                 .value
 
+            restoreArchivedPetsIfNeeded(archivedResponse, into: archivedPetManager)
+
+            #if DEBUG
             if !archivedResponse.isEmpty {
-                archivedPetManager.restoreArchivedPets(from: archivedResponse)
-
-                // Store hourly per-day breakdowns for each archived pet
-                for dto in archivedResponse where !dto.hourlyPerDay.isEmpty {
-                    storeHourlyPerDay(dto.hourlyPerDay, petId: dto.id)
-                }
-
-                #if DEBUG
                 print("[SyncManager] Restored \(archivedResponse.count) archived pets")
-                #endif
             }
+            #endif
 
             // Mark initial sync as completed (cloud data is authoritative after restore)
             UserDefaults.standard.set(true, forKey: "hasCompletedInitialSync")
@@ -267,6 +276,179 @@ final class SyncManager {
         }
     }
 
+    // MARK: - Pet Conflict Detection
+
+    /// Checks if the cloud account has an active pet that conflicts with the local pet.
+    /// Called when signing in with a local pet already present.
+    func checkForPetConflict(
+        petManager: PetManager,
+        archivedPetManager: ArchivedPetManager
+    ) async {
+        print("[SyncManager] checkForPetConflict called — isSyncing=\(isSyncing), hasPet=\(petManager.hasPet), pet=\(petManager.currentPet?.name ?? "nil"), pendingConflict=\(pendingConflict != nil), initialSync=\(UserDefaults.standard.bool(forKey: "hasCompletedInitialSync"))")
+
+        guard pendingConflict == nil,
+              petManager.hasPet,
+              let localPet = petManager.currentPet,
+              await currentUserId() != nil else {
+            print("[SyncManager] checkForPetConflict — guard failed, skipping")
+            return
+        }
+
+        isSyncing = true
+        defer { isSyncing = false }
+
+        do {
+            // Fetch cloud active pet
+            let activePetResponse: [ActivePetSupabaseDTO] = try await client
+                .from("active_pets")
+                .select()
+                .execute()
+                .value
+
+            // Fetch cloud archived pets (needed for both paths)
+            let archivedResponse: [ArchivedPetSupabaseDTO] = try await client
+                .from("archived_pets")
+                .select()
+                .order("archived_at", ascending: false)
+                .execute()
+                .value
+
+            print("[SyncManager] Cloud has \(activePetResponse.count) active pet(s), local pet id=\(localPet.id)")
+
+            if let cloudPet = activePetResponse.first.map(migrateIfNeeded) {
+                if cloudPet.id == localPet.id {
+                    // Same pet on both sides — no conflict, just sync archived pets
+                    print("[SyncManager] Same pet on both sides (id=\(cloudPet.id)) — no conflict")
+                    restoreArchivedPetsIfNeeded(archivedResponse, into: archivedPetManager)
+                    UserDefaults.standard.set(true, forKey: "hasCompletedInitialSync")
+                    lastSyncDate = Date()
+                } else {
+                    // Different pet — real conflict, show resolution sheet
+                    print("[SyncManager] CONFLICT: local=\(localPet.name) (id=\(localPet.id)) vs cloud=\(cloudPet.name) (id=\(cloudPet.id))")
+                    pendingConflict = PetConflictData(
+                        localPet: localPet,
+                        cloudDTO: cloudPet,
+                        cloudArchivedDTOs: archivedResponse
+                    )
+                    print("[SyncManager] pendingConflict set, value is nil: \(pendingConflict == nil)")
+                }
+            } else {
+                // No cloud pet — no conflict, sync local pet up + restore archived
+                print("[SyncManager] No cloud pet — syncing local pet up")
+                restoreArchivedPetsIfNeeded(archivedResponse, into: archivedPetManager)
+                UserDefaults.standard.set(true, forKey: "hasCompletedInitialSync")
+                await syncActivePet(petManager: petManager)
+            }
+
+            lastError = nil
+        } catch {
+            lastError = error
+            #if DEBUG
+            print("[SyncManager] Pet conflict check failed: \(error)")
+            #endif
+        }
+    }
+
+    // MARK: - Pet Conflict Resolution
+
+    /// Resolves a pet conflict by keeping one pet and deleting the other.
+    func resolveConflict(
+        _ resolution: ConflictResolution,
+        conflict: PetConflictData,
+        petManager: PetManager,
+        archivedPetManager: ArchivedPetManager
+    ) async {
+        guard await currentUserId() != nil else { return }
+
+        isSyncing = true
+        defer {
+            isSyncing = false
+            pendingConflict = nil
+        }
+
+        switch resolution {
+        case .keepLocal:
+            await resolveKeepLocal(
+                conflict: conflict,
+                petManager: petManager
+            )
+
+        case .keepCloud:
+            await resolveKeepCloud(
+                conflict: conflict,
+                petManager: petManager
+            )
+        }
+
+        // Restore cloud archived pets (in both cases)
+        restoreArchivedPetsIfNeeded(conflict.cloudArchivedDTOs, into: archivedPetManager)
+
+        UserDefaults.standard.set(true, forKey: "hasCompletedInitialSync")
+        lastSyncDate = Date()
+    }
+
+    /// Keep local pet → delete cloud pet + sync local up.
+    private func resolveKeepLocal(
+        conflict: PetConflictData,
+        petManager: PetManager
+    ) async {
+        guard let userId = await currentUserId() else { return }
+        let cloudDTO = conflict.cloudDTO
+
+        do {
+            try await client
+                .from("active_pets")
+                .delete()
+                .eq("id", value: cloudDTO.id.uuidString)
+                .eq("user_id", value: userId.uuidString)
+                .execute()
+
+            #if DEBUG
+            print("[SyncManager] Cloud pet deleted: \(cloudDTO.name)")
+            #endif
+        } catch {
+            lastError = error
+            #if DEBUG
+            print("[SyncManager] Failed to delete cloud pet: \(error)")
+            #endif
+        }
+
+        // Upload local pet to cloud
+        await syncActivePet(petManager: petManager)
+    }
+
+    /// Keep cloud pet → delete local pet + restore cloud pet.
+    private func resolveKeepCloud(
+        conflict: PetConflictData,
+        petManager: PetManager
+    ) async {
+        // Delete local pet (stops monitoring, nils pet)
+        petManager.clearForConflictResolution()
+
+        // Restore cloud pet using existing infrastructure
+        let cloudDTO = conflict.cloudDTO
+        let restoredPet = petManager.restoreActivePet(from: cloudDTO)
+
+        // Restore hourly aggregate
+        if let aggregate = cloudDTO.hourlyAggregate {
+            SharedDefaults.hourlyAggregate = aggregate
+        }
+
+        // Store hourly per-day breakdowns
+        if !cloudDTO.hourlyPerDay.isEmpty, let petId = restoredPet?.id {
+            storeHourlyPerDay(cloudDTO.hourlyPerDay, petId: petId)
+        }
+
+        // Lock preset for today
+        SharedDefaults.windPresetLockedForToday = true
+        SharedDefaults.windPresetLockedDate = Date()
+        SharedDefaults.isDayStartShieldActive = false
+
+        #if DEBUG
+        print("[SyncManager] Cloud pet restored after conflict: \(cloudDTO.name)")
+        #endif
+    }
+
     // MARK: - Schema Migration
 
     /// Migrates a cloud DTO to the current schema version if needed.
@@ -282,6 +464,18 @@ final class SyncManager {
 
     private func currentUserId() async -> UUID? {
         try? await client.auth.session.user.id
+    }
+
+    /// Restores archived pets from cloud DTOs + stores hourly data. Reusable helper.
+    private func restoreArchivedPetsIfNeeded(
+        _ dtos: [ArchivedPetSupabaseDTO],
+        into archivedPetManager: ArchivedPetManager
+    ) {
+        guard !dtos.isEmpty else { return }
+        archivedPetManager.restoreArchivedPets(from: dtos)
+        for dto in dtos where !dto.hourlyPerDay.isEmpty {
+            storeHourlyPerDay(dto.hourlyPerDay, petId: dto.id)
+        }
     }
 
     /// Stores hourly per-day breakdowns to a local JSON file for DayDetailSheet fallback.

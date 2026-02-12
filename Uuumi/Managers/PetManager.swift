@@ -322,6 +322,26 @@ final class PetManager {
         #endif
     }
 
+    // MARK: - Conflict Resolution
+
+    /// Clears local pet state for conflict resolution (transitioning to a different pet).
+    /// Stops monitoring and shield, nils the pet. Does NOT touch cloud data.
+    func clearForConflictResolution() {
+        guard let pet else { return }
+
+        if SharedDefaults.isShieldActive {
+            ShieldManager.shared.turnOff(success: true)
+        }
+        ScreenTimeManager.shared.stopMonitoringAndClear()
+
+        self.pet = nil
+        saveActivePet()
+
+        #if DEBUG
+        print("[PetManager] Local pet cleared for conflict resolution: \(pet.name)")
+        #endif
+    }
+
     // MARK: - Cloud Restore
 
     /// Restores an active pet from a cloud DTO. Sets windPoints in SharedDefaults.

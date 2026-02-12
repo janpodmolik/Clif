@@ -10,9 +10,9 @@ struct ArchivedPetGridItem: View {
         return formatter.string(from: pet.archivedAt)
     }
 
-    /// Blown and lost pets use faded visual treatment.
+    /// Blown pets use faded visual treatment.
     private var isFaded: Bool {
-        pet.archiveReason == .blown || pet.archiveReason == .lost
+        pet.archiveReason == .blown
     }
 
     var body: some View {
@@ -83,7 +83,6 @@ struct ArchivedPetGridItem: View {
         ArchivedPetGridItem(pet: .mock(name: "Fern", phase: 4, archiveReason: .completed)) {}
         ArchivedPetGridItem(pet: .mock(name: "Sprout", phase: 2, archiveReason: .blown)) {}
         ArchivedPetGridItem(pet: .mock(name: "Moss", phase: 3, archiveReason: .manual)) {}
-        ArchivedPetGridItem(pet: .mock(name: "Ghost", phase: 1, archiveReason: .lost)) {}
     }
     .padding()
 }
