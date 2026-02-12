@@ -253,6 +253,13 @@ final class SyncManager {
 
             restoreArchivedPetsIfNeeded(archivedResponse, into: archivedPetManager)
 
+            // 3. Upload local-only archived pets to cloud (local → cloud)
+            let cloudArchivedIds = Set(archivedResponse.map(\.id))
+            await uploadLocalArchivedPetsIfNeeded(
+                cloudPetIds: cloudArchivedIds,
+                archivedPetManager: archivedPetManager
+            )
+
             #if DEBUG
             if !archivedResponse.isEmpty {
                 print("[SyncManager] Restored \(archivedResponse.count) archived pets")
@@ -320,6 +327,11 @@ final class SyncManager {
                     // Same pet on both sides — no conflict, just sync archived pets
                     print("[SyncManager] Same pet on both sides (id=\(cloudPet.id)) — no conflict")
                     restoreArchivedPetsIfNeeded(archivedResponse, into: archivedPetManager)
+                    let cloudArchivedIds = Set(archivedResponse.map(\.id))
+                    await uploadLocalArchivedPetsIfNeeded(
+                        cloudPetIds: cloudArchivedIds,
+                        archivedPetManager: archivedPetManager
+                    )
                     UserDefaults.standard.set(true, forKey: "hasCompletedInitialSync")
                     lastSyncDate = Date()
                 } else {
@@ -336,6 +348,11 @@ final class SyncManager {
                 // No cloud pet — no conflict, sync local pet up + restore archived
                 print("[SyncManager] No cloud pet — syncing local pet up")
                 restoreArchivedPetsIfNeeded(archivedResponse, into: archivedPetManager)
+                let cloudArchivedIds = Set(archivedResponse.map(\.id))
+                await uploadLocalArchivedPetsIfNeeded(
+                    cloudPetIds: cloudArchivedIds,
+                    archivedPetManager: archivedPetManager
+                )
                 UserDefaults.standard.set(true, forKey: "hasCompletedInitialSync")
                 await syncActivePet(petManager: petManager)
             }
@@ -382,6 +399,13 @@ final class SyncManager {
 
         // Restore cloud archived pets (in both cases)
         restoreArchivedPetsIfNeeded(conflict.cloudArchivedDTOs, into: archivedPetManager)
+
+        // Upload local-only archived pets to cloud
+        let cloudArchivedIds = Set(conflict.cloudArchivedDTOs.map(\.id))
+        await uploadLocalArchivedPetsIfNeeded(
+            cloudPetIds: cloudArchivedIds,
+            archivedPetManager: archivedPetManager
+        )
 
         UserDefaults.standard.set(true, forKey: "hasCompletedInitialSync")
         lastSyncDate = Date()
@@ -476,6 +500,24 @@ final class SyncManager {
         for dto in dtos where !dto.hourlyPerDay.isEmpty {
             storeHourlyPerDay(dto.hourlyPerDay, petId: dto.id)
         }
+    }
+
+    /// Uploads local archived pets that don't exist in cloud. Called after cloud→local restore.
+    private func uploadLocalArchivedPetsIfNeeded(
+        cloudPetIds: Set<UUID>,
+        archivedPetManager: ArchivedPetManager
+    ) async {
+        let localOnly = archivedPetManager.summaries.filter { !cloudPetIds.contains($0.id) }
+        guard !localOnly.isEmpty else { return }
+
+        for summary in localOnly {
+            guard let detail = await archivedPetManager.loadDetail(for: summary) else { continue }
+            await syncArchivedPet(detail)
+        }
+
+        #if DEBUG
+        print("[SyncManager] Uploaded \(localOnly.count) local-only archived pets to cloud")
+        #endif
     }
 
     /// Stores hourly per-day breakdowns to a local JSON file for DayDetailSheet fallback.
