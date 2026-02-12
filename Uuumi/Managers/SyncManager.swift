@@ -387,7 +387,8 @@ final class SyncManager {
         _ resolution: ConflictResolution,
         conflict: PetConflictData,
         petManager: PetManager,
-        archivedPetManager: ArchivedPetManager
+        archivedPetManager: ArchivedPetManager,
+        essenceCatalogManager: EssenceCatalogManager
     ) async {
         guard await currentUserId() != nil else { return }
 
@@ -403,12 +404,16 @@ final class SyncManager {
                 conflict: conflict,
                 petManager: petManager
             )
+            // Merge user data: coins take max, essences are unioned
+            await mergeUserDataOnConflict(essenceCatalogManager: essenceCatalogManager)
 
         case .keepCloud:
             await resolveKeepCloud(
                 conflict: conflict,
                 petManager: petManager
             )
+            // Merge user data: coins take max, essences are unioned
+            await mergeUserDataOnConflict(essenceCatalogManager: essenceCatalogManager)
         }
 
         // Restore cloud archived pets (in both cases)
@@ -485,6 +490,47 @@ final class SyncManager {
         #if DEBUG
         print("[SyncManager] Cloud pet restored after conflict: \(cloudDTO.name)")
         #endif
+    }
+
+    /// Merges local and cloud user data during conflict resolution.
+    /// Coins take the higher value (safe against duplication), essences are unioned.
+    /// After merging locally, uploads the merged result to cloud.
+    private func mergeUserDataOnConflict(essenceCatalogManager: EssenceCatalogManager) async {
+        guard let userId = await currentUserId() else { return }
+
+        do {
+            let response: [UserDataDTO] = try await client
+                .from("user_data")
+                .select()
+                .eq("user_id", value: userId.uuidString)
+                .execute()
+                .value
+
+            if let cloudData = response.first.map(migrateUserDataIfNeeded) {
+                let cloudPayload = cloudData.data
+                let localCoins = SharedDefaults.coinsBalance
+
+                // Coins: keep the higher value (safe — avoids duplicating coins)
+                SharedDefaults.coinsBalance = max(localCoins, cloudPayload.coinsBalance)
+
+                // Essences: union of both sets
+                let cloudEssences = Set(cloudPayload.unlockedEssences.compactMap { Essence(rawValue: $0) })
+                let merged = essenceCatalogManager.unlockedEssences.union(cloudEssences)
+                essenceCatalogManager.restoreUnlocked(merged)
+
+                #if DEBUG
+                print("[SyncManager] Merged user data — coins: \(SharedDefaults.coinsBalance) (local: \(localCoins), cloud: \(cloudPayload.coinsBalance)), essences: \(merged.count)")
+                #endif
+            }
+        } catch {
+            lastError = error
+            #if DEBUG
+            print("[SyncManager] User data merge failed: \(error)")
+            #endif
+        }
+
+        // Upload merged result to cloud
+        await syncUserData(essenceCatalogManager: essenceCatalogManager)
     }
 
     // MARK: - User Data Sync

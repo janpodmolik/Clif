@@ -55,13 +55,15 @@ struct MainApp: App {
         case .authenticated:
             if petManager.hasPet {
                 // Local pet exists — check if cloud also has one (potential conflict)
-                // Then upload local settings (local is source of truth)
+                // Only upload local settings if no conflict (conflict resolution handles sync)
                 Task {
                     await syncManager.checkForPetConflict(
                         petManager: petManager,
                         archivedPetManager: archivedPetManager
                     )
-                    await syncManager.syncUserData(essenceCatalogManager: essenceCatalogManager)
+                    if syncManager.pendingConflict == nil {
+                        await syncManager.syncUserData(essenceCatalogManager: essenceCatalogManager)
+                    }
                 }
             } else {
                 // No local pet — restore settings first, then pet (reinstall recovery)

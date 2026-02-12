@@ -179,7 +179,8 @@ struct ContentView: View {
                         resolution,
                         conflict: conflict,
                         petManager: petManager,
-                        archivedPetManager: archivedPetManager
+                        archivedPetManager: archivedPetManager,
+                        essenceCatalogManager: essenceCatalogManager
                     )
                 }
             }
