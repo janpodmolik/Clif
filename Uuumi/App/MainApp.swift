@@ -40,9 +40,37 @@ struct MainApp: App {
                     petManager.syncManager = syncManager
                     print("🟢 ContentView appeared")
                 }
+                .onChange(of: authManager.authState) { oldState, newState in
+                    handleAuthStateChange(from: oldState, to: newState)
+                }
         }
         .onChange(of: scenePhase) { _, newPhase in
             handleScenePhaseChange(newPhase)
+        }
+    }
+
+    private func handleAuthStateChange(from oldState: AuthManager.AuthState, to newState: AuthManager.AuthState) {
+        switch newState {
+        case .authenticated:
+            // Authenticated with no local pet — attempt cloud restore (reinstall recovery)
+            guard !petManager.hasPet else { return }
+            Task {
+                await syncManager.restoreFromCloud(
+                    petManager: petManager,
+                    archivedPetManager: archivedPetManager
+                )
+            }
+
+        case .anonymous:
+            // Signed out — clear local data (cloud backup preserved for future restore)
+            guard case .authenticated = oldState else { return }
+            petManager.clearOnSignOut()
+            archivedPetManager.clearOnSignOut()
+            // Reset initial sync flag so it can run again for a different account
+            UserDefaults.standard.removeObject(forKey: "hasCompletedInitialSync")
+
+        case .loading:
+            break
         }
     }
 

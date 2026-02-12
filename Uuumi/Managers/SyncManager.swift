@@ -183,9 +183,115 @@ final class SyncManager {
         }
     }
 
+    // MARK: - Restore from Cloud
+
+    /// Restores active pet + archived pets from Supabase after a fresh install.
+    /// Only runs when authenticated and no local pet exists.
+    func restoreFromCloud(
+        petManager: PetManager,
+        archivedPetManager: ArchivedPetManager
+    ) async {
+        guard !petManager.hasPet,
+              await currentUserId() != nil else { return }
+
+        isSyncing = true
+        defer { isSyncing = false }
+
+        do {
+            // 1. Restore active pet
+            let activePetResponse: [ActivePetSupabaseDTO] = try await client
+                .from("active_pets")
+                .select()
+                .execute()
+                .value
+
+            if let cloudPet = activePetResponse.first.map(migrateIfNeeded) {
+                let restoredPet = petManager.restoreActivePet(from: cloudPet)
+
+                // Restore hourly aggregate to SharedDefaults (for DailyPatternCard)
+                if let aggregate = cloudPet.hourlyAggregate {
+                    SharedDefaults.hourlyAggregate = aggregate
+                }
+
+                // Store hourly per-day breakdowns locally (for DayDetailSheet fallback)
+                if !cloudPet.hourlyPerDay.isEmpty, let petId = restoredPet?.id {
+                    storeHourlyPerDay(cloudPet.hourlyPerDay, petId: petId)
+                }
+
+                // Lock preset for today — restored pet already has a preset,
+                // prevent DailyPresetPicker from showing (which would reset wind)
+                SharedDefaults.windPresetLockedForToday = true
+                SharedDefaults.windPresetLockedDate = Date()
+                SharedDefaults.isDayStartShieldActive = false
+
+                #if DEBUG
+                print("[SyncManager] Active pet restored: \(cloudPet.name)")
+                #endif
+            }
+
+            // 2. Restore archived pets
+            let archivedResponse: [ArchivedPetSupabaseDTO] = try await client
+                .from("archived_pets")
+                .select()
+                .order("archived_at", ascending: false)
+                .execute()
+                .value
+
+            if !archivedResponse.isEmpty {
+                archivedPetManager.restoreArchivedPets(from: archivedResponse)
+
+                // Store hourly per-day breakdowns for each archived pet
+                for dto in archivedResponse where !dto.hourlyPerDay.isEmpty {
+                    storeHourlyPerDay(dto.hourlyPerDay, petId: dto.id)
+                }
+
+                #if DEBUG
+                print("[SyncManager] Restored \(archivedResponse.count) archived pets")
+                #endif
+            }
+
+            // Mark initial sync as completed (cloud data is authoritative after restore)
+            UserDefaults.standard.set(true, forKey: "hasCompletedInitialSync")
+
+            lastSyncDate = Date()
+            lastError = nil
+
+            #if DEBUG
+            print("[SyncManager] Cloud restore completed")
+            #endif
+        } catch {
+            lastError = error
+            #if DEBUG
+            print("[SyncManager] Cloud restore failed: \(error)")
+            #endif
+        }
+    }
+
+    // MARK: - Schema Migration
+
+    /// Migrates a cloud DTO to the current schema version if needed.
+    private func migrateIfNeeded(_ dto: ActivePetSupabaseDTO) -> ActivePetSupabaseDTO {
+        switch dto.schemaVersion {
+        case 1: return dto // current version
+        // case 1: return migrateV1toV2(dto) // future migrations
+        default: return dto
+        }
+    }
+
     // MARK: - Helpers
 
     private func currentUserId() async -> UUID? {
         try? await client.auth.session.user.id
+    }
+
+    /// Stores hourly per-day breakdowns to a local JSON file for DayDetailSheet fallback.
+    private func storeHourlyPerDay(_ breakdowns: [DailyHourlyBreakdown], petId: UUID) {
+        let documentsURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+        let directoryURL = documentsURL.appendingPathComponent("hourly_per_day")
+        try? FileManager.default.createDirectory(at: directoryURL, withIntermediateDirectories: true)
+
+        let fileURL = directoryURL.appendingPathComponent("\(petId.uuidString).json")
+        guard let data = try? JSONEncoder().encode(breakdowns) else { return }
+        try? data.write(to: fileURL)
     }
 }

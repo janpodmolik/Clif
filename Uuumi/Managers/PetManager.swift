@@ -234,6 +234,45 @@ final class PetManager {
         )
     }
 
+    // MARK: - Sign Out Cleanup
+
+    /// Clears all local pet data when the user signs out.
+    /// Data remains in cloud for future restore. Does NOT delete from Supabase.
+    func clearOnSignOut() {
+        guard let pet else { return }
+
+        if SharedDefaults.isShieldActive {
+            ShieldManager.shared.turnOff(success: true)
+        }
+        ScreenTimeManager.shared.stopMonitoringAndClear()
+
+        self.pet = nil
+        saveActivePet()
+
+        #if DEBUG
+        print("[PetManager] Local pet cleared on sign out: \(pet.name)")
+        #endif
+    }
+
+    // MARK: - Cloud Restore
+
+    /// Restores an active pet from a cloud DTO. Sets windPoints in SharedDefaults.
+    /// Returns the restored Pet, or nil if a local pet already exists.
+    func restoreActivePet(from supabaseDTO: ActivePetSupabaseDTO) -> Pet? {
+        guard pet == nil else { return nil }
+
+        let dto = PetDTO(from: supabaseDTO)
+        let restoredPet = Pet(from: dto)
+
+        // Restore wind state to SharedDefaults (Pet reads windPoints from there)
+        SharedDefaults.monitoredWindPoints = supabaseDTO.windPoints
+        SharedDefaults.monitoredPetId = restoredPet.id
+
+        pet = restoredPet
+        saveActivePet()
+        return restoredPet
+    }
+
     // MARK: - Save Trigger
 
     /// Call after mutating the pet to persist changes.

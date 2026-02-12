@@ -118,6 +118,28 @@ final class ArchivedPetManager {
         }
     }
 
+    // MARK: - Public API: Cloud Restore
+
+    /// Restores archived pets from cloud DTOs. Saves details to Documents/archived/ and rebuilds summaries.
+    /// Skips pets that already exist locally (by ID).
+    func restoreArchivedPets(from dtos: [ArchivedPetSupabaseDTO]) {
+        let existingIds = Set(summaries.map(\.id))
+
+        for dto in dtos {
+            guard !existingIds.contains(dto.id) else { continue }
+
+            let archivedPet = ArchivedPet(from: dto)
+            let summary = ArchivedPetSummary(from: archivedPet)
+
+            saveDetail(archivedPet, for: archivedPet.id)
+            summaries.append(summary)
+        }
+
+        // Re-sort by archivedAt (newest first) and persist
+        summaries.sort { $0.archivedAt > $1.archivedAt }
+        saveSummaries()
+    }
+
     // MARK: - Public API: Delete
 
     /// Delete an archived pet.
@@ -129,6 +151,27 @@ final class ArchivedPetManager {
         try? FileManager.default.removeItem(at: url)
 
         detailCache.removeAll { $0.id == id }
+    }
+
+    // MARK: - Sign Out Cleanup
+
+    /// Clears all local archived pet data when the user signs out.
+    /// Data remains in cloud for future restore.
+    func clearOnSignOut() {
+        let ids = summaries.map(\.id)
+        summaries.removeAll()
+        saveSummaries()
+        detailCache.removeAll()
+
+        // Remove all detail files
+        for id in ids {
+            let url = Self.detailURL(for: id)
+            try? FileManager.default.removeItem(at: url)
+        }
+
+        #if DEBUG
+        print("[ArchivedPetManager] Cleared \(ids.count) archived pets on sign out")
+        #endif
     }
 
 }

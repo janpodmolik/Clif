@@ -8,6 +8,7 @@ struct DayDetailSheet: View {
 
     @Environment(\.dismiss) private var dismiss
     @State private var snapshots: [SnapshotEvent] = []
+    @State private var restoredBreakdown: DailyHourlyBreakdown?
 
     private let dateFormatter: DateFormatter = {
         let f = DateFormatter()
@@ -147,7 +148,7 @@ struct DayDetailSheet: View {
             WindTimelineChart(snapshots: snapshots, limitMinutes: limitMinutes)
                 .padding()
                 .glassCard()
-        } else if let breakdown = hourlyBreakdown {
+        } else if let breakdown = hourlyBreakdown ?? restoredBreakdown {
             DayHourlyChart(breakdown: breakdown)
                 .padding()
                 .glassCard()
@@ -173,6 +174,26 @@ struct DayDetailSheet: View {
     private func loadSnapshots() {
         let dateString = SnapshotEvent.dateString(from: day.date)
         snapshots = SnapshotStore.shared.load(for: dateString, petId: petId)
+
+        // Load fallback hourly breakdown from cloud restore data (if no snapshots and no breakdown passed in)
+        if snapshots.isEmpty, hourlyBreakdown == nil {
+            restoredBreakdown = Self.loadRestoredBreakdown(for: dateString, petId: petId)
+        }
+    }
+
+    /// Loads a single day's hourly breakdown from the cloud-restored JSON file.
+    private static func loadRestoredBreakdown(for dateString: String, petId: UUID) -> DailyHourlyBreakdown? {
+        let documentsURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+        let fileURL = documentsURL
+            .appendingPathComponent("hourly_per_day")
+            .appendingPathComponent("\(petId.uuidString).json")
+
+        guard let data = try? Data(contentsOf: fileURL),
+              let breakdowns = try? JSONDecoder().decode([DailyHourlyBreakdown].self, from: data) else {
+            return nil
+        }
+
+        return breakdowns.first { $0.date == dateString }
     }
 
     private func formatMinutes(_ minutes: Int) -> String {
