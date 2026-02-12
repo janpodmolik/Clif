@@ -43,6 +43,16 @@ struct SharedDefaults {
         set { defaults?.set(newValue, forKey: DefaultsKeys.wasEverAuthorized) }
     }
 
+    // MARK: - Post-Reinstall Reselection
+
+    /// Persisted flag for post-reinstall app reselection state.
+    /// Survives app restart (but not reinstall, which is correct — fresh install = no pet).
+    /// Set to true when reinstall is detected, cleared after successful reselection.
+    static var needsAppReselection: Bool {
+        get { defaults?.bool(forKey: DefaultsKeys.needsAppReselection) ?? false }
+        set { defaults?.set(newValue, forKey: DefaultsKeys.needsAppReselection) }
+    }
+
     // MARK: - Sync
 
     /// Forces synchronization of UserDefaults (important for cross-process communication).

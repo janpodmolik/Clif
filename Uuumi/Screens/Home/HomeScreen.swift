@@ -262,6 +262,31 @@ struct HomeScreen: View {
                 )
             }
         }
+        .sheet(isPresented: $petManager.needsAppReselection) {
+            if let pet = petManager.currentPet {
+                RestoreAppReselectionSheet(
+                    petName: pet.name,
+                    changesUsed: pet.limitedSourceChangesCount,
+                    changesTotal: Pet.maxLimitedSourceChanges,
+                    canChange: pet.canChangeLimitedSources,
+                    canArchive: pet.daysSinceCreation >= PetManager.minimumArchiveDays
+                ) { action in
+                    switch action {
+                    case .reauthorize:
+                        try await AuthorizationCenter.shared.requestAuthorization(for: .individual)
+                    case .save(let selection):
+                        let sources = LimitedSource.from(selection)
+                        petManager.handleAppReselectionComplete(sources, selection: selection)
+                    case .blowAway:
+                        petManager.handleAppReselectionExhausted(action: .blowAway)
+                    case .archive:
+                        petManager.handleAppReselectionExhausted(action: .archive, using: archivedPetManager)
+                    case .delete:
+                        petManager.handleAppReselectionExhausted(action: .delete)
+                    }
+                }
+            }
+        }
         .windNotCalmSheet(isPresented: $showWindNotCalmAlert)
         .alert(
             "Přístup k času u obrazovky",

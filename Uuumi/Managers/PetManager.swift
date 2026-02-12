@@ -21,6 +21,12 @@ final class PetManager {
     /// Whether a re-authorization prompt is pending (prevents spam on repeated .active cycles).
     var needsReauthorization = false
 
+    /// Whether the pet needs app re-selection after cloud restore (invalid tokens from reinstall).
+    /// Backed by SharedDefaults so it survives app restart.
+    var needsAppReselection = false {
+        didSet { SharedDefaults.needsAppReselection = needsAppReselection }
+    }
+
     // MARK: - Public API
 
     /// Whether a pet currently exists (max one allowed).
@@ -33,6 +39,7 @@ final class PetManager {
 
     init() {
         loadActivePet()
+        detectAppReselectionIfNeeded()
         restoreMonitoringIfNeeded()
         observeAuthorizationStatus()
     }
@@ -136,7 +143,9 @@ final class PetManager {
                     return
                 }
 
-                guard let pet, !pet.isBlownAway, !needsReauthorization else { return }
+                // Don't show separate ReauthorizationSheet if RestoreAppReselectionSheet
+                // is already handling reauth (post-reinstall restore flow)
+                guard let pet, !pet.isBlownAway, !needsReauthorization, !needsAppReselection else { return }
 
                 // Detect revocation: .notDetermined after previous .approved means user revoked permission.
                 // On cold start without prior authorization, wasEverAuthorized is false so we ignore.
@@ -150,8 +159,13 @@ final class PetManager {
     }
 
     /// Call after the user successfully re-authorizes to resume normal operation.
+    /// If `needsAppReselection` is true (post-reinstall restore), skips monitoring —
+    /// tokens are invalid and RestoreReselectionSheet will handle app re-selection.
     func handleReauthorizationSuccess() {
         needsReauthorization = false
+        if needsAppReselection {
+            return
+        }
         restoreMonitoringIfNeeded()
     }
 
@@ -234,6 +248,60 @@ final class PetManager {
         )
     }
 
+    // MARK: - Post-Restore App Reselection
+
+    /// Completes the post-restore app re-selection flow.
+    /// Replaces invalid tokens with fresh ones and starts monitoring.
+    /// Counts toward `limitedSourceChangesCount` (same as manual change).
+    func handleAppReselectionComplete(_ newSources: [LimitedSource], selection: FamilyActivitySelection) {
+        guard let pet else { return }
+
+        pet.updateLimitedSources(newSources)
+        saveActivePet()
+
+        SharedDefaults.saveFamilyActivitySelection(selection)
+
+        let limitSeconds = Int(pet.preset.minutesToBlowAway * 60)
+        ScreenTimeManager.shared.startMonitoring(
+            petId: pet.id,
+            petName: pet.name,
+            limitSeconds: limitSeconds,
+            limitedSources: pet.limitedSources
+        )
+
+        needsAppReselection = false
+
+        Task { [syncManager] in
+            await syncManager?.syncActivePet(petManager: self)
+        }
+    }
+
+    enum AppReselectionAction {
+        case blowAway, archive, delete
+    }
+
+    /// Handles exhausted app reselection — pet can't continue without monitoring.
+    /// BlowAway only marks the pet as blown (user sees animation, archives manually).
+    /// Caller must provide `archivedPetManager` for archive action.
+    func handleAppReselectionExhausted(
+        action: AppReselectionAction,
+        using archivedPetManager: ArchivedPetManager? = nil
+    ) {
+        guard let pet else { return }
+        needsAppReselection = false
+
+        switch action {
+        case .blowAway:
+            blowAwayCurrentPet()
+        case .archive:
+            if let archivedPetManager {
+                archive(id: pet.id, using: archivedPetManager)
+            }
+        case .delete:
+            delete(id: pet.id)
+        }
+    }
+
     // MARK: - Sign Out Cleanup
 
     /// Clears all local pet data when the user signs out.
@@ -258,6 +326,10 @@ final class PetManager {
 
     /// Restores an active pet from a cloud DTO. Sets windPoints in SharedDefaults.
     /// Returns the restored Pet, or nil if a local pet already exists.
+    ///
+    /// After restore, detects token validity:
+    /// - Auth `.approved` (sign-out/sign-in, no reinstall) → tokens valid → starts monitoring
+    /// - Auth `.notDetermined` (reinstall) → tokens invalid → sets `needsAppReselection`
     func restoreActivePet(from supabaseDTO: ActivePetSupabaseDTO) -> Pet? {
         guard pet == nil else { return nil }
 
@@ -270,6 +342,24 @@ final class PetManager {
 
         pet = restoredPet
         saveActivePet()
+
+        // Detect token validity based on authorization status
+        if AuthorizationCenter.shared.authorizationStatus == .approved {
+            // No reinstall — tokens are still valid, start monitoring immediately
+            if !restoredPet.isBlownAway, restoredPet.limitedSources.hasTokens {
+                let limitSeconds = Int(restoredPet.preset.minutesToBlowAway * 60)
+                ScreenTimeManager.shared.startMonitoring(
+                    petId: restoredPet.id,
+                    petName: restoredPet.name,
+                    limitSeconds: limitSeconds,
+                    limitedSources: restoredPet.limitedSources
+                )
+            }
+        } else if !restoredPet.isBlownAway {
+            // Reinstall — tokens invalid, need reselection after reauth
+            needsAppReselection = true
+        }
+
         return restoredPet
     }
 
@@ -297,6 +387,15 @@ final class PetManager {
     func refreshDailyStats() {
         guard let pet = pet else { return }
         pet.dailyStats = SnapshotStore.shared.dailyUsageStats(petId: pet.id)
+    }
+
+    // MARK: - Post-Reinstall Detection
+
+    /// Restores `needsAppReselection` from SharedDefaults on init.
+    /// The flag is persisted so it survives app restarts — if the user closes the app
+    /// without completing reselection, the sheet re-appears on next launch.
+    private func detectAppReselectionIfNeeded() {
+        needsAppReselection = SharedDefaults.needsAppReselection
     }
 
     // MARK: - Monitoring Restore

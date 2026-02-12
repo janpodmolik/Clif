@@ -129,4 +129,8 @@ enum DefaultsKeys {
     // MARK: - Authorization
 
     static let wasEverAuthorized = "wasEverAuthorized"
+
+    // MARK: - Post-Reinstall Reselection
+
+    static let needsAppReselection = "needsAppReselection"
 }
