@@ -12,6 +12,7 @@ struct ProfileScreen: View {
     @Environment(EssenceCatalogManager.self) private var catalogManager
     @Environment(AuthManager.self) private var authManager
     @Environment(StoreManager.self) private var storeManager
+    @Environment(SyncManager.self) private var syncManager
     @AppStorage("appearanceMode") private var appearanceMode: AppearanceMode = .automatic
     @AppStorage("selectedDayTheme") private var dayTheme: DayTheme = .morningHaze
     @AppStorage("selectedNightTheme") private var nightTheme: NightTheme = .deepNight
@@ -128,6 +129,10 @@ struct ProfileScreen: View {
                         Spacer()
                         Text(appVersion)
                             .foregroundStyle(.secondary)
+                    }
+
+                    if authManager.isAuthenticated {
+                        syncStatusRow
                     }
 
                     Link(destination: URL(string: "mailto:support@uuumi.app")!) {
@@ -281,6 +286,28 @@ struct ProfileScreen: View {
         )
     }
 
+    @ViewBuilder
+    private var syncStatusRow: some View {
+        HStack {
+            if syncManager.isSyncing {
+                Label("Synchronizace...", systemImage: "arrow.triangle.2.circlepath")
+            } else if syncManager.lastError != nil {
+                Label("Sync selhal", systemImage: "exclamationmark.icloud")
+                    .foregroundStyle(.orange)
+            } else {
+                Label("Synchronizace", systemImage: "checkmark.icloud")
+            }
+            Spacer()
+            if syncManager.isSyncing {
+                ProgressView()
+                    .controlSize(.mini)
+            } else if let date = syncManager.lastSyncDate {
+                Text(date.formatted(.relative(presentation: .named)))
+                    .foregroundStyle(.secondary)
+            }
+        }
+    }
+
     private var appVersion: String {
         let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "?"
         let build = Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "?"
@@ -344,4 +371,5 @@ private struct ThemePicker<T: Hashable & Identifiable>: View {
         .environment(EssenceCatalogManager.mock())
         .environment(AuthManager.mock())
         .environment(StoreManager.mock())
+        .environment(SyncManager())
 }
