@@ -14,6 +14,7 @@ struct MainApp: App {
     @State private var essenceCatalogManager = EssenceCatalogManager()
     @State private var authManager = AuthManager()
     @State private var storeManager = StoreManager()
+    @State private var syncManager = SyncManager()
 
     init() {
         print("🟢 MainApp init")
@@ -34,7 +35,11 @@ struct MainApp: App {
                 .environment(essenceCatalogManager)
                 .environment(authManager)
                 .environment(storeManager)
-                .onAppear { print("🟢 ContentView appeared") }
+                .environment(syncManager)
+                .onAppear {
+                    petManager.syncManager = syncManager
+                    print("🟢 ContentView appeared")
+                }
         }
         .onChange(of: scenePhase) { _, newPhase in
             handleScenePhaseChange(newPhase)
@@ -60,6 +65,11 @@ struct MainApp: App {
             petManager.checkBlowAwayState()
             petManager.refreshDailyStats()
 
+            // Sync active pet to cloud (debounced)
+            Task {
+                await syncManager.syncActivePetIfNeeded(petManager: petManager)
+            }
+
             #if DEBUG
             print("🟢 App became active")
             #endif
@@ -67,6 +77,12 @@ struct MainApp: App {
         case .background:
             // Save current state when going to background
             petManager.savePet()
+
+            // Sync to cloud before app is suspended
+            syncManager.syncInBackground { [petManager, archivedPetManager, syncManager] in
+                await syncManager.syncActivePet(petManager: petManager)
+                await syncManager.initialSyncIfNeeded(archivedPetManager: archivedPetManager)
+            }
 
             #if DEBUG
             print("🟡 App went to background - saved pet state")

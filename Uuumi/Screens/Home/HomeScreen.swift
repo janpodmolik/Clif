@@ -538,6 +538,7 @@ struct HomeScreen: View {
         ascensionAnimator.trigger(screenHeight: screenHeight) { [petManager, archivedPetManager] in
             // Archive without animation — pet is already off-screen.
             // The empty island card slides in via its own transition.
+            // Cloud sync (archive + delete active) is handled internally by PetManager.
             petManager.archive(id: petId, using: archivedPetManager)
         }
     }

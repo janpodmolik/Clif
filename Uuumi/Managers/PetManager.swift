@@ -9,6 +9,10 @@ final class PetManager {
     /// Pets younger than this are deleted instead of archived (not enough data to be useful).
     static let minimumArchiveDays = 3
 
+    // MARK: - Dependencies
+
+    var syncManager: SyncManager?
+
     // MARK: - Private Storage
 
     private var pet: Pet?
@@ -75,6 +79,11 @@ final class PetManager {
         guard currentPet.daysSinceCreation >= Self.minimumArchiveDays else {
             pet = nil
             saveActivePet()
+
+            // Remove from cloud (too young to archive)
+            Task { [syncManager] in
+                await syncManager?.deleteActivePetFromCloud(petId: id)
+            }
             return
         }
 
@@ -85,6 +94,14 @@ final class PetManager {
         archivedPetManager.archive(currentPet, reason: reason)
         pet = nil
         saveActivePet()
+
+        // Sync archived pet to cloud + delete active pet row
+        Task { [syncManager, archivedPetManager] in
+            if let archived = archivedPetManager.summaries.first,
+               let detail = await archivedPetManager.loadDetail(for: archived) {
+                await syncManager?.syncArchivedPet(detail, deletingActivePetId: id)
+            }
+        }
     }
 
     /// Blows away the pet and archives it.
@@ -158,6 +175,11 @@ final class PetManager {
 
         pet.blowAway(reason: reason)
         saveActivePet()
+
+        // Sync blown state immediately — critical state change
+        Task { [syncManager] in
+            await syncManager?.syncActivePet(petManager: self)
+        }
     }
 
     // MARK: - Delete
@@ -176,6 +198,11 @@ final class PetManager {
 
         pet = nil
         saveActivePet()
+
+        // Remove from cloud
+        Task { [syncManager] in
+            await syncManager?.deleteActivePetFromCloud(petId: id)
+        }
     }
 
     // MARK: - Update Limited Sources

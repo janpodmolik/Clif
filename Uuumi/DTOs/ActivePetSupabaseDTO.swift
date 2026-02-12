@@ -13,6 +13,8 @@ struct ActivePetSupabaseDTO: Codable {
     let dailyStats: [DailyUsageStat]
     let limitedSources: [LimitedSource]
     let breakHistory: [CompletedBreak]
+    let windPoints: Double
+    let isBlownAway: Bool
     let hourlyAggregate: HourlyAggregate?
     let hourlyPerDay: [DailyHourlyBreakdown]
     let schemaVersion: Int
@@ -26,6 +28,8 @@ struct ActivePetSupabaseDTO: Codable {
         case dailyStats = "daily_stats"
         case limitedSources = "limited_sources"
         case breakHistory = "break_history"
+        case windPoints = "wind_points"
+        case isBlownAway = "is_blown_away"
         case hourlyAggregate = "hourly_aggregate"
         case hourlyPerDay = "hourly_per_day"
         case schemaVersion = "schema_version"
@@ -36,6 +40,8 @@ struct ActivePetSupabaseDTO: Codable {
     init(
         from petDTO: PetDTO,
         userId: UUID,
+        windPoints: Double,
+        isBlownAway: Bool,
         hourlyAggregate: HourlyAggregate?,
         hourlyPerDay: [DailyHourlyBreakdown]
     ) {
@@ -49,6 +55,8 @@ struct ActivePetSupabaseDTO: Codable {
         self.dailyStats = petDTO.dailyStats
         self.limitedSources = petDTO.limitedSources
         self.breakHistory = petDTO.breakHistory
+        self.windPoints = windPoints
+        self.isBlownAway = isBlownAway
         self.hourlyAggregate = hourlyAggregate
         self.hourlyPerDay = hourlyPerDay
         self.schemaVersion = 1
