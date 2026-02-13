@@ -12,7 +12,7 @@ struct DragPortalSheetConfiguration {
     static let petDrop = DragPortalSheetConfiguration(
         showsDragHandle: false,
         allowsSwipeToDismiss: false,
-        usesGlassBackground: false
+        usesGlassBackground: true
     )
 }
 
