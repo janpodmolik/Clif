@@ -2,6 +2,8 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>NSFamilyControlsUsageDescription</key>
+	<string>Uuumi needs access to Screen Time to monitor your selected apps and help you stay within your daily limits.</string>
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>

@@ -148,7 +148,7 @@ struct WindPresetComparisonSheet: View {
     }
 
     private var explanationSection: some View {
-        Text("Wind rises when you use limited apps and falls when you take breaks. TODO: Maybe more info..")
+        Text("Wind rises when you use limited apps and falls when you take breaks.")
             .font(.caption)
             .foregroundStyle(.secondary)
             .frame(maxWidth: .infinity, alignment: .leading)
