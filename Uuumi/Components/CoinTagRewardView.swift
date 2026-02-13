@@ -32,6 +32,7 @@ struct CoinTagRewardView: View {
                 .opacity(tagOpacity)
                 .position(position)
                 .animation(.easeOut(duration: 0.15), value: phase == .burst)
+                .onTapGesture { animator.triggerBurst() }
         }
     }
 

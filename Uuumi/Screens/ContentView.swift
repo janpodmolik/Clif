@@ -102,7 +102,7 @@ struct ContentView: View {
                         position: CGPoint(x: overlayGeo.size.width / 2, y: overlayGeo.size.height * 0.62)
                     )
                 }
-                .allowsHitTesting(false)
+                .allowsHitTesting(coinsAnimator.isAnimating)
             }
         }
         .environment(essenceCoordinator)
