@@ -25,6 +25,7 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
             UIApplication.shared.open(url)
         }
 
+        center.removeAllDeliveredNotifications()
         completionHandler()
     }
 
