@@ -1,5 +1,6 @@
-import SwiftUI
+import FamilyControls
 import Supabase
+import SwiftUI
 
 enum ProfileDestination: Hashable {
     case essenceCatalog
@@ -20,6 +21,8 @@ struct ProfileScreen: View {
     @State private var showPremiumSheet = false
     @State private var showAuthSheet = false
     @State private var showAccountSheet = false
+    @State private var showMyAppsSheet = false
+    @State private var myAppsSelection: FamilyActivitySelection?
     @Binding var navigationPath: NavigationPath
 
     var body: some View {
@@ -110,6 +113,27 @@ struct ProfileScreen: View {
 
                 }
 
+                // MARK: - Moje aplikace
+                Section(header: Text("Moje aplikace")) {
+                    Button {
+                        showMyAppsSheet = true
+                    } label: {
+                        if let selection = myAppsSelection {
+                            HStack(spacing: 8) {
+                                Label("Uložený výběr", systemImage: "app.dashed")
+                                Spacer()
+                                LimitedSourcesPreview(
+                                    applicationTokens: selection.applicationTokens,
+                                    categoryTokens: selection.categoryTokens,
+                                    webDomainTokens: selection.webDomainTokens
+                                )
+                            }
+                        } else {
+                            Label("Žádný uložený výběr", systemImage: "app.dashed")
+                        }
+                    }
+                }
+
                 // MARK: - Pomoc
                 Section(header: Text("Pomoc")) {
                     HStack {
@@ -152,6 +176,11 @@ struct ProfileScreen: View {
             .sheet(isPresented: $showPremiumSheet) {
                 PremiumSheet()
             }
+            .sheet(isPresented: $showMyAppsSheet, onDismiss: {
+                myAppsSelection = SharedDefaults.loadMyAppsSelection()
+            }) {
+                MyAppsSheet()
+            }
             .fullScreenCover(isPresented: $showAuthSheet) {
                 AuthProvidersSheet()
             }
@@ -167,6 +196,9 @@ struct ProfileScreen: View {
                 case .shieldSettings:
                     ShieldSettingsScreen()
                 }
+            }
+            .onAppear {
+                myAppsSelection = SharedDefaults.loadMyAppsSelection()
             }
             .onChange(of: limitSettings) { _, newValue in
                 SharedDefaults.limitSettings = newValue

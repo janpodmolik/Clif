@@ -57,6 +57,7 @@ final class CreatePetCoordinator {
     var preset: WindPreset = .balanced
     var petName: String = ""
     var petPurpose: String = ""
+    var saveAsMyApps: Bool = false
 
     // MARK: - Drag State (Step 3)
 
@@ -201,6 +202,11 @@ final class CreatePetCoordinator {
         // Persist selection for pre-populating the picker on edit
         SharedDefaults.saveFamilyActivitySelection(selectedApps)
 
+        // Save as "Moje aplikace" preset if user toggled the checkbox
+        if saveAsMyApps {
+            SharedDefaults.saveMyAppsSelection(selectedApps)
+        }
+
         // Apply preset (locks it for today, starts monitoring, resets wind)
         ScreenTimeManager.shared.applyDailyPreset(preset, for: pet)
 
@@ -218,6 +224,7 @@ final class CreatePetCoordinator {
         preset = .balanced
         petName = ""
         petPurpose = ""
+        saveAsMyApps = false
         dragState = BlobDragState()
         dismissDragOffset = 0
         onComplete = nil

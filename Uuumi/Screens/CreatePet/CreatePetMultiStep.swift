@@ -58,10 +58,18 @@ struct CreatePetMultiStep: View {
     // MARK: - Footer Bar
 
     private var footerBar: some View {
-        VStack(spacing: Layout.footerSpacing) {
+        @Bindable var coordinator = coordinator
+
+        return VStack(spacing: Layout.footerSpacing) {
             // Summary card (shows after first step)
             if coordinator.currentStep != .appSelection {
                 SelectionSummaryCard()
+            }
+
+            // Save as "Moje aplikace" toggle (only on app selection step)
+            if coordinator.currentStep == .appSelection {
+                SaveAsMyAppsToggle(isOn: $coordinator.saveAsMyApps)
+                    .padding(.bottom, 4)
             }
 
             // Add 1 to totalSteps to account for drop step (shown in DragPortalSheet)

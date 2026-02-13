@@ -1,20 +1,13 @@
 import FamilyControls
 import SwiftUI
 
-/// Full-screen sheet for editing limited sources.
-/// Layout mirrors the pet creation flow: header overview on top,
-/// FamilyActivityPicker in the middle, sticky save button at bottom.
-struct EditLimitedSourcesSheet: View {
-    let changesUsed: Int
-    let changesTotal: Int
-    var onSave: ((FamilyActivitySelection) -> Void)?
-
+struct MyAppsSheet: View {
     @Environment(\.dismiss) private var dismiss
 
     @State private var editSelection = FamilyActivitySelection()
-    @State private var showConfirmation = false
-    @State private var pickerID = UUID()
-    @State private var saveAsMyApps = false
+    @State private var showDeleteConfirmation = false
+
+    private let hadSavedSelection: Bool
 
     private enum Layout {
         static let headerSpacing: CGFloat = 8
@@ -22,13 +15,14 @@ struct EditLimitedSourcesSheet: View {
         static let headerCornerRadius: CGFloat = 20
         static let fadeHeight: CGFloat = 16
         static let footerPadding: CGFloat = 16
+        static let footerSpacing: CGFloat = 12
     }
 
-    private var remainingChanges: Int {
-        changesTotal - changesUsed
+    init() {
+        hadSavedSelection = SharedDefaults.hasMyAppsSelection
     }
 
-    private var hasEditSelection: Bool {
+    private var hasSelection: Bool {
         !editSelection.applicationTokens.isEmpty
             || !editSelection.categoryTokens.isEmpty
             || !editSelection.webDomainTokens.isEmpty
@@ -41,7 +35,6 @@ struct EditLimitedSourcesSheet: View {
                     .zIndex(1)
 
                 FamilyActivityPicker(selection: $editSelection)
-                    .id(pickerID)
                     .overlay(alignment: .top) {
                         LinearGradient(
                             colors: [Color(.systemBackground), Color(.systemBackground).opacity(0)],
@@ -54,23 +47,21 @@ struct EditLimitedSourcesSheet: View {
 
                 footer
             }
+            .navigationTitle("Moje aplikace")
             .navigationBarTitleDisplayMode(.inline)
             .dismissButton()
-            .alert("Změnit sledované aplikace?", isPresented: $showConfirmation) {
-                Button("Změnit", role: .destructive) {
-                    if saveAsMyApps {
-                        SharedDefaults.saveMyAppsSelection(editSelection)
-                    }
-                    onSave?(editSelection)
+            .alert("Smazat moje aplikace?", isPresented: $showDeleteConfirmation) {
+                Button("Smazat", role: .destructive) {
+                    SharedDefaults.clearMyAppsSelection()
                     dismiss()
                 }
                 Button("Zrušit", role: .cancel) {}
             } message: {
-                Text("Po této změně ti \(remainingChangesText(after: remainingChanges - 1)).")
+                Text("Uložený výběr bude smazán.")
             }
         }
         .onAppear {
-            editSelection = SharedDefaults.loadFamilyActivitySelection() ?? FamilyActivitySelection()
+            editSelection = SharedDefaults.loadMyAppsSelection() ?? FamilyActivitySelection()
         }
     }
 
@@ -78,20 +69,10 @@ struct EditLimitedSourcesSheet: View {
 
     private var header: some View {
         VStack(spacing: Layout.headerSpacing) {
-            HStack {
-                Text("Sledované aplikace")
-                    .font(.title3.weight(.semibold))
-
-                MyAppsInfoButton(message: "Načti si uložený výběr aplikací, nebo ho uprav a ulož znovu. Uložený výběr můžeš spravovat v Profilu.")
-            }
-
-            MyAppsLoadButton(selection: $editSelection) {
-                pickerID = UUID()
-            }
+            Text("Uložený výběr aplikací")
+                .font(.title3.weight(.semibold))
 
             selectionSummary
-
-            changesInfo
         }
         .padding(.horizontal, Layout.headerPadding)
         .padding(.vertical, Layout.headerPadding)
@@ -104,7 +85,7 @@ struct EditLimitedSourcesSheet: View {
     @ViewBuilder
     private var selectionSummary: some View {
         HStack(spacing: 8) {
-            if hasEditSelection {
+            if hasSelection {
                 Image(systemName: "checkmark.circle.fill")
                     .foregroundStyle(.green)
 
@@ -121,36 +102,23 @@ struct EditLimitedSourcesSheet: View {
         }
         .frame(height: 28)
         .padding(.vertical, 8)
-        .animation(.easeInOut(duration: 0.2), value: hasEditSelection)
-    }
-
-    private var changesInfo: some View {
-        HStack(spacing: 8) {
-            ChangesIndicator(used: changesUsed, total: changesTotal)
-
-            Text(changesInfoText)
-                .font(.caption)
-                .foregroundStyle(Color.gray)
-        }
-    }
-
-    private var changesInfoText: String {
-        let remaining = remainingChanges
-        switch remaining {
-        case 0: return "Žádná zbývající změna"
-        case 1: return "Zbývá 1 změna"
-        case 2, 3, 4: return "Zbývají \(remaining) změny"
-        default: return "Zbývá \(remaining) změn"
-        }
+        .animation(.easeInOut(duration: 0.2), value: hasSelection)
     }
 
     // MARK: - Footer
 
     private var footer: some View {
-        VStack(spacing: 12) {
-            SaveAsMyAppsToggle(isOn: $saveAsMyApps)
-
+        VStack(spacing: Layout.footerSpacing) {
             saveButton
+
+            if hadSavedSelection {
+                Button(role: .destructive) {
+                    showDeleteConfirmation = true
+                } label: {
+                    Text("Smazat uložený výběr")
+                        .font(.subheadline.weight(.medium))
+                }
+            }
         }
         .padding(.horizontal, Layout.footerPadding)
         .padding(.vertical, Layout.footerPadding)
@@ -159,16 +127,17 @@ struct EditLimitedSourcesSheet: View {
 
     private var saveButton: some View {
         Button {
-            showConfirmation = true
+            SharedDefaults.saveMyAppsSelection(editSelection)
+            dismiss()
         } label: {
-            Text("Uložit změny")
+            Text("Uložit")
                 .frame(maxWidth: .infinity)
         }
         .buttonStyle(.borderedProminent)
         .controlSize(.large)
         .buttonBorderShape(.capsule)
         .tint(.blue)
-        .disabled(!hasEditSelection)
+        .disabled(!hasSelection)
     }
 
     @ViewBuilder
@@ -177,37 +146,13 @@ struct EditLimitedSourcesSheet: View {
             .fill(.ultraThinMaterial)
             .ignoresSafeArea(edges: .bottom)
     }
-
-    // MARK: - Helpers
-
-    private func remainingChangesText(after count: Int) -> String {
-        switch count {
-        case 0: "nezbývá žádná další změna"
-        case 1: "zbývá 1 změna"
-        case 2, 3, 4: "zbývají \(count) změny"
-        default: "zbývá \(count) změn"
-        }
-    }
 }
 
 #if DEBUG
-#Preview("Fresh - 0 changes used") {
+#Preview {
     Color.clear
         .sheet(isPresented: .constant(true)) {
-            EditLimitedSourcesSheet(
-                changesUsed: 0,
-                changesTotal: 3
-            ) { _ in }
-        }
-}
-
-#Preview("2 changes used") {
-    Color.clear
-        .sheet(isPresented: .constant(true)) {
-            EditLimitedSourcesSheet(
-                changesUsed: 2,
-                changesTotal: 3
-            ) { _ in }
+            MyAppsSheet()
         }
 }
 #endif

@@ -82,6 +82,7 @@ enum DefaultsKeys {
     static let categoryTokens = "categoryTokens"
     static let webDomainTokens = "webDomainTokens"
     static let familyActivitySelection = "familyActivitySelection"
+    static let myAppsSelection = "myAppsSelection"
 
     // MARK: - Limit Settings
 

@@ -68,4 +68,29 @@ extension SharedDefaults {
         }
         return try? PropertyListDecoder().decode(FamilyActivitySelection.self, from: data)
     }
+
+    // MARK: - My Apps Selection ("Moje aplikace")
+
+    /// Saves the user's "Moje aplikace" preset for quick reuse in pet creation.
+    static func saveMyAppsSelection(_ selection: FamilyActivitySelection) {
+        defaults?.set(try? PropertyListEncoder().encode(selection), forKey: DefaultsKeys.myAppsSelection)
+    }
+
+    /// Loads the stored "Moje aplikace" preset.
+    static func loadMyAppsSelection() -> FamilyActivitySelection? {
+        guard let data = defaults?.data(forKey: DefaultsKeys.myAppsSelection) else {
+            return nil
+        }
+        return try? PropertyListDecoder().decode(FamilyActivitySelection.self, from: data)
+    }
+
+    /// Clears the stored "Moje aplikace" preset.
+    static func clearMyAppsSelection() {
+        defaults?.removeObject(forKey: DefaultsKeys.myAppsSelection)
+    }
+
+    /// Whether the user has a saved "Moje aplikace" preset.
+    static var hasMyAppsSelection: Bool {
+        defaults?.data(forKey: DefaultsKeys.myAppsSelection) != nil
+    }
 }
