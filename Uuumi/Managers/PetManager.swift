@@ -68,6 +68,7 @@ final class PetManager {
         )
         pet = newPet
         saveActivePet()
+        ScheduledNotificationManager.refresh(isEvolutionAvailable: false, hasPet: true)
         return newPet
     }
 
@@ -89,6 +90,7 @@ final class PetManager {
         guard currentPet.daysSinceCreation >= Self.minimumArchiveDays else {
             pet = nil
             saveActivePet()
+            ScheduledNotificationManager.cancelAll()
 
             // Remove from cloud (too young to archive)
             Task { [syncManager] in
@@ -104,6 +106,7 @@ final class PetManager {
         archivedPetManager.archive(currentPet, reason: reason)
         pet = nil
         saveActivePet()
+        ScheduledNotificationManager.cancelAll()
 
         // Sync archived pet to cloud + delete active pet row
         Task { [syncManager, archivedPetManager] in
@@ -215,6 +218,7 @@ final class PetManager {
 
         pet = nil
         saveActivePet()
+        ScheduledNotificationManager.cancelAll()
 
         // Remove from cloud
         Task { [syncManager] in
@@ -319,6 +323,7 @@ final class PetManager {
 
         self.pet = nil
         saveActivePet()
+        ScheduledNotificationManager.cancelAll()
 
         #if DEBUG
         print("[PetManager] Local pet cleared on sign out: \(pet.name)")
@@ -339,6 +344,7 @@ final class PetManager {
 
         self.pet = nil
         saveActivePet()
+        ScheduledNotificationManager.cancelAll()
 
         #if DEBUG
         print("[PetManager] Local pet cleared for conflict resolution: \(pet.name)")
@@ -365,6 +371,10 @@ final class PetManager {
 
         pet = restoredPet
         saveActivePet()
+        ScheduledNotificationManager.refresh(
+            isEvolutionAvailable: restoredPet.isEvolutionAvailable,
+            hasPet: true
+        )
 
         // Detect token validity based on authorization status
         if AuthorizationCenter.shared.authorizationStatus == .approved {

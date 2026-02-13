@@ -40,6 +40,7 @@ enum LogCategories {
 enum DeepLinks {
     static let shield = "uuumi://shield"
     static let home = "uuumi://home"
+    static let dailySummary = "uuumi://dailySummary"
     static let presetPicker = "uuumi://preset-picker"
 
     /// Creates a pet-specific deep link

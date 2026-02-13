@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct NotificationSettingsScreen: View {
+    @Environment(PetManager.self) private var petManager
     @State private var limitSettings = SharedDefaults.limitSettings
 
     private var notifications: Binding<NotificationSettings> {
@@ -80,31 +81,86 @@ struct NotificationSettingsScreen: View {
 
             // MARK: - Summaries
 
-            // TODO: Implement daily summary scheduling (evening local notification with screen time stats)
             Section {
                 SettingsRow(
                     title: "Denní souhrn",
-                    description: "Večerní přehled screen time a stavu mazlíčka.",
+                    description: "Přehled screen time a stavu Uuumi.",
                     isOn: notifications.dailySummary,
                     disabled: disabled
                 )
+
+                if limitSettings.notifications.dailySummary {
+                    DatePicker(
+                        "Čas",
+                        selection: dailySummaryTimeBinding,
+                        displayedComponents: .hourAndMinute
+                    )
+                    .disabled(disabled)
+                }
             }
 
-            // TODO: Implement evolution ready scheduling (morning notification if pet can evolve and hasn't yet)
             Section {
                 SettingsRow(
                     title: "Evoluce připravena",
-                    description: "Ranní oznámení, když mazlíček může evolvovat.",
+                    description: "Oznámení, když Uuumi může evolvovat.",
                     isOn: notifications.evolutionReady,
                     disabled: disabled
                 )
+
+                if limitSettings.notifications.evolutionReady {
+                    DatePicker(
+                        "Čas",
+                        selection: evolutionReadyTimeBinding,
+                        displayedComponents: .hourAndMinute
+                    )
+                    .disabled(disabled)
+                }
             }
         }
         .navigationTitle("Notifikace")
         .navigationBarTitleDisplayMode(.inline)
         .onChange(of: limitSettings) { _, newValue in
             SharedDefaults.limitSettings = newValue
+
+            ScheduledNotificationManager.refresh(
+                isEvolutionAvailable: petManager.currentPet?.isEvolutionAvailable ?? false,
+                hasPet: petManager.hasPet
+            )
         }
+    }
+
+    // MARK: - Time Bindings
+
+    private var dailySummaryTimeBinding: Binding<Date> {
+        Binding(
+            get: {
+                Calendar.current.date(from: DateComponents(
+                    hour: limitSettings.notifications.dailySummaryHour,
+                    minute: limitSettings.notifications.dailySummaryMinute
+                )) ?? Date()
+            },
+            set: { newDate in
+                let components = Calendar.current.dateComponents([.hour, .minute], from: newDate)
+                limitSettings.notifications.dailySummaryHour = components.hour ?? 20
+                limitSettings.notifications.dailySummaryMinute = components.minute ?? 0
+            }
+        )
+    }
+
+    private var evolutionReadyTimeBinding: Binding<Date> {
+        Binding(
+            get: {
+                Calendar.current.date(from: DateComponents(
+                    hour: limitSettings.notifications.evolutionReadyHour,
+                    minute: limitSettings.notifications.evolutionReadyMinute
+                )) ?? Date()
+            },
+            set: { newDate in
+                let components = Calendar.current.dateComponents([.hour, .minute], from: newDate)
+                limitSettings.notifications.evolutionReadyHour = components.hour ?? 8
+                limitSettings.notifications.evolutionReadyMinute = components.minute ?? 0
+            }
+        )
     }
 }
 
@@ -112,4 +168,5 @@ struct NotificationSettingsScreen: View {
     NavigationStack {
         NotificationSettingsScreen()
     }
+    .environment(PetManager.mock())
 }

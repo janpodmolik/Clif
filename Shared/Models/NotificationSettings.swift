@@ -36,6 +36,13 @@ struct NotificationSettings: Codable, Equatable {
     var dailySummary: Bool = true
     var evolutionReady: Bool = true
 
+    // MARK: - Schedule Times
+
+    var dailySummaryHour: Int = 20
+    var dailySummaryMinute: Int = 0
+    var evolutionReadyHour: Int = 8
+    var evolutionReadyMinute: Int = 0
+
     // MARK: - Codable
 
     init() {}
@@ -51,6 +58,10 @@ struct NotificationSettings: Codable, Equatable {
         windReminder = try container.decodeIfPresent(Bool.self, forKey: .windReminder) ?? true
         dailySummary = try container.decodeIfPresent(Bool.self, forKey: .dailySummary) ?? true
         evolutionReady = try container.decodeIfPresent(Bool.self, forKey: .evolutionReady) ?? true
+        dailySummaryHour = try container.decodeIfPresent(Int.self, forKey: .dailySummaryHour) ?? 20
+        dailySummaryMinute = try container.decodeIfPresent(Int.self, forKey: .dailySummaryMinute) ?? 0
+        evolutionReadyHour = try container.decodeIfPresent(Int.self, forKey: .evolutionReadyHour) ?? 8
+        evolutionReadyMinute = try container.decodeIfPresent(Int.self, forKey: .evolutionReadyMinute) ?? 0
     }
 
     // MARK: - Defaults
@@ -78,6 +89,14 @@ struct NotificationSettings: Codable, Equatable {
 
     func shouldSendWindReminder() -> Bool {
         masterEnabled && windReminder
+    }
+
+    func shouldSendDailySummary() -> Bool {
+        masterEnabled && dailySummary
+    }
+
+    func shouldSendEvolutionReady() -> Bool {
+        masterEnabled && evolutionReady
     }
 
     // MARK: - Migration

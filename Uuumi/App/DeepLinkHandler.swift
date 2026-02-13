@@ -64,6 +64,12 @@ private enum DeepLinkHandler {
             #endif
             NotificationCenter.default.post(name: .showPresetPicker, object: nil)
 
+        case "dailySummary":
+            #if DEBUG
+            print("[DeepLink] Navigate to daily summary")
+            #endif
+            NotificationCenter.default.post(name: .showDailySummary, object: nil)
+
         case "home":
             #if DEBUG
             print("[DeepLink] Navigate to home")
@@ -88,6 +94,7 @@ extension Notification.Name {
     static let showPresetPicker = Notification.Name("showPresetPicker")
     static let showEssenceCatalog = Notification.Name("showEssenceCatalog")
     static let showBreakTypePicker = Notification.Name("showBreakTypePicker")
+    static let showDailySummary = Notification.Name("showDailySummary")
     #if DEBUG
     static let showMockSheet = Notification.Name("showMockSheet")
     #endif

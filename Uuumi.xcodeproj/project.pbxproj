@@ -152,6 +152,21 @@
 		B4WIND0042F40A0000000004 /* WindReminderNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4WIND0012F40A0000000001 /* WindReminderNotification.swift */; };
 		B4WIND0052F40A0000000005 /* WindReminderNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4WIND0012F40A0000000001 /* WindReminderNotification.swift */; };
 		B4WIND0062F40A0000000006 /* WindReminderNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4WIND0012F40A0000000001 /* WindReminderNotification.swift */; };
+		B4DSN00022F50A0000000002 /* DailySummaryNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4DSN00012F50A0000000001 /* DailySummaryNotification.swift */; };
+		B4DSN00032F50A0000000003 /* DailySummaryNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4DSN00012F50A0000000001 /* DailySummaryNotification.swift */; };
+		B4DSN00042F50A0000000004 /* DailySummaryNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4DSN00012F50A0000000001 /* DailySummaryNotification.swift */; };
+		B4DSN00052F50A0000000005 /* DailySummaryNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4DSN00012F50A0000000001 /* DailySummaryNotification.swift */; };
+		B4DSN00062F50A0000000006 /* DailySummaryNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4DSN00012F50A0000000001 /* DailySummaryNotification.swift */; };
+		B4ERN00022F50A0000000002 /* EvolutionReadyNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4ERN00012F50A0000000001 /* EvolutionReadyNotification.swift */; };
+		B4ERN00032F50A0000000003 /* EvolutionReadyNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4ERN00012F50A0000000001 /* EvolutionReadyNotification.swift */; };
+		B4ERN00042F50A0000000004 /* EvolutionReadyNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4ERN00012F50A0000000001 /* EvolutionReadyNotification.swift */; };
+		B4ERN00052F50A0000000005 /* EvolutionReadyNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4ERN00012F50A0000000001 /* EvolutionReadyNotification.swift */; };
+		B4ERN00062F50A0000000006 /* EvolutionReadyNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4ERN00012F50A0000000001 /* EvolutionReadyNotification.swift */; };
+		B4SNM00022F50A0000000002 /* ScheduledNotificationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4SNM00012F50A0000000001 /* ScheduledNotificationManager.swift */; };
+		B4SNM00032F50A0000000003 /* ScheduledNotificationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4SNM00012F50A0000000001 /* ScheduledNotificationManager.swift */; };
+		B4SNM00042F50A0000000004 /* ScheduledNotificationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4SNM00012F50A0000000001 /* ScheduledNotificationManager.swift */; };
+		B4SNM00052F50A0000000005 /* ScheduledNotificationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4SNM00012F50A0000000001 /* ScheduledNotificationManager.swift */; };
+		B4SNM00062F50A0000000006 /* ScheduledNotificationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4SNM00012F50A0000000001 /* ScheduledNotificationManager.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -263,6 +278,9 @@
 		B4HA00012F40000100AA0001 /* HourlyAggregate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HourlyAggregate.swift; sourceTree = "<group>"; };
 		B4HA00112F40000100BB0001 /* SharedDefaults+HourlyAggregate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SharedDefaults+HourlyAggregate.swift"; sourceTree = "<group>"; };
 		B4WIND0012F40A0000000001 /* WindReminderNotification.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindReminderNotification.swift; sourceTree = "<group>"; };
+		B4DSN00012F50A0000000001 /* DailySummaryNotification.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailySummaryNotification.swift; sourceTree = "<group>"; };
+		B4ERN00012F50A0000000001 /* EvolutionReadyNotification.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EvolutionReadyNotification.swift; sourceTree = "<group>"; };
+		B4SNM00012F50A0000000001 /* ScheduledNotificationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScheduledNotificationManager.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -491,6 +509,9 @@
 				B4153D402F2741A40006FEE3 /* WindNotification.swift */,
 				B4F939782F2C9D340012773D /* BreakNotification.swift */,
 				B4WIND0012F40A0000000001 /* WindReminderNotification.swift */,
+				B4DSN00012F50A0000000001 /* DailySummaryNotification.swift */,
+				B4ERN00012F50A0000000001 /* EvolutionReadyNotification.swift */,
+				B4SNM00012F50A0000000001 /* ScheduledNotificationManager.swift */,
 			);
 			path = Notifications;
 			sourceTree = "<group>";
@@ -791,6 +812,9 @@
 				B451D3832F26856C004C534F /* SharedDefaults+Wind.swift in Sources */,
 				B4F9397C2F2C9D340012773D /* BreakNotification.swift in Sources */,
 				B4WIND0022F40A0000000002 /* WindReminderNotification.swift in Sources */,
+				B4DSN00022F50A0000000002 /* DailySummaryNotification.swift in Sources */,
+				B4ERN00022F50A0000000002 /* EvolutionReadyNotification.swift in Sources */,
+				B4SNM00022F50A0000000002 /* ScheduledNotificationManager.swift in Sources */,
 				B4167E5D2F1FE73400D89B36 /* SnapshotEventType.swift in Sources */,
 				B4167E5F2F1FEF4E00D89B36 /* SnapshotStore.swift in Sources */,
 				B4167E652F1FF93800D89B36 /* SnapshotLogging.swift in Sources */,
@@ -842,6 +866,9 @@
 				B451D3872F26856C004C534F /* SharedDefaults+Tokens.swift in Sources */,
 				B4F9397D2F2C9D340012773D /* BreakNotification.swift in Sources */,
 				B4WIND0032F40A0000000003 /* WindReminderNotification.swift in Sources */,
+				B4DSN00032F50A0000000003 /* DailySummaryNotification.swift in Sources */,
+				B4ERN00032F50A0000000003 /* EvolutionReadyNotification.swift in Sources */,
+				B4SNM00032F50A0000000003 /* ScheduledNotificationManager.swift in Sources */,
 				B451D3882F26856C004C534F /* SharedDefaults+Wind.swift in Sources */,
 				B472FD5F2F354AAE00C109AA /* CoinRewards.swift in Sources */,
 			);
@@ -871,6 +898,9 @@
 				B4167E5C2F1FE73400D89B36 /* SnapshotEventType.swift in Sources */,
 				B4F939792F2C9D340012773D /* BreakNotification.swift in Sources */,
 				B4WIND0042F40A0000000004 /* WindReminderNotification.swift in Sources */,
+				B4DSN00042F50A0000000004 /* DailySummaryNotification.swift in Sources */,
+				B4ERN00042F50A0000000004 /* EvolutionReadyNotification.swift in Sources */,
+				B4SNM00042F50A0000000004 /* ScheduledNotificationManager.swift in Sources */,
 				B4167E602F1FEF4E00D89B36 /* SnapshotStore.swift in Sources */,
 				B472FD612F354AAE00C109AA /* CoinRewards.swift in Sources */,
 			);
@@ -884,6 +914,9 @@
 				B493879B2F0E428B0090C730 /* WindLevel.swift in Sources */,
 				B4F9397B2F2C9D340012773D /* BreakNotification.swift in Sources */,
 				B4WIND0052F40A0000000005 /* WindReminderNotification.swift in Sources */,
+				B4DSN00052F50A0000000005 /* DailySummaryNotification.swift in Sources */,
+				B4ERN00052F50A0000000005 /* EvolutionReadyNotification.swift in Sources */,
+				B4SNM00052F50A0000000005 /* ScheduledNotificationManager.swift in Sources */,
 				B472FD5A2F3549D100C109AA /* SharedDefaults+Coins.swift in Sources */,
 				B4HA00052F40000100AA0005 /* HourlyAggregate.swift in Sources */,
 				B4HA00152F40000100BB0005 /* SharedDefaults+HourlyAggregate.swift in Sources */,
@@ -934,6 +967,9 @@
 				B4167E622F1FF91800D89B36 /* SnapshotEvent.swift in Sources */,
 				B4F9397A2F2C9D340012773D /* BreakNotification.swift in Sources */,
 				B4WIND0062F40A0000000006 /* WindReminderNotification.swift in Sources */,
+				B4DSN00062F50A0000000006 /* DailySummaryNotification.swift in Sources */,
+				B4ERN00062F50A0000000006 /* EvolutionReadyNotification.swift in Sources */,
+				B4SNM00062F50A0000000006 /* ScheduledNotificationManager.swift in Sources */,
 				B4167E632F1FF92500D89B36 /* SnapshotStore.swift in Sources */,
 				B472FD622F354AAE00C109AA /* CoinRewards.swift in Sources */,
 			);

@@ -83,6 +83,7 @@ struct MainApp: App {
             archivedPetManager.clearOnSignOut()
             essenceCatalogManager.clearOnSignOut()
             syncManager.clearOnSignOut()
+            ScheduledNotificationManager.cancelAll()
 
         case .loading:
             break
@@ -107,6 +108,12 @@ struct MainApp: App {
             petManager.performDailyResetIfNeeded()
             petManager.checkBlowAwayState()
             petManager.refreshDailyStats()
+
+            // Refresh scheduled notifications (daily summary + evolution ready)
+            ScheduledNotificationManager.refresh(
+                isEvolutionAvailable: petManager.currentPet?.isEvolutionAvailable ?? false,
+                hasPet: petManager.hasPet
+            )
 
             // Sync active pet + settings to cloud (debounced)
             Task {

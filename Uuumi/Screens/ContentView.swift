@@ -46,6 +46,7 @@ struct ContentView: View {
     @State private var createPetCoordinator = CreatePetCoordinator()
     @State private var coinsAnimator = CoinsRewardAnimator()
     @State private var showMockSheet = false
+    @State private var showDailySummarySheet = false
 
     @Environment(\.scenePhase) private var scenePhase
 
@@ -122,6 +123,11 @@ struct ContentView: View {
         .onReceive(NotificationCenter.default.publisher(for: .showBreakTypePicker)) { _ in
             showBreakTypePicker = true
         }
+        .onReceive(NotificationCenter.default.publisher(for: .showDailySummary)) { _ in
+            guard petManager.currentPet != nil else { return }
+            activeTab = .home
+            showDailySummarySheet = true
+        }
         #if DEBUG
         .onReceive(NotificationCenter.default.publisher(for: .showMockSheet)) { _ in
             showMockSheet = true
@@ -148,6 +154,24 @@ struct ContentView: View {
                     startBreak(type: .committed, durationMinutes: durationMinutes)
                 }
             )
+        }
+        .sheet(isPresented: $showDailySummarySheet) {
+            if let pet = petManager.currentPet {
+                let today = pet.dailyStats.first {
+                    Calendar.current.isDateInToday($0.date)
+                } ?? DailyUsageStat(
+                    petId: pet.id,
+                    date: Date(),
+                    totalMinutes: 0,
+                    preset: pet.preset
+                )
+                DayDetailSheet(
+                    day: today,
+                    petId: pet.id,
+                    limitMinutes: Int(pet.preset.minutesToBlowAway),
+                    hourlyBreakdown: nil
+                )
+            }
         }
         .unlockConfirmations(showCommitted: $showCommittedUnlock, showSafety: $showSafetyUnlock)
         .onChange(of: activeTab) {
