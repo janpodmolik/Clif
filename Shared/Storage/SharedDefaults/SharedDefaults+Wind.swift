@@ -105,6 +105,26 @@ extension SharedDefaults {
         set { defaults?.set(newValue, forKey: DefaultsKeys.lastKnownWindLevel) }
     }
 
+    /// Timestamp of last monitoring restart (for debouncing ensureMonitoringActive).
+    static var lastMonitoringRestart: Date? {
+        get { defaults?.object(forKey: DefaultsKeys.lastMonitoringRestart) as? Date }
+        set { defaults?.set(newValue, forKey: DefaultsKeys.lastMonitoringRestart) }
+    }
+
+    /// Timestamp of last processed threshold event (for burst detection in extension).
+    /// Uses fresh UserDefaults instance for cross-process sync.
+    static var lastThresholdTimestamp: Date? {
+        get {
+            let fresh = UserDefaults(suiteName: AppConstants.appGroupIdentifier)
+            fresh?.synchronize()
+            return fresh?.object(forKey: DefaultsKeys.lastThresholdTimestamp) as? Date
+        }
+        set {
+            defaults?.set(newValue, forKey: DefaultsKeys.lastThresholdTimestamp)
+            defaults?.synchronize()
+        }
+    }
+
     // MARK: - Wind Helpers
 
     /// Resets all wind-related values for a new monitoring session.
@@ -114,6 +134,7 @@ extension SharedDefaults {
         totalBreakReduction = 0
         cumulativeBaseline = 0
         lastKnownWindLevel = 0
+        lastThresholdTimestamp = nil
         synchronize()
     }
 

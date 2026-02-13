@@ -56,6 +56,10 @@ final class PetManager {
     ) -> Pet? {
         guard pet == nil else { return nil }
 
+        // Ensure clean wind state for new pet
+        SharedDefaults.resetWindState()
+        SharedDefaults.windPresetLockedForToday = false
+
         let newPet = Pet(
             name: name,
             evolutionHistory: EvolutionHistory(),
@@ -448,6 +452,7 @@ final class PetManager {
     /// Re-registers monitoring thresholds on foreground return.
     /// Uses restartMonitoring (no flag resets) to ensure thresholds are fresh
     /// even if another Family Controls app disrupted monitoring in the background.
+    /// Debounced: skips if last restart was within 60 seconds.
     func ensureMonitoringActive() {
         guard let pet = pet,
               !pet.isBlownAway,
@@ -457,6 +462,19 @@ final class PetManager {
             return
         }
 
+        // If monitoring is already running, skip restart.
+        // Unnecessary restarts cause iOS to deliver stale threshold bursts
+        // (double-counting usage → phantom wind spikes).
+        guard !ScreenTimeManager.shared.isMonitoringActive(for: pet.id) else {
+            return
+        }
+
+        if let lastRestart = SharedDefaults.lastMonitoringRestart,
+           Date().timeIntervalSince(lastRestart) < 60 {
+            return
+        }
+
+        SharedDefaults.lastMonitoringRestart = Date()
         ScreenTimeManager.shared.restartMonitoring()
     }
 

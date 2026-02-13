@@ -30,7 +30,7 @@ Uuumi je screen time management app s virtuálním mazlíčkem (pet). Pet žije 
 
 ## Common Commands
 
-- Build: `xcodebuild -scheme Uuumi -destination 'platform=iOS Simulator'`
+- Build: Use `/build` skill. **Never build automatically** — only when the user explicitly asks via `/build`.
 - Run: Open in Xcode, Cmd+R
 
 ## Dependencies

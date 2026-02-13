@@ -117,6 +117,11 @@ enum DefaultsKeys {
     // MARK: - Cumulative Tracking
 
     static let cumulativeBaseline = "cumulativeBaseline"
+    static let lastThresholdTimestamp = "lastThresholdTimestamp"
+
+    // MARK: - Monitoring Debounce
+
+    static let lastMonitoringRestart = "lastMonitoringRestart"
 
     // MARK: - Daily Reset
 

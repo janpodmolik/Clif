@@ -89,13 +89,30 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
 
             guard let currentSeconds = parseSecondsFromEvent(event) else { return }
 
-            ExtensionLogger.log("[Extension] current=\(currentSeconds)s")
+            // Guard against out-of-order threshold bursts: only process if this threshold
+            // is higher than the last one we processed. When monitoring restarts, iOS may fire
+            // multiple thresholds simultaneously in non-deterministic order.
+            let lastProcessed = SharedDefaults.monitoredLastThresholdSeconds
+            guard currentSeconds > lastProcessed else {
+                ExtensionLogger.log("[Extension] Skipping out-of-order threshold: \(currentSeconds)s <= last \(lastProcessed)s")
+                return
+            }
 
-            SharedDefaults.monitoredLastThresholdSeconds = currentSeconds
+            // Burst detection: if reported usage increase far exceeds wall-clock time,
+            // iOS delivered stale accumulated data after a monitoring restart.
+            let adjustedSeconds = validateThresholdAgainstWallClock(
+                currentSeconds: currentSeconds,
+                lastProcessedSeconds: lastProcessed
+            )
+
+            ExtensionLogger.log("[Extension] current=\(adjustedSeconds)s")
+
+            SharedDefaults.monitoredLastThresholdSeconds = adjustedSeconds
+            SharedDefaults.lastThresholdTimestamp = Date()
 
             guard shouldProcessThreshold() else { return }
 
-            processThresholdEvent(currentSeconds: currentSeconds)
+            processThresholdEvent(currentSeconds: adjustedSeconds)
         }
     }
 
@@ -130,6 +147,44 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
             return nil
         }
         return seconds
+    }
+
+    /// Validates a threshold against wall-clock time to detect iOS burst delivery.
+    /// After a monitoring restart, iOS may deliver stale accumulated usage as a burst
+    /// (e.g., 720s of "current" reported within 1 second). This causes double-counting
+    /// because the baseline already contains the real usage.
+    ///
+    /// Returns adjusted seconds if burst is detected, or original value if legitimate.
+    private func validateThresholdAgainstWallClock(
+        currentSeconds: Int,
+        lastProcessedSeconds: Int
+    ) -> Int {
+        guard let lastTimestamp = SharedDefaults.lastThresholdTimestamp else {
+            // First threshold — no baseline to compare, accept as-is
+            return currentSeconds
+        }
+
+        let wallClockElapsed = Date().timeIntervalSince(lastTimestamp)
+        let reportedIncrease = currentSeconds - lastProcessedSeconds
+
+        guard reportedIncrease > 0, wallClockElapsed > 0 else {
+            return currentSeconds
+        }
+
+        // If reported increase is more than 2x the wall-clock elapsed time,
+        // this is a burst from stale data. Cap to wall-clock elapsed.
+        let ratio = Double(reportedIncrease) / wallClockElapsed
+
+        if ratio > 2.0 {
+            let cappedIncrease = Int(wallClockElapsed)
+            let adjusted = lastProcessedSeconds + cappedIncrease
+
+            ExtensionLogger.log("[Extension] BURST DETECTED: reported +\(reportedIncrease)s in \(Int(wallClockElapsed))s (ratio=\(String(format: "%.1f", ratio))x). Capping to +\(cappedIncrease)s → \(adjusted)s")
+
+            return adjusted
+        }
+
+        return currentSeconds
     }
 
     private func shouldProcessThreshold() -> Bool {

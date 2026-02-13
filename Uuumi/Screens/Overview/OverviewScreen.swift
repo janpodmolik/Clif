@@ -288,8 +288,10 @@ private struct OverviewBackground: View {
     }
 }
 
+#if DEBUG
 #Preview {
     OverviewScreen(hourlyAggregate: .mock())
         .environment(PetManager.mock())
         .environment(ArchivedPetManager.mock())
 }
+#endif

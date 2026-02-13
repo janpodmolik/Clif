@@ -80,6 +80,14 @@ final class ScreenTimeManager: ObservableObject {
     /// - Clears any existing shields
     /// - Restarts monitoring with new preset parameters
     func applyDailyPreset(_ preset: WindPreset, for pet: Pet) {
+        // If preset is already locked for today, skip — re-applying would zero the baseline
+        guard !SharedDefaults.windPresetLockedForToday else {
+            #if DEBUG
+            print("[ScreenTimeManager] applyDailyPreset: preset already locked for today, skipping")
+            #endif
+            return
+        }
+
         // Save selected preset
         SharedDefaults.todaySelectedPreset = preset.rawValue
         SharedDefaults.windPresetLockedForToday = true
@@ -208,6 +216,13 @@ final class ScreenTimeManager: ObservableObject {
         )
     }
 
+    /// Checks if monitoring is currently active for a specific pet.
+    /// Used to avoid unnecessary restarts that cause iOS threshold burst bugs.
+    func isMonitoringActive(for petId: UUID) -> Bool {
+        let activityName = DeviceActivityName.forPet(petId)
+        return center.activities.contains(activityName)
+    }
+
     /// Stops current monitoring. Call when shield/break starts.
     func stopMonitoring() {
         let existingActivities = center.activities
@@ -238,10 +253,12 @@ final class ScreenTimeManager: ObservableObject {
         // Clear active tokens
         SharedDefaults.clearActiveTokens()
 
-        // Clear monitoring context and shield flags
+        // Clear monitoring context, shield flags, wind state, and preset lock
         SharedDefaults.monitoredPetId = nil
         SharedDefaults.monitoredPetName = nil
         SharedDefaults.resetShieldFlags()
+        SharedDefaults.resetWindState()
+        SharedDefaults.windPresetLockedForToday = false
 
         #if DEBUG
         print("[ScreenTimeManager] stopMonitoringAndClear")
