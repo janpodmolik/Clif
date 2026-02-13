@@ -100,10 +100,12 @@ struct PetDetailScreen: View {
                         TrendMiniChart(stats: pet.fullStats)
                     }
 
-                    LimitedAppsButton(
-                        sources: pet.limitedSources,
-                        onTap: { showLimitedApps = true }
-                    )
+                    if !pet.isBlown {
+                        LimitedAppsButton(
+                            sources: pet.limitedSources,
+                            onTap: { showLimitedApps = true }
+                        )
+                    }
 
                     if showOverviewActions {
                         ArchivedPetActionsCard(
