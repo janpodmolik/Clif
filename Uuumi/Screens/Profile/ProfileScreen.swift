@@ -129,6 +129,8 @@ struct ProfileScreen: View {
                 }
 
             }
+            .scrollContentBackground(.hidden)
+            .background(ThemeRadialBackground())
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
@@ -207,7 +209,7 @@ struct ProfileScreen: View {
                                 .foregroundStyle(.secondary)
                         }
                     } else {
-                        Text("Přihlásit se")
+                        Text("Přihlásit se / Registrovat se")
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
                     }

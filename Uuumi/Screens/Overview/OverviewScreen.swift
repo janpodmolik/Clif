@@ -55,7 +55,7 @@ struct OverviewScreen: View {
             .padding(.top, 20)
             .padding(.bottom, 32)
         }
-        .background(OverviewBackground())
+        .background(ThemeRadialBackground())
         .task {
             archivedPetManager.loadSummariesIfNeeded()
             await loadHourlyAggregate()
@@ -261,29 +261,6 @@ struct OverviewScreen: View {
             }
         case .blowAway, .replay, .delete, .progress, .breakHistory, .archive:
             break // TODO: Implement remaining actions
-        }
-    }
-}
-
-private struct OverviewBackground: View {
-    @Environment(\.colorScheme) private var colorScheme
-
-    var body: some View {
-        ZStack {
-            if colorScheme == .dark {
-                Color.black.ignoresSafeArea()
-            } else {
-                LinearGradient(
-                    colors: [
-                        Color.green.opacity(0.08),
-                        Color.blue.opacity(0.05),
-                        Color(uiColor: .systemBackground)
-                    ],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                )
-                .ignoresSafeArea()
-            }
         }
     }
 }
