@@ -11,11 +11,6 @@ enum WindNotification: Int, CaseIterable, Codable, Hashable {
     /// All threshold values as percentages.
     static let thresholds: [Int] = allCases.map(\.rawValue)
 
-    /// All notifications are configurable in settings.
-    static var configurableNotifications: [WindNotification] {
-        allCases
-    }
-
     var percentage: Int { rawValue }
 
     var title: String {
@@ -35,18 +30,6 @@ enum WindNotification: Int, CaseIterable, Codable, Hashable {
         case .critical:
             return "HALOOO?! Začíná to tu bejt dost nebezpečný, pomoc prosím!"
         }
-    }
-
-    var settingsTitle: String {
-        switch self {
-        case .light: return "Lehký vítr (25%)"
-        case .strong: return "Silný vítr (60%)"
-        case .critical: return "Kritický vítr (85%)"
-        }
-    }
-
-    var settingsPreview: String {
-        return "\"\(body.prefix(40))...\""
     }
 
     var color: Color {

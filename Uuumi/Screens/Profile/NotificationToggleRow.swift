@@ -7,17 +7,21 @@ struct NotificationToggleRow: View {
     var disabled: Bool = false
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Toggle(title, isOn: $isOn)
-                .tint(.blue)
+        Toggle(isOn: $isOn) {
+            VStack(alignment: .leading, spacing: 8) {
+                Text(title)
+                    .font(.body.weight(.semibold))
 
-            if let description {
-                Text(description)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                    .fixedSize(horizontal: false, vertical: true)
+                if let description {
+                    Text(description)
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
             }
         }
+        .tint(.blue)
+        .padding(.vertical, 8)
         .opacity(disabled ? 0.4 : 1.0)
         .disabled(disabled)
     }

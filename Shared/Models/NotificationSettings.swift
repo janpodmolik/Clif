@@ -15,6 +15,11 @@ struct NotificationSettings: Codable, Equatable {
     var windStrong: Bool = true      // 60%
     var windCritical: Bool = true    // 85%
 
+    /// Whether any wind threshold notification is enabled.
+    var anyWindEnabled: Bool {
+        windLight || windStrong || windCritical
+    }
+
     // MARK: - Break Notifications
 
     var breakCommittedEnded: Bool = true

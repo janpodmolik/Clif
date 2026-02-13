@@ -13,70 +13,78 @@ struct NotificationSettingsScreen: View {
 
     var body: some View {
         Form {
-            // MARK: - Master Toggle
             Section {
                 Toggle("Notifikace", isOn: notifications.masterEnabled)
                     .tint(.blue)
             }
 
-            // MARK: - Wind
-            Section(header: sectionHeader("Vítr")) {
+            // MARK: - Wind Alerts
+
+            Section {
                 NotificationToggleRow(
-                    title: WindNotification.light.settingsTitle,
-                    isOn: notifications.windLight,
+                    title: "Upozornění na vítr",
+                    description: "Oznámení při dosažení prahů větru.",
+                    isOn: Binding(
+                        get: { limitSettings.notifications.anyWindEnabled },
+                        set: { newValue in
+                            withAnimation(.easeInOut(duration: 0.2)) {
+                                limitSettings.notifications.windLight = newValue
+                                limitSettings.notifications.windStrong = newValue
+                                limitSettings.notifications.windCritical = newValue
+                            }
+                        }
+                    ),
                     disabled: disabled
                 )
 
-                NotificationToggleRow(
-                    title: WindNotification.strong.settingsTitle,
-                    isOn: notifications.windStrong,
-                    disabled: disabled
-                )
+                if limitSettings.notifications.anyWindEnabled {
+                    WindThresholdChips(notifications: notifications, disabled: disabled)
+                }
+            }
 
-                NotificationToggleRow(
-                    title: WindNotification.critical.settingsTitle,
-                    isOn: notifications.windCritical,
-                    disabled: disabled
-                )
-
+            Section {
                 NotificationToggleRow(
                     title: "Připomenutí vysokého větru",
-                    description: "Upozornění po 30 minutách vysokého větru bez aktivní pauzy.",
+                    description: "Po 30 minutách vysokého větru bez pauzy.",
                     isOn: notifications.windReminder,
                     disabled: disabled
                 )
             }
-            .headerProminence(.increased)
 
             // MARK: - Breaks
-            Section(header: sectionHeader("Pauzy")) {
+
+            Section {
                 NotificationToggleRow(
                     title: "Konec committed breaku",
                     description: "Oznámení po vypršení naplánovaného breaku.",
                     isOn: notifications.breakCommittedEnded,
                     disabled: disabled
                 )
+            }
 
+            Section {
                 NotificationToggleRow(
-                    title: "Vítr na 0%",
+                    title: "Vítr na 0% během pauzy",
                     description: "Oznámení, když vítr klesne na 0% během pauzy.",
                     isOn: notifications.breakWindZero,
                     disabled: disabled
                 )
             }
-            .headerProminence(.increased)
 
-            // MARK: - Summaries & Reminders
-            Section(header: sectionHeader("Ostatní")) {
-                // TODO: Implement daily summary scheduling (evening local notification with screen time stats)
+            // MARK: - Summaries
+
+            // TODO: Implement daily summary scheduling (evening local notification with screen time stats)
+            Section {
                 NotificationToggleRow(
                     title: "Denní souhrn",
                     description: "Večerní přehled screen time a stavu mazlíčka.",
                     isOn: notifications.dailySummary,
                     disabled: disabled
                 )
+            }
 
-                // TODO: Implement evolution ready scheduling (morning notification if pet can evolve and hasn't yet)
+            // TODO: Implement evolution ready scheduling (morning notification if pet can evolve and hasn't yet)
+            Section {
                 NotificationToggleRow(
                     title: "Evoluce připravena",
                     description: "Ranní oznámení, když mazlíček může evolvovat.",
@@ -84,7 +92,6 @@ struct NotificationSettingsScreen: View {
                     disabled: disabled
                 )
             }
-            .headerProminence(.increased)
         }
         .navigationTitle("Notifikace")
         .navigationBarTitleDisplayMode(.inline)
@@ -92,12 +99,47 @@ struct NotificationSettingsScreen: View {
             SharedDefaults.limitSettings = newValue
         }
     }
-    private func sectionHeader(_ title: String) -> some View {
-        Text(title)
-            .font(.title3.weight(.bold))
-            .foregroundStyle(.primary)
-            .textCase(nil)
+}
+
+// MARK: - Wind Threshold Chips
+
+private struct WindThresholdChips: View {
+    @Binding var notifications: NotificationSettings
+    let disabled: Bool
+
+    var body: some View {
+        HStack(spacing: 0) {
+            chip("25%", isOn: $notifications.windLight)
+            chip("60%", isOn: $notifications.windStrong)
+            chip("85%", isOn: $notifications.windCritical)
+        }
+        .fixedSize(horizontal: false, vertical: true)
+        .clipShape(RoundedRectangle(cornerRadius: 10))
+        .opacity(disabled ? 0.4 : 1.0)
+        .disabled(disabled)
     }
+
+    private func chip(_ label: String, isOn: Binding<Bool>) -> some View {
+        Button {
+            withAnimation(.easeInOut(duration: 0.15)) {
+                isOn.wrappedValue.toggle()
+            }
+        } label: {
+            HStack(spacing: 6) {
+                Image(systemName: isOn.wrappedValue ? "checkmark.circle.fill" : "circle")
+                    .foregroundStyle(isOn.wrappedValue ? .primary : .tertiary)
+                    .imageScale(.medium)
+                Text(label)
+            }
+            .font(.subheadline.weight(.medium))
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 10)
+            .foregroundStyle(isOn.wrappedValue ? .primary : .tertiary)
+            .background(isOn.wrappedValue ? Color(.tertiarySystemFill) : .clear)
+        }
+        .buttonStyle(.plain)
+    }
+
 }
 
 #Preview {
