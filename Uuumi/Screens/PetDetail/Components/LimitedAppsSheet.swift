@@ -9,7 +9,6 @@ struct LimitedAppsSheet: View {
     var changesUsed: Int?
     var changesTotal: Int?
     var activeBreakType: BreakType?
-    var windLevel: WindLevel = .none
     var onEdit: ((FamilyActivitySelection) -> Void)?
     var onEndFreeBreak: (() -> Void)?
 
@@ -18,10 +17,8 @@ struct LimitedAppsSheet: View {
     @State private var showBlockedAlert: BlockedReason?
 
     private enum BlockedReason: Identifiable {
-        case freeBreakCalm   // free break, wind == 0 -> can end break
-        case freeBreakWindy  // free break, wind > 0 -> wait for wind to drop
-        case otherBreak      // committed/safety break
-        case windNotCalm     // no break, wind > 0
+        case freeBreak   // free break -> can end break
+        case otherBreak  // committed/safety break
 
         var id: Self { self }
     }
@@ -52,20 +49,9 @@ struct LimitedAppsSheet: View {
     }
 
     private var blockedReason: BlockedReason? {
-        let isWindCalm = windLevel == .none
-
         if let breakType = activeBreakType {
-            if breakType == .free {
-                return isWindCalm ? .freeBreakCalm : .freeBreakWindy
-            } else {
-                return .otherBreak
-            }
+            return breakType == .free ? .freeBreak : .otherBreak
         }
-
-        if !isWindCalm {
-            return .windNotCalm
-        }
-
         return nil
     }
 
@@ -114,7 +100,7 @@ struct LimitedAppsSheet: View {
                 get: { showBlockedAlert != nil },
                 set: { if !$0 { showBlockedAlert = nil } }
             ), presenting: showBlockedAlert) { reason in
-                if case .freeBreakCalm = reason {
+                if case .freeBreak = reason {
                     Button("Ukončit pauzu", role: .destructive) {
                         onEndFreeBreak?()
                     }
@@ -122,14 +108,10 @@ struct LimitedAppsSheet: View {
                 Button("Rozumím", role: .cancel) {}
             } message: { reason in
                 switch reason {
-                case .freeBreakCalm:
+                case .freeBreak:
                     Text("Během aktivní pauzy nelze měnit sledované aplikace. Nejdřív ukonči pauzu.")
-                case .freeBreakWindy:
-                    Text("Změna je možná pouze při klidném větru (0%). Počkej, až ti vítr během pauzy klesne.")
                 case .otherBreak:
                     Text("Během aktivní pauzy nelze měnit sledované aplikace.")
-                case .windNotCalm:
-                    Text("Změna sledovaných aplikací je možná pouze při klidném větru (0%).")
                 }
             }
         }
@@ -312,37 +294,14 @@ private struct SourceRow: View {
     )
 }
 
-#Preview("Free Break - Wind Calm") {
+#Preview("Free Break") {
     LimitedAppsSheet(
         sources: LimitedSource.mockList(),
         changesUsed: 1,
         changesTotal: 3,
         activeBreakType: .free,
-        windLevel: .none,
         onEdit: { _ in },
         onEndFreeBreak: {}
-    )
-}
-
-#Preview("Free Break - Wind Not Calm") {
-    LimitedAppsSheet(
-        sources: LimitedSource.mockList(),
-        changesUsed: 1,
-        changesTotal: 3,
-        activeBreakType: .free,
-        windLevel: .medium,
-        onEdit: { _ in },
-        onEndFreeBreak: {}
-    )
-}
-
-#Preview("Wind Not Calm") {
-    LimitedAppsSheet(
-        sources: LimitedSource.mockList(),
-        changesUsed: 1,
-        changesTotal: 3,
-        windLevel: .medium,
-        onEdit: { _ in }
     )
 }
 
