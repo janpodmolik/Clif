@@ -32,13 +32,12 @@ extension PetEvolvable {
     /// Total days the pet has been alive (day 1 = creation day).
     var totalDays: Int { daysSinceCreation + 1 }
 
-    /// Days since pet was created.
+    /// Days since pet was created (calendar days, not 24h periods).
     var daysSinceCreation: Int {
-        Calendar.current.dateComponents(
-            [.day],
-            from: evolutionHistory.createdAt,
-            to: Date()
-        ).day ?? 0
+        let calendar = Calendar.current
+        let created = calendar.startOfDay(for: evolutionHistory.createdAt)
+        let today = calendar.startOfDay(for: Date())
+        return calendar.dateComponents([.day], from: created, to: today).day ?? 0
     }
 
     /// True if blob can use essence (at least 1 day old and hasn't progressed today).
