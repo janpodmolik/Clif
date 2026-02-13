@@ -27,6 +27,7 @@ struct IslandView<TransitionContent: View>: View {
     var isEssenceHighlighted: Bool = false
     var isEssenceOnTarget: Bool = false
     var isEvolutionTransitioning: Bool = false
+    var landingBounce: Bool = false
     @ViewBuilder var transitionContent: TransitionContent
     var onFrameChange: ((CGRect) -> Void)?
 
@@ -45,6 +46,7 @@ struct IslandView<TransitionContent: View>: View {
         isEssenceHighlighted: Bool = false,
         isEssenceOnTarget: Bool = false,
         isEvolutionTransitioning: Bool = false,
+        landingBounce: Bool = false,
         @ViewBuilder transitionContent: () -> TransitionContent,
         onFrameChange: ((CGRect) -> Void)? = nil
     ) {
@@ -62,6 +64,7 @@ struct IslandView<TransitionContent: View>: View {
         self.isEssenceHighlighted = isEssenceHighlighted
         self.isEssenceOnTarget = isEssenceOnTarget
         self.isEvolutionTransitioning = isEvolutionTransitioning
+        self.landingBounce = landingBounce
         self.transitionContent = transitionContent()
         self.onFrameChange = onFrameChange
     }
@@ -76,6 +79,9 @@ struct IslandView<TransitionContent: View>: View {
     // Animation constants
     private let animationCooldown: TimeInterval = 1.0
     private let autoPlayInterval: ClosedRange<Double> = 8...12
+
+    // Landing animation state
+    @State private var landingGlowRadius: CGFloat = 0
 
     // Speech bubble state
     @State private var speechBubbleState = SpeechBubbleState()
@@ -245,6 +251,7 @@ struct IslandView<TransitionContent: View>: View {
                     )
                 }
                 .shadow(color: .white.opacity(archiveGlowRadius > 0 ? 0.8 : 0), radius: archiveGlowRadius)
+                .shadow(color: .white.opacity(landingGlowRadius > 0 ? 0.6 : 0), radius: landingGlowRadius)
                 .opacity(isEvolutionTransitioning ? 0.0 : 1.0)
                 .allowsHitTesting(!isEvolutionTransitioning)
                 .onTapGesture {
@@ -255,6 +262,9 @@ struct IslandView<TransitionContent: View>: View {
                 .onAppear {
                     speechBubbleState.startAutoTriggers(windLevel: windLevel)
                     startAutoPlay(for: pet)
+                    if landingBounce {
+                        triggerLandingAnimation(for: pet)
+                    }
                 }
                 .onDisappear {
                     speechBubbleState.stopAutoTriggers()
@@ -357,6 +367,33 @@ struct IslandView<TransitionContent: View>: View {
         playAnimation(for: pet, withHaptics: true)
     }
 
+    // MARK: - Landing Animation
+
+    private func triggerLandingAnimation(for pet: any PetDisplayable) {
+        // Delay to let the view settle after cross-fade transition
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+            // Trigger bounce via existing Metal shader tap animation
+            currentTapType = .bounce
+            currentTapConfig = pet.tapConfig(for: .bounce)
+            reactionStartTime = Date().timeIntervalSinceReferenceDate
+            lastAnimationTime = Date()
+
+            HapticType.impactMedium.trigger()
+
+            // Glow: fade in
+            withAnimation(.easeOut(duration: 0.3)) {
+                landingGlowRadius = 12
+            }
+
+            // Glow: fade out after bounce settles
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
+                withAnimation(.easeIn(duration: 0.4)) {
+                    landingGlowRadius = 0
+                }
+            }
+        }
+    }
+
     // MARK: - Auto Play
 
     private func startAutoPlay(for pet: any PetDisplayable) {
@@ -392,6 +429,7 @@ extension IslandView where TransitionContent == EmptyView {
         showEssenceDropZone: Bool = false,
         isEssenceHighlighted: Bool = false,
         isEssenceOnTarget: Bool = false,
+        landingBounce: Bool = false,
         onFrameChange: ((CGRect) -> Void)? = nil
     ) {
         self.init(
@@ -408,6 +446,7 @@ extension IslandView where TransitionContent == EmptyView {
             showEssenceDropZone: showEssenceDropZone,
             isEssenceHighlighted: isEssenceHighlighted,
             isEssenceOnTarget: isEssenceOnTarget,
+            landingBounce: landingBounce,
             transitionContent: { EmptyView() },
             onFrameChange: onFrameChange
         )

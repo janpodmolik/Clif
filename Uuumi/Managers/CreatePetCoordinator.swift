@@ -94,8 +94,8 @@ final class CreatePetCoordinator {
         cleanupWorkItem?.cancel()
         cleanupWorkItem = nil
 
-        self.onComplete = onComplete
         resetWizardState()
+        self.onComplete = onComplete
         isShowing = true
     }
 
@@ -105,8 +105,8 @@ final class CreatePetCoordinator {
         cleanupWorkItem?.cancel()
         cleanupWorkItem = nil
 
-        self.onComplete = onComplete
         resetWizardState()
+        self.onComplete = onComplete
 
         // Pre-fill with mock data
         preset = .balanced

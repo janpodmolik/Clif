@@ -32,6 +32,7 @@ struct HomeScreen: View {
     @State private var petFrame: CGRect = .zero
     @State private var dropZoneFrame: CGRect = .zero
     @State private var evolutionAnimator = EvolutionTransitionAnimator()
+    @State private var shouldPlayLandingBounce = false
 
     /// Timer-driven refresh trigger for real-time wind updates during active shield.
     /// Increments every second to force UI recalculation of effectiveWindPoints.
@@ -329,8 +330,14 @@ struct HomeScreen: View {
         .onChange(of: dropZoneFrame) { _, _ in
             updatePetDropFrame()
         }
-        .onChange(of: isInCreationMode) { _, _ in
+        .onChange(of: isInCreationMode) { oldValue, newValue in
             updatePetDropFrame()
+            // Reset landing bounce flag after pet view has appeared and consumed it
+            if oldValue && !newValue && shouldPlayLandingBounce {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                    shouldPlayLandingBounce = false
+                }
+            }
         }
         .onChange(of: currentPet?.id) { _, _ in
             // Reset animators when pet changes (e.g. deleted + new pet created)
@@ -401,6 +408,7 @@ struct HomeScreen: View {
                 isEssenceHighlighted: isEssenceDropZoneHighlighted,
                 isEssenceOnTarget: isEssenceOnTarget,
                 isEvolutionTransitioning: evolutionAnimator.isShowingTransition,
+                landingBounce: shouldPlayLandingBounce,
                 transitionContent: {
                     if evolutionAnimator.isShowingTransition {
                         EvolutionTransitionView(
@@ -495,7 +503,9 @@ struct HomeScreen: View {
         let status = AuthorizationCenter.shared.authorizationStatus
         if status == .approved {
             withAnimation(.easeInOut(duration: 0.5)) {
-                createPetCoordinator.show { _ in }
+                createPetCoordinator.show { _ in
+                    shouldPlayLandingBounce = true
+                }
             }
             return
         }
@@ -503,7 +513,9 @@ struct HomeScreen: View {
         do {
             try await AuthorizationCenter.shared.requestAuthorization(for: .individual)
             withAnimation(.easeInOut(duration: 0.5)) {
-                createPetCoordinator.show { _ in }
+                createPetCoordinator.show { _ in
+                    shouldPlayLandingBounce = true
+                }
             }
         } catch {
             showAuthorizationAlert = true
