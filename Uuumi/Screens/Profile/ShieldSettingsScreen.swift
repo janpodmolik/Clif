@@ -14,7 +14,8 @@ struct ShieldSettingsScreen: View {
     var body: some View {
         Form {
             // MARK: - Denní shield
-            Section(header: dailyShieldHeader, footer: dailyShieldFooter) {
+
+            Section {
                 Toggle("Denní shield", isOn: $limitSettings.dayStartShieldEnabled)
                     .tint(.blue)
 
@@ -27,31 +28,69 @@ struct ShieldSettingsScreen: View {
                         Text("Výchozí preset")
                     }
                 }
+            } header: {
+                HStack {
+                    Text("Denní shield")
+                    Spacer()
+                    Button {
+                        showPresetInfo = true
+                    } label: {
+                        Image(systemName: "info.circle")
+                            .font(.body)
+                            .foregroundStyle(.secondary)
+                            .frame(width: 44, height: 44)
+                            .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                }
+            } footer: {
+                if limitSettings.dayStartShieldEnabled {
+                    Text("Každé ráno se zobrazí výběr presetu. Aplikace zůstanou zamčené, dokud nevybereš.")
+                } else {
+                    Text("Automaticky se použije výchozí preset. Aplikace nebudou ráno zamčené.")
+                }
             }
 
             // MARK: - Safety Shield
-            Section(header: sectionHeader("Safety Shield"), footer: safetyFooter) {
-                Picker(selection: $limitSettings.safetyShieldActivationThreshold) {
-                    Text("80 %").tag(80)
-                    Text("100 %").tag(100)
-                } label: {
-                    Label("Aktivace při", systemImage: "shield.fill")
-                }
 
-                Picker(selection: $limitSettings.safetyUnlockThreshold) {
-                    Text("0 %").tag(0)
-                    Text("50 %").tag(50)
-                    Text("80 %").tag(80)
-                } label: {
-                    Label("Bezpečný unlock pod", systemImage: "lock.open.fill")
+            Section {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Spustit safety shield při")
+                        .fontWeight(.bold)
+                    Text("Automatická ochrana při dosažení procenta větru.")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
                 }
+                .padding(.vertical, 4)
+                ChipPicker(
+                    options: [80, 100],
+                    selection: $limitSettings.safetyShieldActivationThreshold,
+                    label: { "\($0) %" }
+                )
+            }
+
+            Section {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Bezpečné odemknutí pod")
+                        .fontWeight(.bold)
+                    Text("Vítr musí klesnout pod zvolený práh pro odemknutí bez postihu.")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
+                .padding(.vertical, 4)
+                ChipPicker(
+                    options: [0, 50, 80],
+                    selection: $limitSettings.safetyUnlockThreshold,
+                    label: { "\($0) %" }
+                )
             }
 
             // MARK: - Po breaku
-            Section(header: sectionHeader("Po breaku")) {
-                NotificationToggleRow(
+
+            Section {
+                SettingsRow(
                     title: "Auto-lock po committed breaku",
-                    description: "Automaticky zapne free break po dokončení committed breaku.",
+                    description: "Zapne free break po dokončení committed breaku.",
                     isOn: $limitSettings.autoLockAfterCommittedBreak
                 )
             }
@@ -66,55 +105,6 @@ struct ShieldSettingsScreen: View {
                 currentPreset: WindPreset(rawValue: limitSettings.defaultWindPresetRaw) ?? .balanced
             )
         }
-    }
-
-    // MARK: - Section Headers & Footers
-
-    private var dailyShieldHeader: some View {
-        HStack {
-            Text("Denní shield")
-                .font(.title3.weight(.bold))
-                .foregroundStyle(.primary)
-                .textCase(nil)
-
-            Spacer()
-
-            Button {
-                showPresetInfo = true
-            } label: {
-                Image(systemName: "info.circle")
-                    .font(.title3)
-                    .foregroundStyle(.secondary)
-                    .frame(width: 44, height: 44)
-                    .contentShape(Rectangle())
-            }
-            .buttonStyle(.plain)
-        }
-    }
-
-    private var dailyShieldFooter: some View {
-        Group {
-            if limitSettings.dayStartShieldEnabled {
-                Text("Při zapnutí se každé ráno zobrazí výběr presetu. Aplikace zůstanou zamčené, dokud nevybereš.")
-            } else {
-                Text("Bez denního shieldu se automaticky použije výchozí preset. Aplikace nebudou ráno zamčené.")
-            }
-        }
-        .font(.caption)
-        .foregroundStyle(.secondary)
-    }
-
-    private func sectionHeader(_ title: String) -> some View {
-        Text(title)
-            .font(.title3.weight(.bold))
-            .foregroundStyle(.primary)
-            .textCase(nil)
-    }
-
-    private var safetyFooter: some View {
-        Text("Safety shield se automaticky aktivuje při dosažení nastaveného procenta větru. Odemknout bezpečně lze až vítr klesne pod zvolený práh.")
-            .font(.caption)
-            .foregroundStyle(.secondary)
     }
 }
 

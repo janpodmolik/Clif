@@ -21,7 +21,7 @@ struct NotificationSettingsScreen: View {
             // MARK: - Wind Alerts
 
             Section {
-                NotificationToggleRow(
+                SettingsRow(
                     title: "Upozornění na vítr",
                     description: "Oznámení při dosažení prahů větru.",
                     isOn: Binding(
@@ -38,12 +38,19 @@ struct NotificationSettingsScreen: View {
                 )
 
                 if limitSettings.notifications.anyWindEnabled {
-                    WindThresholdChips(notifications: notifications, disabled: disabled)
+                    MultiChipPicker(
+                        options: [
+                            ("25 %", notifications.windLight),
+                            ("60 %", notifications.windStrong),
+                            ("85 %", notifications.windCritical),
+                        ],
+                        disabled: disabled
+                    )
                 }
             }
 
             Section {
-                NotificationToggleRow(
+                SettingsRow(
                     title: "Připomenutí vysokého větru",
                     description: "Po 30 minutách vysokého větru bez pauzy.",
                     isOn: notifications.windReminder,
@@ -54,7 +61,7 @@ struct NotificationSettingsScreen: View {
             // MARK: - Breaks
 
             Section {
-                NotificationToggleRow(
+                SettingsRow(
                     title: "Konec committed breaku",
                     description: "Oznámení po vypršení naplánovaného breaku.",
                     isOn: notifications.breakCommittedEnded,
@@ -63,7 +70,7 @@ struct NotificationSettingsScreen: View {
             }
 
             Section {
-                NotificationToggleRow(
+                SettingsRow(
                     title: "Vítr na 0% během pauzy",
                     description: "Oznámení, když vítr klesne na 0% během pauzy.",
                     isOn: notifications.breakWindZero,
@@ -75,7 +82,7 @@ struct NotificationSettingsScreen: View {
 
             // TODO: Implement daily summary scheduling (evening local notification with screen time stats)
             Section {
-                NotificationToggleRow(
+                SettingsRow(
                     title: "Denní souhrn",
                     description: "Večerní přehled screen time a stavu mazlíčka.",
                     isOn: notifications.dailySummary,
@@ -85,7 +92,7 @@ struct NotificationSettingsScreen: View {
 
             // TODO: Implement evolution ready scheduling (morning notification if pet can evolve and hasn't yet)
             Section {
-                NotificationToggleRow(
+                SettingsRow(
                     title: "Evoluce připravena",
                     description: "Ranní oznámení, když mazlíček může evolvovat.",
                     isOn: notifications.evolutionReady,
@@ -99,47 +106,6 @@ struct NotificationSettingsScreen: View {
             SharedDefaults.limitSettings = newValue
         }
     }
-}
-
-// MARK: - Wind Threshold Chips
-
-private struct WindThresholdChips: View {
-    @Binding var notifications: NotificationSettings
-    let disabled: Bool
-
-    var body: some View {
-        HStack(spacing: 0) {
-            chip("25%", isOn: $notifications.windLight)
-            chip("60%", isOn: $notifications.windStrong)
-            chip("85%", isOn: $notifications.windCritical)
-        }
-        .fixedSize(horizontal: false, vertical: true)
-        .clipShape(RoundedRectangle(cornerRadius: 10))
-        .opacity(disabled ? 0.4 : 1.0)
-        .disabled(disabled)
-    }
-
-    private func chip(_ label: String, isOn: Binding<Bool>) -> some View {
-        Button {
-            withAnimation(.easeInOut(duration: 0.15)) {
-                isOn.wrappedValue.toggle()
-            }
-        } label: {
-            HStack(spacing: 6) {
-                Image(systemName: isOn.wrappedValue ? "checkmark.circle.fill" : "circle")
-                    .foregroundStyle(isOn.wrappedValue ? .primary : .tertiary)
-                    .imageScale(.medium)
-                Text(label)
-            }
-            .font(.subheadline.weight(.medium))
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 10)
-            .foregroundStyle(isOn.wrappedValue ? .primary : .tertiary)
-            .background(isOn.wrappedValue ? Color(.tertiarySystemFill) : .clear)
-        }
-        .buttonStyle(.plain)
-    }
-
 }
 
 #Preview {
