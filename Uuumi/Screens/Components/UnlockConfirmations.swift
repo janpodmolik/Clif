@@ -13,10 +13,15 @@ struct UnlockConfirmations: ViewModifier {
     func body(content: Content) -> some View {
         content
             .sheet(isPresented: $showCommittedConfirmation) {
-                CommittedUnlockSheet {
-                    ShieldManager.shared.toggle(success: false)
-                    petManager.blowAwayCurrentPet(reason: .breakViolation)
-                }
+                CommittedUnlockSheet(
+                    onUnlockDangerous: {
+                        ShieldManager.shared.toggle(success: false)
+                        petManager.blowAwayCurrentPet(reason: .breakViolation)
+                    },
+                    onUnlockSafe: {
+                        ShieldManager.shared.toggle()
+                    }
+                )
             }
             .sheet(isPresented: $showSafetyConfirmation) {
                 SafetyUnlockSheet(
