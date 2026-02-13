@@ -425,6 +425,7 @@ struct HomeScreen: View {
                             ),
                             onComplete: {
                                 evolutionAnimator.complete()
+                                petManager.savePet()
                                 coinsAnimator.showReward(CoinRewards.evolution)
                                 Task { await syncManager.syncUserData(essenceCatalogManager: essenceCatalogManager) }
                                 if pet.isFullyEvolved {
