@@ -222,6 +222,7 @@ struct ProfileScreen: View {
                     .foregroundStyle(Color(.tertiaryLabel))
             }
             .padding(.vertical, 6)
+            .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
     }
