@@ -148,7 +148,8 @@ final class ShieldManager {
     /// - Parameters:
     ///   - breakType: The type of break (free or committed)
     ///   - durationMinutes: For committed breaks: positive = minutes, -1 = until 0%, -2 = until end of day. Nil for free.
-    func turnOn(breakType: BreakType, durationMinutes: Int?) {
+    ///   - startDate: When the break actually started. Defaults to now. Used by auto-lock to backdate the free break to when the committed break ended.
+    func turnOn(breakType: BreakType, durationMinutes: Int?, startDate: Date? = nil) {
         assert(breakType != .safety, "[ShieldManager] turnOn should not be called with .safety — safety shield is activated by DeviceActivityMonitor extension")
 
         #if DEBUG
@@ -161,7 +162,7 @@ final class ShieldManager {
         guard activateStoreFromStoredTokens() else { return }
 
         // Store break type and duration (activeBreakType setter syncs isShieldActive)
-        let now = Date()
+        let now = startDate ?? Date()
         SharedDefaults.shieldActivatedAt = now
         SharedDefaults.activeBreakType = breakType
         SharedDefaults.committedBreakDuration = durationMinutes
@@ -184,7 +185,8 @@ final class ShieldManager {
             SnapshotLogging.logBreakStarted(
                 petId: petId,
                 windPoints: SharedDefaults.monitoredWindPoints,
-                breakType: breakTypePayload
+                breakType: breakTypePayload,
+                startDate: now
             )
         }
 
@@ -287,6 +289,7 @@ final class ShieldManager {
             }
             if let duration, Date().timeIntervalSince(activatedAt) >= duration {
                 let shouldAutoLock = SharedDefaults.limitSettings.autoLockAfterCommittedBreak
+                let committedEndDate = activatedAt.addingTimeInterval(duration)
                 turnOff(success: true)
                 // Show reward immediately only if app is in foreground (timer can briefly fire in background)
                 if UIApplication.shared.applicationState == .active {
@@ -301,7 +304,8 @@ final class ShieldManager {
                             eventType: .breakAutoLocked
                         ))
                     }
-                    turnOn(breakType: .free, durationMinutes: nil)
+                    // Backdate to when the committed break actually ended, not when we detected it
+                    turnOn(breakType: .free, durationMinutes: nil, startDate: committedEndDate)
                 }
             }
 

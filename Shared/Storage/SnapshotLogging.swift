@@ -9,10 +9,11 @@ enum SnapshotLogging {
     static func logBreakStarted(
         petId: UUID,
         windPoints: Double,
-        breakType: BreakTypePayload
+        breakType: BreakTypePayload,
+        startDate: Date = Date()
     ) {
         // Update SharedDefaults for extension access
-        SharedDefaults.breakStartedAt = Date()
+        SharedDefaults.breakStartedAt = startDate
         SharedDefaults.monitoredWindPoints = windPoints
 
         let event = SnapshotEvent(
