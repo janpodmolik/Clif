@@ -135,6 +135,7 @@ extension SharedDefaults {
         cumulativeBaseline = 0
         lastKnownWindLevel = 0
         lastThresholdTimestamp = nil
+        windPresetLockedForToday = false
         synchronize()
     }
 

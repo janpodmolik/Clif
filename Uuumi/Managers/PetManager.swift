@@ -58,7 +58,6 @@ final class PetManager {
 
         // Ensure clean wind state for new pet
         SharedDefaults.resetWindState()
-        SharedDefaults.windPresetLockedForToday = false
 
         let newPet = Pet(
             name: name,
@@ -462,9 +461,7 @@ final class PetManager {
             return
         }
 
-        // If monitoring is already running, skip restart.
-        // Unnecessary restarts cause iOS to deliver stale threshold bursts
-        // (double-counting usage → phantom wind spikes).
+        // Skip if monitoring is already running
         guard !ScreenTimeManager.shared.isMonitoringActive(for: pet.id) else {
             return
         }

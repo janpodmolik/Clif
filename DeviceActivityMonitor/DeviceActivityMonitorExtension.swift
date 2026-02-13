@@ -167,7 +167,9 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
         let wallClockElapsed = Date().timeIntervalSince(lastTimestamp)
         let reportedIncrease = currentSeconds - lastProcessedSeconds
 
-        guard reportedIncrease > 0, wallClockElapsed > 0 else {
+        // Skip burst detection for short intervals — rapid legitimate thresholds
+        // can appear as false positives when wall-clock elapsed is tiny.
+        guard reportedIncrease > 0, wallClockElapsed > 5 else {
             return currentSeconds
         }
 
@@ -176,7 +178,7 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
         let ratio = Double(reportedIncrease) / wallClockElapsed
 
         if ratio > 2.0 {
-            let cappedIncrease = Int(wallClockElapsed)
+            let cappedIncrease = Int(ceil(wallClockElapsed))
             let adjusted = lastProcessedSeconds + cappedIncrease
 
             ExtensionLogger.log("[Extension] BURST DETECTED: reported +\(reportedIncrease)s in \(Int(wallClockElapsed))s (ratio=\(String(format: "%.1f", ratio))x). Capping to +\(cappedIncrease)s → \(adjusted)s")

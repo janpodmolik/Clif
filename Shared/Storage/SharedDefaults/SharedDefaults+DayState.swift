@@ -70,11 +70,8 @@ extension SharedDefaults {
     /// Resets all day-specific state for a new day.
     /// Called automatically by extension at intervalDidStart or manually from app.
     static func resetForNewDay(dayStartShieldEnabled: Bool) {
-        // Reset wind
+        // Reset wind (includes preset lock)
         resetWindState()
-
-        // Reset preset lock
-        windPresetLockedForToday = false
         todaySelectedPreset = nil
 
         // Set day start shield based on user preference

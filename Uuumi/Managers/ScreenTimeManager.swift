@@ -88,6 +88,9 @@ final class ScreenTimeManager: ObservableObject {
             return
         }
 
+        // Reset wind state first (also clears preset lock)
+        SharedDefaults.resetWindState()
+
         // Save selected preset
         SharedDefaults.todaySelectedPreset = preset.rawValue
         SharedDefaults.windPresetLockedForToday = true
@@ -111,9 +114,6 @@ final class ScreenTimeManager: ObservableObject {
         // Update SharedDefaults for extension
         SharedDefaults.monitoredFallRate = fallRatePerSecond
         SharedDefaults.setInt(limitSeconds, forKey: DefaultsKeys.monitoringLimitSeconds)
-
-        // Reset wind state for new preset
-        SharedDefaults.resetWindState()
 
         // Restart monitoring with new preset
         startMonitoring(
@@ -253,12 +253,11 @@ final class ScreenTimeManager: ObservableObject {
         // Clear active tokens
         SharedDefaults.clearActiveTokens()
 
-        // Clear monitoring context, shield flags, wind state, and preset lock
+        // Clear monitoring context, shield flags, and wind state
         SharedDefaults.monitoredPetId = nil
         SharedDefaults.monitoredPetName = nil
         SharedDefaults.resetShieldFlags()
         SharedDefaults.resetWindState()
-        SharedDefaults.windPresetLockedForToday = false
 
         #if DEBUG
         print("[ScreenTimeManager] stopMonitoringAndClear")
