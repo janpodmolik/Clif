@@ -64,19 +64,14 @@ struct CreatePetMultiStep: View {
                 SelectionSummaryCard()
             }
 
-            // Navigation row: step indicator (centered) + next button (trailing)
-            ZStack {
-                // Add 1 to totalSteps to account for drop step (shown in DragPortalSheet)
-                StepIndicator(
-                    currentStep: coordinator.currentStep.rawValue,
-                    totalSteps: coordinator.totalSteps + 1
-                )
+            // Add 1 to totalSteps to account for drop step (shown in DragPortalSheet)
+            StepIndicator(
+                currentStep: coordinator.currentStep.rawValue,
+                totalSteps: coordinator.totalSteps + 1
+            )
+            .padding(.vertical, 8)
 
-                HStack {
-                    Spacer()
-                    nextButton
-                }
-            }
+            nextButton
         }
         .padding(.horizontal, Layout.footerPadding)
         .padding(.vertical, Layout.footerPadding)
@@ -102,9 +97,14 @@ struct CreatePetMultiStep: View {
             Text(nextButtonTitle)
                 .font(.body.weight(.semibold))
                 .foregroundStyle(coordinator.canProceed ? .white : .secondary)
-                .padding(.horizontal, 24)
-                .padding(.vertical, 12)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 16)
                 .background(buttonBackground)
+                .shadow(
+                    color: coordinator.canProceed ? Color.accentColor.opacity(0.4) : .clear,
+                    radius: 12,
+                    y: 6
+                )
         }
         .disabled(!coordinator.canProceed)
     }
