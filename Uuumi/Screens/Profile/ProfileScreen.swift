@@ -8,7 +8,6 @@ enum ProfileDestination: Hashable {
 }
 
 struct ProfileScreen: View {
-    @Environment(PetManager.self) private var petManager
     @Environment(EssenceCatalogManager.self) private var catalogManager
     @Environment(AuthManager.self) private var authManager
     @Environment(StoreManager.self) private var storeManager
@@ -21,30 +20,18 @@ struct ProfileScreen: View {
     @State private var showPremiumSheet = false
     @State private var showAuthSheet = false
     @State private var showAccountSheet = false
-    @State private var pendingSignOut = false
     @Binding var navigationPath: NavigationPath
 
     var body: some View {
         NavigationStack(path: $navigationPath) {
             Form {
-                // MARK: - Profile Header
+                // MARK: - Profile
                 Section {
-                    profileHeader
-                        .listRowInsets(EdgeInsets())
-                        .listRowBackground(Color.clear)
+                    profileRow
                 }
 
                 // MARK: - Účet
                 Section(header: Text("Účet")) {
-                    if authManager.isAuthenticated {
-                        Button {
-                            showAccountSheet = true
-                        } label: {
-                            Label("Účet", systemImage: "person")
-                        }
-                        .tint(.primary)
-                    }
-
                     Button {
                         showPremiumSheet = true
                     } label: {
@@ -68,6 +55,7 @@ struct ProfileScreen: View {
                                 .foregroundStyle(.secondary)
                         }
                     }
+
                 }
 
                 // MARK: - Přizpůsobit
@@ -140,19 +128,6 @@ struct ProfileScreen: View {
                     }
                 }
 
-                #if DEBUG
-                Section(header: Text("Debug")) {
-                    Button("Delete Active Pet", role: .destructive) {
-                        deleteActivePet()
-                    }
-                    .disabled(!petManager.hasPet)
-
-                    Button("Simulate Daily Reset") {
-                        SharedDefaults.resetForNewDay(dayStartShieldEnabled: limitSettings.dayStartShieldEnabled)
-                        ShieldManager.shared.activateStoreFromStoredTokens()
-                    }
-                }
-                #endif
             }
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
@@ -178,13 +153,8 @@ struct ProfileScreen: View {
             .fullScreenCover(isPresented: $showAuthSheet) {
                 AuthProvidersSheet()
             }
-            .fullScreenCover(isPresented: $showAccountSheet, onDismiss: {
-                if pendingSignOut {
-                    pendingSignOut = false
-                    Task { await authManager.signOut() }
-                }
-            }) {
-                AccountScreen(onSignOut: { pendingSignOut = true })
+            .fullScreenCover(isPresented: $showAccountSheet) {
+                AccountScreen()
             }
             .navigationDestination(for: ProfileDestination.self) { destination in
                 switch destination {
@@ -207,66 +177,51 @@ struct ProfileScreen: View {
         }
     }
 
-    // MARK: - Profile Header
+    // MARK: - Profile Row
 
     @ViewBuilder
-    private var profileHeader: some View {
-        VStack(spacing: 12) {
-            // Avatar — tappable to account/auth
-            Button {
-                if authManager.isAuthenticated {
-                    showAccountSheet = true
-                } else {
-                    showAuthSheet = true
-                }
-            } label: {
+    private var profileRow: some View {
+        Button {
+            if authManager.isAuthenticated {
+                showAccountSheet = true
+            } else {
+                showAuthSheet = true
+            }
+        } label: {
+            HStack(spacing: 14) {
                 Image(systemName: "person.crop.circle.fill")
                     .resizable()
                     .scaledToFit()
-                    .frame(width: 80, height: 80)
+                    .frame(width: 60, height: 60)
                     .foregroundStyle(authManager.isAuthenticated ? .secondary : Color(.systemGray3))
-            }
-            .buttonStyle(.plain)
 
-            // Name / subtitle
-            VStack(spacing: 4) {
-                if authManager.isAuthenticated {
-                    Text(displayName)
-                        .font(.title3.weight(.bold))
-                    if let createdAt = authManager.currentUser?.createdAt {
-                        Text("Členem od \(createdAt.formatted(.dateTime.month(.wide).year()))")
-                            .font(.caption)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(authManager.isAuthenticated ? displayName : "Host")
+                        .font(.title3.weight(.semibold))
+                        .foregroundStyle(.primary)
+
+                    if authManager.isAuthenticated {
+                        if let email = authManager.userEmail {
+                            Text(email)
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
+                        }
+                    } else {
+                        Text("Přihlásit se")
+                            .font(.subheadline)
                             .foregroundStyle(.secondary)
                     }
-                } else {
-                    Text("Host")
-                        .font(.title3.weight(.bold))
-                    Text("Ahoj, hoste! Pojďme se lépe poznat.\nVytvoř si účet, nebo se přihlas.")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                        .multilineTextAlignment(.center)
                 }
-            }
 
-            // CTA button (only when not authenticated)
-            if !authManager.isAuthenticated {
-                Button {
-                    showAuthSheet = true
-                } label: {
-                    Text("Register / Login")
-                        .font(.body.weight(.semibold))
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 50)
-                        .background(Color(.tertiarySystemFill))
-                        .foregroundStyle(.primary)
-                        .clipShape(Capsule())
-                }
-                .buttonStyle(.plain)
-                .padding(.top, 4)
-            }   
+                Spacer()
+
+                Image(systemName: "chevron.right")
+                    .font(.footnote.weight(.semibold))
+                    .foregroundStyle(Color(.tertiaryLabel))
+            }
+            .padding(.vertical, 6)
         }
-        .padding(.vertical, 20)
-        .frame(maxWidth: .infinity)
+        .buttonStyle(.plain)
     }
 
     // MARK: - Helpers
@@ -314,13 +269,6 @@ struct ProfileScreen: View {
         return "\(version) (\(build))"
     }
 
-    #if DEBUG
-    private func deleteActivePet() {
-        if let pet = petManager.currentPet {
-            petManager.delete(id: pet.id)
-        }
-    }
-    #endif
 }
 
 // MARK: - Theme Picker
@@ -367,7 +315,6 @@ private struct ThemePicker<T: Hashable & Identifiable>: View {
 
 #Preview {
     ProfileScreen(navigationPath: .constant(NavigationPath()))
-        .environment(PetManager.mock())
         .environment(EssenceCatalogManager.mock())
         .environment(AuthManager.mock())
         .environment(StoreManager.mock())

@@ -5,8 +5,6 @@ struct AccountScreen: View {
     @Environment(AuthManager.self) private var authManager
     @Environment(\.dismiss) private var dismiss
 
-    var onSignOut: (() -> Void)?
-
     @State private var displayName: String = ""
     @State private var showDeleteConfirmation = false
     @State private var isDeleting = false
@@ -62,8 +60,8 @@ struct AccountScreen: View {
 
                 // Sign out
                 Button {
-                    onSignOut?()
                     dismiss()
+                    Task { await authManager.signOut() }
                 } label: {
                     Text("Odhlásit se")
                         .font(.subheadline.weight(.medium))
