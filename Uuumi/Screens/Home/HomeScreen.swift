@@ -13,10 +13,6 @@ struct HomeScreen: View {
     @Environment(SyncManager.self) private var syncManager
     @Environment(CoinsRewardAnimator.self) private var coinsAnimator
 
-    @AppStorage(DefaultsKeys.appearanceMode) private var appearanceMode: AppearanceMode = .automatic
-    @AppStorage(DefaultsKeys.selectedDayTheme) private var dayTheme: DayTheme = .morningHaze
-    @AppStorage(DefaultsKeys.selectedNightTheme) private var nightTheme: NightTheme = .deepNight
-
     @State private var windRhythm = WindRhythm()
     @State private var blowAwayAnimator = BlowAwayAnimator()
     @State private var ascensionAnimator = AscensionAnimator()
@@ -28,6 +24,7 @@ struct HomeScreen: View {
     @State private var showSuccessArchivePrompt = false
     @State private var showWindNotCalmAlert = false
     @State private var showAuthorizationAlert = false
+    @State private var showDailySummarySheet = false
     @State private var pendingEssencePicker = false
     @State private var petFrame: CGRect = .zero
     @State private var dropZoneFrame: CGRect = .zero
@@ -114,7 +111,11 @@ struct HomeScreen: View {
         @Bindable var petManager = petManager
         GeometryReader { geometry in
             ZStack {
-                background
+                #if DEBUG
+                HomeBackgroundView(debugTimeOverride: debugTimeOverride)
+                #else
+                HomeBackgroundView()
+                #endif
 
                 // Pet-specific layers (wind lines, replay overlay) — only when pet exists
                 if let pet = currentPet, !isInCreationMode {
@@ -144,6 +145,11 @@ struct HomeScreen: View {
                 }
                 .animation(.easeInOut(duration: 0.5), value: currentPet == nil)
                 .animation(.easeInOut(duration: 0.5), value: isInCreationMode)
+
+                // Floating lock button
+                if currentPet != nil, !isInCreationMode {
+                    HomeFloatingLockButton(bottomPadding: geometry.size.height * 0.3)
+                }
 
                 #if DEBUG
                 if !isInCreationMode {
@@ -291,6 +297,24 @@ struct HomeScreen: View {
             }
         }
         .windNotCalmSheet(isPresented: $showWindNotCalmAlert)
+        .sheet(isPresented: $showDailySummarySheet) {
+            if let pet = currentPet {
+                let today = pet.dailyStats.first {
+                    Calendar.current.isDateInToday($0.date)
+                } ?? DailyUsageStat(
+                    petId: pet.id,
+                    date: Date(),
+                    totalMinutes: 0,
+                    preset: pet.preset
+                )
+                DayDetailSheet(
+                    day: today,
+                    petId: pet.id,
+                    limitMinutes: Int(pet.preset.minutesToBlowAway),
+                    hourlyBreakdown: nil
+                )
+            }
+        }
         .alert(
             "Přístup k času u obrazovky",
             isPresented: $showAuthorizationAlert
@@ -308,6 +332,10 @@ struct HomeScreen: View {
         }
         .onReceive(NotificationCenter.default.publisher(for: .showPresetPicker)) { _ in
             showPresetPicker = true
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .showDailySummary)) { _ in
+            guard currentPet != nil else { return }
+            showDailySummarySheet = true
         }
         .onReceive(NotificationCenter.default.publisher(for: .navigateHome)) { _ in
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
@@ -358,33 +386,6 @@ struct HomeScreen: View {
             if newValue == true && oldValue != true, let screenWidth = currentScreenWidth {
                 blowAwayAnimator.trigger(screenWidth: screenWidth)
             }
-        }
-    }
-
-    // MARK: - Background
-
-    @ViewBuilder
-    private var background: some View {
-        #if DEBUG
-        if let time = debugTimeOverride {
-            AutomaticBackgroundView(timeOverride: time)
-        } else {
-            defaultBackground
-        }
-        #else
-        defaultBackground
-        #endif
-    }
-
-    @ViewBuilder
-    private var defaultBackground: some View {
-        switch appearanceMode {
-        case .automatic:
-            AutomaticBackgroundView()
-        case .light:
-            DayBackgroundView(theme: dayTheme)
-        case .dark:
-            NightBackgroundView(theme: nightTheme)
         }
     }
 

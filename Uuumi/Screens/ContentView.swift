@@ -31,8 +31,6 @@ enum AppTab: String, CaseIterable {
 struct ContentView: View {
     @AppStorage(DefaultsKeys.appearanceMode)
     private var appearanceMode: AppearanceMode = .automatic
-    @AppStorage(DefaultsKeys.lockButtonSide)
-    private var lockButtonSide: LockButtonSide = .trailing
 
     @Environment(PetManager.self) private var petManager
     @Environment(ArchivedPetManager.self) private var archivedPetManager
@@ -46,14 +44,8 @@ struct ContentView: View {
     @State private var createPetCoordinator = CreatePetCoordinator()
     @State private var coinsAnimator = CoinsRewardAnimator()
     @State private var showMockSheet = false
-    @State private var showDailySummarySheet = false
 
     @Environment(\.scenePhase) private var scenePhase
-
-    // Break picker states
-    @State private var showBreakTypePicker = false
-    @State private var showCommittedUnlock = false
-    @State private var showSafetyUnlock = false
 
     private var shieldState: ShieldState { ShieldState.shared }
 
@@ -62,49 +54,31 @@ struct ContentView: View {
     #endif
 
     var body: some View {
-        GeometryReader { geometry in
-            ZStack {
-                TabView(selection: $activeTab) {
-                    Tab("Home", systemImage: "house", value: .home) {
-                        HomeScreen()
-                    }
-                    Tab("Přehled", systemImage: "chart.bar", value: .overview) {
-                        OverviewScreen()
-                    }
-                    Tab("Profil", systemImage: "person", value: .profile) {
-                        ProfileScreen(navigationPath: navigationPathBinding(for: .profile))
-                    }
+        ZStack {
+            TabView(selection: $activeTab) {
+                Tab("Home", systemImage: "house", value: .home) {
+                    HomeScreen()
                 }
-                .tint(.primary)
-
-                // Floating lock button — Home tab only, requires active pet, hidden during pet creation
-                if activeTab == .home && petManager.currentPet != nil && !createPetCoordinator.isShowing {
-                    VStack {
-                        Spacer()
-                        HStack {
-                            if lockButtonSide == .trailing { Spacer() }
-                            floatingLockButton()
-                            if lockButtonSide == .leading { Spacer() }
-                        }
-                        .padding(lockButtonSide == .trailing ? .trailing : .leading, 20)
-                        .padding(.bottom, geometry.size.height * 0.25)
-                    }
-                    .ignoresSafeArea(edges: .bottom)
-                    .allowsHitTesting(true)
+                Tab("Přehled", systemImage: "chart.bar", value: .overview) {
+                    OverviewScreen()
                 }
-
-                EssencePickerOverlay()
-                CreatePetOverlay()
-
-                // Coins reward tag overlay
-                GeometryReader { overlayGeo in
-                    CoinTagRewardView(
-                        animator: coinsAnimator,
-                        position: CGPoint(x: overlayGeo.size.width / 2, y: overlayGeo.size.height * 0.62)
-                    )
+                Tab("Profil", systemImage: "person", value: .profile) {
+                    ProfileScreen(navigationPath: navigationPathBinding(for: .profile))
                 }
-                .allowsHitTesting(coinsAnimator.isAnimating)
             }
+            .tint(.primary)
+
+            EssencePickerOverlay()
+            CreatePetOverlay()
+
+            // Coins reward tag overlay
+            GeometryReader { overlayGeo in
+                CoinTagRewardView(
+                    animator: coinsAnimator,
+                    position: CGPoint(x: overlayGeo.size.width / 2, y: overlayGeo.size.height * 0.62)
+                )
+            }
+            .allowsHitTesting(coinsAnimator.isAnimating)
         }
         .environment(essenceCoordinator)
         .environment(createPetCoordinator)
@@ -123,13 +97,9 @@ struct ContentView: View {
             activeTab = .profile
             navigationPaths[.profile] = NavigationPath([ProfileDestination.essenceCatalog])
         }
-        .onReceive(NotificationCenter.default.publisher(for: .showBreakTypePicker)) { _ in
-            showBreakTypePicker = true
-        }
         .onReceive(NotificationCenter.default.publisher(for: .showDailySummary)) { _ in
             guard petManager.currentPet != nil else { return }
             activeTab = .home
-            showDailySummarySheet = true
         }
         #if DEBUG
         .onReceive(NotificationCenter.default.publisher(for: .showMockSheet)) { _ in
@@ -147,36 +117,6 @@ struct ContentView: View {
         }
         .withDebugOverlay()
         #endif
-        // Break picker
-        .sheet(isPresented: $showBreakTypePicker) {
-            BreakTypePicker(
-                onSelectFree: {
-                    startBreak(type: .free, durationMinutes: nil)
-                },
-                onConfirmCommitted: { durationMinutes in
-                    startBreak(type: .committed, durationMinutes: durationMinutes)
-                }
-            )
-        }
-        .sheet(isPresented: $showDailySummarySheet) {
-            if let pet = petManager.currentPet {
-                let today = pet.dailyStats.first {
-                    Calendar.current.isDateInToday($0.date)
-                } ?? DailyUsageStat(
-                    petId: pet.id,
-                    date: Date(),
-                    totalMinutes: 0,
-                    preset: pet.preset
-                )
-                DayDetailSheet(
-                    day: today,
-                    petId: pet.id,
-                    limitMinutes: Int(pet.preset.minutesToBlowAway),
-                    hourlyBreakdown: nil
-                )
-            }
-        }
-        .unlockConfirmations(showCommitted: $showCommittedUnlock, showSafety: $showSafetyUnlock)
         .onChange(of: activeTab) {
             UISelectionFeedbackGenerator().selectionChanged()
         }
@@ -212,56 +152,6 @@ struct ContentView: View {
                 }
             }
         }
-    }
-
-    // MARK: - Floating Lock Button
-
-    @ViewBuilder
-    private func floatingLockButton() -> some View {
-        if #available(iOS 26.0, *) {
-            lockButton()
-                .glassEffect(.regular.interactive(), in: .circle)
-        } else {
-            lockButton()
-                .background(.ultraThinMaterial, in: Circle())
-        }
-    }
-
-    @ViewBuilder
-    private func lockButton() -> some View {
-        Button {
-            UIImpactFeedbackGenerator(style: .light).impactOccurred()
-            handleHomeActionTap()
-        } label: {
-            Image(systemName: shieldState.isActive ? "lock.fill" : "lock.open.fill")
-                .font(.title2.weight(.semibold))
-                .contentTransition(.symbolEffect(.replace))
-                .frame(width: 55, height: 55)
-        }
-        .contentShape(Circle().inset(by: -10))
-        .buttonStyle(.pressableButton)
-    }
-
-    // MARK: - Lock Actions
-
-    private func handleHomeActionTap() {
-        if shieldState.isActive {
-            handleUnlock()
-        } else {
-            showBreakTypePicker = true
-        }
-    }
-
-    private func handleUnlock() {
-        handleShieldUnlock(
-            shieldState: shieldState,
-            showCommittedConfirmation: $showCommittedUnlock,
-            showSafetyConfirmation: $showSafetyUnlock
-        )
-    }
-
-    private func startBreak(type: BreakType, durationMinutes: Int?) {
-        ShieldManager.shared.turnOn(breakType: type, durationMinutes: durationMinutes)
     }
 
     // MARK: - Navigation
