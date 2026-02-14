@@ -75,14 +75,6 @@ struct NotificationSettings: Codable, Equatable {
         }
     }
 
-    func shouldSendBreak(_ notification: BreakNotification) -> Bool {
-        guard masterEnabled else { return false }
-        switch notification {
-        case .committedBreakEnded: return breakCommittedEnded
-        case .freeBreakWindZero, .safetyBreakWindZero: return breakWindZero
-        }
-    }
-
     func shouldSendWindReminder() -> Bool {
         masterEnabled && windReminder
     }

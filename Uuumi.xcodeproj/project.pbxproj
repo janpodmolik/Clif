@@ -29,9 +29,6 @@
 		B4167E632F1FF92500D89B36 /* SnapshotStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4167E5E2F1FEF4E00D89B36 /* SnapshotStore.swift */; };
 		B4167E652F1FF93800D89B36 /* SnapshotLogging.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4167E642F1FF93800D89B36 /* SnapshotLogging.swift */; };
 		B42C833F8B9D2434E465E150 /* NotificationSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = B40CCE351C80317FA3B1799D /* NotificationSettings.swift */; };
-		B451D20A2F24C74F004C534F /* WindLevel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B49387952F0E428B0090C730 /* WindLevel.swift */; };
-		B451D20B2F24C78E004C534F /* WindLevel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B49387952F0E428B0090C730 /* WindLevel.swift */; };
-		B451D20C2F24C78E004C534F /* WindLevel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B49387952F0E428B0090C730 /* WindLevel.swift */; };
 		B451D20E2F24FEF0004C534F /* ExtensionLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = B451D20D2F24FEF0004C534F /* ExtensionLogger.swift */; };
 		B451D20F2F24FEF0004C534F /* ExtensionLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = B451D20D2F24FEF0004C534F /* ExtensionLogger.swift */; };
 		B451D2102F24FEF0004C534F /* ExtensionLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = B451D20D2F24FEF0004C534F /* ExtensionLogger.swift */; };
@@ -67,14 +64,10 @@
 		B45862172EE5B92C0088CB78 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = B45862142EE5B92C0088CB78 /* Constants.swift */; };
 		B45862252EE5D0A60088CB78 /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = B45862242EE5D0A60088CB78 /* Supabase */; };
 		B458623C2EE5F6F80088CB78 /* DeviceActivityReport.appex in Embed ExtensionKit Extensions */ = {isa = PBXBuildFile; fileRef = B45862302EE5F6F80088CB78 /* DeviceActivityReport.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
-		B45862432EE5FAF60088CB78 /* ActivityReportContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = B45862422EE5FAF60088CB78 /* ActivityReportContext.swift */; };
-		B45862442EE5FAF60088CB78 /* ActivityReportContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = B45862422EE5FAF60088CB78 /* ActivityReportContext.swift */; };
 		B45CF5A52F279E83009B4F06 /* DayStartGreeting.swift in Sources */ = {isa = PBXBuildFile; fileRef = B45CF5A42F279E83009B4F06 /* DayStartGreeting.swift */; };
 		B45CF5A62F279E83009B4F06 /* DayStartGreeting.swift in Sources */ = {isa = PBXBuildFile; fileRef = B45CF5A42F279E83009B4F06 /* DayStartGreeting.swift */; };
 		B46003DB2F3BC5FC007CC2C3 /* Products.storekit in Resources */ = {isa = PBXBuildFile; fileRef = B46003DA2F3BC5FC007CC2C3 /* Products.storekit */; };
-		B461E30C2F37806900DD127E /* AppearanceSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = B461E30B2F37806900DD127E /* AppearanceSettings.swift */; };
 		B465CE0C8FADC1A606CB0FB3 /* NotificationSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = B40CCE351C80317FA3B1799D /* NotificationSettings.swift */; };
-		B468B6292F3D1ADE00E12C4B /* DailyHourlyBreakdown.swift in Sources */ = {isa = PBXBuildFile; fileRef = B468B6282F3D1ADE00E12C4B /* DailyHourlyBreakdown.swift */; };
 		B46FF15117FC695A07A0CA6E /* NotificationSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = B40CCE351C80317FA3B1799D /* NotificationSettings.swift */; };
 		B472FD572F3549D100C109AA /* SharedDefaults+Coins.swift in Sources */ = {isa = PBXBuildFile; fileRef = B472FD562F3549D100C109AA /* SharedDefaults+Coins.swift */; };
 		B472FD582F3549D100C109AA /* SharedDefaults+Coins.swift in Sources */ = {isa = PBXBuildFile; fileRef = B472FD562F3549D100C109AA /* SharedDefaults+Coins.swift */; };
@@ -87,7 +80,6 @@
 		B472FD612F354AAE00C109AA /* CoinRewards.swift in Sources */ = {isa = PBXBuildFile; fileRef = B472FD5E2F354AAE00C109AA /* CoinRewards.swift */; };
 		B472FD622F354AAE00C109AA /* CoinRewards.swift in Sources */ = {isa = PBXBuildFile; fileRef = B472FD5E2F354AAE00C109AA /* CoinRewards.swift */; };
 		B472FD632F354AAE00C109AA /* CoinRewards.swift in Sources */ = {isa = PBXBuildFile; fileRef = B472FD5E2F354AAE00C109AA /* CoinRewards.swift */; };
-		B47A5F2B2F152D850068232C /* FullUsageStats.swift in Sources */ = {isa = PBXBuildFile; fileRef = B47A5F2A2F152D850068232C /* FullUsageStats.swift */; };
 		B47D627746685257BDD640FB /* NotificationSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = B40CCE351C80317FA3B1799D /* NotificationSettings.swift */; };
 		B4924ACC2EE57ED90033475C /* DeviceActivity.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B4924ACB2EE57ED90033475C /* DeviceActivity.framework */; };
 		B4924AD42EE57ED90033475C /* DeviceActivityMonitor.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = B4924AC92EE57ED90033475C /* DeviceActivityMonitor.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
@@ -99,17 +91,7 @@
 		B493878F2F0E39F40090C730 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B493878C2F0E39F40090C730 /* Assets.xcassets */; };
 		B49387902F0E39F40090C730 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B493878C2F0E39F40090C730 /* Assets.xcassets */; };
 		B49387912F0E39F40090C730 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B493878C2F0E39F40090C730 /* Assets.xcassets */; };
-		B49387992F0E428B0090C730 /* WindConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = B49387972F0E428B0090C730 /* WindConfig.swift */; };
-		B493879B2F0E428B0090C730 /* WindLevel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B49387952F0E428B0090C730 /* WindLevel.swift */; };
-		B493879E2F0E428B0090C730 /* WindConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = B49387972F0E428B0090C730 /* WindConfig.swift */; };
-		B49387A02F0E428B0090C730 /* WindLevel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B49387952F0E428B0090C730 /* WindLevel.swift */; };
 		B4A181BE2F3B273400CDA090 /* SnapshotLogging.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4167E642F1FF93800D89B36 /* SnapshotLogging.swift */; };
-		B4ANI1012F0E00010001B001 /* IdleConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4ANI0012F0E00010001B001 /* IdleConfig.swift */; };
-		B4ANI1022F0E00010001B002 /* PetReactionType.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4ANI0022F0E00010001B002 /* PetReactionType.swift */; };
-		B4ANI1032F0E00010001B003 /* ReactionConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4ANI0032F0E00010001B003 /* ReactionConfig.swift */; };
-		B4ANI2012F0E00010001B001 /* IdleConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4ANI0012F0E00010001B001 /* IdleConfig.swift */; };
-		B4ANI2022F0E00010001B002 /* PetReactionType.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4ANI0022F0E00010001B002 /* PetReactionType.swift */; };
-		B4ANI2032F0E00010001B003 /* ReactionConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4ANI0032F0E00010001B003 /* ReactionConfig.swift */; };
 		B4C4C0922EE7FECE00E469E8 /* ManagedSettings.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B4924ADF2EE57EEE0033475C /* ManagedSettings.framework */; };
 		B4C4C09A2EE7FECE00E469E8 /* ShieldAction.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = B4C4C0912EE7FECE00E469E8 /* ShieldAction.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		B4C4C0A02EE7FF0900E469E8 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = B45862142EE5B92C0088CB78 /* Constants.swift */; };
@@ -118,35 +100,7 @@
 		B4C6518A2F2B602A0054A50E /* BreakType.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4C64EFC2F2B5EC00054A50E /* BreakType.swift */; };
 		B4C6518B2F2B602A0054A50E /* BreakType.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4C64EFC2F2B5EC00054A50E /* BreakType.swift */; };
 		B4C6518C2F2B602A0054A50E /* BreakType.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4C64EFC2F2B5EC00054A50E /* BreakType.swift */; };
-		B4D351222F123D620076C09B /* EvolutionHistory.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4D351212F123D620076C09B /* EvolutionHistory.swift */; };
-		B4D351232F123D620076C09B /* Essence.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4D351202F123D620076C09B /* Essence.swift */; };
-		B4D351262F123DD00076C09B /* StatType.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4D351252F123DD00076C09B /* StatType.swift */; };
-		B4D351272F123DD00076C09B /* DailyUsageStat.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4D351242F123DD00076C09B /* DailyUsageStat.swift */; };
-		B4DSN00022F50A0000000002 /* DailySummaryNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4DSN00012F50A0000000001 /* DailySummaryNotification.swift */; };
-		B4DSN00032F50A0000000003 /* DailySummaryNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4DSN00012F50A0000000001 /* DailySummaryNotification.swift */; };
-		B4DSN00042F50A0000000004 /* DailySummaryNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4DSN00012F50A0000000001 /* DailySummaryNotification.swift */; };
-		B4DSN00052F50A0000000005 /* DailySummaryNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4DSN00012F50A0000000001 /* DailySummaryNotification.swift */; };
-		B4DSN00062F50A0000000006 /* DailySummaryNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4DSN00012F50A0000000001 /* DailySummaryNotification.swift */; };
-		B4ERN00022F50A0000000002 /* EvolutionReadyNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4ERN00012F50A0000000001 /* EvolutionReadyNotification.swift */; };
-		B4ERN00032F50A0000000003 /* EvolutionReadyNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4ERN00012F50A0000000001 /* EvolutionReadyNotification.swift */; };
-		B4ERN00042F50A0000000004 /* EvolutionReadyNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4ERN00012F50A0000000001 /* EvolutionReadyNotification.swift */; };
-		B4ERN00052F50A0000000005 /* EvolutionReadyNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4ERN00012F50A0000000001 /* EvolutionReadyNotification.swift */; };
-		B4ERN00062F50A0000000006 /* EvolutionReadyNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4ERN00012F50A0000000001 /* EvolutionReadyNotification.swift */; };
-		B4ESS2012F0E00010001A001 /* Essence.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4D351202F123D620076C09B /* Essence.swift */; };
-		B4EVO1012F0E00010001A001 /* Blob.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4EVO0012F0E00010001A001 /* Blob.swift */; };
-		B4EVO1022F0E00010001A002 /* EvolutionPhase.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4EVO0022F0E00010001A002 /* EvolutionPhase.swift */; };
-		B4EVO1032F0E00010001A003 /* EvolutionPath.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4EVO0032F0E00010001A003 /* EvolutionPath.swift */; };
-		B4EVO1042F0E00010001A004 /* PetDisplayable.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4EVO0042F0E00010001A004 /* PetDisplayable.swift */; };
-		B4EVO2012F0E00010001A001 /* Blob.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4EVO0012F0E00010001A001 /* Blob.swift */; };
-		B4EVO2022F0E00010001A002 /* EvolutionPhase.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4EVO0022F0E00010001A002 /* EvolutionPhase.swift */; };
-		B4EVO2032F0E00010001A003 /* EvolutionPath.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4EVO0032F0E00010001A003 /* EvolutionPath.swift */; };
-		B4EVO2042F0E00010001A004 /* PetDisplayable.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4EVO0042F0E00010001A004 /* PetDisplayable.swift */; };
 		B4F8F9EC2FEC35C900E9E6D8 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = B45862142EE5B92C0088CB78 /* Constants.swift */; };
-		B4F939792F2C9D340012773D /* BreakNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4F939782F2C9D340012773D /* BreakNotification.swift */; };
-		B4F9397A2F2C9D340012773D /* BreakNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4F939782F2C9D340012773D /* BreakNotification.swift */; };
-		B4F9397B2F2C9D340012773D /* BreakNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4F939782F2C9D340012773D /* BreakNotification.swift */; };
-		B4F9397C2F2C9D340012773D /* BreakNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4F939782F2C9D340012773D /* BreakNotification.swift */; };
-		B4F9397D2F2C9D340012773D /* BreakNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4F939782F2C9D340012773D /* BreakNotification.swift */; };
 		B4HA00022F40000100AA0002 /* HourlyAggregate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4HA00012F40000100AA0001 /* HourlyAggregate.swift */; };
 		B4HA00032F40000100AA0003 /* HourlyAggregate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4HA00012F40000100AA0001 /* HourlyAggregate.swift */; };
 		B4HA00042F40000100AA0004 /* HourlyAggregate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4HA00012F40000100AA0001 /* HourlyAggregate.swift */; };
@@ -157,16 +111,13 @@
 		B4HA00142F40000100BB0004 /* SharedDefaults+HourlyAggregate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4HA00112F40000100BB0001 /* SharedDefaults+HourlyAggregate.swift */; };
 		B4HA00152F40000100BB0005 /* SharedDefaults+HourlyAggregate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4HA00112F40000100BB0001 /* SharedDefaults+HourlyAggregate.swift */; };
 		B4HA00162F40000100BB0006 /* SharedDefaults+HourlyAggregate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4HA00112F40000100BB0001 /* SharedDefaults+HourlyAggregate.swift */; };
-		B4SNM00022F50A0000000002 /* ScheduledNotificationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4SNM00012F50A0000000001 /* ScheduledNotificationManager.swift */; };
-		B4SNM00032F50A0000000003 /* ScheduledNotificationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4SNM00012F50A0000000001 /* ScheduledNotificationManager.swift */; };
-		B4SNM00042F50A0000000004 /* ScheduledNotificationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4SNM00012F50A0000000001 /* ScheduledNotificationManager.swift */; };
-		B4SNM00052F50A0000000005 /* ScheduledNotificationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4SNM00012F50A0000000001 /* ScheduledNotificationManager.swift */; };
-		B4SNM00062F50A0000000006 /* ScheduledNotificationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4SNM00012F50A0000000001 /* ScheduledNotificationManager.swift */; };
 		B4WIND0022F40A0000000002 /* WindReminderNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4WIND0012F40A0000000001 /* WindReminderNotification.swift */; };
 		B4WIND0032F40A0000000003 /* WindReminderNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4WIND0012F40A0000000001 /* WindReminderNotification.swift */; };
 		B4WIND0042F40A0000000004 /* WindReminderNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4WIND0012F40A0000000001 /* WindReminderNotification.swift */; };
 		B4WIND0052F40A0000000005 /* WindReminderNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4WIND0012F40A0000000001 /* WindReminderNotification.swift */; };
 		B4WIND0062F40A0000000006 /* WindReminderNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4WIND0012F40A0000000001 /* WindReminderNotification.swift */; };
+		B45862432EE5FAF60088CB78 /* ActivityReportContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = B45862422EE5FAF60088CB78 /* ActivityReportContext.swift */; };
+		B45862442EE5FAF60088CB78 /* ActivityReportContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = B45862422EE5FAF60088CB78 /* ActivityReportContext.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -244,43 +195,23 @@
 		B451D3782F26856C004C534F /* SharedDefaults+Wind.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SharedDefaults+Wind.swift"; sourceTree = "<group>"; };
 		B45862142EE5B92C0088CB78 /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
 		B45862302EE5F6F80088CB78 /* DeviceActivityReport.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.extensionkit-extension"; includeInIndex = 0; path = DeviceActivityReport.appex; sourceTree = BUILT_PRODUCTS_DIR; };
-		B45862422EE5FAF60088CB78 /* ActivityReportContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityReportContext.swift; sourceTree = "<group>"; };
 		B45CF5A42F279E83009B4F06 /* DayStartGreeting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayStartGreeting.swift; sourceTree = "<group>"; };
 		B46003DA2F3BC5FC007CC2C3 /* Products.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; path = Products.storekit; sourceTree = "<group>"; };
-		B461E30B2F37806900DD127E /* AppearanceSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppearanceSettings.swift; sourceTree = "<group>"; };
-		B468B6282F3D1ADE00E12C4B /* DailyHourlyBreakdown.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailyHourlyBreakdown.swift; sourceTree = "<group>"; };
 		B472FD562F3549D100C109AA /* SharedDefaults+Coins.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SharedDefaults+Coins.swift"; sourceTree = "<group>"; };
 		B472FD5C2F354A7C00C109AA /* CommittedBreakDuration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommittedBreakDuration.swift; sourceTree = "<group>"; };
 		B472FD5E2F354AAE00C109AA /* CoinRewards.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinRewards.swift; sourceTree = "<group>"; };
-		B47A5F2A2F152D850068232C /* FullUsageStats.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FullUsageStats.swift; sourceTree = "<group>"; };
 		B4924AC92EE57ED90033475C /* DeviceActivityMonitor.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = DeviceActivityMonitor.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		B4924ACB2EE57ED90033475C /* DeviceActivity.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = DeviceActivity.framework; path = System/Library/Frameworks/DeviceActivity.framework; sourceTree = SDKROOT; };
 		B4924ADE2EE57EEE0033475C /* ShieldConfiguration.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = ShieldConfiguration.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		B4924ADF2EE57EEE0033475C /* ManagedSettings.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ManagedSettings.framework; path = System/Library/Frameworks/ManagedSettings.framework; sourceTree = SDKROOT; };
 		B4924AE12EE57EEE0033475C /* ManagedSettingsUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ManagedSettingsUI.framework; path = Library/Frameworks/ManagedSettingsUI.framework; sourceTree = DEVELOPER_DIR; };
 		B493878C2F0E39F40090C730 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		B49387952F0E428B0090C730 /* WindLevel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindLevel.swift; sourceTree = "<group>"; };
-		B49387972F0E428B0090C730 /* WindConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindConfig.swift; sourceTree = "<group>"; };
-		B4ANI0012F0E00010001B001 /* IdleConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IdleConfig.swift; sourceTree = "<group>"; };
-		B4ANI0022F0E00010001B002 /* PetReactionType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PetReactionType.swift; sourceTree = "<group>"; };
-		B4ANI0032F0E00010001B003 /* ReactionConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReactionConfig.swift; sourceTree = "<group>"; };
 		B4C4C0912EE7FECE00E469E8 /* ShieldAction.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = ShieldAction.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		B4C64EFC2F2B5EC00054A50E /* BreakType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BreakType.swift; sourceTree = "<group>"; };
-		B4D351202F123D620076C09B /* Essence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Essence.swift; sourceTree = "<group>"; };
-		B4D351212F123D620076C09B /* EvolutionHistory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EvolutionHistory.swift; sourceTree = "<group>"; };
-		B4D351242F123DD00076C09B /* DailyUsageStat.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailyUsageStat.swift; sourceTree = "<group>"; };
-		B4D351252F123DD00076C09B /* StatType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatType.swift; sourceTree = "<group>"; };
-		B4DSN00012F50A0000000001 /* DailySummaryNotification.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailySummaryNotification.swift; sourceTree = "<group>"; };
-		B4ERN00012F50A0000000001 /* EvolutionReadyNotification.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EvolutionReadyNotification.swift; sourceTree = "<group>"; };
-		B4EVO0012F0E00010001A001 /* Blob.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Blob.swift; sourceTree = "<group>"; };
-		B4EVO0022F0E00010001A002 /* EvolutionPhase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EvolutionPhase.swift; sourceTree = "<group>"; };
-		B4EVO0032F0E00010001A003 /* EvolutionPath.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EvolutionPath.swift; sourceTree = "<group>"; };
-		B4EVO0042F0E00010001A004 /* PetDisplayable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PetDisplayable.swift; sourceTree = "<group>"; };
-		B4F939782F2C9D340012773D /* BreakNotification.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BreakNotification.swift; sourceTree = "<group>"; };
 		B4HA00012F40000100AA0001 /* HourlyAggregate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HourlyAggregate.swift; sourceTree = "<group>"; };
 		B4HA00112F40000100BB0001 /* SharedDefaults+HourlyAggregate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SharedDefaults+HourlyAggregate.swift"; sourceTree = "<group>"; };
-		B4SNM00012F50A0000000001 /* ScheduledNotificationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScheduledNotificationManager.swift; sourceTree = "<group>"; };
 		B4WIND0012F40A0000000001 /* WindReminderNotification.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindReminderNotification.swift; sourceTree = "<group>"; };
+		B45862422EE5FAF60088CB78 /* ActivityReportContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityReportContext.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -473,31 +404,15 @@
 			path = Storage;
 			sourceTree = "<group>";
 		};
-		B43998442EE9FCD90049445F /* Reports */ = {
-			isa = PBXGroup;
-			children = (
-				B45862422EE5FAF60088CB78 /* ActivityReportContext.swift */,
-			);
-			path = Reports;
-			sourceTree = "<group>";
-		};
 		B43998452EE9FCE40049445F /* Models */ = {
 			isa = PBXGroup;
 			children = (
-				B468B6282F3D1ADE00E12C4B /* DailyHourlyBreakdown.swift */,
-				B461E30B2F37806900DD127E /* AppearanceSettings.swift */,
 				B472FD5C2F354A7C00C109AA /* CommittedBreakDuration.swift */,
 				B4C64EFC2F2B5EC00054A50E /* BreakType.swift */,
 				B45CF5A42F279E83009B4F06 /* DayStartGreeting.swift */,
 				B4153D3D2F27417F0006FEE3 /* LimitSettings.swift */,
 				B40CCE351C80317FA3B1799D /* NotificationSettings.swift */,
 				B4167E542F1FE2D800D89B36 /* Snapshot */,
-				B47A5F2A2F152D850068232C /* FullUsageStats.swift */,
-				B4ANI0002F0E00010001B000 /* Animation */,
-				B4D351242F123DD00076C09B /* DailyUsageStat.swift */,
-				B4D351252F123DD00076C09B /* StatType.swift */,
-				B49387962F0E428B0090C730 /* Evolution */,
-				B49387972F0E428B0090C730 /* WindConfig.swift */,
 				B4HA00012F40000100AA0001 /* HourlyAggregate.swift */,
 			);
 			path = Models;
@@ -507,11 +422,7 @@
 			isa = PBXGroup;
 			children = (
 				B4153D402F2741A40006FEE3 /* WindNotification.swift */,
-				B4F939782F2C9D340012773D /* BreakNotification.swift */,
 				B4WIND0012F40A0000000001 /* WindReminderNotification.swift */,
-				B4DSN00012F50A0000000001 /* DailySummaryNotification.swift */,
-				B4ERN00012F50A0000000001 /* EvolutionReadyNotification.swift */,
-				B4SNM00012F50A0000000001 /* ScheduledNotificationManager.swift */,
 			);
 			path = Notifications;
 			sourceTree = "<group>";
@@ -544,37 +455,21 @@
 			isa = PBXGroup;
 			children = (
 				B451D2142F2533E6004C534F /* Notifications */,
-				B43998442EE9FCD90049445F /* Reports */,
 				B43998452EE9FCE40049445F /* Models */,
 				B43998432EE9FCC80049445F /* Storage */,
 				B43998422EE9FCBF0049445F /* Constants */,
+				B4ACTR012F50000100000001 /* Reports */,
 				B493878C2F0E39F40090C730 /* Assets.xcassets */,
 			);
 			path = Shared;
 			sourceTree = "<group>";
 		};
-		B49387962F0E428B0090C730 /* Evolution */ = {
+		B4ACTR012F50000100000001 /* Reports */ = {
 			isa = PBXGroup;
 			children = (
-				B4EVO0012F0E00010001A001 /* Blob.swift */,
-				B4D351202F123D620076C09B /* Essence.swift */,
-				B4D351212F123D620076C09B /* EvolutionHistory.swift */,
-				B4EVO0022F0E00010001A002 /* EvolutionPhase.swift */,
-				B4EVO0032F0E00010001A003 /* EvolutionPath.swift */,
-				B4EVO0042F0E00010001A004 /* PetDisplayable.swift */,
-				B49387952F0E428B0090C730 /* WindLevel.swift */,
+				B45862422EE5FAF60088CB78 /* ActivityReportContext.swift */,
 			);
-			path = Evolution;
-			sourceTree = "<group>";
-		};
-		B4ANI0002F0E00010001B000 /* Animation */ = {
-			isa = PBXGroup;
-			children = (
-				B4ANI0012F0E00010001B001 /* IdleConfig.swift */,
-				B4ANI0022F0E00010001B002 /* PetReactionType.swift */,
-				B4ANI0032F0E00010001B003 /* ReactionConfig.swift */,
-			);
-			path = Animation;
+			path = Reports;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -799,49 +694,29 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				B468B6292F3D1ADE00E12C4B /* DailyHourlyBreakdown.swift in Sources */,
 				B451D37F2F26856C004C534F /* SharedDefaults.swift in Sources */,
 				B451D3802F26856C004C534F /* SharedDefaults+DayState.swift in Sources */,
 				B451D3812F26856C004C534F /* SharedDefaults+Shield.swift in Sources */,
 				B451D3822F26856C004C534F /* SharedDefaults+Tokens.swift in Sources */,
-				B461E30C2F37806900DD127E /* AppearanceSettings.swift in Sources */,
 				B4153D3F2F27417F0006FEE3 /* LimitSettings.swift in Sources */,
 				B47D627746685257BDD640FB /* NotificationSettings.swift in Sources */,
 				B45CF5A62F279E83009B4F06 /* DayStartGreeting.swift in Sources */,
 				B4153D422F2741A40006FEE3 /* WindNotification.swift in Sources */,
 				B451D3832F26856C004C534F /* SharedDefaults+Wind.swift in Sources */,
-				B4F9397C2F2C9D340012773D /* BreakNotification.swift in Sources */,
 				B4WIND0022F40A0000000002 /* WindReminderNotification.swift in Sources */,
-				B4DSN00022F50A0000000002 /* DailySummaryNotification.swift in Sources */,
-				B4ERN00022F50A0000000002 /* EvolutionReadyNotification.swift in Sources */,
-				B4SNM00022F50A0000000002 /* ScheduledNotificationManager.swift in Sources */,
 				B4167E5D2F1FE73400D89B36 /* SnapshotEventType.swift in Sources */,
 				B4167E5F2F1FEF4E00D89B36 /* SnapshotStore.swift in Sources */,
 				B4167E652F1FF93800D89B36 /* SnapshotLogging.swift in Sources */,
 				B472FD5D2F354A7C00C109AA /* CommittedBreakDuration.swift in Sources */,
 				B4167E582F1FE2D800D89B36 /* SnapshotEvent.swift in Sources */,
-				B4D351262F123DD00076C09B /* StatType.swift in Sources */,
-				B4D351272F123DD00076C09B /* DailyUsageStat.swift in Sources */,
-				B4D351222F123D620076C09B /* EvolutionHistory.swift in Sources */,
-				B4D351232F123D620076C09B /* Essence.swift in Sources */,
-				B45862442EE5FAF60088CB78 /* ActivityReportContext.swift in Sources */,
-				B493879E2F0E428B0090C730 /* WindConfig.swift in Sources */,
 				B4C64EFD2F2B5EC00054A50E /* BreakType.swift in Sources */,
-				B49387A02F0E428B0090C730 /* WindLevel.swift in Sources */,
 				B45862162EE5B92C0088CB78 /* Constants.swift in Sources */,
-				B4EVO1012F0E00010001A001 /* Blob.swift in Sources */,
 				B472FD632F354AAE00C109AA /* CoinRewards.swift in Sources */,
 				B472FD5B2F3549D100C109AA /* SharedDefaults+Coins.swift in Sources */,
 				B4HA00022F40000100AA0002 /* HourlyAggregate.swift in Sources */,
 				B4HA00122F40000100BB0002 /* SharedDefaults+HourlyAggregate.swift in Sources */,
-				B4EVO1022F0E00010001A002 /* EvolutionPhase.swift in Sources */,
-				B47A5F2B2F152D850068232C /* FullUsageStats.swift in Sources */,
-				B4EVO1032F0E00010001A003 /* EvolutionPath.swift in Sources */,
-				B4EVO1042F0E00010001A004 /* PetDisplayable.swift in Sources */,
-				B4ANI1012F0E00010001B001 /* IdleConfig.swift in Sources */,
 				B451D2102F24FEF0004C534F /* ExtensionLogger.swift in Sources */,
-				B4ANI1022F0E00010001B002 /* PetReactionType.swift in Sources */,
-				B4ANI1032F0E00010001B003 /* ReactionConfig.swift in Sources */,
+				B45862442EE5FAF60088CB78 /* ActivityReportContext.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -852,9 +727,7 @@
 				B4153D442F2741C30006FEE3 /* LimitSettings.swift in Sources */,
 				B42C833F8B9D2434E465E150 /* NotificationSettings.swift in Sources */,
 				B4F8F9EC2FEC35C900E9E6D8 /* Constants.swift in Sources */,
-				B451D20C2F24C78E004C534F /* WindLevel.swift in Sources */,
 				B451D20E2F24FEF0004C534F /* ExtensionLogger.swift in Sources */,
-				B45862432EE5FAF60088CB78 /* ActivityReportContext.swift in Sources */,
 				B451D3842F26856C004C534F /* SharedDefaults.swift in Sources */,
 				B4153D472F2741D10006FEE3 /* WindNotification.swift in Sources */,
 				B4C6518B2F2B602A0054A50E /* BreakType.swift in Sources */,
@@ -864,13 +737,10 @@
 				B451D3852F26856C004C534F /* SharedDefaults+DayState.swift in Sources */,
 				B451D3862F26856C004C534F /* SharedDefaults+Shield.swift in Sources */,
 				B451D3872F26856C004C534F /* SharedDefaults+Tokens.swift in Sources */,
-				B4F9397D2F2C9D340012773D /* BreakNotification.swift in Sources */,
 				B4WIND0032F40A0000000003 /* WindReminderNotification.swift in Sources */,
-				B4DSN00032F50A0000000003 /* DailySummaryNotification.swift in Sources */,
-				B4ERN00032F50A0000000003 /* EvolutionReadyNotification.swift in Sources */,
-				B4SNM00032F50A0000000003 /* ScheduledNotificationManager.swift in Sources */,
 				B451D3882F26856C004C534F /* SharedDefaults+Wind.swift in Sources */,
 				B472FD5F2F354AAE00C109AA /* CoinRewards.swift in Sources */,
+				B45862432EE5FAF60088CB78 /* ActivityReportContext.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -893,14 +763,9 @@
 				B472FD572F3549D100C109AA /* SharedDefaults+Coins.swift in Sources */,
 				B4HA00042F40000100AA0004 /* HourlyAggregate.swift in Sources */,
 				B4HA00142F40000100BB0004 /* SharedDefaults+HourlyAggregate.swift in Sources */,
-				B451D20B2F24C78E004C534F /* WindLevel.swift in Sources */,
 				B451D2112F24FEF0004C534F /* ExtensionLogger.swift in Sources */,
 				B4167E5C2F1FE73400D89B36 /* SnapshotEventType.swift in Sources */,
-				B4F939792F2C9D340012773D /* BreakNotification.swift in Sources */,
 				B4WIND0042F40A0000000004 /* WindReminderNotification.swift in Sources */,
-				B4DSN00042F50A0000000004 /* DailySummaryNotification.swift in Sources */,
-				B4ERN00042F50A0000000004 /* EvolutionReadyNotification.swift in Sources */,
-				B4SNM00042F50A0000000004 /* ScheduledNotificationManager.swift in Sources */,
 				B4167E602F1FEF4E00D89B36 /* SnapshotStore.swift in Sources */,
 				B472FD612F354AAE00C109AA /* CoinRewards.swift in Sources */,
 			);
@@ -910,37 +775,23 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				B49387992F0E428B0090C730 /* WindConfig.swift in Sources */,
-				B493879B2F0E428B0090C730 /* WindLevel.swift in Sources */,
-				B4F9397B2F2C9D340012773D /* BreakNotification.swift in Sources */,
 				B4WIND0052F40A0000000005 /* WindReminderNotification.swift in Sources */,
-				B4DSN00052F50A0000000005 /* DailySummaryNotification.swift in Sources */,
-				B4ERN00052F50A0000000005 /* EvolutionReadyNotification.swift in Sources */,
-				B4SNM00052F50A0000000005 /* ScheduledNotificationManager.swift in Sources */,
 				B472FD5A2F3549D100C109AA /* SharedDefaults+Coins.swift in Sources */,
 				B4HA00052F40000100AA0005 /* HourlyAggregate.swift in Sources */,
 				B4HA00152F40000100BB0005 /* SharedDefaults+HourlyAggregate.swift in Sources */,
 				B45862152EE5B92C0088CB78 /* Constants.swift in Sources */,
-				B4EVO2012F0E00010001A001 /* Blob.swift in Sources */,
-				B4EVO2022F0E00010001A002 /* EvolutionPhase.swift in Sources */,
 				B451D38E2F26856C004C534F /* SharedDefaults.swift in Sources */,
 				B4153D462F2741D10006FEE3 /* WindNotification.swift in Sources */,
 				B451D38F2F26856C004C534F /* SharedDefaults+DayState.swift in Sources */,
 				B451D3902F26856C004C534F /* SharedDefaults+Shield.swift in Sources */,
 				B451D3912F26856C004C534F /* SharedDefaults+Tokens.swift in Sources */,
 				B451D3922F26856C004C534F /* SharedDefaults+Wind.swift in Sources */,
-				B4EVO2032F0E00010001A003 /* EvolutionPath.swift in Sources */,
 				B451D2122F24FEF0004C534F /* ExtensionLogger.swift in Sources */,
-				B4EVO2042F0E00010001A004 /* PetDisplayable.swift in Sources */,
 				B45CF5A52F279E83009B4F06 /* DayStartGreeting.swift in Sources */,
 				B472FD602F354AAE00C109AA /* CoinRewards.swift in Sources */,
-				B4ESS2012F0E00010001A001 /* Essence.swift in Sources */,
 				B4C64EFF2F2B5ECE0054A50E /* BreakType.swift in Sources */,
-				B4ANI2012F0E00010001B001 /* IdleConfig.swift in Sources */,
-				B4ANI2022F0E00010001B002 /* PetReactionType.swift in Sources */,
 				B4153D432F2741C30006FEE3 /* LimitSettings.swift in Sources */,
 				B46FF15117FC695A07A0CA6E /* NotificationSettings.swift in Sources */,
-				B4ANI2032F0E00010001B003 /* ReactionConfig.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -952,7 +803,6 @@
 				B465CE0C8FADC1A606CB0FB3 /* NotificationSettings.swift in Sources */,
 				B4C4C0A02EE7FF0900E469E8 /* Constants.swift in Sources */,
 				B4167E612F1FF91200D89B36 /* SnapshotEventType.swift in Sources */,
-				B451D20A2F24C74F004C534F /* WindLevel.swift in Sources */,
 				B451D3892F26856C004C534F /* SharedDefaults.swift in Sources */,
 				B451D38A2F26856C004C534F /* SharedDefaults+DayState.swift in Sources */,
 				B451D38B2F26856C004C534F /* SharedDefaults+Shield.swift in Sources */,
@@ -965,11 +815,7 @@
 				B451D38D2F26856C004C534F /* SharedDefaults+Wind.swift in Sources */,
 				B451D20F2F24FEF0004C534F /* ExtensionLogger.swift in Sources */,
 				B4167E622F1FF91800D89B36 /* SnapshotEvent.swift in Sources */,
-				B4F9397A2F2C9D340012773D /* BreakNotification.swift in Sources */,
 				B4WIND0062F40A0000000006 /* WindReminderNotification.swift in Sources */,
-				B4DSN00062F50A0000000006 /* DailySummaryNotification.swift in Sources */,
-				B4ERN00062F50A0000000006 /* EvolutionReadyNotification.swift in Sources */,
-				B4SNM00062F50A0000000006 /* ScheduledNotificationManager.swift in Sources */,
 				B4167E632F1FF92500D89B36 /* SnapshotStore.swift in Sources */,
 				B472FD622F354AAE00C109AA /* CoinRewards.swift in Sources */,
 			);

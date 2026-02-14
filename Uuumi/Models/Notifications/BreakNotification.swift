@@ -1,6 +1,16 @@
 import Foundation
 import UserNotifications
 
+extension NotificationSettings {
+    func shouldSendBreak(_ notification: BreakNotification) -> Bool {
+        guard masterEnabled else { return false }
+        switch notification {
+        case .committedBreakEnded: return breakCommittedEnded
+        case .freeBreakWindZero, .safetyBreakWindZero: return breakWindZero
+        }
+    }
+}
+
 /// Break-related notifications.
 /// - Committed break: scheduled notification when timer runs out.
 /// - Free break: notification when wind drops to 0% during the break.
