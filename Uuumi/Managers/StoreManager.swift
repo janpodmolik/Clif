@@ -37,11 +37,10 @@ final class StoreManager {
 
     // MARK: - Product IDs
 
-    static let weeklyID = "com.janpodmolik.Uuumi.premium.weekly"
     static let monthlyID = "com.janpodmolik.Uuumi.premium.monthly"
     static let yearlyID = "com.janpodmolik.Uuumi.premium.yearly"
 
-    private static let productIDs: Set<String> = [weeklyID, monthlyID, yearlyID]
+    private static let productIDs: Set<String> = [monthlyID, yearlyID]
 
     // MARK: - State
 
@@ -56,7 +55,6 @@ final class StoreManager {
 
     // MARK: - Convenience
 
-    var weeklyProduct: Product? { products.first { $0.id == Self.weeklyID } }
     var monthlyProduct: Product? { products.first { $0.id == Self.monthlyID } }
     var yearlyProduct: Product? { products.first { $0.id == Self.yearlyID } }
 

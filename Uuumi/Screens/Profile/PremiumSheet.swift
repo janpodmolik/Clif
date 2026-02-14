@@ -122,9 +122,6 @@ struct PremiumSheet: View {
             if let monthly = storeManager.monthlyProduct {
                 planCard(monthly)
             }
-            if let weekly = storeManager.weeklyProduct {
-                planCard(weekly)
-            }
         }
     }
 
@@ -239,7 +236,6 @@ struct PremiumSheet: View {
 
     private func planLabel(for productId: String) -> String {
         switch productId {
-        case StoreManager.weeklyID: return "Týdenní"
         case StoreManager.monthlyID: return "Měsíční"
         case StoreManager.yearlyID: return "Roční"
         default: return productId
