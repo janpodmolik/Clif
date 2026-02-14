@@ -27,7 +27,7 @@ struct IslandView<TransitionContent: View>: View {
     var isEssenceHighlighted: Bool = false
     var isEssenceOnTarget: Bool = false
     var isEvolutionTransitioning: Bool = false
-    var reactionAnimator: PetReactionAnimator? = nil
+    var reactionAnimator = PetReactionAnimator()
     @ViewBuilder var transitionContent: TransitionContent
     var onFrameChange: ((CGRect) -> Void)?
 
@@ -46,7 +46,7 @@ struct IslandView<TransitionContent: View>: View {
         isEssenceHighlighted: Bool = false,
         isEssenceOnTarget: Bool = false,
         isEvolutionTransitioning: Bool = false,
-        reactionAnimator: PetReactionAnimator? = nil,
+        reactionAnimator: PetReactionAnimator = PetReactionAnimator(),
         @ViewBuilder transitionContent: () -> TransitionContent,
         onFrameChange: ((CGRect) -> Void)? = nil
     ) {
@@ -281,7 +281,7 @@ struct IslandView<TransitionContent: View>: View {
                         speechBubbleState.hide()
                     }
                 }
-                .onChange(of: reactionAnimator?.trigger) { _, _ in
+                .onChange(of: reactionAnimator.trigger) { _, _ in
                     consumePendingReaction(for: pet)
                 }
 
@@ -371,7 +371,7 @@ struct IslandView<TransitionContent: View>: View {
     // MARK: - External Reactions
 
     private func consumePendingReaction(for pet: any PetDisplayable) {
-        guard let reaction = reactionAnimator?.consume() else { return }
+        guard let reaction = reactionAnimator.consume() else { return }
         let delay: TimeInterval = reaction.glow ? 0.2 : 0
 
         DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
@@ -386,9 +386,6 @@ struct IslandView<TransitionContent: View>: View {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
                     withAnimation(.easeIn(duration: 0.4)) { landingGlowRadius = 0 }
                 }
-            }
-            DispatchQueue.main.asyncAfter(deadline: .now() + reaction.type.duration + 0.2) {
-                reactionAnimator?.animationDidFinish()
             }
         }
     }
@@ -428,7 +425,7 @@ extension IslandView where TransitionContent == EmptyView {
         showEssenceDropZone: Bool = false,
         isEssenceHighlighted: Bool = false,
         isEssenceOnTarget: Bool = false,
-        reactionAnimator: PetReactionAnimator? = nil,
+        reactionAnimator: PetReactionAnimator = PetReactionAnimator(),
         onFrameChange: ((CGRect) -> Void)? = nil
     ) {
         self.init(

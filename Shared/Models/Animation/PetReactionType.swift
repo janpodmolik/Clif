@@ -17,14 +17,4 @@ enum PetReactionType: Int, CaseIterable, Hashable {
         case .bounce: return "Jump"
         }
     }
-
-    var duration: TimeInterval {
-        switch self {
-        case .none: return 0
-        case .wiggle: return 0.4
-        case .squeeze: return 0.5
-        case .jiggle: return 0.7
-        case .bounce: return 0.8
-        }
-    }
 }

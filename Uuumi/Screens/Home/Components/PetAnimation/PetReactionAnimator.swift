@@ -5,13 +5,18 @@ final class PetReactionAnimator {
     private(set) var trigger: Int = 0
     private(set) var pending: PetReactionType? = nil
     private(set) var pendingGlow = false
-    private(set) var isAnimating = false
+    private var lastPlayTime: Date = .distantPast
 
-    /// Request a reaction animation. Ignored if one is already playing.
+    /// Matches the shader's hard cutoff in `calculateTapOffset` (1.0s).
+    private static let cooldown: TimeInterval = 1.0
+
+    /// Request a reaction animation. Ignored if the previous one hasn't finished yet.
     func play(_ type: PetReactionType, withGlow: Bool = false) {
-        guard !isAnimating, type != .none else { return }
+        guard type != .none,
+              Date().timeIntervalSince(lastPlayTime) >= Self.cooldown else { return }
         pending = type
         pendingGlow = withGlow
+        lastPlayTime = Date()
         trigger += 1
     }
 
@@ -21,12 +26,6 @@ final class PetReactionAnimator {
         let glow = pendingGlow
         pending = nil
         pendingGlow = false
-        isAnimating = true
         return (type, glow)
-    }
-
-    /// Called by IslandView when the animation finishes.
-    func animationDidFinish() {
-        isAnimating = false
     }
 }
