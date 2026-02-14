@@ -16,7 +16,7 @@ struct EvolutionPhase: Hashable {
         return "evolutions/\(evolutionId)/\(folder)/\(phaseNumber)"
     }
 
-    func tapConfig(for type: TapAnimationType) -> TapConfig {
+    func reactionConfig(for type: PetReactionType) -> ReactionConfig {
         .default(for: type)
     }
 }

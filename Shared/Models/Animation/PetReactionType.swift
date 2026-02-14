@@ -1,7 +1,7 @@
 import Foundation
 
-/// Types of tap animations available for pet interaction.
-enum TapAnimationType: Int, CaseIterable, Hashable {
+/// Types of pet reaction animations (wiggle, squeeze, jiggle, bounce).
+enum PetReactionType: Int, CaseIterable, Hashable {
     case none = 0
     case wiggle = 1
     case squeeze = 2

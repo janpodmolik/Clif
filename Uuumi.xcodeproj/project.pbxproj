@@ -105,11 +105,11 @@
 		B49387A02F0E428B0090C730 /* WindLevel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B49387952F0E428B0090C730 /* WindLevel.swift */; };
 		B4A181BE2F3B273400CDA090 /* SnapshotLogging.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4167E642F1FF93800D89B36 /* SnapshotLogging.swift */; };
 		B4ANI1012F0E00010001B001 /* IdleConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4ANI0012F0E00010001B001 /* IdleConfig.swift */; };
-		B4ANI1022F0E00010001B002 /* TapAnimationType.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4ANI0022F0E00010001B002 /* TapAnimationType.swift */; };
-		B4ANI1032F0E00010001B003 /* TapConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4ANI0032F0E00010001B003 /* TapConfig.swift */; };
+		B4ANI1022F0E00010001B002 /* PetReactionType.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4ANI0022F0E00010001B002 /* PetReactionType.swift */; };
+		B4ANI1032F0E00010001B003 /* ReactionConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4ANI0032F0E00010001B003 /* ReactionConfig.swift */; };
 		B4ANI2012F0E00010001B001 /* IdleConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4ANI0012F0E00010001B001 /* IdleConfig.swift */; };
-		B4ANI2022F0E00010001B002 /* TapAnimationType.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4ANI0022F0E00010001B002 /* TapAnimationType.swift */; };
-		B4ANI2032F0E00010001B003 /* TapConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4ANI0032F0E00010001B003 /* TapConfig.swift */; };
+		B4ANI2022F0E00010001B002 /* PetReactionType.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4ANI0022F0E00010001B002 /* PetReactionType.swift */; };
+		B4ANI2032F0E00010001B003 /* ReactionConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4ANI0032F0E00010001B003 /* ReactionConfig.swift */; };
 		B4C4C0922EE7FECE00E469E8 /* ManagedSettings.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B4924ADF2EE57EEE0033475C /* ManagedSettings.framework */; };
 		B4C4C09A2EE7FECE00E469E8 /* ShieldAction.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = B4C4C0912EE7FECE00E469E8 /* ShieldAction.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		B4C4C0A02EE7FF0900E469E8 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = B45862142EE5B92C0088CB78 /* Constants.swift */; };
@@ -122,6 +122,16 @@
 		B4D351232F123D620076C09B /* Essence.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4D351202F123D620076C09B /* Essence.swift */; };
 		B4D351262F123DD00076C09B /* StatType.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4D351252F123DD00076C09B /* StatType.swift */; };
 		B4D351272F123DD00076C09B /* DailyUsageStat.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4D351242F123DD00076C09B /* DailyUsageStat.swift */; };
+		B4DSN00022F50A0000000002 /* DailySummaryNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4DSN00012F50A0000000001 /* DailySummaryNotification.swift */; };
+		B4DSN00032F50A0000000003 /* DailySummaryNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4DSN00012F50A0000000001 /* DailySummaryNotification.swift */; };
+		B4DSN00042F50A0000000004 /* DailySummaryNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4DSN00012F50A0000000001 /* DailySummaryNotification.swift */; };
+		B4DSN00052F50A0000000005 /* DailySummaryNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4DSN00012F50A0000000001 /* DailySummaryNotification.swift */; };
+		B4DSN00062F50A0000000006 /* DailySummaryNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4DSN00012F50A0000000001 /* DailySummaryNotification.swift */; };
+		B4ERN00022F50A0000000002 /* EvolutionReadyNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4ERN00012F50A0000000001 /* EvolutionReadyNotification.swift */; };
+		B4ERN00032F50A0000000003 /* EvolutionReadyNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4ERN00012F50A0000000001 /* EvolutionReadyNotification.swift */; };
+		B4ERN00042F50A0000000004 /* EvolutionReadyNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4ERN00012F50A0000000001 /* EvolutionReadyNotification.swift */; };
+		B4ERN00052F50A0000000005 /* EvolutionReadyNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4ERN00012F50A0000000001 /* EvolutionReadyNotification.swift */; };
+		B4ERN00062F50A0000000006 /* EvolutionReadyNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4ERN00012F50A0000000001 /* EvolutionReadyNotification.swift */; };
 		B4ESS2012F0E00010001A001 /* Essence.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4D351202F123D620076C09B /* Essence.swift */; };
 		B4EVO1012F0E00010001A001 /* Blob.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4EVO0012F0E00010001A001 /* Blob.swift */; };
 		B4EVO1022F0E00010001A002 /* EvolutionPhase.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4EVO0022F0E00010001A002 /* EvolutionPhase.swift */; };
@@ -147,26 +157,16 @@
 		B4HA00142F40000100BB0004 /* SharedDefaults+HourlyAggregate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4HA00112F40000100BB0001 /* SharedDefaults+HourlyAggregate.swift */; };
 		B4HA00152F40000100BB0005 /* SharedDefaults+HourlyAggregate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4HA00112F40000100BB0001 /* SharedDefaults+HourlyAggregate.swift */; };
 		B4HA00162F40000100BB0006 /* SharedDefaults+HourlyAggregate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4HA00112F40000100BB0001 /* SharedDefaults+HourlyAggregate.swift */; };
-		B4WIND0022F40A0000000002 /* WindReminderNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4WIND0012F40A0000000001 /* WindReminderNotification.swift */; };
-		B4WIND0032F40A0000000003 /* WindReminderNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4WIND0012F40A0000000001 /* WindReminderNotification.swift */; };
-		B4WIND0042F40A0000000004 /* WindReminderNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4WIND0012F40A0000000001 /* WindReminderNotification.swift */; };
-		B4WIND0052F40A0000000005 /* WindReminderNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4WIND0012F40A0000000001 /* WindReminderNotification.swift */; };
-		B4WIND0062F40A0000000006 /* WindReminderNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4WIND0012F40A0000000001 /* WindReminderNotification.swift */; };
-		B4DSN00022F50A0000000002 /* DailySummaryNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4DSN00012F50A0000000001 /* DailySummaryNotification.swift */; };
-		B4DSN00032F50A0000000003 /* DailySummaryNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4DSN00012F50A0000000001 /* DailySummaryNotification.swift */; };
-		B4DSN00042F50A0000000004 /* DailySummaryNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4DSN00012F50A0000000001 /* DailySummaryNotification.swift */; };
-		B4DSN00052F50A0000000005 /* DailySummaryNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4DSN00012F50A0000000001 /* DailySummaryNotification.swift */; };
-		B4DSN00062F50A0000000006 /* DailySummaryNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4DSN00012F50A0000000001 /* DailySummaryNotification.swift */; };
-		B4ERN00022F50A0000000002 /* EvolutionReadyNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4ERN00012F50A0000000001 /* EvolutionReadyNotification.swift */; };
-		B4ERN00032F50A0000000003 /* EvolutionReadyNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4ERN00012F50A0000000001 /* EvolutionReadyNotification.swift */; };
-		B4ERN00042F50A0000000004 /* EvolutionReadyNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4ERN00012F50A0000000001 /* EvolutionReadyNotification.swift */; };
-		B4ERN00052F50A0000000005 /* EvolutionReadyNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4ERN00012F50A0000000001 /* EvolutionReadyNotification.swift */; };
-		B4ERN00062F50A0000000006 /* EvolutionReadyNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4ERN00012F50A0000000001 /* EvolutionReadyNotification.swift */; };
 		B4SNM00022F50A0000000002 /* ScheduledNotificationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4SNM00012F50A0000000001 /* ScheduledNotificationManager.swift */; };
 		B4SNM00032F50A0000000003 /* ScheduledNotificationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4SNM00012F50A0000000001 /* ScheduledNotificationManager.swift */; };
 		B4SNM00042F50A0000000004 /* ScheduledNotificationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4SNM00012F50A0000000001 /* ScheduledNotificationManager.swift */; };
 		B4SNM00052F50A0000000005 /* ScheduledNotificationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4SNM00012F50A0000000001 /* ScheduledNotificationManager.swift */; };
 		B4SNM00062F50A0000000006 /* ScheduledNotificationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4SNM00012F50A0000000001 /* ScheduledNotificationManager.swift */; };
+		B4WIND0022F40A0000000002 /* WindReminderNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4WIND0012F40A0000000001 /* WindReminderNotification.swift */; };
+		B4WIND0032F40A0000000003 /* WindReminderNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4WIND0012F40A0000000001 /* WindReminderNotification.swift */; };
+		B4WIND0042F40A0000000004 /* WindReminderNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4WIND0012F40A0000000001 /* WindReminderNotification.swift */; };
+		B4WIND0052F40A0000000005 /* WindReminderNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4WIND0012F40A0000000001 /* WindReminderNotification.swift */; };
+		B4WIND0062F40A0000000006 /* WindReminderNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4WIND0012F40A0000000001 /* WindReminderNotification.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -262,14 +262,16 @@
 		B49387952F0E428B0090C730 /* WindLevel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindLevel.swift; sourceTree = "<group>"; };
 		B49387972F0E428B0090C730 /* WindConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindConfig.swift; sourceTree = "<group>"; };
 		B4ANI0012F0E00010001B001 /* IdleConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IdleConfig.swift; sourceTree = "<group>"; };
-		B4ANI0022F0E00010001B002 /* TapAnimationType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TapAnimationType.swift; sourceTree = "<group>"; };
-		B4ANI0032F0E00010001B003 /* TapConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TapConfig.swift; sourceTree = "<group>"; };
+		B4ANI0022F0E00010001B002 /* PetReactionType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PetReactionType.swift; sourceTree = "<group>"; };
+		B4ANI0032F0E00010001B003 /* ReactionConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReactionConfig.swift; sourceTree = "<group>"; };
 		B4C4C0912EE7FECE00E469E8 /* ShieldAction.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = ShieldAction.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		B4C64EFC2F2B5EC00054A50E /* BreakType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BreakType.swift; sourceTree = "<group>"; };
 		B4D351202F123D620076C09B /* Essence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Essence.swift; sourceTree = "<group>"; };
 		B4D351212F123D620076C09B /* EvolutionHistory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EvolutionHistory.swift; sourceTree = "<group>"; };
 		B4D351242F123DD00076C09B /* DailyUsageStat.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailyUsageStat.swift; sourceTree = "<group>"; };
 		B4D351252F123DD00076C09B /* StatType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatType.swift; sourceTree = "<group>"; };
+		B4DSN00012F50A0000000001 /* DailySummaryNotification.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailySummaryNotification.swift; sourceTree = "<group>"; };
+		B4ERN00012F50A0000000001 /* EvolutionReadyNotification.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EvolutionReadyNotification.swift; sourceTree = "<group>"; };
 		B4EVO0012F0E00010001A001 /* Blob.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Blob.swift; sourceTree = "<group>"; };
 		B4EVO0022F0E00010001A002 /* EvolutionPhase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EvolutionPhase.swift; sourceTree = "<group>"; };
 		B4EVO0032F0E00010001A003 /* EvolutionPath.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EvolutionPath.swift; sourceTree = "<group>"; };
@@ -277,10 +279,8 @@
 		B4F939782F2C9D340012773D /* BreakNotification.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BreakNotification.swift; sourceTree = "<group>"; };
 		B4HA00012F40000100AA0001 /* HourlyAggregate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HourlyAggregate.swift; sourceTree = "<group>"; };
 		B4HA00112F40000100BB0001 /* SharedDefaults+HourlyAggregate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SharedDefaults+HourlyAggregate.swift"; sourceTree = "<group>"; };
-		B4WIND0012F40A0000000001 /* WindReminderNotification.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindReminderNotification.swift; sourceTree = "<group>"; };
-		B4DSN00012F50A0000000001 /* DailySummaryNotification.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailySummaryNotification.swift; sourceTree = "<group>"; };
-		B4ERN00012F50A0000000001 /* EvolutionReadyNotification.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EvolutionReadyNotification.swift; sourceTree = "<group>"; };
 		B4SNM00012F50A0000000001 /* ScheduledNotificationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScheduledNotificationManager.swift; sourceTree = "<group>"; };
+		B4WIND0012F40A0000000001 /* WindReminderNotification.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindReminderNotification.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -571,8 +571,8 @@
 			isa = PBXGroup;
 			children = (
 				B4ANI0012F0E00010001B001 /* IdleConfig.swift */,
-				B4ANI0022F0E00010001B002 /* TapAnimationType.swift */,
-				B4ANI0032F0E00010001B003 /* TapConfig.swift */,
+				B4ANI0022F0E00010001B002 /* PetReactionType.swift */,
+				B4ANI0032F0E00010001B003 /* ReactionConfig.swift */,
 			);
 			path = Animation;
 			sourceTree = "<group>";
@@ -840,8 +840,8 @@
 				B4EVO1042F0E00010001A004 /* PetDisplayable.swift in Sources */,
 				B4ANI1012F0E00010001B001 /* IdleConfig.swift in Sources */,
 				B451D2102F24FEF0004C534F /* ExtensionLogger.swift in Sources */,
-				B4ANI1022F0E00010001B002 /* TapAnimationType.swift in Sources */,
-				B4ANI1032F0E00010001B003 /* TapConfig.swift in Sources */,
+				B4ANI1022F0E00010001B002 /* PetReactionType.swift in Sources */,
+				B4ANI1032F0E00010001B003 /* ReactionConfig.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -937,10 +937,10 @@
 				B4ESS2012F0E00010001A001 /* Essence.swift in Sources */,
 				B4C64EFF2F2B5ECE0054A50E /* BreakType.swift in Sources */,
 				B4ANI2012F0E00010001B001 /* IdleConfig.swift in Sources */,
-				B4ANI2022F0E00010001B002 /* TapAnimationType.swift in Sources */,
+				B4ANI2022F0E00010001B002 /* PetReactionType.swift in Sources */,
 				B4153D432F2741C30006FEE3 /* LimitSettings.swift in Sources */,
 				B46FF15117FC695A07A0CA6E /* NotificationSettings.swift in Sources */,
-				B4ANI2032F0E00010001B003 /* TapConfig.swift in Sources */,
+				B4ANI2032F0E00010001B003 /* ReactionConfig.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -22,8 +22,8 @@ struct DebugIslandView: View {
     var peakMode: Bool = false
 
     // Debug tap overrides
-    var debugTapType: TapAnimationType = .none
-    var debugTapConfig: TapConfig? = nil
+    var debugTapType: PetReactionType = .none
+    var debugReactionConfig: ReactionConfig? = nil
 
     // Debug idle override
     var debugIdleConfig: IdleConfig? = nil
@@ -51,8 +51,8 @@ struct DebugIslandView: View {
 
     // Internal tap state (used when no external binding provided)
     @State private var internalTapTime: TimeInterval = -1
-    @State private var currentTapType: TapAnimationType = .none
-    @State private var currentTapConfig: TapConfig = .none
+    @State private var currentTapType: PetReactionType = .none
+    @State private var currentReactionConfig: ReactionConfig = .none
 
     // Pet animation transform for bubble positioning
     @State private var petTransform: PetAnimationTransform = .zero
@@ -80,20 +80,20 @@ struct DebugIslandView: View {
         return petImageSize
     }
 
-    private var activeTapType: TapAnimationType {
+    private var activeTapType: PetReactionType {
         debugTapType != .none ? debugTapType : currentTapType
     }
 
-    private var activeTapConfig: TapConfig {
+    private var activeReactionConfig: ReactionConfig {
         // Priority: debug override > internal state > default for current tap type
-        if let config = debugTapConfig {
+        if let config = debugReactionConfig {
             return config
         }
-        if currentTapConfig != .none {
-            return currentTapConfig
+        if currentReactionConfig != .none {
+            return currentReactionConfig
         }
         // Fallback to default config for the active tap type (fixes external trigger)
-        return TapConfig.default(for: activeTapType)
+        return ReactionConfig.default(for: activeTapType)
     }
 
     private var activeIdleConfig: IdleConfig {
@@ -113,11 +113,11 @@ struct DebugIslandView: View {
         windLevel
     }
 
-    private static var tapTypes: [TapAnimationType] {
+    private static var tapTypes: [PetReactionType] {
         [.wiggle, .squeeze, .jiggle]
     }
 
-    private func randomTapType() -> TapAnimationType {
+    private func randomTapType() -> PetReactionType {
         Self.tapTypes.randomElement() ?? .wiggle
     }
 
@@ -164,7 +164,7 @@ struct DebugIslandView: View {
                         rotationAmount: activeWindConfig.rotationAmount,
                         tapTime: currentTapTime,
                         tapType: activeTapType,
-                        tapConfig: activeTapConfig,
+                        tapConfig: activeReactionConfig,
                         idleConfig: activeIdleConfig,
                         peakMode: peakMode,
                         screenWidth: screenWidth,
@@ -215,7 +215,7 @@ struct DebugIslandView: View {
 
     private func triggerTap() {
         // Determine tap type - use debug override or random
-        let tapType: TapAnimationType
+        let tapType: PetReactionType
         if debugTapType != .none {
             tapType = debugTapType
         } else {
@@ -223,11 +223,11 @@ struct DebugIslandView: View {
         }
 
         // Get config from pet (or debug override)
-        let tapConfig = debugTapConfig ?? pet.tapConfig(for: tapType)
+        let tapConfig = debugReactionConfig ?? pet.reactionConfig(for: tapType)
 
         // Update state
         currentTapType = tapType
-        currentTapConfig = tapConfig
+        currentReactionConfig = tapConfig
 
         let now = Date().timeIntervalSinceReferenceDate
 

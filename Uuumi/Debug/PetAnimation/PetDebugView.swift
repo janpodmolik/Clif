@@ -34,14 +34,14 @@ struct PetDebugView: View {
 
     // Tap animation
     @State private var tapTime: TimeInterval = -1
-    @State private var selectedTapType: TapAnimationType = .wiggle
+    @State private var selectedTapType: PetReactionType = .wiggle
     @State private var selectedHapticType: HapticType = .impactLight
     @State private var hapticDuration: Double = 0.3
     @State private var hapticIntensity: Double = 0.8
-    @State private var useCustomTapConfig: Bool = false
-    @State private var customTapIntensity: CGFloat = TapConfig.default(for: .wiggle).intensity
-    @State private var customTapDecayRate: CGFloat = TapConfig.default(for: .wiggle).decayRate
-    @State private var customTapFrequency: CGFloat = TapConfig.default(for: .wiggle).frequency
+    @State private var useCustomReactionConfig: Bool = false
+    @State private var customTapIntensity: CGFloat = ReactionConfig.default(for: .wiggle).intensity
+    @State private var customTapDecayRate: CGFloat = ReactionConfig.default(for: .wiggle).decayRate
+    @State private var customTapFrequency: CGFloat = ReactionConfig.default(for: .wiggle).frequency
 
     // Speech bubble debug
     @State private var isSpeechBubbleExpanded: Bool = false
@@ -119,9 +119,9 @@ struct PetDebugView: View {
         WindLevel.from(progress: windProgress)
     }
 
-    private var customTapConfig: TapConfig? {
-        guard useCustomTapConfig else { return nil }
-        return TapConfig(
+    private var customReactionConfig: ReactionConfig? {
+        guard useCustomReactionConfig else { return nil }
+        return ReactionConfig(
             intensity: customTapIntensity,
             decayRate: customTapDecayRate,
             frequency: customTapFrequency
@@ -190,7 +190,7 @@ struct PetDebugView: View {
                         windRhythm: debugWindRhythm,
                         peakMode: peakMode,
                         debugTapType: selectedTapType,
-                        debugTapConfig: customTapConfig,
+                        debugReactionConfig: customReactionConfig,
                         debugIdleConfig: currentIdleConfig,
                         debugHapticType: selectedHapticType,
                         debugHapticDuration: hapticDuration,
@@ -520,12 +520,12 @@ struct PetDebugView: View {
     }
 
     private func resetTapToDefaults() {
-        useCustomTapConfig = false
+        useCustomReactionConfig = false
         selectedTapType = .wiggle
         selectedHapticType = .impactLight
         hapticDuration = 0.3
         hapticIntensity = 0.8
-        let defaults = TapConfig.default(for: .wiggle)
+        let defaults = ReactionConfig.default(for: .wiggle)
         customTapIntensity = defaults.intensity
         customTapDecayRate = defaults.decayRate
         customTapFrequency = defaults.frequency
@@ -813,7 +813,7 @@ struct PetDebugView: View {
                 .foregroundStyle(.secondary)
 
             DebugSegmentedPicker(
-                TapAnimationType.allCases.filter { $0 != .none },
+                PetReactionType.allCases.filter { $0 != .none },
                 selection: $selectedTapType,
                 label: { $0.displayName }
             )
@@ -867,9 +867,9 @@ struct PetDebugView: View {
         .buttonStyle(.borderedProminent)
 
         // Custom tap config toggle
-        Toggle("Custom Tap Config", isOn: $useCustomTapConfig)
+        Toggle("Custom Tap Config", isOn: $useCustomReactionConfig)
 
-        if useCustomTapConfig {
+        if useCustomReactionConfig {
             customTapControls
         }
     }
@@ -905,7 +905,7 @@ struct PetDebugView: View {
 
         // Reset all values to defaults when switching animation types
         .onChange(of: selectedTapType) {
-            let defaults = TapConfig.default(for: selectedTapType)
+            let defaults = ReactionConfig.default(for: selectedTapType)
             customTapIntensity = defaults.intensity
             customTapDecayRate = defaults.decayRate
             customTapFrequency = defaults.frequency
@@ -1241,18 +1241,18 @@ struct PetDebugView: View {
     }
 
     private func copyConfig() {
-        let wiggleConfig = useCustomTapConfig && selectedTapType == .wiggle
-            ? customTapConfig!
-            : currentPet.tapConfig(for: .wiggle)
-        let squeezeConfig = useCustomTapConfig && selectedTapType == .squeeze
-            ? customTapConfig!
-            : currentPet.tapConfig(for: .squeeze)
-        let jiggleConfig = useCustomTapConfig && selectedTapType == .jiggle
-            ? customTapConfig!
-            : currentPet.tapConfig(for: .jiggle)
-        let bounceConfig = useCustomTapConfig && selectedTapType == .bounce
-            ? customTapConfig!
-            : currentPet.tapConfig(for: .bounce)
+        let wiggleConfig = useCustomReactionConfig && selectedTapType == .wiggle
+            ? customReactionConfig!
+            : currentPet.reactionConfig(for: .wiggle)
+        let squeezeConfig = useCustomReactionConfig && selectedTapType == .squeeze
+            ? customReactionConfig!
+            : currentPet.reactionConfig(for: .squeeze)
+        let jiggleConfig = useCustomReactionConfig && selectedTapType == .jiggle
+            ? customReactionConfig!
+            : currentPet.reactionConfig(for: .jiggle)
+        let bounceConfig = useCustomReactionConfig && selectedTapType == .bounce
+            ? customReactionConfig!
+            : currentPet.reactionConfig(for: .bounce)
 
         let windConfig = continuousWindConfig
 

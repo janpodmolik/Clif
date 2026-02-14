@@ -30,8 +30,8 @@ struct PetAnimationEffect: ViewModifier {
 
     // Tap parameters
     let tapTime: TimeInterval
-    let tapType: TapAnimationType
-    let tapConfig: TapConfig
+    let tapType: PetReactionType
+    let tapConfig: ReactionConfig
 
     // Idle parameters
     let idleConfig: IdleConfig
@@ -243,8 +243,8 @@ extension View {
         swayAmount: CGFloat = 0.0,
         rotationAmount: CGFloat = 0.5,
         tapTime: TimeInterval = -1,
-        tapType: TapAnimationType = .none,
-        tapConfig: TapConfig = .none,
+        tapType: PetReactionType = .none,
+        tapConfig: ReactionConfig = .none,
         idleConfig: IdleConfig = .default,
         idlePhaseOffset: TimeInterval = 0,
         peakMode: Bool = false,

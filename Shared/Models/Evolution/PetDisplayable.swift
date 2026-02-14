@@ -6,7 +6,7 @@ protocol PetDisplayable {
     var idleConfig: IdleConfig { get }
     func assetName(for windLevel: WindLevel) -> String
     func assetName(for windLevel: WindLevel, isBlownAway: Bool) -> String
-    func tapConfig(for type: TapAnimationType) -> TapConfig
+    func reactionConfig(for type: PetReactionType) -> ReactionConfig
 }
 
 // MARK: - EvolutionPhase Conformance

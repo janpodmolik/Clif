@@ -1,6 +1,6 @@
 import UIKit
 
-extension TapAnimationType {
+extension PetReactionType {
     var hapticStyle: UIImpactFeedbackGenerator.FeedbackStyle {
         switch self {
         case .none: return .light

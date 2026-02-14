@@ -16,7 +16,7 @@ struct Blob: Hashable {
         return "blob/\(folder)/1"
     }
 
-    func tapConfig(for type: TapAnimationType) -> TapConfig {
+    func reactionConfig(for type: PetReactionType) -> ReactionConfig {
         .default(for: type)
     }
 }

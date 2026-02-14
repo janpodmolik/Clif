@@ -32,7 +32,7 @@ struct HomeScreen: View {
     @State private var petFrame: CGRect = .zero
     @State private var dropZoneFrame: CGRect = .zero
     @State private var evolutionAnimator = EvolutionTransitionAnimator()
-    @State private var shouldPlayLandingBounce = false
+    @State private var reactionAnimator = PetReactionAnimator()
 
     /// Timer-driven refresh trigger for real-time wind updates during active shield.
     /// Increments every second to force UI recalculation of effectiveWindPoints.
@@ -309,6 +309,16 @@ struct HomeScreen: View {
         .onReceive(NotificationCenter.default.publisher(for: .showPresetPicker)) { _ in
             showPresetPicker = true
         }
+        .onReceive(NotificationCenter.default.publisher(for: .navigateHome)) { _ in
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                reactionAnimator.play(.bounce)
+            }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .selectPet)) { _ in
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                reactionAnimator.play(.bounce)
+            }
+        }
         .onReceive(NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)) { _ in
             // Force refresh when returning from background to read latest wind
             refreshTick += 1
@@ -330,13 +340,12 @@ struct HomeScreen: View {
         .onChange(of: dropZoneFrame) { _, _ in
             updatePetDropFrame()
         }
-        .onChange(of: isInCreationMode) { oldValue, newValue in
+        .onChange(of: isInCreationMode) { _, _ in
             updatePetDropFrame()
-            // Reset landing bounce flag after pet view has appeared and consumed it
-            if oldValue && !newValue && shouldPlayLandingBounce {
-                DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-                    shouldPlayLandingBounce = false
-                }
+        }
+        .onChange(of: coinsAnimator.phase) { _, newPhase in
+            if newPhase == .burst {
+                reactionAnimator.play(.bounce)
             }
         }
         .onChange(of: currentPet?.id) { _, _ in
@@ -408,7 +417,7 @@ struct HomeScreen: View {
                 isEssenceHighlighted: isEssenceDropZoneHighlighted,
                 isEssenceOnTarget: isEssenceOnTarget,
                 isEvolutionTransitioning: evolutionAnimator.isShowingTransition,
-                landingBounce: shouldPlayLandingBounce,
+                reactionAnimator: reactionAnimator,
                 transitionContent: {
                     if evolutionAnimator.isShowingTransition {
                         EvolutionTransitionView(
@@ -510,7 +519,7 @@ struct HomeScreen: View {
         if status == .approved {
             withAnimation(.easeInOut(duration: 0.5)) {
                 createPetCoordinator.show { _ in
-                    shouldPlayLandingBounce = true
+                    reactionAnimator.play(.bounce, withGlow: true)
                 }
             }
             return
@@ -520,7 +529,7 @@ struct HomeScreen: View {
             try await AuthorizationCenter.shared.requestAuthorization(for: .individual)
             withAnimation(.easeInOut(duration: 0.5)) {
                 createPetCoordinator.show { _ in
-                    shouldPlayLandingBounce = true
+                    reactionAnimator.play(.bounce, withGlow: true)
                 }
             }
         } catch {

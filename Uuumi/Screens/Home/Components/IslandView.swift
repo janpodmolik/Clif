@@ -27,7 +27,7 @@ struct IslandView<TransitionContent: View>: View {
     var isEssenceHighlighted: Bool = false
     var isEssenceOnTarget: Bool = false
     var isEvolutionTransitioning: Bool = false
-    var landingBounce: Bool = false
+    var reactionAnimator: PetReactionAnimator? = nil
     @ViewBuilder var transitionContent: TransitionContent
     var onFrameChange: ((CGRect) -> Void)?
 
@@ -46,7 +46,7 @@ struct IslandView<TransitionContent: View>: View {
         isEssenceHighlighted: Bool = false,
         isEssenceOnTarget: Bool = false,
         isEvolutionTransitioning: Bool = false,
-        landingBounce: Bool = false,
+        reactionAnimator: PetReactionAnimator? = nil,
         @ViewBuilder transitionContent: () -> TransitionContent,
         onFrameChange: ((CGRect) -> Void)? = nil
     ) {
@@ -64,15 +64,15 @@ struct IslandView<TransitionContent: View>: View {
         self.isEssenceHighlighted = isEssenceHighlighted
         self.isEssenceOnTarget = isEssenceOnTarget
         self.isEvolutionTransitioning = isEvolutionTransitioning
-        self.landingBounce = landingBounce
+        self.reactionAnimator = reactionAnimator
         self.transitionContent = transitionContent()
         self.onFrameChange = onFrameChange
     }
 
     // Animation state
     @State private var reactionStartTime: TimeInterval = -1
-    @State private var currentTapType: TapAnimationType = .none
-    @State private var currentTapConfig: TapConfig = .none
+    @State private var currentTapType: PetReactionType = .none
+    @State private var currentReactionConfig: ReactionConfig = .none
     @State private var lastAnimationTime: Date = .distantPast
     @State private var autoPlayTimer: Timer?
 
@@ -136,11 +136,11 @@ struct IslandView<TransitionContent: View>: View {
     }
 
 
-    private static var tapTypes: [TapAnimationType] {
+    private static var tapTypes: [PetReactionType] {
         [.wiggle, .squeeze, .jiggle, .bounce]
     }
 
-    private func randomTapType() -> TapAnimationType {
+    private func randomTapType() -> PetReactionType {
         Self.tapTypes.randomElement() ?? .wiggle
     }
 
@@ -213,7 +213,7 @@ struct IslandView<TransitionContent: View>: View {
                     rotationAmount: windConfig.rotationAmount,
                     tapTime: reactionStartTime,
                     tapType: currentTapType,
-                    tapConfig: currentTapConfig,
+                    tapConfig: currentReactionConfig,
                     idleConfig: pet.idleConfig,
                     screenWidth: screenWidth,
                     windRhythm: windRhythm,
@@ -262,9 +262,7 @@ struct IslandView<TransitionContent: View>: View {
                 .onAppear {
                     speechBubbleState.startAutoTriggers(windLevel: windLevel)
                     startAutoPlay(for: pet)
-                    if landingBounce {
-                        triggerLandingAnimation(for: pet)
-                    }
+                    consumePendingReaction(for: pet)
                 }
                 .onDisappear {
                     speechBubbleState.stopAutoTriggers()
@@ -282,6 +280,9 @@ struct IslandView<TransitionContent: View>: View {
                     if newValue {
                         speechBubbleState.hide()
                     }
+                }
+                .onChange(of: reactionAnimator?.trigger) { _, _ in
+                    consumePendingReaction(for: pet)
                 }
 
             if isEvolutionTransitioning {
@@ -347,15 +348,15 @@ struct IslandView<TransitionContent: View>: View {
         guard Date().timeIntervalSince(lastAnimationTime) >= animationCooldown else { return }
         lastAnimationTime = Date()
 
-        let tapType = randomTapType()
-        let tapConfig = pet.tapConfig(for: tapType)
+        let type = randomTapType()
+        let config = pet.reactionConfig(for: type)
 
-        currentTapType = tapType
-        currentTapConfig = tapConfig
+        currentTapType = type
+        currentReactionConfig = config
         reactionStartTime = Date().timeIntervalSinceReferenceDate
 
         if withHaptics {
-            let generator = UIImpactFeedbackGenerator(style: tapType.hapticStyle)
+            let generator = UIImpactFeedbackGenerator(style: type.hapticStyle)
             generator.impactOccurred()
         }
 
@@ -367,29 +368,27 @@ struct IslandView<TransitionContent: View>: View {
         playAnimation(for: pet, withHaptics: true)
     }
 
-    // MARK: - Landing Animation
+    // MARK: - External Reactions
 
-    private func triggerLandingAnimation(for pet: any PetDisplayable) {
-        // Delay to let the view settle after cross-fade transition
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
-            // Trigger bounce via existing Metal shader tap animation
-            currentTapType = .bounce
-            currentTapConfig = pet.tapConfig(for: .bounce)
+    private func consumePendingReaction(for pet: any PetDisplayable) {
+        guard let reaction = reactionAnimator?.consume() else { return }
+        let delay: TimeInterval = reaction.glow ? 0.2 : 0
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
+            currentTapType = reaction.type
+            currentReactionConfig = pet.reactionConfig(for: reaction.type)
             reactionStartTime = Date().timeIntervalSinceReferenceDate
             lastAnimationTime = Date()
-
             HapticType.impactMedium.trigger()
 
-            // Glow: fade in
-            withAnimation(.easeOut(duration: 0.3)) {
-                landingGlowRadius = 12
-            }
-
-            // Glow: fade out after bounce settles
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
-                withAnimation(.easeIn(duration: 0.4)) {
-                    landingGlowRadius = 0
+            if reaction.glow {
+                withAnimation(.easeOut(duration: 0.3)) { landingGlowRadius = 12 }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
+                    withAnimation(.easeIn(duration: 0.4)) { landingGlowRadius = 0 }
                 }
+            }
+            DispatchQueue.main.asyncAfter(deadline: .now() + reaction.type.duration + 0.2) {
+                reactionAnimator?.animationDidFinish()
             }
         }
     }
@@ -429,7 +428,7 @@ extension IslandView where TransitionContent == EmptyView {
         showEssenceDropZone: Bool = false,
         isEssenceHighlighted: Bool = false,
         isEssenceOnTarget: Bool = false,
-        landingBounce: Bool = false,
+        reactionAnimator: PetReactionAnimator? = nil,
         onFrameChange: ((CGRect) -> Void)? = nil
     ) {
         self.init(
@@ -446,7 +445,7 @@ extension IslandView where TransitionContent == EmptyView {
             showEssenceDropZone: showEssenceDropZone,
             isEssenceHighlighted: isEssenceHighlighted,
             isEssenceOnTarget: isEssenceOnTarget,
-            landingBounce: landingBounce,
+            reactionAnimator: reactionAnimator,
             transitionContent: { EmptyView() },
             onFrameChange: onFrameChange
         )
