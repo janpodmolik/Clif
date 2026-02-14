@@ -1,3 +1,4 @@
+import Combine
 import SwiftUI
 import UserNotifications
 
@@ -15,6 +16,7 @@ struct MainApp: App {
     @State private var authManager = AuthManager()
     @State private var storeManager = StoreManager()
     @State private var syncManager = SyncManager()
+    @State private var periodicSyncTimer: AnyCancellable?
 
     init() {
         print("🟢 MainApp init")
@@ -128,11 +130,31 @@ struct MainApp: App {
                 }
             }
 
+            // Start periodic sync timer (every 5 min while foregrounded)
+            if periodicSyncTimer == nil {
+                periodicSyncTimer = Timer.publish(every: 300, on: .main, in: .common)
+                    .autoconnect()
+                    .sink { [syncManager, petManager, essenceCatalogManager] _ in
+                        Task { @MainActor in
+                            await syncManager.syncActivePetIfNeeded(petManager: petManager)
+                            await syncManager.syncUserDataIfNeeded(essenceCatalogManager: essenceCatalogManager)
+
+                            let claimed = await syncManager.claimPendingRewards()
+                            if claimed > 0 {
+                                await syncManager.syncUserData(essenceCatalogManager: essenceCatalogManager)
+                            }
+                        }
+                    }
+            }
+
             #if DEBUG
             print("🟢 App became active")
             #endif
 
         case .background:
+            // Stop periodic sync timer
+            periodicSyncTimer?.cancel()
+            periodicSyncTimer = nil
             // Save current state when going to background
             petManager.savePet()
 
