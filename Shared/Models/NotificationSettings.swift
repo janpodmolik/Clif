@@ -11,7 +11,7 @@ struct NotificationSettings: Codable, Equatable {
 
     // MARK: - Wind Notifications (per-threshold)
 
-    var windLight: Bool = true       // 25%
+    var windLight: Bool = false      // 25%
     var windStrong: Bool = true      // 60%
     var windCritical: Bool = true    // 85%
 
@@ -24,7 +24,7 @@ struct NotificationSettings: Codable, Equatable {
 
     var breakCommittedEnded: Bool = true
     /// Covers both free break and safety break wind-zero notifications.
-    var breakWindZero: Bool = true
+    var breakWindZero: Bool = false
 
     // MARK: - Wind Reminder
 
@@ -48,11 +48,11 @@ struct NotificationSettings: Codable, Equatable {
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         masterEnabled = try container.decodeIfPresent(Bool.self, forKey: .masterEnabled) ?? true
-        windLight = try container.decodeIfPresent(Bool.self, forKey: .windLight) ?? true
+        windLight = try container.decodeIfPresent(Bool.self, forKey: .windLight) ?? false
         windStrong = try container.decodeIfPresent(Bool.self, forKey: .windStrong) ?? true
         windCritical = try container.decodeIfPresent(Bool.self, forKey: .windCritical) ?? true
         breakCommittedEnded = try container.decodeIfPresent(Bool.self, forKey: .breakCommittedEnded) ?? true
-        breakWindZero = try container.decodeIfPresent(Bool.self, forKey: .breakWindZero) ?? true
+        breakWindZero = try container.decodeIfPresent(Bool.self, forKey: .breakWindZero) ?? false
         windReminder = try container.decodeIfPresent(Bool.self, forKey: .windReminder) ?? true
         dailySummary = try container.decodeIfPresent(Bool.self, forKey: .dailySummary) ?? true
         evolutionReady = try container.decodeIfPresent(Bool.self, forKey: .evolutionReady) ?? true

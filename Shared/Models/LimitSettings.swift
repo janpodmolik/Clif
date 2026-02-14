@@ -41,7 +41,7 @@ struct LimitSettings: Equatable {
     var safetyShieldActivationThreshold: Int = 100
 
     /// Wind must drop below this percentage for safe unlock (0, 50, or 80).
-    var safetyUnlockThreshold: Int = 80
+    var safetyUnlockThreshold: Int = 50
 
     // MARK: - Post-Break
 
@@ -90,7 +90,7 @@ extension LimitSettings: Codable {
         self.dayStartShieldEnabled = try container.decodeIfPresent(Bool.self, forKey: .dayStartShieldEnabled) ?? true
         self.defaultWindPresetRaw = try container.decodeIfPresent(String.self, forKey: .defaultWindPresetRaw) ?? "balanced"
         self.safetyShieldActivationThreshold = try container.decodeIfPresent(Int.self, forKey: .safetyShieldActivationThreshold) ?? 100
-        self.safetyUnlockThreshold = try container.decodeIfPresent(Int.self, forKey: .safetyUnlockThreshold) ?? 80
+        self.safetyUnlockThreshold = try container.decodeIfPresent(Int.self, forKey: .safetyUnlockThreshold) ?? 50
         self.autoLockAfterCommittedBreak = try container.decodeIfPresent(Bool.self, forKey: .autoLockAfterCommittedBreak) ?? false
         self.disableSafetyShield = try container.decodeIfPresent(Bool.self, forKey: .disableSafetyShield) ?? false
     }
