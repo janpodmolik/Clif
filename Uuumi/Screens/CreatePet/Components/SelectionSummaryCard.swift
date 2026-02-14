@@ -15,7 +15,7 @@ struct SelectionSummaryCard: View {
             // Apps/Categories
             if hasAppsSelected {
                 LimitedSourcesPreview(
-                    applicationTokens: coordinator.selectedApps.applicationTokens,
+                    applicationTokens: Array(coordinator.selectedApps.applicationTokens),
                     categoryTokens: coordinator.selectedApps.categoryTokens,
                     webDomainTokens: coordinator.selectedApps.webDomainTokens
                 )

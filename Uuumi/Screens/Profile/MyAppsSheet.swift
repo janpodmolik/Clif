@@ -90,7 +90,7 @@ struct MyAppsSheet: View {
                     .foregroundStyle(.green)
 
                 LimitedSourcesPreview(
-                    applicationTokens: editSelection.applicationTokens,
+                    applicationTokens: Array(editSelection.applicationTokens),
                     categoryTokens: editSelection.categoryTokens,
                     webDomainTokens: editSelection.webDomainTokens
                 )

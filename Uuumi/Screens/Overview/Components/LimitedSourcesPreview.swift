@@ -3,9 +3,10 @@ import ManagedSettings
 import SwiftUI
 
 struct LimitedSourcesPreview: View {
-    let applicationTokens: Set<ApplicationToken>
+    let applicationTokens: [ApplicationToken]
     let categoryTokens: Set<ActivityCategoryToken>
     var webDomainTokens: Set<WebDomainToken> = []
+    var compact: Bool = false
 
     private let maxAppIcons = 3
     private let iconSize: CGFloat = 28
@@ -32,24 +33,35 @@ struct LimitedSourcesPreview: View {
                 }
             }
 
-            // Apps: max 3 icons with overlap + remaining count
+            // Apps
             if !applicationTokens.isEmpty {
-                HStack(spacing: -6) {
-                    ForEach(displayAppTokens, id: \.self) { token in
-                        Label(token)
-                            .labelStyle(.iconOnly)
-                            .frame(width: iconSize, height: iconSize)
-                            .background(.ultraThinMaterial)
-                            .clipShape(RoundedRectangle(cornerRadius: 6))
-                    }
-
-                    if remainingAppCount > 0 {
-                        Text("+\(remainingAppCount)")
-                            .font(.caption2.weight(.medium))
+                if compact {
+                    HStack(spacing: 4) {
+                        Image(systemName: "app.fill")
+                            .font(.system(size: 14))
                             .foregroundStyle(.secondary)
-                            .frame(width: iconSize, height: iconSize)
-                            .background(.ultraThinMaterial)
-                            .clipShape(RoundedRectangle(cornerRadius: 6))
+                        Text("\(applicationTokens.count)")
+                            .font(.subheadline.weight(.medium))
+                            .foregroundStyle(.secondary)
+                    }
+                } else {
+                    HStack(spacing: -6) {
+                        ForEach(displayAppTokens, id: \.self) { token in
+                            Label(token)
+                                .labelStyle(.iconOnly)
+                                .frame(width: iconSize, height: iconSize)
+                                .background(.ultraThinMaterial)
+                                .clipShape(RoundedRectangle(cornerRadius: 6))
+                        }
+
+                        if remainingAppCount > 0 {
+                            Text("+\(remainingAppCount)")
+                                .font(.caption2.weight(.medium))
+                                .foregroundStyle(.secondary)
+                                .frame(width: iconSize, height: iconSize)
+                                .background(.ultraThinMaterial)
+                                .clipShape(RoundedRectangle(cornerRadius: 6))
+                        }
                     }
                 }
             }

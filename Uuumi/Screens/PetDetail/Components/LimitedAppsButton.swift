@@ -27,8 +27,8 @@ struct LimitedAppsButton: View {
         }
     }
 
-    private var applicationTokens: Set<ApplicationToken> {
-        Set(appSources.compactMap(\.applicationToken))
+    private var applicationTokens: [ApplicationToken] {
+        appSources.compactMap(\.applicationToken)
     }
 
     private var categoryTokens: Set<ActivityCategoryToken> {

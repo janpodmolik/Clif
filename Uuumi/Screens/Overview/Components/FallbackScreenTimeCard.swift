@@ -6,7 +6,7 @@ struct FallbackScreenTimeCard: View {
     let stats: WeeklyUsageStats
     let petId: UUID
     let limitMinutes: Int
-    var applicationTokens: Set<ApplicationToken> = []
+    var applicationTokens: [ApplicationToken] = []
     var categoryTokens: Set<ActivityCategoryToken> = []
 
     @State private var selectedDay: DailyUsageStat?

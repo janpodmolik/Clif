@@ -123,7 +123,7 @@ struct ProfileScreen: View {
                                 Label("Uložený výběr", systemImage: "app.dashed")
                                 Spacer()
                                 LimitedSourcesPreview(
-                                    applicationTokens: selection.applicationTokens,
+                                    applicationTokens: Array(selection.applicationTokens),
                                     categoryTokens: selection.categoryTokens,
                                     webDomainTokens: selection.webDomainTokens
                                 )

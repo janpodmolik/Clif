@@ -105,7 +105,7 @@ struct PetDropStep: View {
                             .foregroundStyle(.secondary)
 
                         LimitedSourcesPreview(
-                            applicationTokens: coordinator.selectedApps.applicationTokens,
+                            applicationTokens: Array(coordinator.selectedApps.applicationTokens),
                             categoryTokens: coordinator.selectedApps.categoryTokens,
                             webDomainTokens: coordinator.selectedApps.webDomainTokens
                         )

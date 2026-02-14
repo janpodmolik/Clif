@@ -87,7 +87,7 @@ struct AppSelectionStep: View {
                     .foregroundStyle(.green)
 
                 LimitedSourcesPreview(
-                    applicationTokens: selection.applicationTokens,
+                    applicationTokens: Array(selection.applicationTokens),
                     categoryTokens: selection.categoryTokens,
                     webDomainTokens: selection.webDomainTokens
                 )

@@ -201,6 +201,14 @@ extension LimitedSource: Codable {
 // MARK: - Token Extraction
 
 extension Array where Element == LimitedSource {
+    /// Extracts application tokens in stable order (for display).
+    var orderedApplicationTokens: [ApplicationToken] {
+        compactMap { source in
+            if case .app(let appSource) = source { return appSource.applicationToken }
+            return nil
+        }
+    }
+
     /// Extracts all application tokens from limited sources.
     var applicationTokens: Set<ApplicationToken> {
         var tokens = Set<ApplicationToken>()

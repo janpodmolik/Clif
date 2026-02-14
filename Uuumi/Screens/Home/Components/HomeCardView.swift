@@ -414,7 +414,7 @@ struct HomeCardView: View {
     private var infoRow: some View {
         HStack(spacing: 8) {
             LimitedSourcesPreview(
-                applicationTokens: pet.applicationTokens,
+                applicationTokens: pet.limitedSources.orderedApplicationTokens,
                 categoryTokens: pet.categoryTokens,
                 webDomainTokens: pet.webDomainTokens
             )
