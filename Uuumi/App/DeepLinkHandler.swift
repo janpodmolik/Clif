@@ -74,7 +74,7 @@ private enum DeepLinkHandler {
             #if DEBUG
             print("[DeepLink] Navigate to home")
             #endif
-            // Default behavior - just open app to home
+            NotificationCenter.default.post(name: .navigateHome, object: nil)
 
         case "essenceCatalog":
             #if DEBUG
@@ -93,6 +93,7 @@ extension Notification.Name {
     static let selectPet = Notification.Name("selectPet")
     static let showPresetPicker = Notification.Name("showPresetPicker")
     static let showEssenceCatalog = Notification.Name("showEssenceCatalog")
+    static let navigateHome = Notification.Name("navigateHome")
     static let showBreakTypePicker = Notification.Name("showBreakTypePicker")
     static let showDailySummary = Notification.Name("showDailySummary")
     #if DEBUG

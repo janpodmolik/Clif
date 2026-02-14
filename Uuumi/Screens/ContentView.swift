@@ -113,6 +113,9 @@ struct ContentView: View {
         .onReceive(Timer.publish(every: 60, on: .main, in: .common).autoconnect()) { _ in
             isDaytime = SkyGradient.isDaytime()
         }
+        .onReceive(NotificationCenter.default.publisher(for: .navigateHome)) { _ in
+            activeTab = .home
+        }
         .onReceive(NotificationCenter.default.publisher(for: .selectPet)) { _ in
             activeTab = .home
         }
