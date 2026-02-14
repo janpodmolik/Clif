@@ -255,7 +255,7 @@ struct DebugView: View {
                     }
                     .font(.subheadline)
 
-                    Slider(value: $minutesToBlowAway, in: 1...10, step: 1)
+                    Slider(value: $minutesToBlowAway, in: 1...30, step: 1)
                         .onChange(of: minutesToBlowAway) { _, newValue in
                             DebugConfig.minutesToBlowAway = newValue
                             restartMonitoringIfNeeded()
@@ -270,7 +270,7 @@ struct DebugView: View {
                     }
                     .font(.subheadline)
 
-                    Slider(value: $minutesToRecover, in: 1...10, step: 1)
+                    Slider(value: $minutesToRecover, in: 1...120, step: 1)
                         .onChange(of: minutesToRecover) { _, newValue in
                             DebugConfig.minutesToRecover = newValue
                         }
