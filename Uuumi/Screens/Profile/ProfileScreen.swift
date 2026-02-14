@@ -125,7 +125,8 @@ struct ProfileScreen: View {
                                 LimitedSourcesPreview(
                                     applicationTokens: Array(selection.applicationTokens),
                                     categoryTokens: selection.categoryTokens,
-                                    webDomainTokens: selection.webDomainTokens
+                                    webDomainTokens: selection.webDomainTokens,
+                                    compact: true
                                 )
                             }
                         } else {
