@@ -1,17 +1,17 @@
 import SwiftUI
 
-enum ArchivedPetAction {
+enum OverviewPetAction {
     case delete
     case showOnHomepage
     case replay
 }
 
-/// Actions for archived/historical pets in overview.
+/// Actions for viewing an active pet from the Overview screen.
 /// Shows delete + show on homepage, or replay + delete when blown away.
-struct ArchivedPetActionsCard: View {
+struct OverviewPetActionsCard: View {
     let isBlownAway: Bool
     let themeColor: Color
-    var onAction: (ArchivedPetAction) -> Void = { _ in }
+    var onAction: (OverviewPetAction) -> Void = { _ in }
 
     var body: some View {
         Group {
@@ -52,7 +52,7 @@ struct ArchivedPetActionsCard: View {
 
 #if DEBUG
 #Preview("Normal") {
-    ArchivedPetActionsCard(
+    OverviewPetActionsCard(
         isBlownAway: false,
         themeColor: .green
     )
@@ -60,7 +60,7 @@ struct ArchivedPetActionsCard: View {
 }
 
 #Preview("Blown away") {
-    ArchivedPetActionsCard(
+    OverviewPetActionsCard(
         isBlownAway: true,
         themeColor: .green
     )

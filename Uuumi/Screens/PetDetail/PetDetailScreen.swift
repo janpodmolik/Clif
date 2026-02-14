@@ -108,7 +108,7 @@ struct PetDetailScreen: View {
                     }
 
                     if showOverviewActions {
-                        ArchivedPetActionsCard(
+                        OverviewPetActionsCard(
                             isBlownAway: pet.isBlown,
                             themeColor: themeColor
                         ) { action in
