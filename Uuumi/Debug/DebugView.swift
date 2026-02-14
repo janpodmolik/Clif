@@ -125,6 +125,17 @@ struct DebugView: View {
                     .tint(.green)
 
                     if !pet.isBlob {
+                        Button("Unlock Now") {
+                            pet.debugSetUnlockIn(minutes: 0)
+                            petManager.savePet()
+                            ScheduledNotificationManager.refresh(
+                                isEvolutionAvailable: true,
+                                hasPet: true,
+                                nextEvolutionUnlockDate: pet.evolutionHistory.nextEvolutionUnlockDate
+                            )
+                        }
+                        .tint(.mint)
+
                         Button("Unlock in 1 min") {
                             pet.debugSetUnlockIn(minutes: 1)
                             petManager.savePet()
