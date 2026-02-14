@@ -241,15 +241,7 @@ struct IslandView<TransitionContent: View>: View {
                     }
                 }
                 .offset(y: archiveOffsetY)
-                .visualEffect { content, proxy in
-                    content.distortionEffect(
-                        ShaderLibrary.ascensionStretch(
-                            .float(Float(archiveStretchAmount)),
-                            .float2(proxy.size)
-                        ),
-                        maxSampleOffset: CGSize(width: 0, height: proxy.size.height * 3)
-                    )
-                }
+                .modifier(AscensionStretchModifier(stretchAmount: archiveStretchAmount))
                 .shadow(color: .white.opacity(archiveGlowRadius > 0 ? 0.8 : 0), radius: archiveGlowRadius)
                 .shadow(color: .white.opacity(landingGlowRadius > 0 ? 0.6 : 0), radius: landingGlowRadius)
                 .opacity(isEvolutionTransitioning ? 0.0 : 1.0)
@@ -446,6 +438,28 @@ extension IslandView where TransitionContent == EmptyView {
             transitionContent: { EmptyView() },
             onFrameChange: onFrameChange
         )
+    }
+}
+
+/// Only applies the ascensionStretch Metal shader when actually stretching.
+/// When stretchAmount == 0 (99.9% of the time), renders as a plain pass-through — no GPU cost.
+private struct AscensionStretchModifier: ViewModifier {
+    let stretchAmount: CGFloat
+
+    func body(content: Content) -> some View {
+        if stretchAmount > 0 {
+            content.visualEffect { view, proxy in
+                view.distortionEffect(
+                    ShaderLibrary.ascensionStretch(
+                        .float(Float(stretchAmount)),
+                        .float2(proxy.size)
+                    ),
+                    maxSampleOffset: CGSize(width: 0, height: proxy.size.height * 3)
+                )
+            }
+        } else {
+            content
+        }
     }
 }
 

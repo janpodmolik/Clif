@@ -32,8 +32,9 @@ struct HomeScreen: View {
     @State private var reactionAnimator = PetReactionAnimator()
 
     /// Timer-driven refresh trigger for real-time wind updates during active shield.
-    /// Increments every second to force UI recalculation of effectiveWindPoints.
+    /// Increments periodically to force UI recalculation of effectiveWindPoints.
     @State private var refreshTick = 0
+    @State private var refreshTimer: Timer?
 
     #if DEBUG
     /// Debug state for testing bump visibility (evolve/blown buttons)
@@ -325,10 +326,12 @@ struct HomeScreen: View {
         }
         .onAppear {
             windRhythm.start()
+            windRhythm.paused = (currentPet?.windLevel == .none || currentPet == nil)
             // Fallback: check if new day and perform reset if extension missed it
             checkDayResetAndShowPicker()
             // Force immediate refresh to read latest wind from SharedDefaults
             refreshTick += 1
+            configureRefreshTimer()
         }
         .onReceive(NotificationCenter.default.publisher(for: .showPresetPicker)) { _ in
             showPresetPicker = true
@@ -350,14 +353,12 @@ struct HomeScreen: View {
         .onReceive(NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)) { _ in
             // Force refresh when returning from background to read latest wind
             refreshTick += 1
-        }
-        .onReceive(Timer.publish(every: 1.0, on: .main, in: .common).autoconnect()) { _ in
-            // Tick every second to update wind display from SharedDefaults
-            // This forces SwiftUI to re-read pet.windProgress which reads from UserDefaults
-            refreshTick += 1
+            configureRefreshTimer()
         }
         .onDisappear {
             windRhythm.stop()
+            refreshTimer?.invalidate()
+            refreshTimer = nil
         }
         .onChange(of: petFrame) { _, _ in
             updatePetDropFrame()
@@ -386,6 +387,10 @@ struct HomeScreen: View {
             if newValue == true && oldValue != true, let screenWidth = currentScreenWidth {
                 blowAwayAnimator.trigger(screenWidth: screenWidth)
             }
+        }
+        .onChange(of: currentPet?.windLevel) { _, newLevel in
+            windRhythm.paused = (newLevel == .none || newLevel == nil)
+            configureRefreshTimer()
         }
     }
 
@@ -616,6 +621,21 @@ struct HomeScreen: View {
             }
         } else {
             evolutionAnimator.trigger(pet: pet)
+        }
+    }
+
+    // MARK: - Refresh Timer
+
+    /// Configures refresh timer with adaptive interval:
+    /// 1s during active shield wind recovery (smooth UI), 5s otherwise.
+    private func configureRefreshTimer() {
+        refreshTimer?.invalidate()
+        let needsFastRefresh = SharedDefaults.isShieldActive && (currentPet?.windLevel ?? .none) != .none
+        let interval: TimeInterval = needsFastRefresh ? 1.0 : 5.0
+        refreshTimer = Timer.scheduledTimer(withTimeInterval: interval, repeats: true) { _ in
+            Task { @MainActor in
+                refreshTick += 1
+            }
         }
     }
 

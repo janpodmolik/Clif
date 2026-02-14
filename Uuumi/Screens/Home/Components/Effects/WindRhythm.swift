@@ -44,6 +44,16 @@ final class WindRhythm {
     /// Use this for shader time to keep all animations synchronized.
     private(set) var elapsedTime: CFTimeInterval = 0
 
+    /// When true, CADisplayLink callbacks are suspended to save CPU.
+    /// Use this when wind is .none — all consumers have fallback paths.
+    /// The link stays alive for instant resume (no invalidation).
+    var paused: Bool = false {
+        didSet {
+            guard paused != oldValue else { return }
+            displayLink?.isPaused = paused
+        }
+    }
+
     // MARK: - Internal
 
     private var displayLink: CADisplayLink?

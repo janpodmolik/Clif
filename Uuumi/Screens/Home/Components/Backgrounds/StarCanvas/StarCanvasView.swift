@@ -1,7 +1,7 @@
 import SwiftUI
 
 /// Renders animated stars on a Canvas.
-/// Performance-tuned: 60 stars, 20fps timeline, blooming limited to ~8 large stars.
+/// Performance-tuned: 60 stars, 5fps timeline, bloom via oversized circles (no blur filters).
 struct StarCanvasView: View {
     /// Overall opacity of the entire star layer (used by automatic mode to fade stars in/out).
     var opacity: Double = 1.0

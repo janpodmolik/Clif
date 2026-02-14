@@ -56,7 +56,16 @@ struct PetAnimationEffect: ViewModifier {
     /// Local start time - only used when windRhythm is not provided (fallback mode).
     @State private var startTime = Date()
 
+    /// When false and idle conditions are met, uses lightweight SwiftUI breathing
+    /// instead of 60fps Metal shader. Switches to true on tap/wind, back to false after.
+    @State private var useShader = false
+
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    /// Whether conditions allow idle mode (no wind, not in debug peak mode).
+    private var isIdle: Bool {
+        intensity == 0 && !peakMode
+    }
 
     /// Adjusted idle config with wind reduction applied
     private var adjustedIdleConfig: IdleConfig {
@@ -124,95 +133,170 @@ struct PetAnimationEffect: ViewModifier {
                         topOffset: 0
                     ))
                 }
+        } else if isIdle && !useShader {
+            // IDLE MODE: Pure SwiftUI breathing animation — zero CPU.
+            // Core Animation handles the repeating scale on the GPU compositor.
+            content
+                .modifier(IdleBreathingModifier(
+                    config: adjustedIdleConfig,
+                    onTransformUpdate: onTransformUpdate
+                ))
+                .onChange(of: tapTime) { _, _ in
+                    useShader = true
+                }
+                .onChange(of: intensity) { _, newValue in
+                    if newValue > 0 {
+                        useShader = true
+                    }
+                }
         } else {
-            TimelineView(.animation) { context in
-                // Use shared rhythm time when available, otherwise fall back to local time
-                // Add idlePhaseOffset to desynchronize breathing between multiple pets
-                let baseTime: TimeInterval = windRhythm?.elapsedTime ?? context.date.timeIntervalSince(startTime)
-                let time: TimeInterval = baseTime + idlePhaseOffset
+            // ACTIVE MODE: Metal shader for wind + tap effects
+            shaderBody(content: content)
+        }
+    }
 
-                // Wave function for rotation (synchronized with shader)
-                // Pet bends IN the wind direction (wind pushes it)
-                // Forward swing (with wind): 100% amplitude
-                // Back swing (against wind): 50% amplitude
-                // In peak mode: use constant -1.0 for maximum deflection
-                let wave: Double = {
-                    if peakMode {
-                        return -1.0
-                    } else if let rhythm = windRhythm {
-                        // Use shared rhythm for synchronized effects with wind lines
-                        return Double(rhythm.rawWave)
-                    } else {
-                        // Fallback: local computation (for backward compatibility)
-                        let rawWave = sin(time * 1.5) * 0.6 + sin(time * 2.3) * 0.3 + sin(time * 0.7) * 0.1
-                        return rawWave < 0 ? rawWave : rawWave * 0.4
-                    }
-                }()
-
-                // Rotation follows wind direction (negative direction = negative rotation)
-                let rotation: Double = -wave * intensity * direction * rotationAmount * 6
-
-                // Calculate relativeTapTime independent of startTime to survive view recreation.
-                // Shader does: timeSinceTap = time - tapTime
-                // We want: timeSinceTap = seconds since tap = now - tapTime
-                // Therefore: tapTime = time - (now - tapTime)
-                let relativeTapTime: Float = tapTime > 0
-                    ? Float(time) - Float(Date().timeIntervalSinceReferenceDate - tapTime)
-                    : -1.0
-
-                // Use adjusted idle config with wind reduction
-                let idle: IdleConfig = adjustedIdleConfig
-
-                // Calculate max sample offset
-                let maxOffset: CGFloat = (screenWidth ?? 400) * 0.5
-
-                // Capture callback and peakMode before entering Sendable closure
-                let transformCallback = onTransformUpdate
-                let isPeakMode = peakMode
-
-                // Scale time for shader to match gustFrequency (so bend/sway syncs with rotation)
-                let shaderTime = time * (windRhythm?.gustFrequency ?? 1.0)
-
-                content
-                    .visualEffect { view, proxy in
-                        let shader = createShader(
-                            time: Float(shaderTime),
-                            relativeTapTime: relativeTapTime,
-                            idle: idle,
-                            peakMode: isPeakMode,
-                            size: proxy.size
-                        )
-
-                        // Calculate sway offset (same formula as shader, but inverted)
-                        // Shader moves sampling position, which produces opposite visual movement
-                        // So we negate to match the visual direction
-                        let swayMaxOffset = proxy.size.width * 0.15 * intensity * direction
-                        let swayOffset = -wave * swayMaxOffset * swayAmount * 0.3
-
-                        // Calculate top offset from rotation (how much the head moves horizontally)
-                        // When rotating around bottom anchor, the top moves: sin(angle) * height
-                        let rotationRadians = rotation * .pi / 180
-                        let topOffset = sin(rotationRadians) * proxy.size.height
-
-                        // Export transform values for overlays (e.g., speech bubble)
-                        if let callback = transformCallback {
-                            DispatchQueue.main.async {
-                                callback(PetAnimationTransform(
-                                    rotation: rotation,
-                                    swayOffset: swayOffset,
-                                    topOffset: topOffset
-                                ))
-                            }
-                        }
-
-                        return view.distortionEffect(
-                            shader,
-                            maxSampleOffset: CGSize(width: maxOffset, height: 50)
-                        )
-                    }
-                    .rotationEffect(.degrees(rotation), anchor: .bottom)
+    /// Schedules a delayed transition back to idle mode after tap animation expires.
+    private func scheduleIdleTransition() {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+            let tapExpired = tapTime <= 0 || Date().timeIntervalSinceReferenceDate - tapTime > 1.5
+            if isIdle && tapExpired {
+                useShader = false
             }
         }
+    }
+
+    @ViewBuilder
+    private func shaderBody(content: Content) -> some View {
+        TimelineView(.animation) { context in
+            // Use shared rhythm time when available, otherwise fall back to local time
+            // Add idlePhaseOffset to desynchronize breathing between multiple pets
+            let baseTime: TimeInterval = windRhythm?.elapsedTime ?? context.date.timeIntervalSince(startTime)
+            let time: TimeInterval = baseTime + idlePhaseOffset
+
+            // Wave function for rotation (synchronized with shader)
+            // Pet bends IN the wind direction (wind pushes it)
+            // Forward swing (with wind): 100% amplitude
+            // Back swing (against wind): 50% amplitude
+            // In peak mode: use constant -1.0 for maximum deflection
+            let wave: Double = {
+                if peakMode {
+                    return -1.0
+                } else if let rhythm = windRhythm {
+                    // Use shared rhythm for synchronized effects with wind lines
+                    return Double(rhythm.rawWave)
+                } else {
+                    // Fallback: local computation (for backward compatibility)
+                    let rawWave = sin(time * 1.5) * 0.6 + sin(time * 2.3) * 0.3 + sin(time * 0.7) * 0.1
+                    return rawWave < 0 ? rawWave : rawWave * 0.4
+                }
+            }()
+
+            // Rotation follows wind direction (negative direction = negative rotation)
+            let rotation: Double = -wave * intensity * direction * rotationAmount * 6
+
+            // Calculate relativeTapTime independent of startTime to survive view recreation.
+            // Shader does: timeSinceTap = time - tapTime
+            // We want: timeSinceTap = seconds since tap = now - tapTime
+            // Therefore: tapTime = time - (now - tapTime)
+            let relativeTapTime: Float = tapTime > 0
+                ? Float(time) - Float(Date().timeIntervalSinceReferenceDate - tapTime)
+                : -1.0
+
+            // Use adjusted idle config with wind reduction
+            let idle: IdleConfig = adjustedIdleConfig
+
+            // Calculate max sample offset
+            let maxOffset: CGFloat = (screenWidth ?? 400) * 0.5
+
+            // Capture callback and peakMode before entering Sendable closure
+            let transformCallback = onTransformUpdate
+            let isPeakMode = peakMode
+
+            // Scale time for shader to match gustFrequency (so bend/sway syncs with rotation)
+            let shaderTime = time * (windRhythm?.gustFrequency ?? 1.0)
+
+            content
+                .visualEffect { view, proxy in
+                    let shader = createShader(
+                        time: Float(shaderTime),
+                        relativeTapTime: relativeTapTime,
+                        idle: idle,
+                        peakMode: isPeakMode,
+                        size: proxy.size
+                    )
+
+                    // Calculate sway offset (same formula as shader, but inverted)
+                    // Shader moves sampling position, which produces opposite visual movement
+                    // So we negate to match the visual direction
+                    let swayMaxOffset = proxy.size.width * 0.15 * intensity * direction
+                    let swayOffset = -wave * swayMaxOffset * swayAmount * 0.3
+
+                    // Calculate top offset from rotation (how much the head moves horizontally)
+                    // When rotating around bottom anchor, the top moves: sin(angle) * height
+                    let rotationRadians = rotation * .pi / 180
+                    let topOffset = sin(rotationRadians) * proxy.size.height
+
+                    // Export transform values for overlays (e.g., speech bubble)
+                    if let callback = transformCallback {
+                        DispatchQueue.main.async {
+                            callback(PetAnimationTransform(
+                                rotation: rotation,
+                                swayOffset: swayOffset,
+                                topOffset: topOffset
+                            ))
+                        }
+                    }
+
+                    return view.distortionEffect(
+                        shader,
+                        maxSampleOffset: CGSize(width: maxOffset, height: 50)
+                    )
+                }
+                .rotationEffect(.degrees(rotation), anchor: .bottom)
+        }
+        .onChange(of: isIdle) { _, idle in
+            if idle {
+                // Wind stopped — wait for any active tap to expire, then switch to idle mode
+                scheduleIdleTransition()
+            }
+        }
+        .onChange(of: tapTime) { _, _ in
+            if isIdle {
+                // Tap/autoplay during idle shader mode — schedule return after animation expires
+                scheduleIdleTransition()
+            }
+        }
+    }
+}
+
+// MARK: - Idle Breathing Modifier
+
+/// Lightweight SwiftUI animation for idle pet breathing.
+/// Uses Core Animation (GPU compositor) instead of Metal shader — near-zero CPU.
+/// Approximates the shader's breathing with a simple bottom-anchored scale oscillation.
+private struct IdleBreathingModifier: ViewModifier {
+    let config: IdleConfig
+    let onTransformUpdate: ((PetAnimationTransform) -> Void)?
+
+    @State private var breathing = false
+
+    func body(content: Content) -> some View {
+        content
+            .scaleEffect(
+                x: 1.0,
+                y: breathing && config.enabled ? 1.0 + config.amplitude : 1.0,
+                anchor: .bottom
+            )
+            .animation(
+                config.enabled
+                    ? .easeInOut(duration: 1.0 / config.frequency).repeatForever(autoreverses: true)
+                    : .default,
+                value: breathing
+            )
+            .onAppear {
+                onTransformUpdate?(.zero)
+                breathing = true
+            }
     }
 }
 
