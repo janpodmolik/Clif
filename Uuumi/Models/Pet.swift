@@ -327,28 +327,21 @@ extension Pet {
         evolutionHistory.debugBumpDay()
     }
 
-    /// Force-unlocks essence usage (shifts createdAt so daysSinceCreation >= 1).
-    func debugUnlockEssence() {
-        guard isBlob, !canUseEssence else { return }
-        while !canUseEssence {
-            evolutionHistory.debugBumpDay()
-        }
-    }
-
-    /// Force-unlocks next evolution (clears daily lock and shifts createdAt so daysUntilEvolution == 0).
+    /// Force-unlocks next evolution (clears daily lock, time gate, and shifts createdAt).
     func debugUnlockEvolution() {
         guard !isBlob, !isBlown, currentPhase < evolutionHistory.maxPhase else { return }
         if evolutionHistory.hasProgressedToday {
             evolutionHistory.debugClearDailyProgress()
         }
+        evolutionHistory.debugUnlockEvolutionTime()
         while daysUntilEvolution ?? 0 > 0 {
             evolutionHistory.debugBumpDay()
         }
     }
 
-    /// Clears the daily evolution gate for testing.
-    func debugClearDailyProgress() {
-        evolutionHistory.debugClearDailyProgress()
+    /// Sets unlock time to X minutes from now and clears daily lock (for testing notifications).
+    func debugSetUnlockIn(minutes: Int) {
+        evolutionHistory.debugSetUnlockIn(minutes: minutes)
     }
 
     /// Resets pet back to blob state.

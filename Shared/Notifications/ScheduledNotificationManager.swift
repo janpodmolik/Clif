@@ -8,7 +8,8 @@ enum ScheduledNotificationManager {
     /// - Parameters:
     ///   - isEvolutionAvailable: Whether the pet can evolve right now
     ///   - hasPet: Whether an active pet exists
-    static func refresh(isEvolutionAvailable: Bool, hasPet: Bool) {
+    ///   - nextEvolutionUnlockDate: The random date when evolution will unlock next
+    static func refresh(isEvolutionAvailable: Bool, hasPet: Bool, nextEvolutionUnlockDate: Date? = nil) {
         let settings = SharedDefaults.limitSettings.notifications
 
         // MARK: - Daily Summary (repeating)
@@ -22,13 +23,17 @@ enum ScheduledNotificationManager {
             DailySummaryNotification.cancel()
         }
 
-        // MARK: - Evolution Ready (one-shot, only if can evolve)
+        // MARK: - Evolution Ready (one-shot, scheduled at random unlock time)
 
-        if hasPet && isEvolutionAvailable && settings.shouldSendEvolutionReady() {
-            EvolutionReadyNotification.scheduleNext(
-                hour: settings.evolutionReadyHour,
-                minute: settings.evolutionReadyMinute
-            )
+        if hasPet && settings.shouldSendEvolutionReady() {
+            if isEvolutionAvailable {
+                // Already available — no notification needed
+                EvolutionReadyNotification.cancel()
+            } else if let unlockDate = nextEvolutionUnlockDate, unlockDate > Date() {
+                EvolutionReadyNotification.scheduleAt(unlockDate)
+            } else {
+                EvolutionReadyNotification.cancel()
+            }
         } else {
             EvolutionReadyNotification.cancel()
         }

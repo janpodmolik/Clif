@@ -427,6 +427,11 @@ struct HomeScreen: View {
                                 evolutionAnimator.complete()
                                 petManager.savePet()
                                 coinsAnimator.showReward(CoinRewards.evolution)
+                                ScheduledNotificationManager.refresh(
+                                    isEvolutionAvailable: pet.isEvolutionAvailable,
+                                    hasPet: true,
+                                    nextEvolutionUnlockDate: pet.evolutionHistory.nextEvolutionUnlockDate
+                                )
                                 Task { await syncManager.syncUserData(essenceCatalogManager: essenceCatalogManager) }
                                 if pet.isFullyEvolved {
                                     DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {

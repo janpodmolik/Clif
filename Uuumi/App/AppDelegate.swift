@@ -40,7 +40,12 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
         print("[AppDelegate] Notification in foreground: \(userInfo)")
         #endif
 
-        if let deepLink = userInfo["deepLink"] as? String, let url = URL(string: deepLink) {
+        let identifier = notification.request.identifier
+        let alwaysShowInForeground = identifier == EvolutionReadyNotification.identifier
+
+        if alwaysShowInForeground {
+            completionHandler([.banner, .sound])
+        } else if let deepLink = userInfo["deepLink"] as? String, let url = URL(string: deepLink) {
             NotificationCenter.default.post(name: .deepLinkReceived, object: url)
             completionHandler([])
         } else {

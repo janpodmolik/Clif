@@ -40,8 +40,6 @@ struct NotificationSettings: Codable, Equatable {
 
     var dailySummaryHour: Int = 20
     var dailySummaryMinute: Int = 0
-    var evolutionReadyHour: Int = 8
-    var evolutionReadyMinute: Int = 0
 
     // MARK: - Codable
 
@@ -60,8 +58,6 @@ struct NotificationSettings: Codable, Equatable {
         evolutionReady = try container.decodeIfPresent(Bool.self, forKey: .evolutionReady) ?? true
         dailySummaryHour = try container.decodeIfPresent(Int.self, forKey: .dailySummaryHour) ?? 20
         dailySummaryMinute = try container.decodeIfPresent(Int.self, forKey: .dailySummaryMinute) ?? 0
-        evolutionReadyHour = try container.decodeIfPresent(Int.self, forKey: .evolutionReadyHour) ?? 8
-        evolutionReadyMinute = try container.decodeIfPresent(Int.self, forKey: .evolutionReadyMinute) ?? 0
     }
 
     // MARK: - Defaults

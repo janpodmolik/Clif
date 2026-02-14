@@ -83,6 +83,15 @@ struct NotificationSettingsScreen: View {
 
             Section {
                 SettingsRow(
+                    title: "Evoluce připravena",
+                    description: "Oznámení, když Uuumi může evolvovat.",
+                    isOn: notifications.evolutionReady,
+                    disabled: disabled
+                )
+            }
+
+            Section {
+                SettingsRow(
                     title: "Denní souhrn",
                     description: "Přehled screen time a stavu Uuumi.",
                     isOn: notifications.dailySummary,
@@ -98,24 +107,6 @@ struct NotificationSettingsScreen: View {
                     .disabled(disabled)
                 }
             }
-
-            Section {
-                SettingsRow(
-                    title: "Evoluce připravena",
-                    description: "Oznámení, když Uuumi může evolvovat.",
-                    isOn: notifications.evolutionReady,
-                    disabled: disabled
-                )
-
-                if limitSettings.notifications.evolutionReady {
-                    DatePicker(
-                        "Čas",
-                        selection: evolutionReadyTimeBinding,
-                        displayedComponents: .hourAndMinute
-                    )
-                    .disabled(disabled)
-                }
-            }
         }
         .navigationTitle("Notifikace")
         .navigationBarTitleDisplayMode(.inline)
@@ -124,7 +115,8 @@ struct NotificationSettingsScreen: View {
 
             ScheduledNotificationManager.refresh(
                 isEvolutionAvailable: petManager.currentPet?.isEvolutionAvailable ?? false,
-                hasPet: petManager.hasPet
+                hasPet: petManager.hasPet,
+                nextEvolutionUnlockDate: petManager.currentPet?.evolutionHistory.nextEvolutionUnlockDate
             )
         }
     }
@@ -143,22 +135,6 @@ struct NotificationSettingsScreen: View {
                 let components = Calendar.current.dateComponents([.hour, .minute], from: newDate)
                 limitSettings.notifications.dailySummaryHour = components.hour ?? 20
                 limitSettings.notifications.dailySummaryMinute = components.minute ?? 0
-            }
-        )
-    }
-
-    private var evolutionReadyTimeBinding: Binding<Date> {
-        Binding(
-            get: {
-                Calendar.current.date(from: DateComponents(
-                    hour: limitSettings.notifications.evolutionReadyHour,
-                    minute: limitSettings.notifications.evolutionReadyMinute
-                )) ?? Date()
-            },
-            set: { newDate in
-                let components = Calendar.current.dateComponents([.hour, .minute], from: newDate)
-                limitSettings.notifications.evolutionReadyHour = components.hour ?? 8
-                limitSettings.notifications.evolutionReadyMinute = components.minute ?? 0
             }
         )
     }

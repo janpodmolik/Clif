@@ -22,6 +22,7 @@ struct EvolutionHistory: Codable, Equatable {
     private(set) var events: [EvolutionEvent]
     private(set) var blownAt: Date?
     private(set) var lastProgressDate: Date?
+    private(set) var nextEvolutionUnlockDate: Date?
 
     /// True if pet is still a blob (no essence applied yet)
     var isBlob: Bool {
@@ -47,7 +48,14 @@ struct EvolutionHistory: Codable, Equatable {
 
     var canEvolve: Bool {
         guard !isBlob, !isBlown, !hasProgressedToday else { return false }
-        return currentPhase < maxPhase
+        guard currentPhase < maxPhase else { return false }
+        return isUnlockTimePassed
+    }
+
+    /// Whether the random unlock time has passed (or no unlock date is set).
+    var isUnlockTimePassed: Bool {
+        guard let unlockDate = nextEvolutionUnlockDate else { return true }
+        return Date() >= unlockDate
     }
 
     /// True if pet has reached the maximum evolution phase.
@@ -60,12 +68,20 @@ struct EvolutionHistory: Codable, Equatable {
         blownAt != nil
     }
 
-    init(createdAt: Date = Date(), essence: Essence? = nil, events: [EvolutionEvent] = [], blownAt: Date? = nil, lastProgressDate: Date? = nil) {
+    init(
+        createdAt: Date = Date(),
+        essence: Essence? = nil,
+        events: [EvolutionEvent] = [],
+        blownAt: Date? = nil,
+        lastProgressDate: Date? = nil,
+        nextEvolutionUnlockDate: Date? = nil
+    ) {
         self.createdAt = createdAt
         self.essence = essence
         self.events = events
         self.blownAt = blownAt
         self.lastProgressDate = lastProgressDate
+        self.nextEvolutionUnlockDate = nextEvolutionUnlockDate
     }
 
     mutating func applyEssence(_ essence: Essence) {
@@ -73,6 +89,7 @@ struct EvolutionHistory: Codable, Equatable {
         self.essence = essence
         lastProgressDate = Date()
         SharedDefaults.addCoins(CoinRewards.evolution)
+        scheduleNextUnlockDate()
     }
 
     mutating func recordEvolution(to phase: Int) {
@@ -84,10 +101,37 @@ struct EvolutionHistory: Codable, Equatable {
         events.append(event)
         lastProgressDate = Date()
         SharedDefaults.addCoins(CoinRewards.evolution)
+        scheduleNextUnlockDate(forPhase: phase)
     }
 
     mutating func markAsBlown() {
         blownAt = Date()
+        nextEvolutionUnlockDate = nil
+    }
+
+    // MARK: - Random Unlock Scheduling
+
+    /// Generates a random Date between 8:00 and 18:00 on the given day.
+    static func randomUnlockDate(on day: Date) -> Date {
+        let calendar = Calendar.current
+        let startOfDay = calendar.startOfDay(for: day)
+        let randomSeconds = Int.random(in: 28800..<64800) // 08:00–18:00
+        return startOfDay.addingTimeInterval(TimeInterval(randomSeconds))
+    }
+
+    /// Generates and stores the next evolution unlock date on the next calendar day.
+    /// Sets nil if pet is fully evolved (no more evolutions).
+    private mutating func scheduleNextUnlockDate(forPhase phase: Int? = nil) {
+        let effectivePhase = phase ?? 1
+        let maxPhases = essence.map { EvolutionPath.path(for: $0).maxPhases } ?? 0
+
+        if effectivePhase >= maxPhases {
+            nextEvolutionUnlockDate = nil
+        } else {
+            let calendar = Calendar.current
+            let nextDay = calendar.date(byAdding: .day, value: 1, to: calendar.startOfDay(for: Date()))!
+            nextEvolutionUnlockDate = Self.randomUnlockDate(on: nextDay)
+        }
     }
 
     /// Returns dates for each phase transition for timeline display.
@@ -125,12 +169,26 @@ extension EvolutionHistory {
         events = []
         blownAt = nil
         lastProgressDate = nil
+        nextEvolutionUnlockDate = nil
         createdAt = Date()
     }
 
     /// Clears the daily progress gate so evolution can be tested again immediately.
     mutating func debugClearDailyProgress() {
         lastProgressDate = nil
+        nextEvolutionUnlockDate = nil
+    }
+
+    /// Sets the unlock date to now, making evolution available immediately.
+    mutating func debugUnlockEvolutionTime() {
+        nextEvolutionUnlockDate = Date()
+    }
+
+    /// Sets the unlock date to X minutes from now, clears daily lock, and bumps day (for testing notifications).
+    mutating func debugSetUnlockIn(minutes: Int) {
+        lastProgressDate = nil
+        debugBumpDay()
+        nextEvolutionUnlockDate = Date().addingTimeInterval(TimeInterval(minutes * 60))
     }
 }
 #endif

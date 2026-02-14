@@ -112,7 +112,8 @@ struct MainApp: App {
             // Refresh scheduled notifications (daily summary + evolution ready)
             ScheduledNotificationManager.refresh(
                 isEvolutionAvailable: petManager.currentPet?.isEvolutionAvailable ?? false,
-                hasPet: petManager.hasPet
+                hasPet: petManager.hasPet,
+                nextEvolutionUnlockDate: petManager.currentPet?.evolutionHistory.nextEvolutionUnlockDate
             )
 
             // Sync active pet + settings to cloud (debounced)

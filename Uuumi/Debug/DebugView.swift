@@ -97,6 +97,11 @@ struct DebugView: View {
 
                     debugRow("Progressed today", pet.evolutionHistory.hasProgressedToday ? "Yes" : "No")
 
+                    if let unlockDate = pet.evolutionHistory.nextEvolutionUnlockDate {
+                        debugRow("Unlock time", unlockDate.formatted(date: .abbreviated, time: .shortened))
+                        debugRow("Unlock passed", pet.evolutionHistory.isUnlockTimePassed ? "Yes" : "No")
+                    }
+
                     if pet.isBlob {
                         debugRow("Can use essence", pet.canUseEssence ? "Yes" : "No")
                         if let days = pet.daysUntilEssence {
@@ -119,46 +124,33 @@ struct DebugView: View {
                     }
                     .tint(.green)
 
-                    if pet.isBlob && !pet.canUseEssence {
-                        Button("Unlock Essence") {
-                            pet.debugUnlockEssence()
+                    if !pet.isBlob {
+                        Button("Unlock in 1 min") {
+                            pet.debugSetUnlockIn(minutes: 1)
                             petManager.savePet()
+                            ScheduledNotificationManager.refresh(
+                                isEvolutionAvailable: false,
+                                hasPet: true,
+                                nextEvolutionUnlockDate: pet.evolutionHistory.nextEvolutionUnlockDate
+                            )
                         }
-                        .tint(.mint)
-                    }
-
-                    if pet.evolutionHistory.hasProgressedToday {
-                        Button("Clear Daily Lock") {
-                            pet.debugClearDailyProgress()
-                            petManager.savePet()
-                        }
-                        .tint(.yellow)
+                        .tint(.indigo)
                     }
 
                     if !pet.isBlob {
-                        if pet.canEvolve {
-                            if pet.daysUntilEvolution ?? 0 > 0 {
-                                Button("Unlock Evolution") {
-                                    pet.debugUnlockEvolution()
-                                    petManager.savePet()
-                                }
-                                .tint(.cyan)
-                            }
-
-                            Button("Evolve Now") {
-                                pet.debugUnlockEvolution()
-                                pet.evolve()
-                                petManager.savePet()
-                            }
-                            .tint(.orange)
-                        }
-
-                        Button("Reset to Blob") {
-                            pet.debugResetToBlob()
+                        Button("Evolve Now") {
+                            pet.debugUnlockEvolution()
+                            pet.evolve()
                             petManager.savePet()
                         }
-                        .tint(.red)
+                        .tint(.orange)
                     }
+
+                    Button("Reset to Blob") {
+                        pet.debugResetToBlob()
+                        petManager.savePet()
+                    }
+                    .tint(.red)
                 }
                 .buttonStyle(.bordered)
                 .controlSize(.small)

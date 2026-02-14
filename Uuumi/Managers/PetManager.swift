@@ -59,16 +59,24 @@ final class PetManager {
         // Ensure clean wind state for new pet
         SharedDefaults.resetWindState()
 
+        let calendar = Calendar.current
+        let day2 = calendar.date(byAdding: .day, value: 1, to: calendar.startOfDay(for: Date()))!
+        let unlockDate = EvolutionHistory.randomUnlockDate(on: day2)
+
         let newPet = Pet(
             name: name,
-            evolutionHistory: EvolutionHistory(),
+            evolutionHistory: EvolutionHistory(nextEvolutionUnlockDate: unlockDate),
             purpose: purpose,
             preset: preset,
             limitedSources: limitedSources
         )
         pet = newPet
         saveActivePet()
-        ScheduledNotificationManager.refresh(isEvolutionAvailable: false, hasPet: true)
+        ScheduledNotificationManager.refresh(
+            isEvolutionAvailable: false,
+            hasPet: true,
+            nextEvolutionUnlockDate: newPet.evolutionHistory.nextEvolutionUnlockDate
+        )
         return newPet
     }
 
@@ -373,7 +381,8 @@ final class PetManager {
         saveActivePet()
         ScheduledNotificationManager.refresh(
             isEvolutionAvailable: restoredPet.isEvolutionAvailable,
-            hasPet: true
+            hasPet: true,
+            nextEvolutionUnlockDate: restoredPet.evolutionHistory.nextEvolutionUnlockDate
         )
 
         // Detect token validity based on authorization status

@@ -1,12 +1,11 @@
 import Foundation
 import UserNotifications
 
-/// Evolution ready notification — one-shot scheduled for the next occurrence of the configured time.
-/// Only scheduled when pet can evolve and hasn't evolved today.
+/// Evolution ready notification — one-shot scheduled at the random unlock time.
 /// Re-evaluated on each foreground return.
 enum EvolutionReadyNotification {
 
-    private static let identifier = "evolution_ready_scheduled"
+    static let identifier = "evolution_ready_scheduled"
 
     static var title: String { "Evoluce připravena!" }
 
@@ -16,21 +15,19 @@ enum EvolutionReadyNotification {
 
     // MARK: - Scheduling
 
-    /// Schedules a one-shot notification for the next occurrence of hour:minute.
-    /// If that time has already passed today, iOS schedules for tomorrow.
+    /// Schedules a one-shot notification at a specific date (used for random unlock times).
     /// Uses a fixed identifier, so calling again replaces any existing.
-    static func scheduleNext(hour: Int, minute: Int) {
+    static func scheduleAt(_ date: Date) {
+        guard date > Date() else { return }
+
         let content = UNMutableNotificationContent()
         content.title = title
         content.body = body
         content.sound = .default
         content.userInfo = ["deepLink": DeepLinks.home]
 
-        var dateComponents = DateComponents()
-        dateComponents.hour = hour
-        dateComponents.minute = minute
-
-        let trigger = UNCalendarNotificationTrigger(dateMatching: dateComponents, repeats: false)
+        let components = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute, .second], from: date)
+        let trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: false)
         let request = UNNotificationRequest(
             identifier: identifier,
             content: content,
@@ -42,7 +39,9 @@ enum EvolutionReadyNotification {
             if let error = error {
                 print("[EvolutionReadyNotification] Schedule FAILED: \(error.localizedDescription)")
             } else {
-                print("[EvolutionReadyNotification] Scheduled next at \(hour):\(String(format: "%02d", minute))")
+                let formatter = DateFormatter()
+                formatter.dateFormat = "HH:mm:ss"
+                print("[EvolutionReadyNotification] Scheduled at \(formatter.string(from: date))")
             }
             #endif
         }
