@@ -7,7 +7,7 @@ struct UsageChart<Stats: UsageStatsProtocol>: View {
     var themeColor: Color = .green
     var onDayTap: ((DailyUsageStat) -> Void)?
 
-    @State private var isPulsing = false
+    @State private var glowPhase: CGFloat = 0
 
     private let barHeight: CGFloat = 70
     private let barWidth: CGFloat = 36
@@ -45,7 +45,9 @@ struct UsageChart<Stats: UsageStatsProtocol>: View {
         }
         .id(stats.days.count)
         .onAppear {
-            isPulsing = true
+            withAnimation(.easeInOut(duration: 2.0).repeatForever(autoreverses: true)) {
+                glowPhase = 1
+            }
         }
     }
 
@@ -114,21 +116,9 @@ struct UsageChart<Stats: UsageStatsProtocol>: View {
 
                 let clampedHeight = min(barHeight, max(8, barHeight * normalized))
                 RoundedRectangle(cornerRadius: 6)
-                    .fill(barGradient(isOverLimit: isOverLimit))
+                    .fill(barGradient(isOverLimit: isOverLimit, isToday: isToday))
                     .frame(height: clampedHeight)
-                    .overlay {
-                        if isToday {
-                            let pulseColor: Color = isOverLimit ? .red : themeColor
-                            RoundedRectangle(cornerRadius: 6)
-                                .stroke(pulseColor.opacity(isPulsing ? 0.0 : 0.6), lineWidth: 2)
-                                .frame(height: clampedHeight)
-                                .scaleEffect(isPulsing ? 1.15 : 1.0)
-                                .animation(
-                                    .easeOut(duration: 1.5).repeatForever(autoreverses: false),
-                                    value: isPulsing
-                                )
-                        }
-                    }
+                    .opacity(isToday ? 0.45 + 0.55 * glowPhase : 1.0)
             }
             .frame(height: barHeight)
             .clipShape(RoundedRectangle(cornerRadius: 6))
@@ -154,16 +144,20 @@ struct UsageChart<Stats: UsageStatsProtocol>: View {
             .foregroundStyle(isToday ? .primary : .secondary)
     }
 
-    private func barGradient(isOverLimit: Bool) -> LinearGradient {
+    private func barGradient(isOverLimit: Bool, isToday: Bool = false) -> LinearGradient {
         if isOverLimit {
             return LinearGradient(
-                colors: [.red.opacity(0.9), .red.opacity(0.6)],
+                colors: isToday
+                    ? [.red, .red.opacity(0.75)]
+                    : [.red.opacity(0.9), .red.opacity(0.6)],
                 startPoint: .bottom,
                 endPoint: .top
             )
         }
         return LinearGradient(
-            colors: [themeColor.opacity(0.9), themeColor.opacity(0.5)],
+            colors: isToday
+                ? [themeColor, themeColor.opacity(0.7)]
+                : [themeColor.opacity(0.9), themeColor.opacity(0.5)],
             startPoint: .bottom,
             endPoint: .top
         )
