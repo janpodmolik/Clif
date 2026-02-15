@@ -36,6 +36,7 @@ struct ContentView: View {
     @Environment(ArchivedPetManager.self) private var archivedPetManager
     @Environment(EssenceCatalogManager.self) private var essenceCatalogManager
     @Environment(SyncManager.self) private var syncManager
+    @Environment(DeepLinkRouter.self) private var router
 
     @State private var activeTab: AppTab = .home
     @State private var isDaytime: Bool = SkyGradient.isDaytime()
@@ -97,7 +98,6 @@ struct ContentView: View {
             activeTab = .profile
             navigationPaths[.profile] = NavigationPath([ProfileDestination.essenceCatalog])
         }
-        // Daily summary deep link is handled by DeepLinkRouter (posts .navigateHome for tab switch)
         #if DEBUG
         .onReceive(NotificationCenter.default.publisher(for: .showMockSheet)) { _ in
             showMockSheet = true
@@ -149,6 +149,36 @@ struct ContentView: View {
                 }
             }
         }
+        .sheet(isPresented: Bindable(router).showPresetPicker, onDismiss: {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                router.drainPendingAction()
+            }
+        }) {
+            DailyPresetPicker()
+                .interactiveDismissDisabled()
+        }
+        .sheet(item: Bindable(router).showDailySummary) { request in
+            if let pet = petManager.currentPet {
+                let targetDate = request.notificationDate ?? Date()
+                let dayStat = pet.dailyStats.first {
+                    Calendar.current.isDate($0.date, inSameDayAs: targetDate)
+                } ?? DailyUsageStat(
+                    petId: pet.id,
+                    date: targetDate,
+                    totalMinutes: 0,
+                    preset: pet.preset
+                )
+                DayDetailSheet(
+                    day: dayStat,
+                    petId: pet.id,
+                    limitMinutes: Int(dayStat.preset?.minutesToBlowAway ?? pet.preset.minutesToBlowAway),
+                    hourlyBreakdown: nil
+                )
+            }
+        }
+        .onAppear {
+            checkDayResetAndShowPicker()
+        }
     }
 
     // MARK: - Navigation
@@ -170,6 +200,25 @@ struct ContentView: View {
             return .light
         case .dark:
             return .dark
+        }
+    }
+
+    // MARK: - Daily Reset & Preset Picker
+
+    private func checkDayResetAndShowPicker() {
+        if SharedDefaults.isNewDay {
+            SharedDefaults.performDailyResetIfNeeded()
+            ShieldManager.shared.activateStoreFromStoredTokens()
+        }
+
+        guard petManager.hasPet,
+              SharedDefaults.isDayStartShieldActive,
+              !SharedDefaults.windPresetLockedForToday else {
+            return
+        }
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            router.showPresetPicker = true
         }
     }
 
@@ -197,4 +246,5 @@ struct ContentView: View {
         .environment(AuthManager.mock())
         .environment(StoreManager.mock())
         .environment(SyncManager())
+        .environment(DeepLinkRouter())
 }

@@ -12,7 +12,6 @@ struct HomeScreen: View {
     @Environment(EssenceCatalogManager.self) private var essenceCatalogManager
     @Environment(SyncManager.self) private var syncManager
     @Environment(CoinsRewardAnimator.self) private var coinsAnimator
-    @Environment(DeepLinkRouter.self) private var router
 
     @State private var windRhythm = WindRhythm()
     @State private var blowAwayAnimator = BlowAwayAnimator()
@@ -219,14 +218,6 @@ struct HomeScreen: View {
                 }
             }
         }
-        .sheet(isPresented: Bindable(router).showPresetPicker, onDismiss: {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                router.drainPendingAction()
-            }
-        }) {
-            DailyPresetPicker()
-                .interactiveDismissDisabled()
-        }
         .sheet(isPresented: $showDeleteSheet) {
             if let pet = currentPet {
                 DeletePetSheet(
@@ -301,25 +292,6 @@ struct HomeScreen: View {
             }
         }
         .windNotCalmSheet(isPresented: $showWindNotCalmAlert)
-        .sheet(item: Bindable(router).showDailySummary) { request in
-            if let pet = currentPet {
-                let targetDate = request.notificationDate ?? Date()
-                let dayStat = pet.dailyStats.first {
-                    Calendar.current.isDate($0.date, inSameDayAs: targetDate)
-                } ?? DailyUsageStat(
-                    petId: pet.id,
-                    date: targetDate,
-                    totalMinutes: 0,
-                    preset: pet.preset
-                )
-                DayDetailSheet(
-                    day: dayStat,
-                    petId: pet.id,
-                    limitMinutes: Int(dayStat.preset?.minutesToBlowAway ?? pet.preset.minutesToBlowAway),
-                    hourlyBreakdown: nil
-                )
-            }
-        }
         .alert(
             "Přístup k času u obrazovky",
             isPresented: $showAuthorizationAlert
@@ -331,8 +303,6 @@ struct HomeScreen: View {
         .onAppear {
             windRhythm.start()
             windRhythm.paused = (currentPet?.windLevel == .none || currentPet == nil)
-            // Fallback: check if new day and perform reset if extension missed it
-            checkDayResetAndShowPicker()
             // Force immediate refresh to read latest wind from SharedDefaults
             refreshTick += 1
             configureRefreshTimer()
@@ -636,30 +606,6 @@ struct HomeScreen: View {
         }
     }
 
-    // MARK: - Daily Reset & Preset Picker
-
-    private func checkDayResetAndShowPicker() {
-        // Fallback: if extension didn't catch the new day, perform reset here
-        if SharedDefaults.isNewDay {
-            SharedDefaults.performDailyResetIfNeeded()
-            ShieldManager.shared.activateStoreFromStoredTokens()
-        }
-
-        // Show preset picker if:
-        // 1. There is an active pet
-        // 2. Day start shield is active (set at day reset)
-        // 3. Preset not yet selected today
-        guard currentPet != nil,
-              SharedDefaults.isDayStartShieldActive,
-              !SharedDefaults.windPresetLockedForToday else {
-            return
-        }
-
-        // Small delay to let view fully appear
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-            router.showPresetPicker = true
-        }
-    }
 }
 
 // MARK: - HomeCardBackgroundModifier
@@ -685,5 +631,4 @@ private struct HomeCardBackgroundModifier: ViewModifier {
         .environment(EssencePickerCoordinator())
         .environment(CreatePetCoordinator())
         .environment(CoinsRewardAnimator())
-        .environment(DeepLinkRouter())
 }
