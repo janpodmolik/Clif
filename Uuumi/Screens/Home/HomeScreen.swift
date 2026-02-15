@@ -309,12 +309,12 @@ struct HomeScreen: View {
         }
         .onReceive(NotificationCenter.default.publisher(for: .navigateHome)) { _ in
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                reactionAnimator.play(.bounce)
+                reactionAnimator.playRandom()
             }
         }
         .onReceive(NotificationCenter.default.publisher(for: .selectPet)) { _ in
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                reactionAnimator.play(.bounce)
+                reactionAnimator.playRandom()
             }
         }
         .onReceive(NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)) { _ in
@@ -341,7 +341,7 @@ struct HomeScreen: View {
         }
         .onChange(of: coinsAnimator.phase) { _, newPhase in
             if newPhase == .burst {
-                reactionAnimator.play(.bounce)
+                reactionAnimator.playRandom()
             }
         }
         .onChange(of: currentPet?.id) { _, _ in
@@ -492,7 +492,7 @@ struct HomeScreen: View {
         if status == .approved {
             withAnimation(.easeInOut(duration: 0.5)) {
                 createPetCoordinator.show { _ in
-                    reactionAnimator.play(.bounce, withGlow: true)
+                    reactionAnimator.playRandom(withGlow: true)
                 }
             }
             return
@@ -502,7 +502,7 @@ struct HomeScreen: View {
             try await AuthorizationCenter.shared.requestAuthorization(for: .individual)
             withAnimation(.easeInOut(duration: 0.5)) {
                 createPetCoordinator.show { _ in
-                    reactionAnimator.play(.bounce, withGlow: true)
+                    reactionAnimator.playRandom(withGlow: true)
                 }
             }
         } catch {

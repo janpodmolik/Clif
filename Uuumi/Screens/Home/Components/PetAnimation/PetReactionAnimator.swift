@@ -20,6 +20,12 @@ final class PetReactionAnimator {
         trigger += 1
     }
 
+    /// Request a random reaction animation (any type except `.none`).
+    func playRandom(withGlow: Bool = false) {
+        guard let type = PetReactionType.allCases.filter({ $0 != .none }).randomElement() else { return }
+        play(type, withGlow: withGlow)
+    }
+
     /// Called by IslandView to consume the pending animation request.
     func consume() -> (type: PetReactionType, glow: Bool)? {
         guard let type = pending else { return nil }
