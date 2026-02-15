@@ -12,24 +12,6 @@ struct AccountScreen: View {
     var body: some View {
         NavigationStack {
             VStack(spacing: 20) {
-                // Avatar
-                ZStack(alignment: .bottomTrailing) {
-                    Image(systemName: "person.crop.circle.fill")
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 100, height: 100)
-                        .foregroundStyle(.secondary)
-
-                    // TODO: Implement avatar photo picker
-                    Image(systemName: "camera.fill")
-                        .font(.caption)
-                        .foregroundStyle(.white)
-                        .frame(width: 28, height: 28)
-                        .background(Color.accentColor, in: Circle())
-                        .offset(x: 4, y: 4)
-                }
-                .padding(.top, 16)
-
                 // Display name (editable)
                 TextField("Jméno", text: $displayName)
                     .font(.body)
@@ -39,6 +21,7 @@ struct AccountScreen: View {
                     .clipShape(Capsule())
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 24)
+                    .padding(.top, 16)
 
                 // Email
                 if let email = authManager.userEmail {
@@ -116,7 +99,6 @@ struct AccountScreen: View {
             .dismissButton()
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    // TODO: Save display name to Supabase user metadata
                     Button {
                         dismiss()
                     } label: {

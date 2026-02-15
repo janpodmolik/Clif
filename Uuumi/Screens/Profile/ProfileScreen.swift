@@ -236,7 +236,7 @@ struct ProfileScreen: View {
                 Image(systemName: "person.crop.circle.fill")
                     .resizable()
                     .scaledToFit()
-                    .frame(width: 60, height: 60)
+                    .frame(width: 40, height: 40)
                     .foregroundStyle(authManager.isAuthenticated ? .secondary : Color(.systemGray3))
 
                 VStack(alignment: .leading, spacing: 2) {
@@ -263,7 +263,7 @@ struct ProfileScreen: View {
                     .font(.footnote.weight(.semibold))
                     .foregroundStyle(Color(.tertiaryLabel))
             }
-            .padding(.vertical, 6)
+            .padding(.vertical, 4)
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
