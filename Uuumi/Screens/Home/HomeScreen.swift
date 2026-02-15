@@ -12,6 +12,7 @@ struct HomeScreen: View {
     @Environment(EssenceCatalogManager.self) private var essenceCatalogManager
     @Environment(SyncManager.self) private var syncManager
     @Environment(CoinsRewardAnimator.self) private var coinsAnimator
+    @Environment(AnalyticsManager.self) private var analytics
 
     @State private var windRhythm = WindRhythm()
     @State private var blowAwayAnimator = BlowAwayAnimator()
@@ -353,6 +354,9 @@ struct HomeScreen: View {
         .onChange(of: currentPet?.isBlownAway) { oldValue, newValue in
             if newValue == true && oldValue != true, let screenWidth = currentScreenWidth {
                 blowAwayAnimator.trigger(screenWidth: screenWidth)
+                if let pet = currentPet {
+                    analytics.send(.blowAway(essenceType: pet.evolutionTypeName, evolutionPhase: pet.currentPhase, totalDays: pet.totalDays))
+                }
             }
         }
         .onChange(of: currentPet?.windLevel) { _, newLevel in
@@ -562,6 +566,12 @@ struct HomeScreen: View {
 
     private func triggerAscension(petId: UUID) {
         guard !ascensionAnimator.isAnimating else { return }
+
+        if let pet = currentPet {
+            let reason = pet.isFullyEvolved ? "completed" : "manual"
+            analytics.send(.petArchived(essenceType: pet.evolutionTypeName, evolutionPhase: pet.currentPhase, totalDays: pet.totalDays, reason: reason))
+        }
+
         let screenHeight = currentScreenHeight ?? 800
         ascensionAnimator.trigger(screenHeight: screenHeight) { [petManager, archivedPetManager] in
             // Archive without animation — pet is already off-screen.
@@ -584,9 +594,11 @@ struct HomeScreen: View {
     private func handleEvolve(_ pet: Pet) {
         if pet.isBlob {
             essenceCoordinator.show(petDropFrame: essenceDropFrame) { essence in
+                analytics.send(.essenceApplied(essenceType: essence.rawValue, evolutionPhase: pet.currentPhase))
                 evolutionAnimator.triggerEssenceApplication(pet: pet, essence: essence)
             }
         } else {
+            analytics.send(.petEvolved(essenceType: pet.evolutionTypeName, fromPhase: pet.currentPhase, toPhase: pet.currentPhase + 1))
             evolutionAnimator.trigger(pet: pet)
         }
     }

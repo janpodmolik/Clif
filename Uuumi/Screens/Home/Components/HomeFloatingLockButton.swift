@@ -3,6 +3,7 @@ import SwiftUI
 /// Floating lock/unlock button displayed over the home scene.
 /// Manages its own break picker and unlock confirmation sheets.
 struct HomeFloatingLockButton: View {
+    @Environment(AnalyticsManager.self) private var analytics
     @AppStorage(DefaultsKeys.lockButtonSide) private var lockButtonSide: LockButtonSide = .trailing
 
     @State private var showBreakTypePicker = false
@@ -28,9 +29,11 @@ struct HomeFloatingLockButton: View {
         .sheet(isPresented: $showBreakTypePicker) {
             BreakTypePicker(
                 onSelectFree: {
+                    analytics.sendBreakStarted(breakType: "free")
                     ShieldManager.shared.turnOn(breakType: .free, durationMinutes: nil)
                 },
                 onConfirmCommitted: { durationMinutes in
+                    analytics.sendBreakStarted(breakType: "committed")
                     ShieldManager.shared.turnOn(breakType: .committed, durationMinutes: durationMinutes)
                 }
             )
@@ -58,6 +61,7 @@ struct HomeFloatingLockButton: View {
         Button {
             UIImpactFeedbackGenerator(style: .light).impactOccurred()
             if shieldState.isActive {
+                analytics.send(.shieldToggled(enabled: false))
                 handleShieldUnlock(
                     shieldState: shieldState,
                     showCommittedConfirmation: $showCommittedUnlock,

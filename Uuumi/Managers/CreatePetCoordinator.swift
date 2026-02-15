@@ -180,7 +180,7 @@ final class CreatePetCoordinator {
         }
     }
 
-    func handleBlobDrop(petManager: PetManager) {
+    func handleBlobDrop(petManager: PetManager, analyticsManager: AnalyticsManager) {
         // Guard: cannot create if pet already exists
         guard !petManager.hasPet else {
             dismiss()
@@ -209,6 +209,9 @@ final class CreatePetCoordinator {
 
         // Apply preset (locks it for today, starts monitoring, resets wind)
         ScreenTimeManager.shared.applyDailyPreset(preset, for: pet)
+
+        analyticsManager.send(.petCreated(essenceType: "blob"))
+        analyticsManager.send(.presetSelected(presetName: preset.rawValue, context: .creation))
 
         onComplete?(pet)
         dismiss()

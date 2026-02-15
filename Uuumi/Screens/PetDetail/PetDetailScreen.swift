@@ -12,6 +12,7 @@ struct PetDetailScreen: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(PetManager.self) private var petManager
     @Environment(ArchivedPetManager.self) private var archivedPetManager
+    @Environment(AnalyticsManager.self) private var analytics
     @State private var showLimitedApps = false
     @State private var showDeleteConfirmation = false
     @State private var showArchiveConfirmation = false
@@ -206,9 +207,11 @@ struct PetDetailScreen: View {
             .sheet(isPresented: $showBreakTypePicker) {
                 BreakTypePicker(
                     onSelectFree: {
+                        analytics.sendBreakStarted(breakType: "free")
                         ShieldManager.shared.turnOn(breakType: .free, durationMinutes: nil)
                     },
                     onConfirmCommitted: { durationMinutes in
+                        analytics.sendBreakStarted(breakType: "committed")
                         ShieldManager.shared.turnOn(breakType: .committed, durationMinutes: durationMinutes)
                     }
                 )

@@ -3,6 +3,7 @@ import Supabase
 
 struct FeedbackScreen: View {
     @Environment(AuthManager.self) private var authManager
+    @Environment(AnalyticsManager.self) private var analytics
     @Environment(\.dismiss) private var dismiss
     @Binding var showSuccess: Bool
     @State private var message = ""
@@ -69,6 +70,7 @@ struct FeedbackScreen: View {
                 .from("feedback")
                 .insert(dto)
                 .execute()
+            analytics.send(.feedbackSubmitted)
             showSuccess = true
             dismiss()
         } catch {

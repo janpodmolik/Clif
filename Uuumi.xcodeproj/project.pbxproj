@@ -70,7 +70,6 @@
 		B45CF5A62F279E83009B4F06 /* DayStartGreeting.swift in Sources */ = {isa = PBXBuildFile; fileRef = B45CF5A42F279E83009B4F06 /* DayStartGreeting.swift */; };
 		B46003DB2F3BC5FC007CC2C3 /* Products.storekit in Resources */ = {isa = PBXBuildFile; fileRef = B46003DA2F3BC5FC007CC2C3 /* Products.storekit */; };
 		B465CE0C8FADC1A606CB0FB3 /* NotificationSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = B40CCE351C80317FA3B1799D /* NotificationSettings.swift */; };
-		B46DAE572F41EBA400B3BF40 /* TelemetryDeck in Frameworks */ = {isa = PBXBuildFile; productRef = B46DAE562F41EBA400B3BF40 /* TelemetryDeck */; };
 		B46FF15117FC695A07A0CA6E /* NotificationSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = B40CCE351C80317FA3B1799D /* NotificationSettings.swift */; };
 		B472FD572F3549D100C109AA /* SharedDefaults+Coins.swift in Sources */ = {isa = PBXBuildFile; fileRef = B472FD562F3549D100C109AA /* SharedDefaults+Coins.swift */; };
 		B472FD582F3549D100C109AA /* SharedDefaults+Coins.swift in Sources */ = {isa = PBXBuildFile; fileRef = B472FD562F3549D100C109AA /* SharedDefaults+Coins.swift */; };
@@ -311,7 +310,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				B45862252EE5D0A60088CB78 /* Supabase in Frameworks */,
-				B46DAE572F41EBA400B3BF40 /* TelemetryDeck in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -501,7 +499,6 @@
 			name = Uuumi;
 			packageProductDependencies = (
 				B45862242EE5D0A60088CB78 /* Supabase */,
-				B46DAE562F41EBA400B3BF40 /* TelemetryDeck */,
 			);
 			productName = Uuumi;
 			productReference = B4159A322EE56ED700BAE49D /* Uuumi.app */;
@@ -633,7 +630,6 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				B45862232EE5D0A60088CB78 /* XCRemoteSwiftPackageReference "supabase-swift" */,
-				B46DAE552F41EBA400B3BF40 /* XCRemoteSwiftPackageReference "SwiftSDK" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = B4159A332EE56ED700BAE49D /* Products */;
@@ -1429,14 +1425,6 @@
 				minimumVersion = 2.5.1;
 			};
 		};
-		B46DAE552F41EBA400B3BF40 /* XCRemoteSwiftPackageReference "SwiftSDK" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/TelemetryDeck/SwiftSDK";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 2.11.0;
-			};
-		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -1444,11 +1432,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = B45862232EE5D0A60088CB78 /* XCRemoteSwiftPackageReference "supabase-swift" */;
 			productName = Supabase;
-		};
-		B46DAE562F41EBA400B3BF40 /* TelemetryDeck */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = B46DAE552F41EBA400B3BF40 /* XCRemoteSwiftPackageReference "SwiftSDK" */;
-			productName = TelemetryDeck;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

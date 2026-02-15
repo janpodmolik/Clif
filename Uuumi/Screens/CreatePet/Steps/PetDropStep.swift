@@ -4,6 +4,7 @@ import SwiftUI
 struct PetDropStep: View {
     @Environment(CreatePetCoordinator.self) private var coordinator
     @Environment(PetManager.self) private var petManager
+    @Environment(AnalyticsManager.self) private var analytics
 
     @State private var hapticController = DragHapticController()
     @State private var stagingCardFrame: CGRect = .zero
@@ -178,7 +179,7 @@ struct PetDropStep: View {
 
         // Successful drop
         coordinator.dragState.isDragging = false
-        coordinator.handleBlobDrop(petManager: petManager)
+        coordinator.handleBlobDrop(petManager: petManager, analyticsManager: analytics)
         HapticType.notificationSuccess.trigger()
     }
 

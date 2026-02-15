@@ -1,3 +1,4 @@
+import Auth
 import Combine
 import SwiftUI
 import UserNotifications
@@ -47,6 +48,14 @@ struct MainApp: App {
                     petManager.syncManager = syncManager
                     print("🟢 ContentView appeared, authState=\(authManager.authState), hasPet=\(petManager.hasPet)")
                 }
+                .task {
+                    await storeManager.checkCurrentEntitlements()
+                    analyticsManager.configure(
+                        userId: authManager.currentUser?.id,
+                        premiumPlan: storeManager.activeProductId
+                    )
+                    analyticsManager.sendConfigSnapshot()
+                }
                 .onChange(of: authManager.authState) { oldState, newState in
                     print("🟢 onChange: \(oldState) → \(newState), hasPet=\(petManager.hasPet)")
                     handleAuthStateChange(from: oldState, to: newState)
@@ -60,6 +69,10 @@ struct MainApp: App {
     private func handleAuthStateChange(from oldState: AuthManager.AuthState, to newState: AuthManager.AuthState) {
         switch newState {
         case .authenticated:
+            analyticsManager.configure(
+                userId: authManager.currentUser?.id,
+                premiumPlan: storeManager.activeProductId
+            )
             if petManager.hasPet {
                 // Local pet exists — check if cloud also has one (potential conflict)
                 // Only upload local settings if no conflict (conflict resolution handles sync)

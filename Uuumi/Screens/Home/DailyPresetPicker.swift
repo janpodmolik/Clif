@@ -2,6 +2,7 @@ import SwiftUI
 
 struct DailyPresetPicker: View {
     @Environment(PetManager.self) private var petManager
+    @Environment(AnalyticsManager.self) private var analytics
     @Environment(\.dismiss) private var dismiss
 
     @State private var selectedPreset: WindPreset = .balanced
@@ -68,6 +69,7 @@ struct DailyPresetPicker: View {
         if let pet = currentPet {
             ScreenTimeManager.shared.applyDailyPreset(selectedPreset, for: pet)
         }
+        analytics.send(.presetSelected(presetName: selectedPreset.rawValue, context: .daily))
         dismiss()
     }
 }

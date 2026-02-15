@@ -68,6 +68,10 @@ When implementing or working with external libraries (e.g., Supabase, Firebase, 
 2. Do not rely on outdated knowledge - always verify current API usage
 3. This ensures we use up-to-date patterns and avoid deprecated methods
 
+## Naming Conventions
+
+Always use descriptive, full variable names. Never use single-letter or abbreviated variable names (e.g., use `version` instead of `v`, `build` instead of `b`).
+
 ## Architecture
 
 **This project uses MV (Model-View) architecture.**

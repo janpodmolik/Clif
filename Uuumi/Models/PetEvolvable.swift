@@ -10,6 +10,7 @@ extension PetEvolvable {
     // MARK: - Delegated Properties
 
     var essence: Essence? { evolutionHistory.essence }
+    var evolutionTypeName: String { essence?.rawValue ?? "blob" }
     var currentPhase: Int { evolutionHistory.currentPhase }
     var isBlob: Bool { evolutionHistory.isBlob }
     var canEvolve: Bool { evolutionHistory.canEvolve }

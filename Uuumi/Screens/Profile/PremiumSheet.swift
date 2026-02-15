@@ -3,6 +3,7 @@ import StoreKit
 
 struct PremiumSheet: View {
     @Environment(StoreManager.self) private var storeManager
+    @Environment(AnalyticsManager.self) private var analytics
     @Environment(\.dismiss) private var dismiss
     @State private var selectedProduct: Product?
 
@@ -178,6 +179,8 @@ struct PremiumSheet: View {
     private var purchaseButton: some View {
         Button {
             guard let product = selectedProduct else { return }
+            let plan = product.id == StoreManager.yearlyID ? "yearly" : "monthly"
+            analytics.send(.premiumPurchaseTapped(plan: plan))
             Task { await storeManager.purchase(product) }
         } label: {
             Group {

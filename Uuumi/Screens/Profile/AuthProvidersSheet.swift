@@ -3,6 +3,7 @@ import AuthenticationServices
 
 struct AuthProvidersSheet: View {
     @Environment(AuthManager.self) private var authManager
+    @Environment(AnalyticsManager.self) private var analytics
     @Environment(\.dismiss) private var dismiss
     @Environment(\.colorScheme) private var colorScheme
 
@@ -51,7 +52,10 @@ struct AuthProvidersSheet: View {
             }
         }
         .onChange(of: authManager.isAuthenticated) { _, isAuth in
-            if isAuth && !isLoading { dismiss() }
+            if isAuth {
+                analytics.send(.authCompleted(method: authManager.authProvider ?? "unknown"))
+                dismiss()
+            }
         }
     }
 
@@ -81,7 +85,6 @@ struct AuthProvidersSheet: View {
                 isLoading = true
                 await authManager.signInWithGoogle()
                 isLoading = false
-                if authManager.isAuthenticated { dismiss() }
             }
         } label: {
             HStack(spacing: 12) {
