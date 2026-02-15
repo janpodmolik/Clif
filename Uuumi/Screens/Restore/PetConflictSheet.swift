@@ -111,6 +111,7 @@ struct PetConflictSheet: View {
             Button(action: onKeep) {
                 Text("Ponechat \(name)")
                     .font(.body.weight(.semibold))
+                    .foregroundStyle(Color(.systemBackground))
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 14)
             }
