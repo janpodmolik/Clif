@@ -16,6 +16,7 @@ struct MainApp: App {
     @State private var authManager = AuthManager()
     @State private var storeManager = StoreManager()
     @State private var syncManager = SyncManager()
+    @State private var analyticsManager = AnalyticsManager()
     @State private var deepLinkRouter = DeepLinkRouter()
     @State private var periodicSyncTimer: AnyCancellable?
 
@@ -24,6 +25,7 @@ struct MainApp: App {
         // Eagerly initialize ShieldManager so its Darwin notification observer
         // is registered before any extension threshold can fire.
         _ = ShieldManager.shared
+        analyticsManager.initialize()
         Task {
             await AppDelegate.requestNotificationPermission()
         }
@@ -39,6 +41,7 @@ struct MainApp: App {
                 .environment(authManager)
                 .environment(storeManager)
                 .environment(syncManager)
+                .environment(analyticsManager)
                 .environment(deepLinkRouter)
                 .onAppear {
                     petManager.syncManager = syncManager
