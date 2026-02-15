@@ -64,6 +64,8 @@
 		B45862172EE5B92C0088CB78 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = B45862142EE5B92C0088CB78 /* Constants.swift */; };
 		B45862252EE5D0A60088CB78 /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = B45862242EE5D0A60088CB78 /* Supabase */; };
 		B458623C2EE5F6F80088CB78 /* DeviceActivityReport.appex in Embed ExtensionKit Extensions */ = {isa = PBXBuildFile; fileRef = B45862302EE5F6F80088CB78 /* DeviceActivityReport.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		B45862432EE5FAF60088CB78 /* ActivityReportContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = B45862422EE5FAF60088CB78 /* ActivityReportContext.swift */; };
+		B45862442EE5FAF60088CB78 /* ActivityReportContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = B45862422EE5FAF60088CB78 /* ActivityReportContext.swift */; };
 		B45CF5A52F279E83009B4F06 /* DayStartGreeting.swift in Sources */ = {isa = PBXBuildFile; fileRef = B45CF5A42F279E83009B4F06 /* DayStartGreeting.swift */; };
 		B45CF5A62F279E83009B4F06 /* DayStartGreeting.swift in Sources */ = {isa = PBXBuildFile; fileRef = B45CF5A42F279E83009B4F06 /* DayStartGreeting.swift */; };
 		B46003DB2F3BC5FC007CC2C3 /* Products.storekit in Resources */ = {isa = PBXBuildFile; fileRef = B46003DA2F3BC5FC007CC2C3 /* Products.storekit */; };
@@ -116,8 +118,6 @@
 		B4WIND0042F40A0000000004 /* WindReminderNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4WIND0012F40A0000000001 /* WindReminderNotification.swift */; };
 		B4WIND0052F40A0000000005 /* WindReminderNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4WIND0012F40A0000000001 /* WindReminderNotification.swift */; };
 		B4WIND0062F40A0000000006 /* WindReminderNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4WIND0012F40A0000000001 /* WindReminderNotification.swift */; };
-		B45862432EE5FAF60088CB78 /* ActivityReportContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = B45862422EE5FAF60088CB78 /* ActivityReportContext.swift */; };
-		B45862442EE5FAF60088CB78 /* ActivityReportContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = B45862422EE5FAF60088CB78 /* ActivityReportContext.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -195,6 +195,7 @@
 		B451D3782F26856C004C534F /* SharedDefaults+Wind.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SharedDefaults+Wind.swift"; sourceTree = "<group>"; };
 		B45862142EE5B92C0088CB78 /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
 		B45862302EE5F6F80088CB78 /* DeviceActivityReport.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.extensionkit-extension"; includeInIndex = 0; path = DeviceActivityReport.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		B45862422EE5FAF60088CB78 /* ActivityReportContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityReportContext.swift; sourceTree = "<group>"; };
 		B45CF5A42F279E83009B4F06 /* DayStartGreeting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayStartGreeting.swift; sourceTree = "<group>"; };
 		B46003DA2F3BC5FC007CC2C3 /* Products.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; path = Products.storekit; sourceTree = "<group>"; };
 		B472FD562F3549D100C109AA /* SharedDefaults+Coins.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SharedDefaults+Coins.swift"; sourceTree = "<group>"; };
@@ -211,7 +212,6 @@
 		B4HA00012F40000100AA0001 /* HourlyAggregate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HourlyAggregate.swift; sourceTree = "<group>"; };
 		B4HA00112F40000100BB0001 /* SharedDefaults+HourlyAggregate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SharedDefaults+HourlyAggregate.swift"; sourceTree = "<group>"; };
 		B4WIND0012F40A0000000001 /* WindReminderNotification.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindReminderNotification.swift; sourceTree = "<group>"; };
-		B45862422EE5FAF60088CB78 /* ActivityReportContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityReportContext.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */

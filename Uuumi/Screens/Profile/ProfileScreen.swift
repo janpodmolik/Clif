@@ -6,6 +6,7 @@ enum ProfileDestination: Hashable {
     case essenceCatalog
     case notificationSettings
     case shieldSettings
+    case feedback
 }
 
 struct ProfileScreen: View {
@@ -22,6 +23,7 @@ struct ProfileScreen: View {
     @State private var showAuthSheet = false
     @State private var showAccountSheet = false
     @State private var showMyAppsSheet = false
+    @State private var showFeedbackSuccess = false
     @State private var myAppsSelection: FamilyActivitySelection?
     @Binding var navigationPath: NavigationPath
 
@@ -148,8 +150,8 @@ struct ProfileScreen: View {
                         syncStatusRow
                     }
 
-                    Link(destination: URL(string: "mailto:support@uuumi.app")!) {
-                        Label("Napsat podporu", systemImage: "envelope")
+                    NavigationLink(value: ProfileDestination.feedback) {
+                        Label("Zpětná vazba", systemImage: "text.bubble")
                     }
                 }
 
@@ -196,6 +198,8 @@ struct ProfileScreen: View {
                     NotificationSettingsScreen()
                 case .shieldSettings:
                     ShieldSettingsScreen()
+                case .feedback:
+                    FeedbackScreen(showSuccess: $showFeedbackSuccess)
                 }
             }
             .onAppear {
@@ -208,6 +212,11 @@ struct ProfileScreen: View {
                 Button("OK") { authManager.clearError() }
             } message: { error in
                 Text(error.localizedDescription)
+            }
+            .alert("Odesláno!", isPresented: $showFeedbackSuccess) {
+                Button("OK") {}
+            } message: {
+                Text("Děkujeme za tvůj feedback!")
             }
         }
     }
