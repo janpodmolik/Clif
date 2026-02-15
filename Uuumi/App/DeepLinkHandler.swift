@@ -2,25 +2,31 @@ import SwiftUI
 
 struct DeepLinkModifier: ViewModifier {
     @Environment(AuthManager.self) private var authManager
+    @Environment(DeepLinkRouter.self) private var router
 
     func body(content: Content) -> some View {
         content
             .onOpenURL { url in
-                if url.scheme == "uuumi", url.host == "auth" {
-                    authManager.handleOAuthCallback(url: url)
-                } else {
-                    DeepLinkHandler.handle(url)
-                }
+                handle(url)
             }
             .onReceive(NotificationCenter.default.publisher(for: .deepLinkReceived)) { notification in
                 if let url = notification.object as? URL {
-                    if url.scheme == "uuumi", url.host == "auth" {
-                        authManager.handleOAuthCallback(url: url)
-                    } else {
-                        DeepLinkHandler.handle(url)
-                    }
+                    handle(url)
                 }
             }
+    }
+
+    private func handle(_ url: URL) {
+        guard url.scheme == "uuumi" else { return }
+
+        if url.host == DeepLinkHost.auth.rawValue {
+            authManager.handleOAuthCallback(url: url)
+        } else {
+            #if DEBUG
+            print("[DeepLink] Received: \(url)")
+            #endif
+            router.handle(url)
+        }
     }
 }
 
@@ -30,72 +36,12 @@ extension View {
     }
 }
 
-private enum DeepLinkHandler {
-    static func handle(_ url: URL) {
-        #if DEBUG
-        print("[DeepLink] Received: \(url)")
-        #endif
-
-        guard url.scheme == "uuumi" else { return }
-
-        switch url.host {
-        case "shield":
-            #if DEBUG
-            print("[DeepLink] Opened from shield notification")
-            #endif
-            // TODO: Navigate to session tracking view when implemented
-
-        case "pet":
-            if let petIdString = url.pathComponents.dropFirst().first,
-               let petId = UUID(uuidString: petIdString) {
-                #if DEBUG
-                print("[DeepLink] Navigate to pet: \(petId)")
-                #endif
-                NotificationCenter.default.post(
-                    name: .selectPet,
-                    object: nil,
-                    userInfo: ["petId": petId]
-                )
-            }
-
-        case "preset-picker":
-            #if DEBUG
-            print("[DeepLink] Opening preset picker from day start shield")
-            #endif
-            NotificationCenter.default.post(name: .showPresetPicker, object: nil)
-
-        case "dailySummary":
-            #if DEBUG
-            print("[DeepLink] Navigate to daily summary")
-            #endif
-            NotificationCenter.default.post(name: .showDailySummary, object: nil)
-
-        case "home":
-            #if DEBUG
-            print("[DeepLink] Navigate to home")
-            #endif
-            NotificationCenter.default.post(name: .navigateHome, object: nil)
-
-        case "essenceCatalog":
-            #if DEBUG
-            print("[DeepLink] Navigate to essence catalog")
-            #endif
-            NotificationCenter.default.post(name: .showEssenceCatalog, object: nil)
-
-        default:
-            break
-        }
-    }
-}
-
 extension Notification.Name {
     static let deepLinkReceived = Notification.Name("deepLinkReceived")
     static let selectPet = Notification.Name("selectPet")
-    static let showPresetPicker = Notification.Name("showPresetPicker")
     static let showEssenceCatalog = Notification.Name("showEssenceCatalog")
     static let navigateHome = Notification.Name("navigateHome")
     static let showBreakTypePicker = Notification.Name("showBreakTypePicker")
-    static let showDailySummary = Notification.Name("showDailySummary")
     #if DEBUG
     static let showMockSheet = Notification.Name("showMockSheet")
     #endif

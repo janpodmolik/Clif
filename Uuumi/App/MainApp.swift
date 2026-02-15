@@ -16,6 +16,7 @@ struct MainApp: App {
     @State private var authManager = AuthManager()
     @State private var storeManager = StoreManager()
     @State private var syncManager = SyncManager()
+    @State private var deepLinkRouter = DeepLinkRouter()
     @State private var periodicSyncTimer: AnyCancellable?
 
     init() {
@@ -38,6 +39,7 @@ struct MainApp: App {
                 .environment(authManager)
                 .environment(storeManager)
                 .environment(syncManager)
+                .environment(deepLinkRouter)
                 .onAppear {
                     petManager.syncManager = syncManager
                     print("🟢 ContentView appeared, authState=\(authManager.authState), hasPet=\(petManager.hasPet)")

@@ -21,7 +21,15 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
         print("[AppDelegate] Notification tapped: \(userInfo)")
         #endif
 
-        if let deepLink = userInfo["deepLink"] as? String, let url = URL(string: deepLink) {
+        if let deepLink = userInfo["deepLink"] as? String, var url = URL(string: deepLink) {
+            // For daily summary, append the notification's delivery date so we show
+            // the correct day even if the user taps the notification the next morning.
+            if url.host == DeepLinkHost.dailySummary.rawValue,
+               var components = URLComponents(url: url, resolvingAgainstBaseURL: false) {
+                let timestamp = response.notification.date.timeIntervalSince1970
+                components.queryItems = (components.queryItems ?? []) + [URLQueryItem(name: "date", value: "\(timestamp)")]
+                url = components.url ?? url
+            }
             UIApplication.shared.open(url)
         }
 

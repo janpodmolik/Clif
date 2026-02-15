@@ -37,6 +37,7 @@ struct DebugView: View {
                         screenTimeReportSection
                     }
 
+                    deepLinkSection
                     navigationLinksSection
 
                     if manager.isAuthorized {
@@ -577,6 +578,44 @@ struct DebugView: View {
         .task {
             reportFilter = createFilter()
         }
+    }
+
+    // MARK: - Deep Links
+
+    private var deepLinkSection: some View {
+        sectionCard("Deep Links", icon: "link", tint: .cyan) {
+            FlowLayout(spacing: 8) {
+                Button("Home") { openDeepLink("uuumi://home") }
+                    .tint(.blue)
+                Button("Preset Picker") { openDeepLink("uuumi://preset-picker") }
+                    .tint(.green)
+                Button("Summary (today)") {
+                    let ts = Date().timeIntervalSince1970
+                    openDeepLink("uuumi://dailySummary?date=\(ts)")
+                }
+                .tint(.orange)
+                Button("Summary (yesterday)") {
+                    let ts = Date().addingTimeInterval(-86400).timeIntervalSince1970
+                    openDeepLink("uuumi://dailySummary?date=\(ts)")
+                }
+                .tint(.yellow)
+                Button("Essence Catalog") { openDeepLink("uuumi://essenceCatalog") }
+                    .tint(.purple)
+                Button("Shield") { openDeepLink("uuumi://shield") }
+                    .tint(.red)
+                if let petId = petManager.currentPet?.id {
+                    Button("Select Pet") { openDeepLink("uuumi://pet/\(petId)") }
+                        .tint(.mint)
+                }
+            }
+            .buttonStyle(.bordered)
+            .controlSize(.small)
+        }
+    }
+
+    private func openDeepLink(_ string: String) {
+        guard let url = URL(string: string) else { return }
+        UIApplication.shared.open(url)
     }
 
     // MARK: - Navigation Links

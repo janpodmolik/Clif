@@ -12,6 +12,7 @@ struct HomeScreen: View {
     @Environment(EssenceCatalogManager.self) private var essenceCatalogManager
     @Environment(SyncManager.self) private var syncManager
     @Environment(CoinsRewardAnimator.self) private var coinsAnimator
+    @Environment(DeepLinkRouter.self) private var router
 
     @State private var windRhythm = WindRhythm()
     @State private var blowAwayAnimator = BlowAwayAnimator()
@@ -19,12 +20,10 @@ struct HomeScreen: View {
     @State private var currentScreenWidth: CGFloat?
     @State private var currentScreenHeight: CGFloat?
     @State private var showPetDetail = false
-    @State private var showPresetPicker = false
     @State private var showDeleteSheet = false
     @State private var showSuccessArchivePrompt = false
     @State private var showWindNotCalmAlert = false
     @State private var showAuthorizationAlert = false
-    @State private var showDailySummarySheet = false
     @State private var pendingEssencePicker = false
     @State private var petFrame: CGRect = .zero
     @State private var dropZoneFrame: CGRect = .zero
@@ -220,7 +219,11 @@ struct HomeScreen: View {
                 }
             }
         }
-        .sheet(isPresented: $showPresetPicker) {
+        .sheet(isPresented: Bindable(router).showPresetPicker, onDismiss: {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                router.drainPendingAction()
+            }
+        }) {
             DailyPresetPicker()
                 .interactiveDismissDisabled()
         }
@@ -298,20 +301,21 @@ struct HomeScreen: View {
             }
         }
         .windNotCalmSheet(isPresented: $showWindNotCalmAlert)
-        .sheet(isPresented: $showDailySummarySheet) {
+        .sheet(item: Bindable(router).showDailySummary) { request in
             if let pet = currentPet {
-                let today = pet.dailyStats.first {
-                    Calendar.current.isDateInToday($0.date)
+                let targetDate = request.notificationDate ?? Date()
+                let dayStat = pet.dailyStats.first {
+                    Calendar.current.isDate($0.date, inSameDayAs: targetDate)
                 } ?? DailyUsageStat(
                     petId: pet.id,
-                    date: Date(),
+                    date: targetDate,
                     totalMinutes: 0,
                     preset: pet.preset
                 )
                 DayDetailSheet(
-                    day: today,
+                    day: dayStat,
                     petId: pet.id,
-                    limitMinutes: Int(pet.preset.minutesToBlowAway),
+                    limitMinutes: Int(dayStat.preset?.minutesToBlowAway ?? pet.preset.minutesToBlowAway),
                     hourlyBreakdown: nil
                 )
             }
@@ -332,13 +336,6 @@ struct HomeScreen: View {
             // Force immediate refresh to read latest wind from SharedDefaults
             refreshTick += 1
             configureRefreshTimer()
-        }
-        .onReceive(NotificationCenter.default.publisher(for: .showPresetPicker)) { _ in
-            showPresetPicker = true
-        }
-        .onReceive(NotificationCenter.default.publisher(for: .showDailySummary)) { _ in
-            guard currentPet != nil else { return }
-            showDailySummarySheet = true
         }
         .onReceive(NotificationCenter.default.publisher(for: .navigateHome)) { _ in
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
@@ -660,7 +657,7 @@ struct HomeScreen: View {
 
         // Small delay to let view fully appear
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-            showPresetPicker = true
+            router.showPresetPicker = true
         }
     }
 }
@@ -688,4 +685,5 @@ private struct HomeCardBackgroundModifier: ViewModifier {
         .environment(EssencePickerCoordinator())
         .environment(CreatePetCoordinator())
         .environment(CoinsRewardAnimator())
+        .environment(DeepLinkRouter())
 }

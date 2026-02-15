@@ -97,10 +97,7 @@ struct ContentView: View {
             activeTab = .profile
             navigationPaths[.profile] = NavigationPath([ProfileDestination.essenceCatalog])
         }
-        .onReceive(NotificationCenter.default.publisher(for: .showDailySummary)) { _ in
-            guard petManager.currentPet != nil else { return }
-            activeTab = .home
-        }
+        // Daily summary deep link is handled by DeepLinkRouter (posts .navigateHome for tab switch)
         #if DEBUG
         .onReceive(NotificationCenter.default.publisher(for: .showMockSheet)) { _ in
             showMockSheet = true
