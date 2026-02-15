@@ -593,13 +593,10 @@ struct HomeScreen: View {
 
     // MARK: - Refresh Timer
 
-    /// Configures refresh timer with adaptive interval:
-    /// 1s during active shield wind recovery (smooth UI), 5s otherwise.
+    /// Configures 1s refresh timer for real-time wind and UI updates.
     private func configureRefreshTimer() {
         refreshTimer?.invalidate()
-        let needsFastRefresh = SharedDefaults.isShieldActive && (currentPet?.windLevel ?? .none) != .none
-        let interval: TimeInterval = needsFastRefresh ? 1.0 : 5.0
-        refreshTimer = Timer.scheduledTimer(withTimeInterval: interval, repeats: true) { _ in
+        refreshTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
             Task { @MainActor in
                 refreshTick += 1
             }
