@@ -131,12 +131,8 @@ struct MyAppsSheet: View {
             dismiss()
         } label: {
             Text("Uložit")
-                .frame(maxWidth: .infinity)
         }
-        .buttonStyle(.borderedProminent)
-        .controlSize(.large)
-        .buttonBorderShape(.capsule)
-        .tint(.blue)
+        .buttonStyle(.primary)
         .disabled(!hasSelection)
     }
 

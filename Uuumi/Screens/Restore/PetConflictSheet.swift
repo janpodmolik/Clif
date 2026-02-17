@@ -108,15 +108,8 @@ struct PetConflictSheet: View {
             .padding()
             .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
 
-            Button(action: onKeep) {
-                Text("Ponechat \(name)")
-                    .font(.body.weight(.semibold))
-                    .foregroundStyle(Color(.systemBackground))
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 14)
-            }
-            .buttonStyle(.borderedProminent)
-            .tint(Color(.label))
+            Button("Ponechat \(name)", action: onKeep)
+                .buttonStyle(.primary)
         }
     }
 

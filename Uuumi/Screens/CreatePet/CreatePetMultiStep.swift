@@ -103,33 +103,13 @@ struct CreatePetMultiStep: View {
             }
         } label: {
             Text(nextButtonTitle)
-                .font(.body.weight(.semibold))
-                .foregroundStyle(coordinator.canProceed ? .white : .secondary)
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 16)
-                .background(buttonBackground)
-                .shadow(
-                    color: coordinator.canProceed ? Color.accentColor.opacity(0.4) : .clear,
-                    radius: 12,
-                    y: 6
-                )
         }
+        .buttonStyle(.primary)
         .disabled(!coordinator.canProceed)
     }
 
     private var nextButtonTitle: String {
         coordinator.currentStep.isLast ? "Drop Pet" : "Next"
-    }
-
-    @ViewBuilder
-    private var buttonBackground: some View {
-        let shape = Capsule()
-
-        if coordinator.canProceed {
-            shape.fill(Color.accentColor)
-        } else {
-            shape.fill(Color.secondary.opacity(0.2))
-        }
     }
 
 }

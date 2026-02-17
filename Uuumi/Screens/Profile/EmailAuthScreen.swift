@@ -96,19 +96,12 @@ struct EmailAuthScreen: View {
                         } label: {
                             if isLoading {
                                 ProgressView()
-                                    .tint(.white)
-                                    .frame(maxWidth: .infinity)
-                                    .frame(height: 50)
+                                    .tint(Color(.systemBackground))
                             } else {
                                 Text(isSignUp ? "Zaregistrovat se" : "Přihlásit se")
-                                    .font(.headline)
-                                    .frame(maxWidth: .infinity)
-                                    .frame(height: 50)
                             }
                         }
-                        .foregroundStyle(isFormValid ? .white : Color(.tertiaryLabel))
-                        .background(isFormValid ? Color.accentColor : Color(.tertiarySystemFill))
-                        .clipShape(Capsule())
+                        .buttonStyle(.primary)
                         .disabled(!isFormValid)
                         .padding(.top, 4)
 

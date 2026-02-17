@@ -162,12 +162,8 @@ struct EditLimitedSourcesSheet: View {
             showConfirmation = true
         } label: {
             Text("Uložit změny")
-                .frame(maxWidth: .infinity)
         }
-        .buttonStyle(.borderedProminent)
-        .controlSize(.large)
-        .buttonBorderShape(.capsule)
-        .tint(.blue)
+        .buttonStyle(.primary)
         .disabled(!hasEditSelection)
     }
 

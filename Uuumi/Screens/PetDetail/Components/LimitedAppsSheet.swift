@@ -141,12 +141,8 @@ struct LimitedAppsSheet: View {
                 }
             } label: {
                 Text("Změnit aplikace")
-                    .font(.body.weight(.semibold))
-                    .foregroundStyle(Color(.systemBackground))
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 14)
-                    .background(hasChangesRemaining ? Color(.label) : Color.gray.opacity(0.3), in: Capsule())
             }
+            .buttonStyle(.primary)
             .disabled(!hasChangesRemaining)
         }
         .padding(.horizontal, 16)

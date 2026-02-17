@@ -251,12 +251,8 @@ struct RestoreAppReselectionSheet: View {
             Task { try? await onAction?(.save(selection)) }
         } label: {
             Text("Potvrdit výběr")
-                .font(.body.weight(.semibold))
-                .foregroundStyle(Color(.systemBackground))
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 14)
-                .background(hasSelection ? Color(.label) : Color.gray.opacity(0.3), in: Capsule())
         }
+        .buttonStyle(.primary)
         .disabled(!hasSelection)
         .padding(.horizontal, Layout.footerPadding)
         .padding(.vertical, Layout.footerPadding)
