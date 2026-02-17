@@ -10,7 +10,6 @@ struct EvolutionTransitionView: View {
     let newAssetName: String
     var oldScale: CGFloat = 1.0
     var newScale: CGFloat = 1.0
-    var systemSound: SystemSoundEffect? = .tink
     var sustainedHaptic: HapticType? = .continuousBuzz
     var flashHaptic: HapticType? = .impactHeavy
     var hapticIntensity: Float = 1.0
@@ -370,7 +369,7 @@ struct EvolutionTransitionView: View {
 
     private func triggerFlashImpact() {
         flashHaptic?.trigger()
-        systemSound?.play()
+        SoundManager.shared.play(.evolveBurst)
     }
 
     private func resetCameraTransform() {

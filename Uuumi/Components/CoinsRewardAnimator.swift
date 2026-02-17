@@ -53,6 +53,7 @@ final class CoinsRewardAnimator {
         DispatchQueue.main.async { [weak self] in
             guard let self else { return }
             UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+            SoundManager.shared.play(.coin)
             withAnimation(.spring(duration: popInDuration, bounce: 0.4)) {
                 self.phase = .popIn
             }

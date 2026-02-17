@@ -31,6 +31,7 @@ final class AscensionAnimator {
 
         // Phase 1: Extra slow rise + glow builds
         HapticType.impactSoft.trigger()
+        SoundManager.shared.play(.archiveAscend)
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
             withAnimation(.easeOut(duration: config.slowRiseDuration)) {
                 self.petOffsetY = -config.slowRiseDistance
@@ -49,6 +50,8 @@ final class AscensionAnimator {
         let phase2Start = 0.05 + config.slowRiseDuration
         DispatchQueue.main.asyncAfter(deadline: .now() + phase2Start) {
             HapticType.impactMedium.trigger()
+            SoundManager.shared.stop(.archiveAscend)
+            SoundManager.shared.play(.archiveWoosh)
             withAnimation(.easeIn(duration: config.fastFlyDuration)) {
                 self.petOffsetY = -(screenHeight + 300)
                 self.stretchAmount = config.flyStretchAmount

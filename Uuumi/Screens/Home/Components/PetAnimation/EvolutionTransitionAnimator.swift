@@ -114,5 +114,6 @@ final class EvolutionTransitionAnimator {
         transitionKey = UUID()
         isTransitioning = true
         isShowingTransition = true
+        SoundManager.shared.play(.evolve)
     }
 }
