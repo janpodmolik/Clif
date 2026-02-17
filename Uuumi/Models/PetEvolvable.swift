@@ -98,4 +98,11 @@ extension PetEvolvable {
         }
         return phase?.assetName(for: windLevel, isBlownAway: isBlownAway) ?? essence.assetName
     }
+
+    func scaredAssetName(for windLevel: WindLevel) -> String? {
+        guard let essence else {
+            return Blob.shared.scaredAssetName(for: windLevel)
+        }
+        return phase?.scaredAssetName(for: windLevel)
+    }
 }

@@ -6,7 +6,14 @@ protocol PetDisplayable {
     var idleConfig: IdleConfig { get }
     func assetName(for windLevel: WindLevel) -> String
     func assetName(for windLevel: WindLevel, isBlownAway: Bool) -> String
+    func scaredAssetName(for windLevel: WindLevel) -> String?
     func reactionConfig(for type: PetReactionType) -> ReactionConfig
+}
+
+// MARK: - Default Scared Implementation
+
+extension PetDisplayable {
+    func scaredAssetName(for windLevel: WindLevel) -> String? { nil }
 }
 
 // MARK: - EvolutionPhase Conformance

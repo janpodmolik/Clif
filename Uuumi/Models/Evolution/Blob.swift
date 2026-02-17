@@ -16,6 +16,10 @@ struct Blob: Hashable {
         return "blob/\(folder)/1"
     }
 
+    func scaredAssetName(for windLevel: WindLevel) -> String? {
+        "blob/scared/1"
+    }
+
     func reactionConfig(for type: PetReactionType) -> ReactionConfig {
         .default(for: type)
     }
