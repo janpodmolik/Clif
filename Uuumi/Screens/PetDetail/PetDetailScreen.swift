@@ -208,11 +208,11 @@ struct PetDetailScreen: View {
                 BreakTypePicker(
                     onSelectFree: {
                         analytics.sendBreakStarted(breakType: "free")
-                        ShieldManager.shared.turnOn(breakType: .free, durationMinutes: nil)
+                        ShieldManager.shared.turnOn(breakType: .free, committedMode: nil)
                     },
-                    onConfirmCommitted: { durationMinutes in
+                    onConfirmCommitted: { mode in
                         analytics.sendBreakStarted(breakType: "committed")
-                        ShieldManager.shared.turnOn(breakType: .committed, durationMinutes: durationMinutes)
+                        ShieldManager.shared.turnOn(breakType: .committed, committedMode: mode)
                     }
                 )
             }

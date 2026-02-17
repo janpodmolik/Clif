@@ -104,7 +104,7 @@ enum DefaultsKeys {
     // MARK: - Break Type
 
     static let currentBreakType = "currentBreakType"
-    static let committedBreakDuration = "committedBreakDuration"
+    static let committedBreakMode = "committedBreakMode"
     static let windZeroNotified = "windZeroNotified"
 
     // MARK: - Break Picker Preferences

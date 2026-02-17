@@ -33,8 +33,12 @@ final class Pet: Identifiable, PetPresentable, PetEvolvable {
             return nil
         }
 
-        let duration: TimeInterval? = SharedDefaults.committedBreakDuration.map {
-            $0 == 0 ? TimeInterval(20) : TimeInterval($0 * 60)
+        let duration: TimeInterval?
+        if case .untilZeroWind = SharedDefaults.committedBreakMode {
+            let fallRate = SharedDefaults.monitoredFallRate
+            duration = fallRate > 0 ? SharedDefaults.monitoredWindPoints / fallRate : nil
+        } else {
+            duration = SharedDefaults.committedBreakMode?.durationSeconds
         }
 
         return ActiveBreak(
@@ -391,7 +395,7 @@ extension Pet {
         // activeBreakType setter syncs isShieldActive automatically
         SharedDefaults.shieldActivatedAt = Date().addingTimeInterval(-10 * 60) // 10 minutes ago
         SharedDefaults.activeBreakType = .committed
-        SharedDefaults.committedBreakDuration = 30
+        SharedDefaults.committedBreakMode = .timed(minutes: 30)
 
         return mock(windPoints: 65)
     }

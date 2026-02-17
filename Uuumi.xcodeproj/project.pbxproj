@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		022C0C1616488462C9084B88 /* CommittedBreakMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86B0768E9118B8C6063AF858 /* CommittedBreakMode.swift */; };
+		6BA3C67137C4E890E5EE11DA /* CommittedBreakMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86B0768E9118B8C6063AF858 /* CommittedBreakMode.swift */; };
+		8C25EB636AD35BBC075E75A0 /* CommittedBreakMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86B0768E9118B8C6063AF858 /* CommittedBreakMode.swift */; };
 		B41045D16C031199972A8469 /* NotificationSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = B40CCE351C80317FA3B1799D /* NotificationSettings.swift */; };
 		B4153D3E2F27417F0006FEE3 /* LimitSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4153D3D2F27417F0006FEE3 /* LimitSettings.swift */; };
 		B4153D3F2F27417F0006FEE3 /* LimitSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4153D3D2F27417F0006FEE3 /* LimitSettings.swift */; };
@@ -76,7 +79,6 @@
 		B472FD592F3549D100C109AA /* SharedDefaults+Coins.swift in Sources */ = {isa = PBXBuildFile; fileRef = B472FD562F3549D100C109AA /* SharedDefaults+Coins.swift */; };
 		B472FD5A2F3549D100C109AA /* SharedDefaults+Coins.swift in Sources */ = {isa = PBXBuildFile; fileRef = B472FD562F3549D100C109AA /* SharedDefaults+Coins.swift */; };
 		B472FD5B2F3549D100C109AA /* SharedDefaults+Coins.swift in Sources */ = {isa = PBXBuildFile; fileRef = B472FD562F3549D100C109AA /* SharedDefaults+Coins.swift */; };
-		B472FD5D2F354A7C00C109AA /* CommittedBreakDuration.swift in Sources */ = {isa = PBXBuildFile; fileRef = B472FD5C2F354A7C00C109AA /* CommittedBreakDuration.swift */; };
 		B472FD5F2F354AAE00C109AA /* CoinRewards.swift in Sources */ = {isa = PBXBuildFile; fileRef = B472FD5E2F354AAE00C109AA /* CoinRewards.swift */; };
 		B472FD602F354AAE00C109AA /* CoinRewards.swift in Sources */ = {isa = PBXBuildFile; fileRef = B472FD5E2F354AAE00C109AA /* CoinRewards.swift */; };
 		B472FD612F354AAE00C109AA /* CoinRewards.swift in Sources */ = {isa = PBXBuildFile; fileRef = B472FD5E2F354AAE00C109AA /* CoinRewards.swift */; };
@@ -118,6 +120,8 @@
 		B4WIND0042F40A0000000004 /* WindReminderNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4WIND0012F40A0000000001 /* WindReminderNotification.swift */; };
 		B4WIND0052F40A0000000005 /* WindReminderNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4WIND0012F40A0000000001 /* WindReminderNotification.swift */; };
 		B4WIND0062F40A0000000006 /* WindReminderNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4WIND0012F40A0000000001 /* WindReminderNotification.swift */; };
+		B69D416F4A4050543817B940 /* CommittedBreakMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86B0768E9118B8C6063AF858 /* CommittedBreakMode.swift */; };
+		BF0EEAEE5062B2771401AABC /* CommittedBreakMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86B0768E9118B8C6063AF858 /* CommittedBreakMode.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -179,6 +183,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		86B0768E9118B8C6063AF858 /* CommittedBreakMode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommittedBreakMode.swift; sourceTree = "<group>"; };
 		B40CCE351C80317FA3B1799D /* NotificationSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationSettings.swift; sourceTree = "<group>"; };
 		B4153D3D2F27417F0006FEE3 /* LimitSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LimitSettings.swift; sourceTree = "<group>"; };
 		B4153D402F2741A40006FEE3 /* WindNotification.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindNotification.swift; sourceTree = "<group>"; };
@@ -199,7 +204,6 @@
 		B45CF5A42F279E83009B4F06 /* DayStartGreeting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayStartGreeting.swift; sourceTree = "<group>"; };
 		B46003DA2F3BC5FC007CC2C3 /* Products.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; path = Products.storekit; sourceTree = "<group>"; };
 		B472FD562F3549D100C109AA /* SharedDefaults+Coins.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SharedDefaults+Coins.swift"; sourceTree = "<group>"; };
-		B472FD5C2F354A7C00C109AA /* CommittedBreakDuration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommittedBreakDuration.swift; sourceTree = "<group>"; };
 		B472FD5E2F354AAE00C109AA /* CoinRewards.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinRewards.swift; sourceTree = "<group>"; };
 		B4924AC92EE57ED90033475C /* DeviceActivityMonitor.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = DeviceActivityMonitor.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		B4924ACB2EE57ED90033475C /* DeviceActivity.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = DeviceActivity.framework; path = System/Library/Frameworks/DeviceActivity.framework; sourceTree = SDKROOT; };
@@ -407,7 +411,7 @@
 		B43998452EE9FCE40049445F /* Models */ = {
 			isa = PBXGroup;
 			children = (
-				B472FD5C2F354A7C00C109AA /* CommittedBreakDuration.swift */,
+				86B0768E9118B8C6063AF858 /* CommittedBreakMode.swift */,
 				B4C64EFC2F2B5EC00054A50E /* BreakType.swift */,
 				B45CF5A42F279E83009B4F06 /* DayStartGreeting.swift */,
 				B4153D3D2F27417F0006FEE3 /* LimitSettings.swift */,
@@ -707,9 +711,9 @@
 				B4167E5D2F1FE73400D89B36 /* SnapshotEventType.swift in Sources */,
 				B4167E5F2F1FEF4E00D89B36 /* SnapshotStore.swift in Sources */,
 				B4167E652F1FF93800D89B36 /* SnapshotLogging.swift in Sources */,
-				B472FD5D2F354A7C00C109AA /* CommittedBreakDuration.swift in Sources */,
 				B4167E582F1FE2D800D89B36 /* SnapshotEvent.swift in Sources */,
 				B4C64EFD2F2B5EC00054A50E /* BreakType.swift in Sources */,
+				BF0EEAEE5062B2771401AABC /* CommittedBreakMode.swift in Sources */,
 				B45862162EE5B92C0088CB78 /* Constants.swift in Sources */,
 				B472FD632F354AAE00C109AA /* CoinRewards.swift in Sources */,
 				B472FD5B2F3549D100C109AA /* SharedDefaults+Coins.swift in Sources */,
@@ -731,6 +735,7 @@
 				B451D3842F26856C004C534F /* SharedDefaults.swift in Sources */,
 				B4153D472F2741D10006FEE3 /* WindNotification.swift in Sources */,
 				B4C6518B2F2B602A0054A50E /* BreakType.swift in Sources */,
+				6BA3C67137C4E890E5EE11DA /* CommittedBreakMode.swift in Sources */,
 				B472FD582F3549D100C109AA /* SharedDefaults+Coins.swift in Sources */,
 				B4HA00032F40000100AA0003 /* HourlyAggregate.swift in Sources */,
 				B4HA00132F40000100BB0003 /* SharedDefaults+HourlyAggregate.swift in Sources */,
@@ -760,6 +765,7 @@
 				B451D37E2F26856C004C534F /* SharedDefaults+Wind.swift in Sources */,
 				B4153D412F2741A40006FEE3 /* WindNotification.swift in Sources */,
 				B4C6518A2F2B602A0054A50E /* BreakType.swift in Sources */,
+				B69D416F4A4050543817B940 /* CommittedBreakMode.swift in Sources */,
 				B472FD572F3549D100C109AA /* SharedDefaults+Coins.swift in Sources */,
 				B4HA00042F40000100AA0004 /* HourlyAggregate.swift in Sources */,
 				B4HA00142F40000100BB0004 /* SharedDefaults+HourlyAggregate.swift in Sources */,
@@ -790,6 +796,7 @@
 				B45CF5A52F279E83009B4F06 /* DayStartGreeting.swift in Sources */,
 				B472FD602F354AAE00C109AA /* CoinRewards.swift in Sources */,
 				B4C64EFF2F2B5ECE0054A50E /* BreakType.swift in Sources */,
+				022C0C1616488462C9084B88 /* CommittedBreakMode.swift in Sources */,
 				B4153D432F2741C30006FEE3 /* LimitSettings.swift in Sources */,
 				B46FF15117FC695A07A0CA6E /* NotificationSettings.swift in Sources */,
 			);
@@ -809,6 +816,7 @@
 				B4153D482F2741D10006FEE3 /* WindNotification.swift in Sources */,
 				B451D38C2F26856C004C534F /* SharedDefaults+Tokens.swift in Sources */,
 				B4C6518C2F2B602A0054A50E /* BreakType.swift in Sources */,
+				8C25EB636AD35BBC075E75A0 /* CommittedBreakMode.swift in Sources */,
 				B472FD592F3549D100C109AA /* SharedDefaults+Coins.swift in Sources */,
 				B4HA00062F40000100AA0006 /* HourlyAggregate.swift in Sources */,
 				B4HA00162F40000100BB0006 /* SharedDefaults+HourlyAggregate.swift in Sources */,

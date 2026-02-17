@@ -140,20 +140,20 @@ final class ShieldManager {
             turnOff(success: success)
             processPendingCoins()
         } else {
-            turnOn(breakType: .free, durationMinutes: nil)
+            turnOn(breakType: .free, committedMode: nil)
         }
     }
 
-    /// Turns on shield with specified break type and optional duration.
+    /// Turns on shield with specified break type and optional committed mode.
     /// - Parameters:
     ///   - breakType: The type of break (free or committed)
-    ///   - durationMinutes: For committed breaks: positive = minutes, -1 = until 0%, -2 = until end of day. Nil for free.
+    ///   - committedMode: Mode for committed breaks. Nil for free breaks.
     ///   - startDate: When the break actually started. Defaults to now. Used by auto-lock to backdate the free break to when the committed break ended.
-    func turnOn(breakType: BreakType, durationMinutes: Int?, startDate: Date? = nil) {
+    func turnOn(breakType: BreakType, committedMode: CommittedBreakMode?, startDate: Date? = nil) {
         assert(breakType != .safety, "[ShieldManager] turnOn should not be called with .safety — safety shield is activated by DeviceActivityMonitor extension")
 
         #if DEBUG
-        print("[ShieldManager] turnOn: breakType=\(breakType), duration=\(String(describing: durationMinutes))")
+        print("[ShieldManager] turnOn: breakType=\(breakType), mode=\(String(describing: committedMode))")
         #endif
 
         // Stop monitoring while shield is active (no need to track time during break)
@@ -161,25 +161,40 @@ final class ShieldManager {
 
         guard activateStoreFromStoredTokens() else { return }
 
-        // Store break type and duration (activeBreakType setter syncs isShieldActive)
+        // Store break type and mode (activeBreakType setter syncs isShieldActive)
         let now = startDate ?? Date()
         SharedDefaults.shieldActivatedAt = now
         SharedDefaults.activeBreakType = breakType
-        SharedDefaults.committedBreakDuration = durationMinutes
+        SharedDefaults.committedBreakMode = committedMode
 
         // Schedule notification for committed break end
-        if breakType == .committed, let minutes = durationMinutes,
+        if breakType == .committed, let mode = committedMode,
            SharedDefaults.limitSettings.notifications.shouldSendBreak(.committedBreakEnded) {
-            let seconds: TimeInterval = minutes == 0 ? 20 : TimeInterval(minutes * 60)
-            let fireDate = now.addingTimeInterval(seconds)
-            BreakNotification.scheduleCommittedBreakEnd(at: fireDate)
+            let seconds: TimeInterval? = if let fixed = mode.durationSeconds {
+                fixed
+            } else if case .untilZeroWind = mode, SharedDefaults.monitoredFallRate > 0 {
+                SharedDefaults.monitoredWindPoints / SharedDefaults.monitoredFallRate
+            } else if case .untilEndOfDay = mode,
+                      let midnight = Calendar.current.nextDate(after: now, matching: DateComponents(hour: 0, minute: 0), matchingPolicy: .nextTime) {
+                midnight.timeIntervalSince(now)
+            } else {
+                nil
+            }
+            if let seconds, seconds > 0 {
+                BreakNotification.scheduleCommittedBreakEnd(at: now.addingTimeInterval(seconds))
+            }
         }
 
         // Log break started
         if let petId = SharedDefaults.monitoredPetId {
+            let plannedMinutes: Int = if case .timed(let minutes) = committedMode {
+                minutes
+            } else {
+                0
+            }
             let breakTypePayload: BreakTypePayload = switch breakType {
             case .free: .free
-            case .committed: .committed(plannedMinutes: durationMinutes ?? 0)
+            case .committed: .committed(plannedMinutes: plannedMinutes)
             case .safety: .safety
             }
             SnapshotLogging.logBreakStarted(
@@ -207,8 +222,16 @@ final class ShieldManager {
 
         // Award coins for successful committed breaks (persisted for deferred display)
         if success, SharedDefaults.activeBreakType == .committed {
-            let durationMinutes = SharedDefaults.committedBreakDuration ?? 0
-            let coins = CoinRewards.forBreak(minutes: durationMinutes)
+            let coinMinutes: Int
+            if let seconds = SharedDefaults.committedBreakMode?.durationSeconds {
+                coinMinutes = Int(seconds / 60)
+            } else if let startedAt = SharedDefaults.shieldActivatedAt {
+                // Open-ended modes (untilZeroWind, untilEndOfDay): use actual elapsed time
+                coinMinutes = Int(Date().timeIntervalSince(startedAt) / 60)
+            } else {
+                coinMinutes = 0
+            }
+            let coins = CoinRewards.forBreak(minutes: coinMinutes)
             if coins > 0 {
                 SharedDefaults.addCoins(coins)
                 SharedDefaults.pendingCoinsAwarded += coins
@@ -284,12 +307,24 @@ final class ShieldManager {
 
         switch breakType {
         case .committed:
-            let duration: TimeInterval? = SharedDefaults.committedBreakDuration.map {
-                $0 == 0 ? TimeInterval(20) : TimeInterval($0 * 60)
+            guard let mode = SharedDefaults.committedBreakMode else { return }
+            let isCompleted: Bool
+            if let duration = mode.durationSeconds {
+                isCompleted = Date().timeIntervalSince(activatedAt) >= duration
+            } else if case .untilZeroWind = mode {
+                isCompleted = SharedDefaults.effectiveWind <= 0
+            } else if case .untilEndOfDay = mode {
+                isCompleted = !Calendar.current.isDateInToday(activatedAt)
+            } else {
+                isCompleted = false
             }
-            if let duration, Date().timeIntervalSince(activatedAt) >= duration {
+            if isCompleted {
                 let shouldAutoLock = SharedDefaults.limitSettings.autoLockAfterCommittedBreak
-                let committedEndDate = activatedAt.addingTimeInterval(duration)
+                let committedEndDate: Date = if let seconds = mode.durationSeconds {
+                    activatedAt.addingTimeInterval(seconds)
+                } else {
+                    Date()
+                }
                 turnOff(success: true)
                 // Show reward immediately only if app is in foreground (timer can briefly fire in background)
                 if UIApplication.shared.applicationState == .active {
@@ -305,7 +340,7 @@ final class ShieldManager {
                         ))
                     }
                     // Backdate to when the committed break actually ended, not when we detected it
-                    turnOn(breakType: .free, durationMinutes: nil, startDate: committedEndDate)
+                    turnOn(breakType: .free, committedMode: nil, startDate: committedEndDate)
                 }
             }
 

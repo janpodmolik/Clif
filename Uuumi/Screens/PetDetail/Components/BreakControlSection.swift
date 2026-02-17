@@ -47,10 +47,10 @@ struct BreakControlSection: View {
         .sheet(isPresented: $showBreakTypePicker) {
             BreakTypePicker(
                 onSelectFree: {
-                    ShieldManager.shared.turnOn(breakType: .free, durationMinutes: nil)
+                    ShieldManager.shared.turnOn(breakType: .free, committedMode: nil)
                 },
-                onConfirmCommitted: { durationMinutes in
-                    ShieldManager.shared.turnOn(breakType: .committed, durationMinutes: durationMinutes)
+                onConfirmCommitted: { mode in
+                    ShieldManager.shared.turnOn(breakType: .committed, committedMode: mode)
                 }
             )
         }

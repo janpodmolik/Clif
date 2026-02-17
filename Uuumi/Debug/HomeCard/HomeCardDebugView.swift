@@ -110,12 +110,12 @@ struct HomeCardDebugView: View {
             SharedDefaults.isShieldActive = true
             SharedDefaults.shieldActivatedAt = Date().addingTimeInterval(-5 * 60)
             SharedDefaults.activeBreakType = .committed
-            SharedDefaults.committedBreakDuration = 30
+            SharedDefaults.committedBreakMode = .timed(minutes: 30)
         } else {
             SharedDefaults.isShieldActive = false
             SharedDefaults.shieldActivatedAt = nil
             SharedDefaults.activeBreakType = nil
-            SharedDefaults.committedBreakDuration = nil
+            SharedDefaults.committedBreakMode = nil
         }
 
         let pet = Pet(

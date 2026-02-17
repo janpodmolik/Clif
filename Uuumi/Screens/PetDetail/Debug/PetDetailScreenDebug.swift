@@ -112,12 +112,12 @@ struct PetDetailScreenDebug: View {
             SharedDefaults.isShieldActive = true
             SharedDefaults.shieldActivatedAt = breakSession.startedAt
             SharedDefaults.activeBreakType = breakSession.type
-            SharedDefaults.committedBreakDuration = breakSession.plannedDuration.map { Int($0 / 60) }
+            SharedDefaults.committedBreakMode = breakSession.plannedDuration.map { .timed(minutes: Int($0 / 60)) }
         } else {
             SharedDefaults.isShieldActive = false
             SharedDefaults.shieldActivatedAt = nil
             SharedDefaults.activeBreakType = nil
-            SharedDefaults.committedBreakDuration = nil
+            SharedDefaults.committedBreakMode = nil
         }
 
         return Pet(

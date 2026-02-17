@@ -130,7 +130,7 @@ struct StatusCard: View {
 
     @ViewBuilder
     private func windPredictionLabel(_ activeBreak: ActiveBreak) -> some View {
-        if activeBreak.type == .committed {
+        if activeBreak.type == .committed, SharedDefaults.committedBreakMode != .untilZeroWind {
             Text("→ \(Int(predictedWindAfter(activeBreak)))% wind")
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
@@ -158,7 +158,8 @@ struct StatusCard: View {
     }
 
     private func minutesToZeroWind(_ activeBreak: ActiveBreak) -> Int? {
-        guard activeBreak.type == .free else { return nil }
+        let isUntilZeroWind = activeBreak.type == .committed && SharedDefaults.committedBreakMode == .untilZeroWind
+        guard activeBreak.type == .free || activeBreak.type == .safety || isUntilZeroWind else { return nil }
         guard preset.fallRate > 0 else { return nil }
         let remainingWind = currentWindPoints - activeBreak.windDecreased(for: preset)
         guard remainingWind > 0 else { return 0 }

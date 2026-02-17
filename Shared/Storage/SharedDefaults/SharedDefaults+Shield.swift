@@ -50,18 +50,17 @@ extension SharedDefaults {
         }
     }
 
-    /// Duration for committed break in minutes.
-    /// Positive values = minutes (5-120)
-    /// -1 = until wind reaches 0%
-    /// -2 = until end of day
-    /// nil = not set (free break or no break)
-    static var committedBreakDuration: Int? {
-        get { defaults?.object(forKey: DefaultsKeys.committedBreakDuration) as? Int }
+    /// Mode for committed break. Nil when no committed break is active.
+    static var committedBreakMode: CommittedBreakMode? {
+        get {
+            guard let data = defaults?.data(forKey: DefaultsKeys.committedBreakMode) else { return nil }
+            return try? JSONDecoder().decode(CommittedBreakMode.self, from: data)
+        }
         set {
-            if let value = newValue {
-                defaults?.set(value, forKey: DefaultsKeys.committedBreakDuration)
+            if let value = newValue, let data = try? JSONEncoder().encode(value) {
+                defaults?.set(data, forKey: DefaultsKeys.committedBreakMode)
             } else {
-                defaults?.removeObject(forKey: DefaultsKeys.committedBreakDuration)
+                defaults?.removeObject(forKey: DefaultsKeys.committedBreakMode)
             }
         }
     }
@@ -81,7 +80,7 @@ extension SharedDefaults {
         activeBreakType = nil  // also sets isShieldActive = false
         shieldActivatedAt = nil
         breakStartedAt = nil
-        committedBreakDuration = nil
+        committedBreakMode = nil
         windZeroNotified = false
     }
 

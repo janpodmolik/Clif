@@ -5,15 +5,21 @@ struct BreakTypePicker: View {
     @Environment(PetManager.self) private var petManager
 
     var onSelectFree: () -> Void
-    var onConfirmCommitted: (Int) -> Void
+    var onConfirmCommitted: (CommittedBreakMode) -> Void
 
     @State private var selection: BreakType
     @State private var selectedMinutes: Int
-    @State private var isUntilEndOfDay = false
+    @State private var pickerMode: PickerMode = .slider
     @State private var showConfirmation = false
     @State private var didAppear = false
 
-    init(onSelectFree: @escaping () -> Void, onConfirmCommitted: @escaping (Int) -> Void) {
+    private enum PickerMode: Equatable {
+        case slider
+        case untilZeroWind
+        case untilEndOfDay
+    }
+
+    init(onSelectFree: @escaping () -> Void, onConfirmCommitted: @escaping (CommittedBreakMode) -> Void) {
         self.onSelectFree = onSelectFree
         self.onConfirmCommitted = onConfirmCommitted
         // Initialize from persisted preferences
@@ -27,10 +33,18 @@ struct BreakTypePicker: View {
 
     private var durationSteps: [Int] {
         #if DEBUG
-        return [0] + CommittedBreakDuration.allMinutes
+        [0, 5, 10, 15, 20, 30, 45, 60, 90, 120]
         #else
-        return CommittedBreakDuration.allMinutes
+        [5, 10, 15, 20, 30, 45, 60, 90, 120]
         #endif
+    }
+
+    private var displayMinutes: Int {
+        switch pickerMode {
+        case .slider: selectedMinutes
+        case .untilZeroWind: calculateMinutesToZeroWind()
+        case .untilEndOfDay: calculateMinutesToMidnight()
+        }
     }
 
     var body: some View {
@@ -40,7 +54,7 @@ struct BreakTypePicker: View {
                 .padding(.top, 8)
 
             Spacer()
-            
+
             if selection == .free {
                 freeContent
             } else {
@@ -58,8 +72,7 @@ struct BreakTypePicker: View {
             titleVisibility: .visible
         ) {
             Button("Spustit") {
-                let duration = isUntilEndOfDay ? -2 : selectedMinutes
-                onConfirmCommitted(duration)
+                onConfirmCommitted(committedBreakMode)
                 dismiss()
             }
             Button("Zrušit", role: .cancel) {}
@@ -73,10 +86,24 @@ struct BreakTypePicker: View {
             didAppear = true
         }
         .onChange(of: selectedMinutes) { _, newValue in
-            // Persist committed break duration when changed (skip "until end of day" and debug 0)
+            // Persist committed break duration when changed (skip special modes and debug 0)
             if didAppear, newValue > 0 {
                 SharedDefaults.preferredCommittedMinutes = newValue
             }
+        }
+    }
+
+    private var committedBreakMode: CommittedBreakMode {
+        switch pickerMode {
+        case .slider:
+            #if DEBUG
+            if selectedMinutes == 0 { return .debug }
+            #endif
+            return .timed(minutes: selectedMinutes)
+        case .untilZeroWind:
+            return .untilZeroWind
+        case .untilEndOfDay:
+            return .untilEndOfDay
         }
     }
 
@@ -89,7 +116,7 @@ struct BreakTypePicker: View {
                     guard didAppear else { return }
                     withAnimation(.snappy(duration: 0.25)) {
                         selection = type
-                        isUntilEndOfDay = false
+                        pickerMode = .slider
                         SharedDefaults.preferredBreakType = type
                     }
                 } label: {
@@ -144,12 +171,12 @@ struct BreakTypePicker: View {
 
             durationSlider
 
-            untilEndOfDayButton
+            specialModeButtons
         }
     }
 
     private var selectionInfo: some View {
-        let minutes = isUntilEndOfDay ? calculateMinutesToMidnight() : selectedMinutes
+        let minutes = displayMinutes
         let label = minutes == 0 ? "20s" : "\(minutes) min"
         let coins = CoinRewards.forBreak(minutes: minutes)
 
@@ -178,7 +205,7 @@ struct BreakTypePicker: View {
                 tintColor: BreakType.committed.color,
                 onInteraction: {
                     withAnimation(.snappy) {
-                        isUntilEndOfDay = false
+                        pickerMode = .slider
                     }
                 }
             )
@@ -187,7 +214,7 @@ struct BreakTypePicker: View {
     }
 
     private var durationInfoLabel: some View {
-        let minutes = isUntilEndOfDay ? calculateMinutesToMidnight() : selectedMinutes
+        let minutes = displayMinutes
         let reduction = calculateWindReduction(minutes: minutes)
         let resultWind = Int(max(currentWind - reduction, 0))
 
@@ -196,19 +223,56 @@ struct BreakTypePicker: View {
             .foregroundStyle(.secondary)
     }
 
-    private var untilEndOfDayButton: some View {
-        Button {
+    // MARK: - Special Mode Buttons
+
+    private var specialModeButtons: some View {
+        HStack(spacing: 12) {
+            untilZeroWindButton
+            untilEndOfDayButton
+        }
+    }
+
+    private var untilZeroWindButton: some View {
+        let isActive = pickerMode == .untilZeroWind
+        let isDisabled = currentWind <= 0
+
+        return Button {
             withAnimation(.snappy) {
-                isUntilEndOfDay.toggle()
-                if isUntilEndOfDay {
-                    let minutes = calculateMinutesToMidnight()
-                    let maxSliderValue = durationSteps.last ?? 120
-                    if minutes <= maxSliderValue {
-                        let closestStep = durationSteps.min(by: { abs($0 - minutes) < abs($1 - minutes) }) ?? minutes
-                        selectedMinutes = closestStep
-                    } else {
-                        selectedMinutes = maxSliderValue
-                    }
+                pickerMode = isActive ? .slider : .untilZeroWind
+                if pickerMode == .untilZeroWind {
+                    snapSliderToMinutes(calculateMinutesToZeroWind())
+                }
+            }
+        } label: {
+            HStack(spacing: 6) {
+                Image(systemName: "wind")
+                Text("Do 0% větru")
+            }
+            .font(.subheadline.weight(.medium))
+            .foregroundStyle(isActive ? AnyShapeStyle(.white) : isDisabled ? AnyShapeStyle(.tertiary) : AnyShapeStyle(.primary))
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
+            .background(
+                Capsule()
+                    .fill(isActive ? BreakType.committed.color : Color.clear)
+            )
+            .overlay(
+                Capsule()
+                    .strokeBorder(isActive ? Color.clear : BreakType.committed.color.opacity(isDisabled ? 0.2 : 0.5), lineWidth: 1.5)
+            )
+        }
+        .buttonStyle(.plain)
+        .disabled(isDisabled)
+    }
+
+    private var untilEndOfDayButton: some View {
+        let isActive = pickerMode == .untilEndOfDay
+
+        return Button {
+            withAnimation(.snappy) {
+                pickerMode = isActive ? .slider : .untilEndOfDay
+                if pickerMode == .untilEndOfDay {
+                    snapSliderToMinutes(calculateMinutesToMidnight())
                 }
             }
         } label: {
@@ -217,16 +281,16 @@ struct BreakTypePicker: View {
                 Text("Do konce dne")
             }
             .font(.subheadline.weight(.medium))
-            .foregroundStyle(isUntilEndOfDay ? .white : .primary)
+            .foregroundStyle(isActive ? .white : .primary)
             .padding(.horizontal, 16)
             .padding(.vertical, 12)
             .background(
                 Capsule()
-                    .fill(isUntilEndOfDay ? BreakType.committed.color : Color.clear)
+                    .fill(isActive ? BreakType.committed.color : Color.clear)
             )
             .overlay(
                 Capsule()
-                    .strokeBorder(isUntilEndOfDay ? Color.clear : BreakType.committed.color.opacity(0.5), lineWidth: 1.5)
+                    .strokeBorder(isActive ? Color.clear : BreakType.committed.color.opacity(0.5), lineWidth: 1.5)
             )
         }
         .buttonStyle(.plain)
@@ -262,7 +326,7 @@ struct BreakTypePicker: View {
         .padding(.bottom, 24)
     }
 
-    // MARK: - Wind Calculations
+    // MARK: - Calculations
 
     private func calculateWindReduction(minutes: Int) -> Double {
         Double(minutes) * preset.fallRate
@@ -275,6 +339,21 @@ struct BreakTypePicker: View {
             return 0
         }
         return Int(midnight.timeIntervalSince(now) / 60)
+    }
+
+    private func calculateMinutesToZeroWind() -> Int {
+        guard preset.fallRate > 0, currentWind > 0 else { return 0 }
+        return Int(ceil(currentWind / preset.fallRate))
+    }
+
+    private func snapSliderToMinutes(_ minutes: Int) {
+        let maxSliderValue = durationSteps.last ?? 120
+        if minutes <= maxSliderValue {
+            let closestStep = durationSteps.min(by: { abs($0 - minutes) < abs($1 - minutes) }) ?? minutes
+            selectedMinutes = closestStep
+        } else {
+            selectedMinutes = maxSliderValue
+        }
     }
 }
 
@@ -364,7 +443,7 @@ private struct SnappingSlider: View {
 #Preview {
     BreakTypePicker(
         onSelectFree: { print("Free selected") },
-        onConfirmCommitted: { duration in print("Committed: \(duration)") }
+        onConfirmCommitted: { mode in print("Committed: \(mode)") }
     )
     .environment(PetManager.mock())
 }
