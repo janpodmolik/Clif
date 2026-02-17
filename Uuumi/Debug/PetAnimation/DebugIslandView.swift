@@ -206,8 +206,6 @@ struct DebugIslandView: View {
             }
             .padding(.top, petHeight * 0.6)
             .offset(y: petOffset)
-            .contentTransition(.opacity)
-            .animation(.easeInOut(duration: 0.5), value: windLevel)
         }
     }
 

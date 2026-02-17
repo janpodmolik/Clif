@@ -17,10 +17,12 @@ struct DebugView: View {
     @State private var limitSliderValue: Double = 1
     @State private var reportFilter: DeviceActivityFilter?
     @State private var reportId = UUID()
+    @State private var refreshTick = 0
 
     var body: some View {
         NavigationStack {
             ScrollView {
+                let _ = refreshTick
                 VStack(spacing: 12) {
                     petEvolutionSection
                     premiumSection
@@ -417,6 +419,7 @@ struct DebugView: View {
 
         print("[SimulateThreshold] seconds \(lastSeconds) -> \(newSeconds), wind -> \(windPoints)")
 
+        refreshTick += 1
         petManager.currentPet?.checkBlowAwayState()
     }
 

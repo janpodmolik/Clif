@@ -249,8 +249,6 @@ struct IslandView<TransitionContent: View>: View {
                 .onTapGesture {
                     handleTap(for: pet)
                 }
-                .contentTransition(.opacity)
-                .animation(.easeInOut(duration: 0.5), value: windProgress)
                 .onAppear {
                     speechBubbleState.startAutoTriggers(windLevel: windLevel)
                     startAutoPlay(for: pet)
