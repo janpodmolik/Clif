@@ -363,6 +363,9 @@ struct HomeScreen: View {
             windRhythm.paused = (newLevel == .none || newLevel == nil)
             configureRefreshTimer()
         }
+        .onChange(of: ShieldState.shared.isActive) { _, _ in
+            refreshTick += 1
+        }
     }
 
     // MARK: - Shared Island
