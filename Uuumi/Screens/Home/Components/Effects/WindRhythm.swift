@@ -58,7 +58,10 @@ final class WindRhythm {
 
     private var displayLink: CADisplayLink?
     private var startTime: CFTimeInterval = 0
+    private var backgroundEntryTime: CFTimeInterval?
     private var lowPowerModeObserver: NSObjectProtocol?
+    private var foregroundObserver: NSObjectProtocol?
+    private var backgroundObserver: NSObjectProtocol?
 
     /// Whether animations should be reduced (Low Power Mode or Reduce Motion)
     private var isLowPowerMode: Bool {
@@ -87,15 +90,37 @@ final class WindRhythm {
         ) { [weak self] _ in
             self?.updateFrameRate()
         }
+
+        // Skip background time gap so animations don't jump forward on foreground return
+        backgroundObserver = NotificationCenter.default.addObserver(
+            forName: UIApplication.didEnterBackgroundNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            self?.backgroundEntryTime = CACurrentMediaTime()
+        }
+
+        foregroundObserver = NotificationCenter.default.addObserver(
+            forName: UIApplication.willEnterForegroundNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            guard let self, let bgTime = self.backgroundEntryTime else { return }
+            let backgroundDuration = CACurrentMediaTime() - bgTime
+            self.startTime += backgroundDuration
+            self.backgroundEntryTime = nil
+        }
     }
 
     func stop() {
         displayLink?.invalidate()
         displayLink = nil
-        if let observer = lowPowerModeObserver {
+        for observer in [lowPowerModeObserver, foregroundObserver, backgroundObserver].compactMap({ $0 }) {
             NotificationCenter.default.removeObserver(observer)
-            lowPowerModeObserver = nil
         }
+        lowPowerModeObserver = nil
+        foregroundObserver = nil
+        backgroundObserver = nil
     }
 
     deinit {

@@ -29,6 +29,7 @@ struct WindLinesView: View {
     @State private var activeLines: [WindLine] = []
     @State private var lastSpawnTime: Double = 0
     @State private var lastBurstTime: Double = 0
+    @State private var lastFrameTime: Double = 0
 
     private var lineColor: Color {
         colorScheme == .dark ? Color.white.opacity(0.2) : Color.white.opacity(0.4)
@@ -203,6 +204,18 @@ struct WindLinesView: View {
     // MARK: - Line Management
 
     private func updateLines(currentTime: Double) {
+        // Detect time gap (e.g., returning from background) and reset timestamps
+        // so we don't get burst spawns from stale lastSpawnTime/lastBurstTime
+        let timeSinceLastFrame = lastFrameTime > 0 ? currentTime - lastFrameTime : 0
+        lastFrameTime = currentTime
+        if timeSinceLastFrame > 1.0 {
+            // Large gap — app was likely backgrounded. Reset spawn timing and clear stale lines.
+            lastSpawnTime = currentTime
+            lastBurstTime = currentTime
+            activeLines.removeAll()
+            return
+        }
+
         // Remove finished lines
         activeLines.removeAll { line in
             let elapsed = currentTime - line.spawnTime
