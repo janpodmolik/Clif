@@ -297,6 +297,22 @@ struct DebugView: View {
         }
     }
 
+    private func restartMonitoringWithLimit(_ limitSeconds: Int) {
+        guard let pet = petManager.currentPet else {
+            print("[DebugConfig] No pet to restart monitoring for")
+            return
+        }
+
+        print("[DebugConfig] Restarting monitoring with limit: \(limitSeconds)s (\(limitSeconds / 60) min)")
+
+        ScreenTimeManager.shared.startMonitoring(
+            petId: pet.id,
+            petName: pet.name,
+            limitSeconds: limitSeconds,
+            limitedSources: pet.limitedSources
+        )
+    }
+
     /// Restarts monitoring with new DebugConfig values if a pet exists.
     private func restartMonitoringIfNeeded() {
         guard let pet = petManager.currentPet else {
@@ -442,7 +458,9 @@ struct DebugView: View {
                     Text("Limit")
                 } onEditingChanged: { isEditing in
                     if !isEditing {
+                        SharedDefaults.resetWindState()
                         monitoringLimitSeconds = Int(limitSliderValue) * 60
+                        restartMonitoringWithLimit(Int(limitSliderValue) * 60)
                         refreshReport()
                     }
                 }
