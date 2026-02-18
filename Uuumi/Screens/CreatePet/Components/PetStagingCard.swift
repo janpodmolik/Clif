@@ -33,9 +33,7 @@ struct PetStagingCard: View {
                         height: Layout.imageSize + Layout.padding * 2
                     )
             } else {
-                Image(Blob.shared.assetName(for: .none))
-                    .resizable()
-                    .scaledToFit()
+                PetImage(Blob.shared)
                     .frame(width: Layout.imageSize, height: Layout.imageSize)
                     .padding(Layout.padding)
                     .glassBackground(cornerRadius: Layout.cornerRadius)

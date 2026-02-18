@@ -31,9 +31,7 @@ struct ArchivedPetGridItem: View {
                     }
                 }
 
-                Image(pet.assetName(for: .none, isBlownAway: pet.isBlown))
-                    .resizable()
-                    .scaledToFit()
+                PetImage(pet, isBlownAway: pet.isBlown)
                     .frame(width: 56, height: 56)
                     .scaleEffect(pet.displayScale)
                     .opacity(isFaded ? 0.5 : 1.0)

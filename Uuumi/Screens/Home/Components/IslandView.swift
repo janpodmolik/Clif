@@ -191,19 +191,24 @@ struct IslandView<TransitionContent: View>: View {
 
     // MARK: - Pet View
 
-    private func petAssetName(for pet: any PetDisplayable) -> String {
-        if isScared, let scaredName = pet.scaredAssetName(for: windLevel) {
+    private func petEyesAssetName(for pet: any PetDisplayable) -> String {
+        if isScared, let scaredName = pet.scaredEyesAssetName(for: windLevel) {
             return scaredName
         }
-        return pet.assetName(for: windLevel)
+        return pet.eyesAssetName(for: windLevel)
     }
 
     @ViewBuilder
     private func petView(for pet: any PetDisplayable) -> some View {
         ZStack {
-            Image(petAssetName(for: pet))
-                .resizable()
-                .scaledToFit()
+            ZStack {
+                Image(pet.bodyAssetName(for: windLevel))
+                    .resizable()
+                    .scaledToFit()
+                Image(petEyesAssetName(for: pet))
+                    .resizable()
+                    .scaledToFit()
+            }
                 .frame(height: petHeight)
                 .background(
                     GeometryReader { proxy in
@@ -300,7 +305,7 @@ struct IslandView<TransitionContent: View>: View {
     private func essenceDropZoneView(for pet: any PetDisplayable) -> some View {
         // Use invisible pet image to match exact pet dimensions and scale,
         // same pattern as dropZoneView — ensures correct center alignment
-        Image(pet.assetName(for: windLevel))
+        Image(pet.bodyAssetName(for: windLevel))
             .resizable()
             .scaledToFit()
             .frame(height: petHeight)
@@ -320,7 +325,7 @@ struct IslandView<TransitionContent: View>: View {
     @ViewBuilder
     private func dropZoneView(isHighlighted: Bool, isOnTarget: Bool, isVisible: Bool) -> some View {
         // Use invisible blob image to match exact pet dimensions
-        Image(Blob.shared.assetName(for: .none))
+        Image(Blob.shared.bodyAssetName(for: .none))
             .resizable()
             .scaledToFit()
             .frame(height: petHeight)
@@ -346,7 +351,7 @@ struct IslandView<TransitionContent: View>: View {
     // MARK: - Scared State
 
     private func updateScaredState(swayOffset: CGFloat, pet: any PetDisplayable) {
-        guard let screenWidth, pet.scaredAssetName(for: windLevel) != nil else {
+        guard let screenWidth, pet.scaredEyesAssetName(for: windLevel) != nil else {
             if isScared { isScared = false }
             return
         }

@@ -174,9 +174,7 @@ struct BlobOnlyCard: View {
 
     var body: some View {
         VStack(spacing: 12) {
-            Image(Blob.shared.assetName(for: windLevel, isBlownAway: isBlownAway))
-                .resizable()
-                .scaledToFit()
+            PetImage(Blob.shared, windLevel: windLevel, isBlownAway: isBlownAway)
                 .frame(height: 140)
 
             Text("Blob")
@@ -249,10 +247,6 @@ struct EvolutionOriginCard: View {
         .background(cardBackground)
     }
 
-    private var blobAssetName: String {
-        Blob.shared.assetName(for: windLevel, isBlownAway: isBlownAway)
-    }
-
     private var originImageView: some View {
         GeometryReader { proxy in
             let totalWidth = proxy.size.width
@@ -261,9 +255,7 @@ struct EvolutionOriginCard: View {
 
             HStack(spacing: 6) {
                 // Blob image (2/3)
-                Image(blobAssetName)
-                    .resizable()
-                    .scaledToFit()
+                PetImage(Blob.shared, windLevel: windLevel, isBlownAway: isBlownAway)
                     .frame(width: blobSize, height: blobSize)
 
                 Text("+")
@@ -338,9 +330,7 @@ struct EvolutionPhaseCard: View {
                     .foregroundStyle(.secondary.opacity(0.5))
             }
         } else if let evolution = evolutionPath.phase(at: phase) {
-            Image(evolution.assetName(for: windLevel, isBlownAway: isBlownAway))
-                .resizable()
-                .scaledToFit()
+            PetImage(evolution, windLevel: windLevel, isBlownAway: isBlownAway)
         } else {
             RoundedRectangle(cornerRadius: 16)
                 .fill(Color.secondary.opacity(0.1))

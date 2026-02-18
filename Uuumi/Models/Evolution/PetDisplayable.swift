@@ -4,16 +4,17 @@ import Foundation
 protocol PetDisplayable {
     var displayScale: CGFloat { get }
     var idleConfig: IdleConfig { get }
-    func assetName(for windLevel: WindLevel) -> String
-    func assetName(for windLevel: WindLevel, isBlownAway: Bool) -> String
-    func scaredAssetName(for windLevel: WindLevel) -> String?
+    func bodyAssetName(for windLevel: WindLevel) -> String
+    func eyesAssetName(for windLevel: WindLevel) -> String
+    func eyesAssetName(for windLevel: WindLevel, isBlownAway: Bool) -> String
+    func scaredEyesAssetName(for windLevel: WindLevel) -> String?
     func reactionConfig(for type: PetReactionType) -> ReactionConfig
 }
 
-// MARK: - Default Scared Implementation
+// MARK: - Default Implementations
 
 extension PetDisplayable {
-    func scaredAssetName(for windLevel: WindLevel) -> String? { nil }
+    func scaredEyesAssetName(for windLevel: WindLevel) -> String? { nil }
 }
 
 // MARK: - EvolutionPhase Conformance

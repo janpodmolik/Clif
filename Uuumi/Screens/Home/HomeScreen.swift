@@ -406,6 +406,8 @@ struct HomeScreen: View {
                             particleConfig: evolutionAnimator.particleConfig,
                             oldAssetName: evolutionAnimator.oldAssetName,
                             newAssetName: evolutionAnimator.newAssetName,
+                            oldEyesAssetName: evolutionAnimator.oldEyesAssetName,
+                            newEyesAssetName: evolutionAnimator.newEyesAssetName,
                             oldScale: evolutionAnimator.oldScale,
                             newScale: evolutionAnimator.newScale,
                             cameraTransform: .init(

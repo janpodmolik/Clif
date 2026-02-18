@@ -48,8 +48,8 @@ struct EvolutionScaleDebugView: View {
         }
     }
 
-    private var currentAssetName: String {
-        currentPet.assetName(for: selectedWindLevel)
+    private var currentPetImage: PetImage {
+        PetImage(currentPet, windLevel: selectedWindLevel)
     }
 
     private var currentScale: CGFloat {
@@ -146,9 +146,7 @@ struct EvolutionScaleDebugView: View {
 
                     Spacer()
 
-                    Image(currentAssetName)
-                        .resizable()
-                        .scaledToFit()
+                    currentPetImage
                         .frame(height: min(proxy.size.height * 0.6, 150))
                         .scaleEffect(currentScale, anchor: .bottom)
                         .padding(.bottom, 12)

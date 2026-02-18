@@ -8,6 +8,8 @@ struct EvolutionTransitionView: View {
     let particleConfig: EvolutionParticleConfig
     let oldAssetName: String
     let newAssetName: String
+    let oldEyesAssetName: String
+    let newEyesAssetName: String
     var oldScale: CGFloat = 1.0
     var newScale: CGFloat = 1.0
     var sustainedHaptic: HapticType? = .continuousBuzz
@@ -58,6 +60,7 @@ struct EvolutionTransitionView: View {
                     if progress < config.oldImageHidePoint() {
                         petImage(
                             assetName: oldAssetName,
+                            eyesAssetName: oldEyesAssetName,
                             size: size,
                             baseScale: oldScale,
                             morphScale: morphScale(progress: progress, isNewImage: false)
@@ -74,6 +77,7 @@ struct EvolutionTransitionView: View {
                     if progress >= config.assetSwapPoint() {
                         petImage(
                             assetName: newAssetName,
+                            eyesAssetName: newEyesAssetName,
                             size: size,
                             baseScale: newScale,
                             morphScale: morphScale(progress: progress, isNewImage: true)
@@ -155,13 +159,19 @@ struct EvolutionTransitionView: View {
 
     private func petImage(
         assetName: String,
+        eyesAssetName: String,
         size: CGSize,
         baseScale: CGFloat,
         morphScale: CGSize
     ) -> some View {
-        Image(assetName)
-            .resizable()
-            .scaledToFit()
+        ZStack {
+            Image(assetName)
+                .resizable()
+                .scaledToFit()
+            Image(eyesAssetName)
+                .resizable()
+                .scaledToFit()
+        }
             .frame(width: size.width, height: size.height)
             .scaleEffect(
                 x: baseScale * morphScale.width,
@@ -440,8 +450,10 @@ private struct EvolutionTransitionPreview: View {
                     isActive: true,
                     config: .default,
                     particleConfig: .default,
-                    oldAssetName: "evolutions/plant/happy/1",
-                    newAssetName: "evolutions/plant/happy/2",
+                    oldAssetName: "evolutions/plant/1/body",
+                    newAssetName: "evolutions/plant/2/body",
+                    oldEyesAssetName: "evolutions/plant/1/eyes/happy",
+                    newEyesAssetName: "evolutions/plant/2/eyes/happy",
                     onComplete: {
                         isActive = false
                         key = UUID()
@@ -450,9 +462,10 @@ private struct EvolutionTransitionPreview: View {
                 .id(key)
                 .frame(width: 150, height: 200)
             } else {
-                Image("evolutions/plant/happy/1")
-                    .resizable()
-                    .scaledToFit()
+                PetImage(
+                    bodyAssetName: "evolutions/plant/1/body",
+                    eyesAssetName: "evolutions/plant/1/eyes/happy"
+                )
                     .frame(width: 150, height: 200)
             }
 

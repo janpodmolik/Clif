@@ -7,13 +7,17 @@ struct EvolutionPhase: Hashable {
     let displayScale: CGFloat
     let idleConfig: IdleConfig
 
-    func assetName(for windLevel: WindLevel) -> String {
-        "evolutions/\(evolutionId)/\(windLevel.assetFolder)/\(phaseNumber)"
+    func bodyAssetName(for windLevel: WindLevel) -> String {
+        "evolutions/\(evolutionId)/\(phaseNumber)/body"
     }
 
-    func assetName(for windLevel: WindLevel, isBlownAway: Bool) -> String {
-        let folder = isBlownAway ? WindLevel.blownAssetFolder : windLevel.assetFolder
-        return "evolutions/\(evolutionId)/\(folder)/\(phaseNumber)"
+    func eyesAssetName(for windLevel: WindLevel) -> String {
+        "evolutions/\(evolutionId)/\(phaseNumber)/eyes/\(windLevel.eyes)"
+    }
+
+    func eyesAssetName(for windLevel: WindLevel, isBlownAway: Bool) -> String {
+        let eyes = isBlownAway ? WindLevel.blownEyes : windLevel.eyes
+        return "evolutions/\(evolutionId)/\(phaseNumber)/eyes/\(eyes)"
     }
 
     func reactionConfig(for type: PetReactionType) -> ReactionConfig {

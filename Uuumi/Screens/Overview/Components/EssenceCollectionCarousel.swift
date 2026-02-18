@@ -190,9 +190,7 @@ private struct EssenceCard: View {
     private var petImage: some View {
         if let phase = record.bestPhase,
            let evolutionPhase = record.evolutionPath.phase(at: phase) {
-            Image(evolutionPhase.assetName(for: .none))
-                .resizable()
-                .scaledToFit()
+            PetImage(evolutionPhase)
                 .scaleEffect(cardScale)
         } else {
             Image(record.essence.assetName)

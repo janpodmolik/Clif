@@ -30,9 +30,7 @@ struct ArchivedPetRow: View {
     var body: some View {
         Button(action: onTap) {
             HStack(alignment: .center, spacing: 14) {
-                Image(pet.assetName(for: .none, isBlownAway: pet.isBlown))
-                    .resizable()
-                    .scaledToFit()
+                PetImage(pet, isBlownAway: pet.isBlown)
                     .frame(width: 50, height: 50)
                     .scaleEffect(pet.displayScale)
                     .opacity(isFaded ? 0.5 : 1.0)

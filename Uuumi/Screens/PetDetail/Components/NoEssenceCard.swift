@@ -5,9 +5,7 @@ struct NoEssenceCard: View {
 
     var body: some View {
         HStack(spacing: 16) {
-            Image(Blob.shared.assetName(for: .none))
-                .resizable()
-                .scaledToFit()
+            PetImage(Blob.shared)
                 .padding(8)
                 .frame(width: 44, height: 44)
                 .background(.ultraThinMaterial, in: Circle())

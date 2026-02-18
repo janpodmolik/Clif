@@ -118,18 +118,14 @@ struct PetConflictSheet: View {
         if let essence {
             let path = EvolutionPath.path(for: essence)
             if let phaseData = path.phase(at: phase) {
-                Image(phaseData.assetName(for: .none, isBlownAway: isBlown))
-                    .resizable()
-                    .scaledToFit()
+                PetImage(phaseData, isBlownAway: isBlown)
             } else {
                 Image(systemName: "questionmark.circle")
                     .font(.title)
                     .foregroundStyle(.secondary)
             }
         } else {
-            Image(Blob.shared.assetName(for: .none, isBlownAway: isBlown))
-                .resizable()
-                .scaledToFit()
+            PetImage(Blob.shared, isBlownAway: isBlown)
         }
     }
 

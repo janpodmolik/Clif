@@ -83,26 +83,34 @@ extension PetEvolvable {
 
     // MARK: - Asset Resolution
 
-    /// Returns the asset name based on wind level.
-    func assetName(for windLevel: WindLevel) -> String {
+    /// Returns the body asset name based on wind level.
+    func bodyAssetName(for windLevel: WindLevel) -> String {
         guard let essence else {
-            return Blob.shared.assetName(for: windLevel)
+            return Blob.shared.bodyAssetName(for: windLevel)
         }
-        return phase?.assetName(for: windLevel) ?? essence.assetName
+        return phase?.bodyAssetName(for: windLevel) ?? essence.assetName
     }
 
-    /// Returns the asset name based on wind level and blown away state.
-    func assetName(for windLevel: WindLevel, isBlownAway: Bool) -> String {
+    /// Returns the eyes asset name based on wind level.
+    func eyesAssetName(for windLevel: WindLevel) -> String {
         guard let essence else {
-            return Blob.shared.assetName(for: windLevel, isBlownAway: isBlownAway)
+            return Blob.shared.eyesAssetName(for: windLevel)
         }
-        return phase?.assetName(for: windLevel, isBlownAway: isBlownAway) ?? essence.assetName
+        return phase?.eyesAssetName(for: windLevel) ?? Blob.shared.eyesAssetName(for: windLevel)
     }
 
-    func scaredAssetName(for windLevel: WindLevel) -> String? {
+    /// Returns the eyes asset name based on wind level and blown away state.
+    func eyesAssetName(for windLevel: WindLevel, isBlownAway: Bool) -> String {
         guard let essence else {
-            return Blob.shared.scaredAssetName(for: windLevel)
+            return Blob.shared.eyesAssetName(for: windLevel, isBlownAway: isBlownAway)
         }
-        return phase?.scaredAssetName(for: windLevel)
+        return phase?.eyesAssetName(for: windLevel, isBlownAway: isBlownAway) ?? Blob.shared.eyesAssetName(for: windLevel, isBlownAway: isBlownAway)
+    }
+
+    func scaredEyesAssetName(for windLevel: WindLevel) -> String? {
+        guard let essence else {
+            return Blob.shared.scaredEyesAssetName(for: windLevel)
+        }
+        return phase?.scaredEyesAssetName(for: windLevel)
     }
 }

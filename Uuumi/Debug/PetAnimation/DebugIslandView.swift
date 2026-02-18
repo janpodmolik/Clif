@@ -57,6 +57,7 @@ struct DebugIslandView: View {
     // Pet animation transform for bubble positioning
     @State private var petTransform: PetAnimationTransform = .zero
     @State private var petImageSize: CGSize = .zero
+    @State private var isScared: Bool = false
 
     // MARK: - Computed Properties
 
@@ -142,9 +143,14 @@ struct DebugIslandView: View {
 
             // Pet with animation effects, speech bubble, and wind-aware image (top layer)
             ZStack {
-                Image(pet.assetName(for: windLevel))
-                    .resizable()
-                    .scaledToFit()
+                ZStack {
+                    Image(pet.bodyAssetName(for: windLevel))
+                        .resizable()
+                        .scaledToFit()
+                    Image(petEyesAssetName(for: pet))
+                        .resizable()
+                        .scaledToFit()
+                }
                     .frame(height: petHeight)
                     .background(
                         GeometryReader { proxy in
@@ -175,6 +181,7 @@ struct DebugIslandView: View {
                                 swayOffset: transform.swayOffset * pet.displayScale,
                                 topOffset: transform.topOffset * pet.displayScale
                             )
+                            updateScaredState(swayOffset: transform.swayOffset, pet: pet)
                         }
                     )
                     .scaleEffect(pet.displayScale, anchor: .bottom)
@@ -206,6 +213,36 @@ struct DebugIslandView: View {
             }
             .padding(.top, petHeight * 0.6)
             .offset(y: petOffset)
+        }
+    }
+
+    // MARK: - Pet Eyes
+
+    private func petEyesAssetName(for pet: any PetDisplayable) -> String {
+        if isScared, let scaredName = pet.scaredEyesAssetName(for: windLevel) {
+            return scaredName
+        }
+        return pet.eyesAssetName(for: windLevel)
+    }
+
+    // MARK: - Scared State
+
+    private func updateScaredState(swayOffset: CGFloat, pet: any PetDisplayable) {
+        guard let screenWidth, pet.scaredEyesAssetName(for: windLevel) != nil else {
+            if isScared { isScared = false }
+            return
+        }
+
+        let displacement = abs(swayOffset * pet.displayScale)
+        let halfScreen = screenWidth * 0.5
+        let ratio = displacement / halfScreen
+
+        let shouldBeScared = isScared
+            ? ratio > 0.05
+            : ratio > 0.25
+
+        if shouldBeScared != isScared {
+            isScared = shouldBeScared
         }
     }
 

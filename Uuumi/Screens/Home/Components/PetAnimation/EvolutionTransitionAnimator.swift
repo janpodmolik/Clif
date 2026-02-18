@@ -19,6 +19,12 @@ final class EvolutionTransitionAnimator {
     /// Asset name for the new (post-evolution) pet.
     private(set) var newAssetName = ""
 
+    /// Eyes asset name for the old (pre-evolution) pet.
+    private(set) var oldEyesAssetName = ""
+
+    /// Eyes asset name for the new (post-evolution) pet.
+    private(set) var newEyesAssetName = ""
+
     /// Display scale for the old pet phase.
     private(set) var oldScale: CGFloat = 1.0
 
@@ -61,10 +67,14 @@ final class EvolutionTransitionAnimator {
         let nextPhase = currentPhase + 1
         let windLevel = WindLevel.none
 
-        oldAssetName = pet.evolutionPath?.phase(at: currentPhase)?.assetName(for: windLevel)
-            ?? pet.assetName(for: windLevel)
-        newAssetName = pet.evolutionPath?.phase(at: nextPhase)?.assetName(for: windLevel)
-            ?? pet.assetName(for: windLevel)
+        oldAssetName = pet.evolutionPath?.phase(at: currentPhase)?.bodyAssetName(for: windLevel)
+            ?? pet.bodyAssetName(for: windLevel)
+        newAssetName = pet.evolutionPath?.phase(at: nextPhase)?.bodyAssetName(for: windLevel)
+            ?? pet.bodyAssetName(for: windLevel)
+        oldEyesAssetName = pet.evolutionPath?.phase(at: currentPhase)?.eyesAssetName(for: windLevel)
+            ?? pet.eyesAssetName(for: windLevel)
+        newEyesAssetName = pet.evolutionPath?.phase(at: nextPhase)?.eyesAssetName(for: windLevel)
+            ?? pet.eyesAssetName(for: windLevel)
         oldScale = pet.evolutionPath?.phase(at: currentPhase)?.displayScale ?? pet.displayScale
         newScale = pet.evolutionPath?.phase(at: nextPhase)?.displayScale ?? pet.displayScale
 
@@ -81,8 +91,10 @@ final class EvolutionTransitionAnimator {
         let windLevel = WindLevel.none
         let path = EvolutionPath.path(for: essence)
 
-        oldAssetName = Blob.shared.assetName(for: windLevel)
-        newAssetName = path.phase(at: 1)?.assetName(for: windLevel) ?? oldAssetName
+        oldAssetName = Blob.shared.bodyAssetName(for: windLevel)
+        newAssetName = path.phase(at: 1)?.bodyAssetName(for: windLevel) ?? oldAssetName
+        oldEyesAssetName = Blob.shared.eyesAssetName(for: windLevel)
+        newEyesAssetName = path.phase(at: 1)?.eyesAssetName(for: windLevel) ?? oldEyesAssetName
         oldScale = Blob.shared.displayScale
         newScale = path.phase(at: 1)?.displayScale ?? oldScale
 
@@ -104,6 +116,8 @@ final class EvolutionTransitionAnimator {
         cameraTransform = .identity
         oldAssetName = ""
         newAssetName = ""
+        oldEyesAssetName = ""
+        newEyesAssetName = ""
         oldScale = 1.0
         newScale = 1.0
     }

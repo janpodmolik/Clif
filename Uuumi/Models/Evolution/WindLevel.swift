@@ -70,9 +70,9 @@ enum WindLevel: Int, CaseIterable {
         }
     }
 
-    /// Asset folder name for pet images based on wind intensity.
+    /// Eyes asset name based on wind intensity.
     /// Maps to: happy (none/low), neutral (medium), sad (high)
-    var assetFolder: String {
+    var eyes: String {
         switch self {
         case .none, .low: return "happy"
         case .medium: return "neutral"
@@ -80,8 +80,8 @@ enum WindLevel: Int, CaseIterable {
         }
     }
 
-    /// Asset folder for blown away state (always sad).
-    static let blownAssetFolder = "sad"
+    /// Eyes for blown away state (always sad).
+    static let blownEyes = "sad"
 
     /// Returns the wind level zone for a given usage progress (0-1).
     /// - Parameter progress: Usage progress from 0 (no usage) to 1 (limit reached)

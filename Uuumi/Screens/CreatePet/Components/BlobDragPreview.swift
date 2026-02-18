@@ -17,9 +17,7 @@ struct BlobDragPreview: View {
     }
 
     var body: some View {
-        Image(Blob.shared.assetName(for: .none))
-            .resizable()
-            .scaledToFit()
+        PetImage(Blob.shared)
             .frame(height: petHeight)
             .rotationEffect(rotation, anchor: .top)
             .scaleEffect(Blob.shared.displayScale, anchor: .bottom)
