@@ -145,6 +145,10 @@ enum DefaultsKeys {
 
     static let lastUserDataSync = "lastUserDataSync"
 
+    // MARK: - Onboarding
+
+    static let hasCompletedOnboarding = "hasCompletedOnboarding"
+
     // MARK: - Appearance Preferences
 
     static let appearanceMode = "appearanceMode"

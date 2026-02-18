@@ -606,6 +606,10 @@ struct DebugView: View {
     private var deepLinkSection: some View {
         sectionCard("Deep Links", icon: "link", tint: .cyan) {
             FlowLayout(spacing: 8) {
+                Button("Reset Onboarding") {
+                    UserDefaults.standard.set(false, forKey: DefaultsKeys.hasCompletedOnboarding)
+                }
+                .tint(.pink)
                 Button("Home") { openDeepLink("uuumi://home") }
                     .tint(.blue)
                 Button("Preset Picker") { openDeepLink("uuumi://preset-picker") }
@@ -670,6 +674,12 @@ struct DebugView: View {
 
                 debugNavigationRow("Pet History Row", icon: "list.bullet.rectangle", color: .indigo) {
                     PetHistoryRowDebugView()
+                }
+
+                Divider()
+
+                debugNavigationRow("Onboarding", icon: "hand.wave", color: .pink) {
+                    OnboardingView()
                 }
             }
         }

@@ -29,6 +29,9 @@ enum AppTab: String, CaseIterable {
 }
 
 struct ContentView: View {
+    @AppStorage(DefaultsKeys.hasCompletedOnboarding)
+    private var hasCompletedOnboarding = false
+
     @AppStorage(DefaultsKeys.appearanceMode)
     private var appearanceMode: AppearanceMode = .automatic
 
@@ -55,6 +58,15 @@ struct ContentView: View {
     #endif
 
     var body: some View {
+        if hasCompletedOnboarding {
+            mainContent
+        } else {
+            OnboardingView()
+                .preferredColorScheme(resolvedColorScheme)
+        }
+    }
+
+    private var mainContent: some View {
         ZStack {
             TabView(selection: $activeTab) {
                 Tab("Home", systemImage: "house", value: .home) {
