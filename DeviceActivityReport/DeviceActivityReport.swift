@@ -8,5 +8,8 @@ struct UuumiDeviceActivityReportExtension: DeviceActivityReportExtension {
         TotalActivityReport { totalActivity in
             TotalActivityView(totalActivity: totalActivity)
         }
+        OnboardingActivityReport { data in
+            OnboardingActivityView(data: data)
+        }
     }
 }

@@ -18,27 +18,25 @@ enum OnboardingScreen: Int, CaseIterable, Identifiable {
     // ACT 1: The Story
     case island = 0
     case meetPet = 1
-    case villain = 2
+    case wind = 2
 
     // ACT 2: The Demo
-    case permission = 3
-    case appSelection = 4
-    case windSlider = 5
-    case lockDemo = 6
-    case notifications = 7
+    case windSlider = 3
+    case lockDemo = 4
+    case notifications = 5
 
     // ACT 3: Setup
-    case evolution = 8
-    case windPreset = 9
-    case namePet = 10
-    case placePet = 11
+    case evolution = 6
+    case windPreset = 7
+    case namePet = 8
+    case placePet = 9
 
     var id: Int { rawValue }
 
     var act: OnboardingAct {
         switch self {
-        case .island, .meetPet, .villain: .story
-        case .permission, .appSelection, .windSlider, .lockDemo, .notifications: .demo
+        case .island, .meetPet, .wind: .story
+        case .windSlider, .lockDemo, .notifications: .demo
         case .evolution, .windPreset, .namePet, .placePet: .setup
         }
     }
@@ -47,10 +45,8 @@ enum OnboardingScreen: Int, CaseIterable, Identifiable {
         switch self {
         case .island: "The Island"
         case .meetPet: "Meet Uuumi"
-        case .villain: "Dr. Doomscroll"
-        case .permission: "Screen Time Permission"
-        case .appSelection: "App Selection"
-        case .windSlider: "Feel His Power"
+        case .wind: "The Wind"
+        case .windSlider: "Feel The Wind"
         case .lockDemo: "The Lock"
         case .notifications: "Notifications"
         case .evolution: "Evolution"
@@ -64,9 +60,7 @@ enum OnboardingScreen: Int, CaseIterable, Identifiable {
         switch self {
         case .island: "Empty floating island, serene atmosphere"
         case .meetPet: "Blob appears, user taps to interact"
-        case .villain: "Dr. Doomscroll arrives, wind intensifies"
-        case .permission: "FamilyControls authorization prompt"
-        case .appSelection: "Screen time data + app picker"
+        case .wind: "Wind mechanic intro + Screen Time permission + data preview"
         case .windSlider: "Interactive slider driving wind intensity"
         case .lockDemo: "Tap lock to stop the wind"
         case .notifications: "Mock notifications + permission prompt"
@@ -78,6 +72,14 @@ enum OnboardingScreen: Int, CaseIterable, Identifiable {
     }
 
     var isLast: Bool { self == .placePet }
+
+    /// Whether wind effects should be visible on this screen and beyond.
+    var showsWind: Bool {
+        switch self {
+        case .wind, .windSlider, .lockDemo: true
+        default: false
+        }
+    }
 
     var next: OnboardingScreen? {
         OnboardingScreen(rawValue: rawValue + 1)

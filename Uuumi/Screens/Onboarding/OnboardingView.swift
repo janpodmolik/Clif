@@ -6,72 +6,44 @@ struct OnboardingView: View {
 
     @Environment(\.colorScheme) private var colorScheme
     @State private var currentScreen: OnboardingScreen = .island
-
-    // Navigation state
     @State private var visitedScreens: Set<OnboardingScreen> = []
 
-    // Island state
+    // Island state — driven by steps via callbacks
     @State private var showBlob = false
-    @State private var showTapHint = false
-    @State private var hasBeenTapped = false
-    @State private var isPulsing = false
+    @State private var windProgress: CGFloat = 0
     @State private var reactionAnimator = PetReactionAnimator()
-
-    private var isStoryScreen: Bool {
-        currentScreen.act == .story
-    }
+    @State private var onPetTap: (() -> Void)?
 
     var body: some View {
-        ZStack {
-            onboardingBackground
+        GeometryReader { geometry in
+            ZStack {
+                onboardingBackground
 
-            if isStoryScreen {
-                storyLayout
-            } else {
-                nonStoryLayout
-            }
-
-            VStack {
-                HStack {
-                    Button {
-                        HapticType.impactLight.trigger()
-                        goBack()
-                    } label: {
-                        Image(systemName: "chevron.left")
-                            .font(.body.weight(.semibold))
-                            .foregroundStyle(.secondary)
-                            .contentShape(Circle())
-                    }
-                    .buttonStyle(.plain)
-                    .opacity(currentScreen.previous != nil ? 1 : 0)
-                    .disabled(currentScreen.previous == nil)
-
-                    Spacer()
-
-                    StepIndicator(
-                        currentStep: currentScreen.rawValue,
-                        totalSteps: OnboardingScreen.totalCount
+                // Wind effect layer (separate from island — Canvas expands to fill)
+                if currentScreen.showsWind {
+                    WindLinesView(
+                        windProgress: windProgress,
+                        direction: 1.0,
+                        windAreaTop: 0.08,
+                        windAreaBottom: 0.42
                     )
-
-                    Spacer()
-
-                    // Balance the back button width
-                    Color.clear
-                        .frame(width: 20, height: 20)
+                    .allowsHitTesting(false)
                 }
-                .padding(.horizontal, 20)
-                .padding(.top, 12)
 
-                Spacer()
+                // Persistent island — always at bottom, never re-created
+                islandLayer(screenHeight: geometry.size.height)
 
-                continueButton
-                    .padding(.horizontal, 24)
+                // Step content overlay (narrative + bottom actions)
+                stepOverlay(screenHeight: geometry.size.height)
+                    .animation(.easeInOut(duration: 0.4), value: currentScreen)
+
+                // Progress indicator
+                progressIndicator
             }
         }
         .gesture(
             DragGesture(minimumDistance: 30, coordinateSpace: .local)
                 .onEnded { value in
-                    // Swipe right → go back
                     if value.translation.width > 50, abs(value.translation.height) < abs(value.translation.width) {
                         HapticType.impactLight.trigger()
                         goBack()
@@ -80,74 +52,93 @@ struct OnboardingView: View {
         )
     }
 
-    // MARK: - Story Layout (Screens 1-3)
-
-    private var storyLayout: some View {
-        GeometryReader { geometry in
-            VStack(spacing: 0) {
-                Spacer()
-
-                OnboardingNarrativeView(
-                    screen: currentScreen,
-                    skipAnimation: visitedScreens.contains(currentScreen),
-                    onTextCompleted: handleNarrativeCompleted
-                )
-                .animation(.easeInOut(duration: 0.4), value: currentScreen)
-
-                Spacer()
-
-                islandScene(screenHeight: geometry.size.height)
-            }
-            .ignoresSafeArea(.container, edges: .bottom)
-        }
-    }
-
-    // MARK: - Island Scene
+    // MARK: - Island Layer
 
     @ViewBuilder
-    private func islandScene(screenHeight: CGFloat) -> some View {
-        ZStack {
-            // IslandView contains its own IslandBase, so only show standalone
-            // base when blob is hidden. Both use identical positioning.
+    private func islandLayer(screenHeight: CGFloat) -> some View {
+        Group {
             if showBlob {
                 IslandView(
                     screenHeight: screenHeight,
-                    content: .pet(Blob.shared, windProgress: 0, windDirection: 1.0, windRhythm: nil),
+                    content: .pet(Blob.shared, windProgress: windProgress, windDirection: 1.0, windRhythm: nil),
                     reactionAnimator: reactionAnimator,
-                    onPetTap: handleBlobTap
+                    onPetTap: onPetTap
                 )
             } else {
                 IslandBase(screenHeight: screenHeight)
             }
-
-            if showTapHint && !hasBeenTapped {
-                tapHintOverlay
-                    // Position just above the blob
-                    .offset(y: -(screenHeight * 0.18))
-                    .transition(.opacity.animation(.easeOut(duration: 0.4)))
-            }
         }
-        .frame(maxWidth: .infinity)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
+        .ignoresSafeArea(.container, edges: .bottom)
     }
 
-    // MARK: - Tap Hint
+    // MARK: - Step Overlay
 
-    private var tapHintOverlay: some View {
-        VStack(spacing: 4) {
-            Image(systemName: "hand.tap.fill")
-                .font(.title3)
-            Text("Tap")
-                .font(AppFont.quicksand(.caption, weight: .medium))
+    @ViewBuilder
+    private func stepOverlay(screenHeight: CGFloat) -> some View {
+        switch currentScreen {
+        case .island:
+            OnboardingIslandStep(
+                skipAnimation: visitedScreens.contains(.island),
+                onContinue: advanceScreen
+            )
+
+        case .meetPet:
+            OnboardingMeetPetStep(
+                screenHeight: screenHeight,
+                skipAnimation: visitedScreens.contains(.meetPet),
+                onContinue: advanceScreen,
+                showBlob: $showBlob,
+                onPetTap: $onPetTap
+            )
+
+        case .wind:
+            OnboardingWindStep(
+                skipAnimation: visitedScreens.contains(.wind),
+                onContinue: advanceScreen,
+                windProgress: $windProgress
+            )
+
+        default:
+            nonStoryLayout
         }
-        .foregroundStyle(.secondary)
-        .scaleEffect(isPulsing ? 1.15 : 1.0)
-        .opacity(isPulsing ? 1.0 : 0.6)
-        .animation(
-            .easeInOut(duration: 0.8).repeatForever(autoreverses: true),
-            value: isPulsing
-        )
-        .onAppear { isPulsing = true }
-        .allowsHitTesting(false)
+    }
+
+    // MARK: - Progress Indicator
+
+    private var progressIndicator: some View {
+        VStack {
+            HStack {
+                Button {
+                    HapticType.impactLight.trigger()
+                    goBack()
+                } label: {
+                    Image(systemName: "chevron.left")
+                        .font(.body.weight(.semibold))
+                        .foregroundStyle(.secondary)
+                        .contentShape(Circle())
+                }
+                .buttonStyle(.plain)
+                .opacity(currentScreen.previous != nil ? 1 : 0)
+                .disabled(currentScreen.previous == nil)
+
+                Spacer()
+
+                StepIndicator(
+                    currentStep: currentScreen.rawValue,
+                    totalSteps: OnboardingScreen.totalCount
+                )
+
+                Spacer()
+
+                Color.clear
+                    .frame(width: 20, height: 20)
+            }
+            .padding(.horizontal, 20)
+            .padding(.top, 12)
+
+            Spacer()
+        }
     }
 
     // MARK: - Non-Story Layout (Screens 4+)
@@ -176,32 +167,19 @@ struct OnboardingView: View {
         }
     }
 
-    // MARK: - Continue Button
-
-    private var continueButton: some View {
-        Button {
-            HapticType.impactLight.trigger()
-            advanceScreen()
-        } label: {
-            Text(currentScreen.isLast ? "Start" : "Continue")
-        }
-        .buttonStyle(.primary)
-    }
-
-    // MARK: - Actions
+    // MARK: - Navigation
 
     private func goBack() {
         guard let previous = currentScreen.previous else { return }
-
         visitedScreens.insert(currentScreen)
 
-        // Reverse state transitions (no animation — instant)
-        switch currentScreen {
-        case .meetPet:
+        // Reset shared state that the target screen doesn't expect
+        switch previous {
+        case .island:
             showBlob = false
-            showTapHint = false
-            hasBeenTapped = false
-
+            windProgress = 0
+        case .meetPet:
+            windProgress = 0
         default:
             break
         }
@@ -216,43 +194,10 @@ struct OnboardingView: View {
             hasCompletedOnboarding = true
             return
         }
-
         guard let next = currentScreen.next else { return }
-
         visitedScreens.insert(currentScreen)
-
-        switch next {
-        case .meetPet:
+        withAnimation(.easeInOut(duration: 0.3)) {
             currentScreen = next
-            if !visitedScreens.contains(.meetPet) {
-                Task {
-                    try? await Task.sleep(for: .seconds(0.5))
-                    withAnimation(.easeInOut(duration: 0.6)) {
-                        showBlob = true
-                    }
-                }
-            } else {
-                showBlob = true
-            }
-
-        default:
-            currentScreen = next
-        }
-    }
-
-    private func handleNarrativeCompleted() {
-        guard currentScreen == .meetPet else { return }
-
-        withAnimation(.easeOut(duration: 0.4)) {
-            showTapHint = true
-        }
-    }
-
-    private func handleBlobTap() {
-        guard !hasBeenTapped else { return }
-        hasBeenTapped = true
-        withAnimation(.easeOut(duration: 0.3)) {
-            showTapHint = false
         }
     }
 }

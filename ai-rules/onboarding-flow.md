@@ -1,8 +1,8 @@
-# Uuumi Onboarding Flow — v2
+# Uuumi Onboarding Flow — v4
 
 ## Overview
 
-12 story screens + 2 post-onboarding sheets. Every permission request is framed within the narrative. No screen feels like a form. The user meets their pet, learns the mechanics by doing, and places the pet on the island before seeing any paywall or auth prompt.
+10 story screens + 2 post-onboarding sheets. Every permission request is framed within the narrative. No screen feels like a form. The user meets their pet, learns the mechanics by doing, and places the pet on the island before seeing any paywall or auth prompt.
 
 **Core principles:**
 - Bond before rules — Uuumi is introduced well before any settings/limits
@@ -12,11 +12,11 @@
 - Every data collection moment feels like a choice, not a form
 - Respect Reduce Motion, provide tap fallbacks for drag interactions
 
-**Progress indicator:** Subtle dot indicator (12 dots) visible on all onboarding screens to reduce "am I watching an ad?" anxiety.
+**Progress indicator:** Subtle dot indicator (10 dots) visible on all onboarding screens to reduce "am I watching an ad?" anxiety.
 
 ---
 
-## ACT 1: THE STORY (Screens 1-3)
+## ACT 1: THE STORY (Screens 1-2)
 
 *Pure emotion. No interaction beyond "next" (except tap on screen 2). Under 20 seconds total.*
 
@@ -48,69 +48,39 @@
 
 ---
 
-### Screen 3 — "Dr. Doomscroll"
-
-**Visual:** The sky darkens slightly. Wind lines appear and start blowing. The blob begins to sway. On the horizon/edge of the screen, Dr. Doomscroll appears — a swirling dark vortex with glowing eyes and a mischievous grin. As the text progresses, the wind intensifies. The blob switches to scared face and sways hard toward the edge of the island.
-
-**Text:**
-> "But the skies aren't safe."
-> "Dr. Doomscroll lurks in the winds. He feeds on endless scrolling — the more you scroll, the harder he blows."
-> "If the wind gets too strong... Uuumi gets blown away."
-
-**Interaction:** None — the animation tells the story. Tap/swipe to continue.
-
-**Tone note:** Use "blown away", never "gone" or "gone forever." Keep stakes clear but not punishing.
-
-**Reuses:** `IslandBase`, `WindLinesView`, `PetAnimationEffect` (wind shader), scared face asset swap.
-
-**New asset needed:** Dr. Doomscroll character — a swirling vortex/tornado shape with two glowing eyes and a wide grin. Playful-evil, not horror.
-
----
-
-## ACT 2: THE DEMO (Screens 4-8)
+## ACT 2: THE DEMO (Screens 3-6)
 
 *Hands-on. The user experiences the mechanics. This is what no other screen time app does.*
 
-### Screen 4 — "He Knows Your Habits" (Screen Time Permission)
+### Screen 3 — "The Wind" (Wind Mechanic + Screen Time Permission + Data Preview)
 
-**Visual:** Dr. Doomscroll's vortex in the center/background, looking smug. App icons faintly swirling inside him (generic social media shapes — no real icons yet since we don't have permission).
+**Visual:** The island with the blob from screen 2. As text progresses, wind lines gradually appear and intensify. The blob begins to sway, transitions to scared face, and gets pushed toward the edge of the island. Wind stays at medium intensity after the animation settles.
 
-**Text:**
-> "Dr. Doomscroll already knows your habits."
-> "Let's see what he's working with."
+**Text (typewriter, 3 phases synced with wind animation):**
+> "The wind comes from your screen time."
+> "The more you scroll, the stronger it gets."
+> "Let's see what Uuumi is up against."
+
+**Tone note:** Use "blown away", never "gone" or "gone forever." Keep stakes clear but not punishing.
 
 **Privacy line near CTA:** "Your data stays on your device. Always."
 
-**CTA button:** "Show my screen time" -> Triggers `FamilyControls` / Screen Time authorization prompt from iOS.
+**CTA button:** "Show my screen time" → Triggers `FamilyControls` / Screen Time authorization prompt from iOS.
 
 **IMPORTANT — Permission is mandatory.** Without Screen Time access, the app's core feature doesn't work. If the user denies:
 - Show message: "Uuumi needs Screen Time access to work. Without it, there's no wind, no protection, no evolution."
 - "Try again" button (re-prompts or directs to Settings if iOS won't re-prompt)
 - No way to proceed until permission is granted
 
----
+**After permission granted:** A screen time overview appears showing today's total usage time and top 5 apps (via embedded `DeviceActivityReport` with `.onboardingOverview` context). Continue button appears below the report.
 
-### Screen 5 — "This Is What He Sees" (Data + App Selection)
+**Technical approach:** Uses a dedicated `OnboardingActivityReport` scene in the DeviceActivityReport extension. Compact layout: "Today" label + large total time + top 5 app rows with icons. Semi-transparent material background.
 
-**Visual:** User's real screen time data displayed in the Dr. Doomscroll "intel file" theme. Dark, slightly ominous, but readable. Shows:
-- Daily average (big number, e.g. "4h 45m") calculated from last 7 days
-- Per-app list with icons and durations, sorted by usage descending
-- App icons rendered via Apple's `Label(token).labelStyle(.iconOnly)` (opaque tokens)
-
-**Technical approach:** Create a variant of the existing `TotalActivityReport` with a 7-day `DeviceActivityFilter` using `.daily` segments. Calculate daily average. Reuse `AppRowView` pattern for per-app list, restyled to match the villain theme.
-
-**Text:**
-> "[4h 45m] every day. Dr. Doomscroll is well-fed."
-
-**Below the data:** "Choose which apps to fight back against" -> `FamilyActivityPicker` integrated into the screen or opening as a sub-step. User selects apps/categories to monitor.
-
-**Reuses:** `TotalActivityReport` pattern, `AppRowView` pattern, `FamilyActivityPicker`.
-
-**Note:** Pickup count is NOT available through the DeviceActivityReport API. Don't include it.
+**Reuses:** `IslandBase`, `WindLinesView`, `PetAnimationEffect` (wind shader), scared face asset swap, `DeviceActivityReport` extension pattern.
 
 ---
 
-### Screen 6 — "Feel His Power" (The Slider)
+### Screen 4 — "Feel The Wind" (The Slider)
 
 **Visual:** Full island scene — island, blob on top, wind lines. A slider at the bottom of the screen. Everything uses real existing components with real `WindConfig` interpolation driving all parameters.
 
@@ -123,21 +93,21 @@
 **No blow-away animation.** The scared face at the edge is enough. Blow away stays reserved for real gameplay.
 
 **Text at top:**
-> "This is what Dr. Doomscroll does. The more you scroll, the stronger he blows."
+> "This is what happens when you scroll."
 
 **Reuses:** `IslandView`, `WindLinesView`, `PetAnimationEffect` (Metal shader), `WindConfig` interpolation, scared face asset swap.
 
 ---
 
-### Screen 7 — "The Lock" (Core Mechanic)
+### Screen 5 — "The Lock" (Core Mechanic)
 
-**Visual:** Same island scene from screen 6, but now wind is at medium intensity (blob swaying, looking worried). A floating lock button appears at the bottom — styled like the existing `HomeFloatingLockButton`.
+**Visual:** Same island scene from screen 4, but now wind is at medium intensity (blob swaying, looking worried). A floating lock button appears at the bottom — styled like the existing `HomeFloatingLockButton`.
 
 **Text:**
 > "But you have the power to stop it."
 > "Tap the lock."
 
-**Interaction:** User taps the lock button -> Wind lines fade out, blob sway decreases to zero, blob mood returns to happy. Subtle glow or particle effect around the lock to show it "activated."
+**Interaction:** User taps the lock button → Wind lines fade out, blob sway decreases to zero, blob mood returns to happy. Subtle glow or particle effect around the lock to show it "activated."
 
 **After tapping:**
 > "The wind stops. Uuumi is safe."
@@ -150,7 +120,7 @@
 
 ---
 
-### Screen 8 — "Uuumi Can Call For You" (Notification Permission)
+### Screen 6 — "Uuumi Can Call For You" (Notification Permission)
 
 **Visual:** The island, blob looking slightly worried. A mock notification slides down from the top of the screen (custom-styled UI element, not a real iOS notification):
 
@@ -159,15 +129,15 @@
 
 Maybe a second mock notification fades in:
 > **Uuumi**
-> I'm scared. Dr. Doomscroll is here
+> I'm scared. The wind won't stop...
 
 The blob's speech bubble shows a worried emoji, synced with the notification.
 
 **Text:**
 > "You can't always be here. But Uuumi can reach you."
-> "Let it call for help when Dr. Doomscroll strikes."
+> "Let it call for help when the wind rises."
 
-**CTA button:** "Let Uuumi reach me" -> Triggers iOS notification permission prompt.
+**CTA button:** "Let Uuumi reach me" → Triggers iOS notification permission prompt.
 
 **If denied:** Show brief line "You can always enable this later in Settings." Then continue. Not mandatory — app works without notifications.
 
@@ -177,11 +147,11 @@ The blob's speech bubble shows a worried emoji, synced with the notification.
 
 ---
 
-## ACT 3: SETUP (Screens 9-12)
+## ACT 3: SETUP (Screens 7-10)
 
 *Configuration that feels like commitment, not a form. Each step has narrative framing.*
 
-### Screen 9 — "Evolution" (Aspiration + Premium Seed)
+### Screen 7 — "Evolution" (Aspiration + Premium Seed)
 
 **Visual:** The blob in the center. The plant evolution path is fully visible — showing phases 1 -> 2 -> 3 -> 4, getting progressively more elaborate and beautiful. Other essences (crystal, flame, water) are shown as beautiful but clearly marked as premium — visible designs, not hidden behind silhouettes. The user can see what they could unlock.
 
@@ -197,7 +167,7 @@ The blob's speech bubble shows a worried emoji, synced with the notification.
 
 **Interaction:** User can tap/swipe through the evolution paths to preview them. Tapping a locked essence shows a brief "Unlock with Premium" indicator.
 
-**Design note:** Be honest about the paywall. Don't pretend locked essences are "undiscovered" or "rare" — users feel tricked when they realize later. Show beautiful content and be clear it's premium. Desire is planted here, conversion happens on screen 14.
+**Design note:** Be honest about the paywall. Don't pretend locked essences are "undiscovered" or "rare" — users feel tricked when they realize later. Show beautiful content and be clear it's premium. Desire is planted here, conversion happens on screen 13.
 
 **Reuses:** Evolution phase assets (plant), essence assets.
 
@@ -205,7 +175,7 @@ The blob's speech bubble shows a worried emoji, synced with the notification.
 
 ---
 
-### Screen 10 — "How Tough Are You?" (Wind Preset)
+### Screen 8 — "How Tough Are You?" (Wind Preset)
 
 **Visual:** Three cards/options, each showing the blob at different wind intensities.
 
@@ -219,18 +189,18 @@ Visual: Moderate wind, blob slightly concerned.
 
 **Option 3 — Intense:**
 Visual: Strong wind, blob scared.
-> "8 minutes. Dr. Doomscroll at full power. Only for the brave."
+> "8 minutes. Full power. Only for the brave."
 
 **Text at top:**
-> "How strong should Dr. Doomscroll blow?"
+> "How tough should the wind be?"
 
 **Note:** Minute values match actual `WindPreset` config (gentle=20min, balanced=12min, intense=8min).
 
 ---
 
-### Screen 11 — "Name Your Pet" (Ownership)
+### Screen 9 — "Name Your Pet" (Ownership)
 
-**Visual:** The blob in the center, looking up at the user expectantly. Idle breathing. Warm, intimate — no wind, no villain, just the user and the blob.
+**Visual:** The blob in the center, looking up at the user expectantly. Idle breathing. Warm, intimate — no wind, just the user and the blob.
 
 **Text:**
 > "Every creature needs a name."
@@ -245,7 +215,7 @@ Visual: Strong wind, blob scared.
 
 ---
 
-### Screen 12 — "Place On The Island" (The Drop)
+### Screen 10 — "Place On The Island" (The Drop)
 
 **Visual:** The existing `PetDropStep` from the `CreatePetMultiStep` flow. Island visible in the background with `PetDropZone` glowing softly. Summary card at the bottom shows pet name, selected apps, and preset. Blob sits on the card, ready to be dragged.
 
@@ -271,11 +241,11 @@ Visual: Strong wind, blob scared.
 
 ---
 
-## POST-ONBOARDING (Screens 13-14)
+## POST-ONBOARDING (Screens 11-12)
 
 *These appear after the home screen loads. Sheets/modals, not full-screen onboarding pages.*
 
-### Screen 13 — "Keep [Name] Safe" (Authentication)
+### Screen 11 — "Keep [Name] Safe" (Authentication)
 
 **Appears:** ~1.5 seconds after home screen loads. Slides up as a sheet.
 
@@ -297,7 +267,7 @@ Visual: Strong wind, blob scared.
 
 ---
 
-### Screen 14 — "Give [Name] The Best Start" (Premium / 7-Day Trial)
+### Screen 12 — "Give [Name] The Best Start" (Premium / 7-Day Trial)
 
 **Appears:** After auth sheet dismisses (or after skip). Slides up as a sheet.
 
@@ -329,30 +299,28 @@ Show all essences (plant unlocked, crystal/flame/water as premium) with glimpses
 
 ## New Assets Needed
 
-1. **Dr. Doomscroll** — Swirling vortex/tornado with glowing eyes and wide grin. Playful-evil, not horror. Needed for screens 3, 4, and referenced throughout.
-2. **Evolution path previews** — Visual representations of crystal, flame, water evolution paths (at least silhouettes or phase 4 forms). For screens 9 and 14.
-3. **Mock notification UI** — Custom component styled to look like an iOS notification. For screen 8.
+1. **Evolution path previews** — Visual representations of crystal, flame, water evolution paths (at least silhouettes or phase 4 forms). For screens 8 and 13.
+2. **Mock notification UI** — Custom component styled to look like an iOS notification. For screen 7.
 
 ## Existing Components Reused
 
-- `IslandBase` / `IslandView` (screens 1, 2, 3, 6, 7, 8, 12)
-- `PetAnimationEffect` + Metal shader (screens 2, 3, 6, 7)
-- `WindLinesView` (screens 3, 6, 7)
-- `PetReactionType` animations + haptics (screens 2, 11)
-- Scared face asset swap (screens 3, 6)
-- `WindConfig` interpolation (screen 6)
-- `HomeFloatingLockButton` style (screen 7)
-- `BlobDragPreview` + drag system (screen 12)
-- `FamilyActivityPicker` (screen 5)
-- `TotalActivityReport` / `AppRowView` pattern (screen 5)
-- Evolution/essence assets (screen 9)
-- `PetDropStep` / `DragPortalSheet` / `PetDropZone` (screen 12)
-- Speech bubble system (screen 8)
+- `IslandBase` / `IslandView` (screens 1, 2, 3, 4, 5, 6, 10)
+- `PetAnimationEffect` + Metal shader (screens 2, 3, 4, 5)
+- `WindLinesView` (screens 3, 4, 5)
+- `PetReactionType` animations + haptics (screens 2, 9)
+- Scared face asset swap (screens 3, 4)
+- `WindConfig` interpolation (screen 4)
+- `HomeFloatingLockButton` style (screen 5)
+- `BlobDragPreview` + drag system (screen 10)
+- `DeviceActivityReport` extension / `OnboardingActivityReport` (screen 3)
+- Evolution/essence assets (screen 7)
+- `PetDropStep` / `DragPortalSheet` / `PetDropZone` (screen 10)
+- Speech bubble system (screen 6)
 
 ## Accessibility Considerations
 
-- **Reduce Motion:** All animation-heavy screens (3, 6, 7) must respect `UIAccessibility.isReduceMotionEnabled`. Simpler transitions, less sway.
-- **Tap fallback:** Screen 12 drag-and-drop must have tap alternative after failed attempts.
+- **Reduce Motion:** All animation-heavy screens (3, 4, 5) must respect `UIAccessibility.isReduceMotionEnabled`. Simpler transitions, less sway.
+- **Tap fallback:** Screen 10 drag-and-drop must have tap alternative after failed attempts.
 - **Haptic toggle:** Respect system haptic settings.
 
 ## Premium Model Summary

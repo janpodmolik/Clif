@@ -44,6 +44,6 @@ struct OnboardingPlaceholderStep: View {
 
 #if DEBUG
 #Preview {
-    OnboardingPlaceholderStep(screen: .villain)
+    OnboardingPlaceholderStep(screen: .windSlider)
 }
 #endif
