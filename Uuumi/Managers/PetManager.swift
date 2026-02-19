@@ -72,6 +72,7 @@ final class PetManager {
         )
         pet = newPet
         saveActivePet()
+        Task { await AppDelegate.requestNotificationPermission() }
         ScheduledNotificationManager.refresh(
             isEvolutionAvailable: false,
             hasPet: true,

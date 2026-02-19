@@ -30,7 +30,7 @@ enum AppTab: String, CaseIterable {
 
 struct ContentView: View {
     @AppStorage(DefaultsKeys.hasCompletedOnboarding)
-    private var hasCompletedOnboarding = false
+    private var hasCompletedOnboarding = true
 
     @AppStorage(DefaultsKeys.appearanceMode)
     private var appearanceMode: AppearanceMode = .automatic

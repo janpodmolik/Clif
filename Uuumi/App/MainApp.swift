@@ -22,14 +22,13 @@ struct MainApp: App {
     @State private var periodicSyncTimer: AnyCancellable?
 
     init() {
+        #if DEBUG
         print("🟢 MainApp init")
+        #endif
         // Eagerly initialize ShieldManager so its Darwin notification observer
         // is registered before any extension threshold can fire.
         _ = ShieldManager.shared
         analyticsManager.initialize()
-        Task {
-            await AppDelegate.requestNotificationPermission()
-        }
     }
 
     var body: some Scene {
@@ -46,7 +45,9 @@ struct MainApp: App {
                 .environment(deepLinkRouter)
                 .onAppear {
                     petManager.syncManager = syncManager
+                    #if DEBUG
                     print("🟢 ContentView appeared, authState=\(authManager.authState), hasPet=\(petManager.hasPet)")
+                    #endif
                 }
                 .task {
                     await storeManager.checkCurrentEntitlements()
@@ -57,7 +58,9 @@ struct MainApp: App {
                     analyticsManager.sendConfigSnapshot()
                 }
                 .onChange(of: authManager.authState) { oldState, newState in
+                    #if DEBUG
                     print("🟢 onChange: \(oldState) → \(newState), hasPet=\(petManager.hasPet)")
+                    #endif
                     handleAuthStateChange(from: oldState, to: newState)
                 }
         }
