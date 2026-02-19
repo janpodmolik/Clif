@@ -29,6 +29,7 @@ struct IslandView<TransitionContent: View>: View {
     var isEvolutionTransitioning: Bool = false
     var reactionAnimator = PetReactionAnimator()
     @ViewBuilder var transitionContent: TransitionContent
+    var onPetTap: (() -> Void)?
     var onFrameChange: ((CGRect) -> Void)?
 
     init(
@@ -48,6 +49,7 @@ struct IslandView<TransitionContent: View>: View {
         isEvolutionTransitioning: Bool = false,
         reactionAnimator: PetReactionAnimator = PetReactionAnimator(),
         @ViewBuilder transitionContent: () -> TransitionContent,
+        onPetTap: (() -> Void)? = nil,
         onFrameChange: ((CGRect) -> Void)? = nil
     ) {
         self.screenHeight = screenHeight
@@ -66,6 +68,7 @@ struct IslandView<TransitionContent: View>: View {
         self.isEvolutionTransitioning = isEvolutionTransitioning
         self.reactionAnimator = reactionAnimator
         self.transitionContent = transitionContent()
+        self.onPetTap = onPetTap
         self.onFrameChange = onFrameChange
     }
 
@@ -394,6 +397,7 @@ struct IslandView<TransitionContent: View>: View {
 
     private func handleTap(for pet: any PetDisplayable) {
         playAnimation(for: pet, withHaptics: true)
+        onPetTap?()
     }
 
     // MARK: - External Reactions
@@ -454,6 +458,7 @@ extension IslandView where TransitionContent == EmptyView {
         isEssenceHighlighted: Bool = false,
         isEssenceOnTarget: Bool = false,
         reactionAnimator: PetReactionAnimator = PetReactionAnimator(),
+        onPetTap: (() -> Void)? = nil,
         onFrameChange: ((CGRect) -> Void)? = nil
     ) {
         self.init(
@@ -472,6 +477,7 @@ extension IslandView where TransitionContent == EmptyView {
             isEssenceOnTarget: isEssenceOnTarget,
             reactionAnimator: reactionAnimator,
             transitionContent: { EmptyView() },
+            onPetTap: onPetTap,
             onFrameChange: onFrameChange
         )
     }
