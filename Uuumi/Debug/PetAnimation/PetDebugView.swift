@@ -85,6 +85,19 @@ struct PetDebugView: View {
     enum EvolutionTypeOption: String, CaseIterable {
         case blob = "Blob"
         case plant = "Plant"
+        case owl = "Owl"
+
+        var evolutionPath: EvolutionPath? {
+            switch self {
+            case .blob: return nil
+            case .plant: return .plant
+            case .owl: return .owl
+            }
+        }
+
+        var maxPhase: Int {
+            evolutionPath?.maxPhases ?? 0
+        }
     }
 
     enum PanelState: CaseIterable {
@@ -140,22 +153,18 @@ struct PetDebugView: View {
 
     /// Current evolution name for export
     private var currentEvolutionName: String {
-        switch selectedEvolutionType {
-        case .blob:
-            return "Blob.shared"
-        case .plant:
-            return "EvolutionPath.plant.phase(at: \(plantPhase))"
+        if let path = selectedEvolutionType.evolutionPath {
+            return "EvolutionPath.\(path.id).phase(at: \(plantPhase))"
         }
+        return "Blob.shared"
     }
 
     /// Current pet for rendering
     private var currentPet: any PetDisplayable {
-        switch selectedEvolutionType {
-        case .blob:
-            return Blob.shared
-        case .plant:
-            return EvolutionPath.plant.phase(at: plantPhase) ?? Blob.shared
+        if let path = selectedEvolutionType.evolutionPath {
+            return path.phase(at: plantPhase) ?? Blob.shared
         }
+        return Blob.shared
     }
 
     var body: some View {
@@ -200,23 +209,21 @@ struct PetDebugView: View {
                         debugCustomText: debugCustomText,
                         blowAwayOffsetX: blowAwayOffsetX,
                         blowAwayRotation: blowAwayRotation,
-                        evolutionTransitionView: showEvolutionTransition && selectedEvolutionType == .plant ? AnyView(
+                        evolutionTransitionView: showEvolutionTransition && selectedEvolutionType.evolutionPath != nil ? AnyView(
                             EvolutionTransitionView(
                                 isActive: true,
                                 config: currentTransitionConfig,
                                 particleConfig: currentParticleConfig,
-                                oldAssetName: EvolutionPath.plant.phase(at: plantPhase)?.bodyAssetName(for: windLevel) ?? "evolutions/plant/1/body",
-                                newAssetName: EvolutionPath.plant.phase(at: transitionToPhase)?.bodyAssetName(for: windLevel) ?? "evolutions/plant/2/body",
-                                oldEyesAssetName: EvolutionPath.plant.phase(at: plantPhase)?.eyesAssetName(for: windLevel) ?? "evolutions/plant/1/eyes/happy",
-                                newEyesAssetName: EvolutionPath.plant.phase(at: transitionToPhase)?.eyesAssetName(for: windLevel) ?? "evolutions/plant/2/eyes/happy",
-                                oldScale: EvolutionPath.plant.phase(at: plantPhase)?.displayScale ?? 1.0,
-                                newScale: EvolutionPath.plant.phase(at: transitionToPhase)?.displayScale ?? 1.0,
+                                oldAssetName: selectedEvolutionType.evolutionPath?.phase(at: plantPhase)?.bodyAssetName(for: windLevel) ?? "blob/1/body",
+                                newAssetName: selectedEvolutionType.evolutionPath?.phase(at: transitionToPhase)?.bodyAssetName(for: windLevel) ?? "blob/1/body",
+                                oldEyesAssetName: selectedEvolutionType.evolutionPath?.phase(at: plantPhase)?.eyesAssetName(for: windLevel) ?? "blob/1/eyes/happy",
+                                newEyesAssetName: selectedEvolutionType.evolutionPath?.phase(at: transitionToPhase)?.eyesAssetName(for: windLevel) ?? "blob/1/eyes/happy",
+                                oldScale: selectedEvolutionType.evolutionPath?.phase(at: plantPhase)?.displayScale ?? 1.0,
+                                newScale: selectedEvolutionType.evolutionPath?.phase(at: transitionToPhase)?.displayScale ?? 1.0,
                                 cameraTransform: $cameraTransform,
                                 onComplete: {
-                                    // Hide transition FIRST to prevent glitch from syncTransitionPhases
                                     showEvolutionTransition = false
                                     isTransitioning = false
-                                    // Then update phase (this triggers syncTransitionPhases via onChange)
                                     plantPhase = transitionToPhase
                                     restorePostTransition()
                                 }
@@ -341,13 +348,21 @@ struct PetDebugView: View {
                     selection: $selectedEvolutionType,
                     label: { $0.rawValue }
                 )
+                .onChange(of: selectedEvolutionType) { _, newType in
+                    let maxPhase = newType.maxPhase
+                    if maxPhase > 0 {
+                        plantPhase = min(plantPhase, maxPhase)
+                        transitionToPhase = min(transitionToPhase, maxPhase)
+                    }
+                    syncTransitionPhases(currentPhase: plantPhase)
+                }
 
-                // Phase selector (only for plant)
-                if selectedEvolutionType == .plant {
+                // Phase selector (for evolutions)
+                if let maxPhase = selectedEvolutionType.evolutionPath?.maxPhases {
                     HStack {
                         Text("Phase: \(plantPhase)")
                         Spacer()
-                        Stepper("", value: $plantPhase, in: 1...4)
+                        Stepper("", value: $plantPhase, in: 1...maxPhase)
                             .labelsHidden()
                             .onChange(of: plantPhase) { _, newPhase in
                                 syncTransitionPhases(currentPhase: newPhase)
@@ -1047,9 +1062,9 @@ struct PetDebugView: View {
 
     @ViewBuilder
     private var evolutionTransitionControlsContent: some View {
-        // Only available for Plant evolution
-        if selectedEvolutionType != .plant {
-            Text("Evolution transition only available for Plant")
+        // Only available for evolutions (not blob)
+        if selectedEvolutionType.evolutionPath == nil {
+            Text("Evolution transition not available for Blob")
                 .font(.caption)
                 .foregroundStyle(.secondary)
         } else {
@@ -1059,11 +1074,7 @@ struct PetDebugView: View {
                     Text("From Phase")
                         .font(.caption)
                         .foregroundStyle(.secondary)
-                    DebugSegmentedPicker(
-                        [1, 2, 3, 4],
-                        selection: $plantPhase,
-                        label: { "\($0)" }
-                    )
+                    Stepper("\(plantPhase)", value: $plantPhase, in: 1...selectedEvolutionType.maxPhase)
                 }
 
                 Image(systemName: "arrow.right")
@@ -1073,11 +1084,7 @@ struct PetDebugView: View {
                     Text("To Phase")
                         .font(.caption)
                         .foregroundStyle(.secondary)
-                    DebugSegmentedPicker(
-                        [1, 2, 3, 4],
-                        selection: $transitionToPhase,
-                        label: { "\($0)" }
-                    )
+                    Stepper("\(transitionToPhase)", value: $transitionToPhase, in: 1...selectedEvolutionType.maxPhase)
                 }
             }
 
@@ -1157,7 +1164,7 @@ struct PetDebugView: View {
     }
 
     private func triggerEvolutionTransition() {
-        guard selectedEvolutionType == .plant else { return }
+        guard selectedEvolutionType.evolutionPath != nil else { return }
         guard plantPhase != transitionToPhase else { return }
         guard !isTransitioning else { return }
 
@@ -1207,8 +1214,9 @@ struct PetDebugView: View {
     }
 
     private func syncTransitionPhases(currentPhase: Int) {
-        if transitionToPhase == currentPhase {
-            transitionToPhase = min(currentPhase + 1, 4)
+        let maxPhase = selectedEvolutionType.maxPhase
+        if transitionToPhase == currentPhase, maxPhase > 0 {
+            transitionToPhase = min(currentPhase + 1, maxPhase)
         }
     }
 

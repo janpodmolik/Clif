@@ -24,6 +24,7 @@ extension EvolutionPath {
     static func path(for essence: Essence) -> EvolutionPath {
         switch essence {
         case .plant: return .plant
+        case .owl: return .owl
         }
     }
 }
@@ -40,6 +41,25 @@ extension EvolutionPath {
             EvolutionPhase(phaseNumber: 2, evolutionId: "plant", displayScale: 1.05, idleConfig: .default),
             EvolutionPhase(phaseNumber: 3, evolutionId: "plant", displayScale: 1.12, idleConfig: .default),
             EvolutionPhase(phaseNumber: 4, evolutionId: "plant", displayScale: 1.40, idleConfig: .default),
+        ]
+    )
+}
+
+// MARK: - Owl Evolution Path
+
+extension EvolutionPath {
+    static let owl = EvolutionPath(
+        id: "owl",
+        displayName: "Owl",
+        themeColor: .green,
+        phases: [
+            EvolutionPhase(phaseNumber: 1, evolutionId: "owl", displayScale: 0.75, idleConfig: .default),
+            EvolutionPhase(phaseNumber: 2, evolutionId: "owl", displayScale: 0.80, idleConfig: .default),
+            EvolutionPhase(phaseNumber: 3, evolutionId: "owl", displayScale: 0.85, idleConfig: .default),
+            EvolutionPhase(phaseNumber: 4, evolutionId: "owl", displayScale: 1.00, idleConfig: .default),
+            EvolutionPhase(phaseNumber: 5, evolutionId: "owl", displayScale: 1.15, idleConfig: .default),
+            EvolutionPhase(phaseNumber: 6, evolutionId: "owl", displayScale: 1.20, idleConfig: .default),
+            EvolutionPhase(phaseNumber: 7, evolutionId: "owl", displayScale: 1.40, idleConfig: .default),
         ]
     )
 }

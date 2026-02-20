@@ -20,6 +20,10 @@ struct EvolutionPhase: Hashable {
         return "evolutions/\(evolutionId)/\(phaseNumber)/eyes/\(eyes)"
     }
 
+    func scaredEyesAssetName(for windLevel: WindLevel) -> String? {
+        "evolutions/\(evolutionId)/\(phaseNumber)/eyes/scared"
+    }
+
     func reactionConfig(for type: PetReactionType) -> ReactionConfig {
         .default(for: type)
     }

@@ -11,12 +11,6 @@ protocol PetDisplayable {
     func reactionConfig(for type: PetReactionType) -> ReactionConfig
 }
 
-// MARK: - Default Implementations
-
-extension PetDisplayable {
-    func scaredEyesAssetName(for windLevel: WindLevel) -> String? { nil }
-}
-
 // MARK: - EvolutionPhase Conformance
 
 extension EvolutionPhase: PetDisplayable {}
