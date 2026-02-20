@@ -2,7 +2,7 @@ import SwiftUI
 
 struct TypewriterText: View {
     let text: String
-    var characterDelay: TimeInterval = 0.045
+    var characterDelay: TimeInterval = 0.06
     var haptic: Bool = true
     var active: Bool = true
     var onCompleted: (() -> Void)?

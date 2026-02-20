@@ -33,7 +33,8 @@ struct OnboardingIslandStep: View {
                 Text("A peaceful place, untouched by the chaos below.")
                 Text("But it's empty.")
                     .font(AppFont.quicksand(.title2, weight: .semiBold))
-                    .padding(.top, 12)
+                    .foregroundStyle(.primary)
+                    .padding(.top, 20)
             } else {
                 TypewriterText(
                     text: "Somewhere, a tiny island floats in the sky...",
@@ -59,8 +60,9 @@ struct OnboardingIslandStep: View {
 
                 Text("But it's empty.")
                     .font(AppFont.quicksand(.title2, weight: .semiBold))
-                    .padding(.top, 12)
-                    .opacity(showThirdLine ? 1 : 0)
+                    .foregroundStyle(.primary)
+                    .opacity(showThirdLine || skipAnimation ? 1 : 0)
+                    .padding(.top, 20)
             }
         }
         .font(AppFont.quicksand(.title3, weight: .medium))

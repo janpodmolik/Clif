@@ -8,11 +8,15 @@ struct OnboardingView: View {
     @State private var currentScreen: OnboardingScreen = .island
     @State private var visitedScreens: Set<OnboardingScreen> = []
 
-    // Island state — driven by steps via callbacks
+    // Island state — driven by steps via bindings
     @State private var showBlob = false
     @State private var windProgress: CGFloat = 0
-    @State private var reactionAnimator = PetReactionAnimator()
+    @State private var eyesOverride: String? = nil
     @State private var onPetTap: (() -> Void)?
+
+    // Speech bubble state — controlled by steps
+    @State private var speechBubbleConfig: SpeechBubbleConfig? = nil
+    @State private var speechBubbleVisible = false
 
     var body: some View {
         GeometryReader { geometry in
@@ -56,18 +60,18 @@ struct OnboardingView: View {
 
     @ViewBuilder
     private func islandLayer(screenHeight: CGFloat) -> some View {
-        Group {
-            if showBlob {
-                IslandView(
-                    screenHeight: screenHeight,
-                    content: .pet(Blob.shared, windProgress: windProgress, windDirection: 1.0, windRhythm: nil),
-                    reactionAnimator: reactionAnimator,
-                    onPetTap: onPetTap
-                )
-            } else {
-                IslandBase(screenHeight: screenHeight)
-            }
-        }
+        // Always use OnboardingIslandView — pet visibility controlled by petOpacity.
+        // This prevents the cross-dissolve flash when transitioning from screen 1 to 2.
+        OnboardingIslandView(
+            screenHeight: screenHeight,
+            pet: Blob.shared,
+            petOpacity: showBlob ? 1.0 : 0.0,
+            windProgress: windProgress,
+            eyesOverride: eyesOverride,
+            speechBubbleConfig: speechBubbleConfig,
+            speechBubbleVisible: speechBubbleVisible,
+            onPetTap: onPetTap
+        )
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
         .ignoresSafeArea(.container, edges: .bottom)
     }
@@ -89,14 +93,17 @@ struct OnboardingView: View {
                 skipAnimation: visitedScreens.contains(.meetPet),
                 onContinue: advanceScreen,
                 showBlob: $showBlob,
-                onPetTap: $onPetTap
+                onPetTap: $onPetTap,
+                speechBubbleConfig: $speechBubbleConfig,
+                speechBubbleVisible: $speechBubbleVisible
             )
 
         case .wind:
             OnboardingWindStep(
                 skipAnimation: visitedScreens.contains(.wind),
                 onContinue: advanceScreen,
-                windProgress: $windProgress
+                windProgress: $windProgress,
+                eyesOverride: $eyesOverride
             )
 
         default:
@@ -178,8 +185,12 @@ struct OnboardingView: View {
         case .island:
             showBlob = false
             windProgress = 0
+            eyesOverride = nil
+            speechBubbleConfig = nil
+            speechBubbleVisible = false
         case .meetPet:
             windProgress = 0
+            eyesOverride = nil
         default:
             break
         }

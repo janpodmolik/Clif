@@ -7,12 +7,15 @@ struct OnboardingMeetPetStep: View {
 
     @Binding var showBlob: Bool
     @Binding var onPetTap: (() -> Void)?
+    @Binding var speechBubbleConfig: SpeechBubbleConfig?
+    @Binding var speechBubbleVisible: Bool
 
     @State private var showSecondLine = false
     @State private var textCompleted = false
     @State private var showTapHint = false
     @State private var hasBeenTapped = false
     @State private var isPulsing = false
+    @State private var speechBubbleTask: Task<Void, Never>?
 
     var body: some View {
         Color.clear
@@ -21,10 +24,9 @@ struct OnboardingMeetPetStep: View {
                     .padding(.horizontal, 32)
                     .padding(.top, 60)
             }
-            .overlay(alignment: .bottom) {
+            .overlay(alignment: .center) {
                 if showTapHint && !hasBeenTapped {
                     tapHintOverlay
-                        .offset(y: -(screenHeight * 0.18))
                         .transition(.opacity.animation(.easeOut(duration: 0.4)))
                 }
             }
@@ -55,6 +57,11 @@ struct OnboardingMeetPetStep: View {
             }
             .onDisappear {
                 onPetTap = nil
+                speechBubbleTask?.cancel()
+                speechBubbleTask = nil
+                // Hide speech bubble when leaving this step
+                speechBubbleVisible = false
+                speechBubbleConfig = nil
             }
     }
 
@@ -136,6 +143,29 @@ struct OnboardingMeetPetStep: View {
         withAnimation(.easeOut(duration: 0.3)) {
             showTapHint = false
         }
+
+        // Show waving hand speech bubble
+        speechBubbleConfig = SpeechBubbleConfig(
+            position: .right,
+            emojis: ["👋"],
+            windLevel: .none,
+            displayDuration: 2.5
+        )
+        withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
+            speechBubbleVisible = true
+        }
+
+        // Hide after display duration
+        speechBubbleTask = Task {
+            try? await Task.sleep(for: .seconds(2.5))
+            guard !Task.isCancelled else { return }
+            withAnimation(.easeOut(duration: 0.2)) {
+                speechBubbleVisible = false
+            }
+            try? await Task.sleep(for: .seconds(0.3))
+            guard !Task.isCancelled else { return }
+            speechBubbleConfig = nil
+        }
     }
 }
 
@@ -144,9 +174,9 @@ struct OnboardingMeetPetStep: View {
     GeometryReader { geometry in
         ZStack {
             DayBackgroundView()
-            IslandView(
+            OnboardingIslandView(
                 screenHeight: geometry.size.height,
-                content: .pet(Blob.shared, windProgress: 0, windDirection: 1.0, windRhythm: nil)
+                pet: Blob.shared
             )
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
             .ignoresSafeArea(.container, edges: .bottom)
@@ -155,7 +185,9 @@ struct OnboardingMeetPetStep: View {
                 skipAnimation: false,
                 onContinue: {},
                 showBlob: .constant(true),
-                onPetTap: .constant(nil)
+                onPetTap: .constant(nil),
+                speechBubbleConfig: .constant(nil),
+                speechBubbleVisible: .constant(false)
             )
         }
     }

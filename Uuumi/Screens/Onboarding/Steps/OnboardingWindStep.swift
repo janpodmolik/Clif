@@ -6,6 +6,7 @@ struct OnboardingWindStep: View {
     var onContinue: () -> Void
 
     @Binding var windProgress: CGFloat
+    @Binding var eyesOverride: String?
 
     @State private var showSecondLine = false
     @State private var showThirdLine = false
@@ -29,12 +30,16 @@ struct OnboardingWindStep: View {
             }
             .onAppear {
                 if skipAnimation {
-                    windProgress = 0.65
+                    windProgress = 0.15
+                    eyesOverride = "neutral"
                     textCompleted = true
                     showSecondLine = true
                     showThirdLine = true
                     showPermissionCTA = true
                 }
+            }
+            .onDisappear {
+                eyesOverride = nil
             }
     }
 
@@ -53,14 +58,11 @@ struct OnboardingWindStep: View {
                     text: "The wind comes from your screen time.",
                     onCompleted: {
                         withAnimation(.easeInOut(duration: 1.0)) {
-                            windProgress = 0.15
+                            windProgress = 0.08
                         }
                         Task {
                             try? await Task.sleep(for: .seconds(0.5))
                             withAnimation { showSecondLine = true }
-                            withAnimation(.easeInOut(duration: 1.0)) {
-                                windProgress = 0.4
-                            }
                         }
                     }
                 )
@@ -70,10 +72,12 @@ struct OnboardingWindStep: View {
                     active: showSecondLine,
                     onCompleted: {
                         withAnimation(.easeInOut(duration: 1.0)) {
-                            windProgress = 0.65
+                            windProgress = 0.15
                         }
                         Task {
                             try? await Task.sleep(for: .seconds(0.8))
+                            // Show third line with neutral eyes
+                            eyesOverride = "neutral"
                             withAnimation(.easeIn(duration: 0.6)) {
                                 showThirdLine = true
                             }
@@ -127,7 +131,7 @@ struct OnboardingWindStep: View {
 
             Text("Your data stays on your device. Always.")
                 .font(AppFont.quicksand(.caption, weight: .medium))
-                .foregroundStyle(.tertiary)
+                .foregroundStyle(.secondary)
 
             Button {
                 HapticType.impactMedium.trigger()
@@ -197,25 +201,25 @@ struct OnboardingWindStep: View {
     GeometryReader { geometry in
         ZStack {
             DayBackgroundView()
-            ZStack {
-                WindLinesView(
-                    windProgress: 0.5,
-                    direction: 1.0,
-                    windAreaTop: 0.08,
-                    windAreaBottom: 0.42
-                )
-                .allowsHitTesting(false)
-                IslandView(
-                    screenHeight: geometry.size.height,
-                    content: .pet(Blob.shared, windProgress: 0.5, windDirection: 1.0, windRhythm: nil)
-                )
-            }
+            WindLinesView(
+                windProgress: 0.15,
+                direction: 1.0,
+                windAreaTop: 0.08,
+                windAreaBottom: 0.42
+            )
+            .allowsHitTesting(false)
+            OnboardingIslandView(
+                screenHeight: geometry.size.height,
+                pet: Blob.shared,
+                windProgress: 0.15
+            )
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
             .ignoresSafeArea(.container, edges: .bottom)
             OnboardingWindStep(
                 skipAnimation: false,
                 onContinue: {},
-                windProgress: .constant(0.5)
+                windProgress: .constant(0.15),
+                eyesOverride: .constant(nil)
             )
         }
     }
