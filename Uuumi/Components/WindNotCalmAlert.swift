@@ -14,23 +14,33 @@ struct WindNotCalmSheet: View {
         return WindLevel.from(windPoints: SharedDefaults.effectiveWind) == .none
     }
 
+    private var isBreakActive: Bool {
+        let _ = refreshTick
+        return SharedDefaults.isShieldActive
+    }
+
     var body: some View {
         ConfirmationSheet(
             navigationTitle: isSafe ? "Vítr je klidný" : "Vítr musí být klidný",
             height: 320
         ) {
             ConfirmationHeader(
-                icon: isSafe ? "sun.max.fill" : "wind",
-                iconColor: isSafe ? .green : .orange,
+                icon: isSafe ? "sun.max.fill" : isBreakActive ? "hourglass" : "wind",
+                iconColor: isSafe ? .green : isBreakActive ? .blue : .orange,
                 title: isSafe
                     ? "Vítr klesl na 0 %"
-                    : "Sniž vítr na 0 %",
+                    : isBreakActive
+                        ? "Pauza běží"
+                        : "Sniž vítr na 0 %",
                 subtitle: isSafe
                     ? "Můžeš pokračovat v evoluci nebo archivaci."
-                    : "Před použitím essence nebo archivací musí být vítr klidný."
+                    : isBreakActive
+                        ? "Počkej, až vítr klesne na 0 %."
+                        : "Před použitím essence nebo archivací musí být vítr klidný."
             )
             .contentTransition(.numericText())
             .animation(.easeInOut(duration: 0.4), value: isSafe)
+            .animation(.easeInOut(duration: 0.4), value: isBreakActive)
 
             if isSafe {
                 ConfirmationAction(
@@ -39,6 +49,15 @@ struct WindNotCalmSheet: View {
                     subtitle: "Vítr je klidný",
                     foregroundColor: .green,
                     background: .tinted(.green)
+                ) {
+                    isPresented = false
+                }
+                .transition(.blurReplace)
+            } else if isBreakActive {
+                ConfirmationAction(
+                    icon: "xmark.circle.fill",
+                    title: "Zavřít",
+                    subtitle: "Pauza stále snižuje vítr"
                 ) {
                     isPresented = false
                 }
@@ -64,6 +83,7 @@ struct WindNotCalmSheet: View {
             }
         }
         .animation(.easeInOut(duration: 0.4), value: isSafe)
+        .animation(.easeInOut(duration: 0.4), value: isBreakActive)
         .onReceive(Timer.publish(every: 1, on: .main, in: .common).autoconnect()) { _ in
             refreshTick += 1
         }
