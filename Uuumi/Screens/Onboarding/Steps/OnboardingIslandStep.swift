@@ -7,6 +7,7 @@ struct OnboardingIslandStep: View {
     @State private var showSecondLine = false
     @State private var showThirdLine = false
     @State private var textCompleted = false
+    @State private var narrativeBeat = 0
 
     var body: some View {
         Color.clear
@@ -20,6 +21,16 @@ struct OnboardingIslandStep: View {
                     continueButton
                         .padding(.horizontal, 24)
                         .transition(.opacity)
+                }
+            }
+            .overlay {
+                if !textCompleted && !skipAnimation {
+                    Color.clear
+                        .contentShape(Rectangle())
+                        .onTapGesture {
+                            HapticType.impactLight.trigger()
+                            narrativeBeat += 1
+                        }
                 }
             }
     }
@@ -36,21 +47,27 @@ struct OnboardingIslandStep: View {
                     .foregroundStyle(.primary)
                     .padding(.top, 20)
             } else {
+                let skipped = narrativeBeat >= 1
+
                 TypewriterText(
                     text: "Somewhere, a tiny island floats in the sky...",
+                    skipRequested: skipped,
                     onCompleted: { showSecondLine = true }
                 )
 
                 TypewriterText(
                     text: "A peaceful place, untouched by the chaos below.",
                     active: showSecondLine,
+                    skipRequested: narrativeBeat >= 2,
                     onCompleted: {
                         Task {
-                            try? await Task.sleep(for: .seconds(1.0))
-                            withAnimation(.easeIn(duration: 0.6)) {
+                            if narrativeBeat < 2 {
+                                try? await Task.sleep(for: .seconds(1.0))
+                            }
+                            withAnimation(.easeIn(duration: skipped ? 0.3 : 0.6)) {
                                 showThirdLine = true
                             }
-                            withAnimation(.easeOut(duration: 0.4)) {
+                            withAnimation(.easeOut(duration: skipped ? 0.3 : 0.4)) {
                                 textCompleted = true
                             }
                         }
@@ -61,7 +78,7 @@ struct OnboardingIslandStep: View {
                 Text("But it's empty.")
                     .font(AppFont.quicksand(.title2, weight: .semiBold))
                     .foregroundStyle(.primary)
-                    .opacity(showThirdLine || skipAnimation ? 1 : 0)
+                    .opacity(showThirdLine ? 1 : 0)
                     .padding(.top, 20)
             }
         }

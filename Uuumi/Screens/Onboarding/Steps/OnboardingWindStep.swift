@@ -16,6 +16,7 @@ struct OnboardingWindStep: View {
     @State private var showPermissionCTA = false
     @State private var showPermissionDenied = false
     @State private var isRequestingPermission = false
+    @State private var narrativeBeat = 0
 
     var body: some View {
         Color.clear
@@ -27,6 +28,16 @@ struct OnboardingWindStep: View {
             .overlay(alignment: .bottom) {
                 bottomArea
                     .padding(.horizontal, 24)
+            }
+            .overlay {
+                if !textCompleted && !skipAnimation {
+                    Color.clear
+                        .contentShape(Rectangle())
+                        .onTapGesture {
+                            HapticType.impactLight.trigger()
+                            narrativeBeat += 1
+                        }
+                }
             }
             .onAppear {
                 if skipAnimation {
@@ -54,14 +65,19 @@ struct OnboardingWindStep: View {
                     .font(AppFont.quicksand(.title2, weight: .semiBold))
                     .padding(.top, 12)
             } else {
+                let skipped = narrativeBeat >= 1
+
                 TypewriterText(
                     text: "The wind comes from your screen time.",
+                    skipRequested: skipped,
                     onCompleted: {
-                        withAnimation(.easeInOut(duration: 1.0)) {
+                        withAnimation(.easeInOut(duration: skipped ? 0.5 : 1.0)) {
                             windProgress = 0.08
                         }
                         Task {
-                            try? await Task.sleep(for: .seconds(0.5))
+                            if !skipped {
+                                try? await Task.sleep(for: .seconds(0.5))
+                            }
                             withAnimation { showSecondLine = true }
                         }
                     }
@@ -70,19 +86,21 @@ struct OnboardingWindStep: View {
                 TypewriterText(
                     text: "The more you scroll, the stronger it gets.",
                     active: showSecondLine,
+                    skipRequested: narrativeBeat >= 2,
                     onCompleted: {
-                        withAnimation(.easeInOut(duration: 1.0)) {
+                        withAnimation(.easeInOut(duration: skipped ? 0.5 : 1.0)) {
                             windProgress = 0.15
                         }
                         Task {
-                            try? await Task.sleep(for: .seconds(0.8))
-                            // Show third line with neutral eyes
+                            if narrativeBeat < 2 {
+                                try? await Task.sleep(for: .seconds(0.8))
+                            }
                             eyesOverride = "neutral"
-                            withAnimation(.easeIn(duration: 0.6)) {
+                            withAnimation(.easeIn(duration: skipped ? 0.3 : 0.6)) {
                                 showThirdLine = true
                             }
                             textCompleted = true
-                            withAnimation(.easeOut(duration: 0.4)) {
+                            withAnimation(.easeOut(duration: skipped ? 0.3 : 0.4)) {
                                 showPermissionCTA = true
                             }
                         }

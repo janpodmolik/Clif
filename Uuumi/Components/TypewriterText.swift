@@ -2,14 +2,31 @@ import SwiftUI
 
 struct TypewriterText: View {
     let text: String
-    var characterDelay: TimeInterval = 0.06
-    var haptic: Bool = true
-    var active: Bool = true
+    var characterDelay: TimeInterval
+    var haptic: Bool
+    var active: Bool
+    var skipRequested: Bool
     var onCompleted: (() -> Void)?
 
     @State private var visibleCount = 0
     @State private var hasCompleted = false
     @State private var typingTask: Task<Void, Never>?
+
+    init(
+        text: String,
+        characterDelay: TimeInterval = 0.06,
+        haptic: Bool = true,
+        active: Bool = true,
+        skipRequested: Bool = false,
+        onCompleted: (() -> Void)? = nil
+    ) {
+        self.text = text
+        self.characterDelay = characterDelay
+        self.haptic = haptic
+        self.active = active
+        self.skipRequested = skipRequested
+        self.onCompleted = onCompleted
+    }
 
     var body: some View {
         Text(text)
@@ -20,8 +37,15 @@ struct TypewriterText: View {
             .onChange(of: active) {
                 if active { startTypingIfNeeded() }
             }
+            .onChange(of: skipRequested) {
+                if skipRequested { completeImmediately() }
+            }
             .onAppear {
-                if active { startTypingIfNeeded() }
+                if skipRequested {
+                    completeImmediately()
+                } else if active {
+                    startTypingIfNeeded()
+                }
             }
             .onDisappear {
                 typingTask?.cancel()
@@ -54,6 +78,14 @@ struct TypewriterText: View {
                 onCompleted?()
             }
         }
+    }
+
+    private func completeImmediately() {
+        guard !hasCompleted else { return }
+        typingTask?.cancel()
+        visibleCount = text.count
+        hasCompleted = true
+        onCompleted?()
     }
 }
 

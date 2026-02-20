@@ -16,6 +16,7 @@ struct OnboardingMeetPetStep: View {
     @State private var hasBeenTapped = false
     @State private var isPulsing = false
     @State private var speechBubbleTask: Task<Void, Never>?
+    @State private var narrativeBeat = 0
 
     var body: some View {
         Color.clear
@@ -35,6 +36,22 @@ struct OnboardingMeetPetStep: View {
                     continueButton
                         .padding(.horizontal, 24)
                         .transition(.opacity)
+                }
+            }
+            .overlay {
+                // Tap-to-skip overlay — disappears after text completes so pet tap works
+                if !textCompleted && !skipAnimation {
+                    Color.clear
+                        .contentShape(Rectangle())
+                        .onTapGesture {
+                            HapticType.impactLight.trigger()
+                            if !showBlob {
+                                withAnimation(.easeInOut(duration: 0.3)) {
+                                    showBlob = true
+                                }
+                            }
+                            narrativeBeat += 1
+                        }
                 }
             }
             .onAppear {
@@ -76,9 +93,12 @@ struct OnboardingMeetPetStep: View {
             } else {
                 TypewriterText(
                     text: "Meet Uuumi.",
+                    skipRequested: narrativeBeat >= 1,
                     onCompleted: {
                         Task {
-                            try? await Task.sleep(for: .seconds(0.5))
+                            if narrativeBeat < 1 {
+                                try? await Task.sleep(for: .seconds(0.5))
+                            }
                             withAnimation { showSecondLine = true }
                         }
                     }
@@ -88,6 +108,7 @@ struct OnboardingMeetPetStep: View {
                 TypewriterText(
                     text: "A tiny creature looking for somewhere to grow.",
                     active: showSecondLine,
+                    skipRequested: narrativeBeat >= 2,
                     onCompleted: {
                         textCompleted = true
                         withAnimation(.easeOut(duration: 0.4)) {
