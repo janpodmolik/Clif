@@ -26,6 +26,7 @@ struct EssenceDetailSheet: View {
     private var showcasePet: ArchivedPet {
         .mock(
             phase: record.bestPhase ?? 1,
+            essence: record.essence,
             archiveReason: .completed,
             totalDays: 14
         )

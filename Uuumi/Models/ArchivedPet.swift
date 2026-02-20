@@ -112,6 +112,7 @@ extension ArchivedPet {
     static func mock(
         name: String = "Windy",
         phase: Int = 3,
+        essence: Essence? = .plant,
         archiveReason: ArchiveReason = .blown,
         totalDays: Int = 5
     ) -> ArchivedPet {
@@ -138,7 +139,7 @@ extension ArchivedPet {
             name: name,
             evolutionHistory: .mock(
                 phase: phase,
-                essence: .plant,
+                essence: essence,
                 totalDays: totalDays,
                 isBlown: archiveReason == .blown
             ),
