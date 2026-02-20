@@ -12,7 +12,6 @@ struct RestoreAppReselectionSheet: View {
     enum Action {
         case reauthorize
         case save(FamilyActivitySelection)
-        case blowAway
         case archive
         case delete
     }
@@ -174,15 +173,6 @@ struct RestoreAppReselectionSheet: View {
 
     @ViewBuilder
     private var fateActions: some View {
-        ConfirmationAction(
-            icon: "wind",
-            title: "Odfouknout",
-            subtitle: "\(petName) bude odfouknut větrem",
-            foregroundColor: .red,
-            background: .tinted(.red),
-            action: { Task { try? await onAction?(.blowAway) } }
-        )
-
         if canArchive {
             ConfirmationAction(
                 icon: "archivebox",

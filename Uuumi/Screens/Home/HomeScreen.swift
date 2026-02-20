@@ -282,8 +282,6 @@ struct HomeScreen: View {
                     case .save(let selection):
                         let sources = LimitedSource.from(selection)
                         petManager.handleAppReselectionComplete(sources, selection: selection)
-                    case .blowAway:
-                        petManager.handleAppReselectionExhausted(action: .blowAway)
                     case .archive:
                         petManager.handleAppReselectionExhausted(action: .archive, using: archivedPetManager)
                     case .delete:
