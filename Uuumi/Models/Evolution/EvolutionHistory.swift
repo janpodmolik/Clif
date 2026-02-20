@@ -153,7 +153,6 @@ struct EvolutionHistory: Codable, Equatable {
     }
 }
 
-#if DEBUG
 // MARK: - Debug Helpers
 
 extension EvolutionHistory {
@@ -191,7 +190,6 @@ extension EvolutionHistory {
         nextEvolutionUnlockDate = Date().addingTimeInterval(TimeInterval(minutes * 60))
     }
 }
-#endif
 
 // MARK: - Mock Data
 

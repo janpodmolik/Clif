@@ -53,6 +53,8 @@ struct ContentView: View {
 
     private var shieldState: ShieldState { ShieldState.shared }
 
+    @State private var showTesterView = false
+
     #if DEBUG
     @State private var showPetDebug = false
     #endif
@@ -120,6 +122,7 @@ struct ContentView: View {
                 .presentationDetents([.medium])
                 .presentationDragIndicator(.visible)
         }
+        .testerOverlay(isPresented: $showTesterView)
         #if DEBUG
         .fullScreenCover(isPresented: $showPetDebug) {
             PetDebugView()

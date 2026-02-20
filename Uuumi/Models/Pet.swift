@@ -322,7 +322,6 @@ extension CompletedBreak {
     }
 }
 
-#if DEBUG
 // MARK: - Debug Helpers
 
 extension Pet {
@@ -353,7 +352,6 @@ extension Pet {
         evolutionHistory.debugResetToBlob()
     }
 }
-#endif
 
 // MARK: - Mock Data
 

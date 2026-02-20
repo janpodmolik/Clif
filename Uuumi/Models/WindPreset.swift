@@ -21,6 +21,9 @@ enum WindPreset: String, Codable, CaseIterable {
             return DebugConfig.minutesToBlowAway
         }
         #endif
+        if TesterConfig.isActive {
+            return TesterConfig.minutesToBlowAway
+        }
         switch self {
         case .gentle: return 20
         case .balanced: return 12
@@ -35,6 +38,9 @@ enum WindPreset: String, Codable, CaseIterable {
             return DebugConfig.riseRate
         }
         #endif
+        if TesterConfig.isActive {
+            return TesterConfig.riseRate
+        }
         return 100 / minutesToBlowAway
     }
 
@@ -47,6 +53,9 @@ enum WindPreset: String, Codable, CaseIterable {
             return DebugConfig.minutesToRecover
         }
         #endif
+        if TesterConfig.isActive {
+            return TesterConfig.minutesToRecover
+        }
         switch self {
         case .gentle: return 30
         case .balanced: return 20
@@ -61,6 +70,9 @@ enum WindPreset: String, Codable, CaseIterable {
             return DebugConfig.fallRate
         }
         #endif
+        if TesterConfig.isActive {
+            return TesterConfig.fallRate
+        }
         return 100 / minutesToRecover
     }
 
