@@ -133,7 +133,7 @@ struct OnboardingMeetPetStep: View {
             Text("Tap")
                 .font(AppFont.quicksand(.caption, weight: .medium))
         }
-        .foregroundStyle(.secondary)
+        .foregroundStyle(.primary)
         .scaleEffect(isPulsing ? 1.15 : 1.0)
         .opacity(isPulsing ? 1.0 : 0.6)
         .animation(
@@ -194,7 +194,7 @@ struct OnboardingMeetPetStep: View {
 #Preview {
     GeometryReader { geometry in
         ZStack {
-            DayBackgroundView()
+            OnboardingBackgroundView()
             OnboardingIslandView(
                 screenHeight: geometry.size.height,
                 pet: Blob.shared

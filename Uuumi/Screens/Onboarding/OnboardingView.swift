@@ -4,7 +4,6 @@ struct OnboardingView: View {
     @AppStorage(DefaultsKeys.hasCompletedOnboarding)
     private var hasCompletedOnboarding = false
 
-    @Environment(\.colorScheme) private var colorScheme
     @State private var currentScreen: OnboardingScreen = .island
     @State private var visitedScreens: Set<OnboardingScreen> = []
 
@@ -21,7 +20,7 @@ struct OnboardingView: View {
     var body: some View {
         GeometryReader { geometry in
             ZStack {
-                onboardingBackground
+                OnboardingBackgroundView()
 
                 // Wind effect layer (separate from island — Canvas expands to fill)
                 if currentScreen.showsWind {
@@ -45,7 +44,7 @@ struct OnboardingView: View {
                 progressIndicator
             }
         }
-        .gesture(swipeBackGesture, including: currentScreen == .screenTimeData ? .subviews : .all)
+        .gesture(swipeBackGesture, including: currentScreen == .screenTimeData || currentScreen == .windSlider ? .subviews : .all)
     }
 
     // MARK: - Island Layer
@@ -104,6 +103,14 @@ struct OnboardingView: View {
                 onContinue: advanceScreen
             )
 
+        case .windSlider:
+            OnboardingWindSliderStep(
+                skipAnimation: visitedScreens.contains(.windSlider),
+                onContinue: advanceScreen,
+                windProgress: $windProgress,
+                eyesOverride: $eyesOverride
+            )
+
         default:
             nonStoryLayout
         }
@@ -148,9 +155,14 @@ struct OnboardingView: View {
 
     // MARK: - Non-Story Layout (Screens 4+)
 
+    /// Screens that have dedicated step views (not placeholders).
+    private static let implementedScreens: Set<OnboardingScreen> = [
+        .island, .meetPet, .wind, .screenTimeData, .windSlider,
+    ]
+
     private var nonStoryLayout: some View {
         TabView(selection: $currentScreen) {
-            ForEach(OnboardingScreen.allCases.filter { $0.act != .story }) { screen in
+            ForEach(OnboardingScreen.allCases.filter { !Self.implementedScreens.contains($0) }) { screen in
                 OnboardingPlaceholderStep(screen: screen)
                     .tag(screen)
             }
@@ -158,18 +170,6 @@ struct OnboardingView: View {
         .tabViewStyle(.page(indexDisplayMode: .never))
         .ignoresSafeArea(.container, edges: .bottom)
         .animation(.easeInOut(duration: 0.3), value: currentScreen)
-    }
-
-    // MARK: - Background
-
-    @ViewBuilder
-    private var onboardingBackground: some View {
-        switch colorScheme {
-        case .dark:
-            NightBackgroundView()
-        default:
-            DayBackgroundView()
-        }
     }
 
     // MARK: - Gestures
@@ -200,6 +200,9 @@ struct OnboardingView: View {
             speechBubbleVisible = false
         case .meetPet:
             windProgress = 0
+            eyesOverride = nil
+        case .screenTimeData:
+            windProgress = 0.15
             eyesOverride = nil
         default:
             break

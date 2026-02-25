@@ -104,7 +104,7 @@ struct OnboardingIslandStep: View {
 #Preview {
     GeometryReader { geometry in
         ZStack {
-            DayBackgroundView()
+            OnboardingBackgroundView()
             IslandBase(screenHeight: geometry.size.height)
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
                 .ignoresSafeArea(.container, edges: .bottom)

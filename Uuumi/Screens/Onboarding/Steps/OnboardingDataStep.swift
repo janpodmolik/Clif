@@ -102,7 +102,7 @@ struct OnboardingDataStep: View {
 #Preview {
     GeometryReader { geometry in
         ZStack {
-            DayBackgroundView()
+            OnboardingBackgroundView()
             WindLinesView(
                 windProgress: 0.15,
                 direction: 1.0,

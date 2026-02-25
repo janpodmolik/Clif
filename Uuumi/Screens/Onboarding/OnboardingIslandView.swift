@@ -125,7 +125,7 @@ struct OnboardingIslandView: View {
 #Preview {
     GeometryReader { geometry in
         ZStack {
-            DayBackgroundView()
+            OnboardingBackgroundView()
             OnboardingIslandView(
                 screenHeight: geometry.size.height,
                 pet: Blob.shared,
