@@ -19,23 +19,24 @@ enum OnboardingScreen: Int, CaseIterable, Identifiable {
     case island = 0
     case meetPet = 1
     case wind = 2
+    case screenTimeData = 3
 
     // ACT 2: The Demo
-    case windSlider = 3
-    case lockDemo = 4
-    case notifications = 5
+    case windSlider = 4
+    case lockDemo = 5
+    case notifications = 6
 
     // ACT 3: Setup
-    case evolution = 6
-    case windPreset = 7
-    case namePet = 8
-    case placePet = 9
+    case evolution = 7
+    case windPreset = 8
+    case namePet = 9
+    case placePet = 10
 
     var id: Int { rawValue }
 
     var act: OnboardingAct {
         switch self {
-        case .island, .meetPet, .wind: .story
+        case .island, .meetPet, .wind, .screenTimeData: .story
         case .windSlider, .lockDemo, .notifications: .demo
         case .evolution, .windPreset, .namePet, .placePet: .setup
         }
@@ -46,6 +47,7 @@ enum OnboardingScreen: Int, CaseIterable, Identifiable {
         case .island: "The Island"
         case .meetPet: "Meet Uuumi"
         case .wind: "The Wind"
+        case .screenTimeData: "Screen Time"
         case .windSlider: "Feel The Wind"
         case .lockDemo: "The Lock"
         case .notifications: "Notifications"
@@ -60,7 +62,8 @@ enum OnboardingScreen: Int, CaseIterable, Identifiable {
         switch self {
         case .island: "Empty floating island, serene atmosphere"
         case .meetPet: "Blob appears, user taps to interact"
-        case .wind: "Wind mechanic intro + Screen Time permission + data preview"
+        case .wind: "Wind mechanic intro + Screen Time permission"
+        case .screenTimeData: "Screen time data reveal with horizontal app carousel"
         case .windSlider: "Interactive slider driving wind intensity"
         case .lockDemo: "Tap lock to stop the wind"
         case .notifications: "Mock notifications + permission prompt"
@@ -76,7 +79,7 @@ enum OnboardingScreen: Int, CaseIterable, Identifiable {
     /// Whether wind effects should be visible on this screen and beyond.
     var showsWind: Bool {
         switch self {
-        case .wind, .windSlider, .lockDemo: true
+        case .wind, .screenTimeData, .windSlider, .lockDemo: true
         default: false
         }
     }

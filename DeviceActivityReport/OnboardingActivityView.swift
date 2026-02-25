@@ -5,60 +5,67 @@ struct OnboardingActivityView: View {
     let data: OnboardingReportData
 
     var body: some View {
-        VStack(spacing: 16) {
-            // Total screen time
+        VStack(spacing: 0) {
             VStack(spacing: 4) {
-                Text("Today")
+                Text("Daily average · last 7 days")
                     .font(.system(.subheadline, design: .rounded, weight: .medium))
                     .foregroundStyle(.secondary)
 
                 Text(data.formattedTotal.isEmpty ? "0m" : data.formattedTotal)
-                    .font(.system(.largeTitle, design: .rounded, weight: .bold))
+                    .font(.system(size: 40, weight: .bold, design: .rounded))
                     .foregroundStyle(.primary)
             }
+            .padding(.top, 20)
+            .padding(.bottom, 16)
 
-            // Top apps
             if !data.apps.isEmpty {
-                VStack(spacing: 6) {
-                    ForEach(data.apps) { app in
-                        HStack(spacing: 10) {
-                            if let token = app.token {
-                                Label(token)
-                                    .labelStyle(.iconOnly)
-                                    .frame(width: 28, height: 28)
-                                    .background(Color(.tertiarySystemBackground))
-                                    .clipShape(RoundedRectangle(cornerRadius: 7))
+                Divider()
+                    .padding(.horizontal, 20)
 
-                                Label(token)
-                                    .labelStyle(.titleOnly)
-                                    .font(.system(.subheadline, design: .rounded, weight: .medium))
-                                    .foregroundStyle(.primary)
-                                    .lineLimit(1)
-                            } else {
-                                Image(systemName: "app.fill")
-                                    .frame(width: 28, height: 28)
-                                    .background(Color(.tertiarySystemBackground))
-                                    .clipShape(RoundedRectangle(cornerRadius: 7))
+                ScrollView(.vertical, showsIndicators: false) {
+                    VStack(spacing: 0) {
+                        ForEach(Array(data.apps.enumerated()), id: \.element.id) { index, app in
+                            HStack(spacing: 14) {
+                                if let token = app.token {
+                                    Label(token)
+                                        .labelStyle(.iconOnly)
+                                        .scaleEffect(1.5)
+                                        .frame(width: 44, height: 44)
+                                } else {
+                                    Image(systemName: "app.fill")
+                                        .font(.system(size: 24))
+                                        .frame(width: 44, height: 44)
+                                        .foregroundStyle(.secondary)
+                                }
+
+                                if let name = app.name {
+                                    Text(name)
+                                        .font(.system(.body, design: .rounded, weight: .medium))
+                                        .foregroundStyle(.primary)
+                                        .lineLimit(1)
+                                }
+
+                                Spacer()
+
+                                Text(app.formattedDuration)
+                                    .font(.system(.subheadline, design: .rounded, weight: .semibold))
                                     .foregroundStyle(.secondary)
                             }
+                            .padding(.horizontal, 20)
+                            .padding(.vertical, 10)
+                            .background(Color.white.opacity(0.001))
 
-                            Spacer()
-
-                            Text(app.formattedDuration)
-                                .font(.system(.subheadline, design: .rounded, weight: .semibold))
-                                .foregroundStyle(.secondary)
+                            if index < data.apps.count - 1 {
+                                Divider()
+                                    .padding(.leading, 78)
+                            }
                         }
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 6)
-                        .background(Color(.tertiarySystemBackground))
-                        .clipShape(RoundedRectangle(cornerRadius: 10))
                     }
+                    .padding(.bottom, 8)
                 }
             }
         }
-        .padding(20)
-        .frame(maxWidth: .infinity)
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 20))
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
     }
 }
 

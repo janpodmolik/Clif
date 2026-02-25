@@ -45,15 +45,7 @@ struct OnboardingView: View {
                 progressIndicator
             }
         }
-        .gesture(
-            DragGesture(minimumDistance: 30, coordinateSpace: .local)
-                .onEnded { value in
-                    if value.translation.width > 50, abs(value.translation.height) < abs(value.translation.width) {
-                        HapticType.impactLight.trigger()
-                        goBack()
-                    }
-                }
-        )
+        .gesture(swipeBackGesture, including: currentScreen == .screenTimeData ? .subviews : .all)
     }
 
     // MARK: - Island Layer
@@ -104,6 +96,12 @@ struct OnboardingView: View {
                 onContinue: advanceScreen,
                 windProgress: $windProgress,
                 eyesOverride: $eyesOverride
+            )
+
+        case .screenTimeData:
+            OnboardingDataStep(
+                skipAnimation: visitedScreens.contains(.screenTimeData),
+                onContinue: advanceScreen
             )
 
         default:
@@ -172,6 +170,18 @@ struct OnboardingView: View {
         default:
             DayBackgroundView()
         }
+    }
+
+    // MARK: - Gestures
+
+    private var swipeBackGesture: some Gesture {
+        DragGesture(minimumDistance: 30, coordinateSpace: .local)
+            .onEnded { value in
+                if value.translation.width > 50, abs(value.translation.height) < abs(value.translation.width) {
+                    HapticType.impactLight.trigger()
+                    goBack()
+                }
+            }
     }
 
     // MARK: - Navigation

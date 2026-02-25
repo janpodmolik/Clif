@@ -22,6 +22,7 @@ struct ActivityReportData {
 struct AppActivityData: Identifiable {
     let id = UUID()
     let token: ApplicationToken?
+    let name: String?
     let duration: TimeInterval
     let formattedDuration: String
 }
@@ -65,6 +66,7 @@ struct TotalActivityReport: DeviceActivityReportScene {
             .map { token, duration in
                 AppActivityData(
                     token: token,
+                    name: nil,
                     duration: duration,
                     formattedDuration: formatter.string(from: duration) ?? "0m"
                 )

@@ -28,12 +28,17 @@ struct TypewriterText: View {
         self.onCompleted = onCompleted
     }
 
+    private var styledText: AttributedString {
+        var result = AttributedString(text)
+        let visibleEnd = result.index(result.startIndex, offsetByCharacters: visibleCount)
+        if visibleEnd < result.endIndex {
+            result[visibleEnd..<result.endIndex].foregroundColor = .clear
+        }
+        return result
+    }
+
     var body: some View {
-        Text(text)
-            .hidden()
-            .overlay {
-                Text(text.prefix(visibleCount))
-            }
+        Text(styledText)
             .onChange(of: active) {
                 if active { startTypingIfNeeded() }
             }

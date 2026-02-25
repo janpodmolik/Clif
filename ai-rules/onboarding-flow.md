@@ -1,8 +1,8 @@
-# Uuumi Onboarding Flow — v4
+# Uuumi Onboarding Flow — v5
 
 ## Overview
 
-10 story screens + 2 post-onboarding sheets. Every permission request is framed within the narrative. No screen feels like a form. The user meets their pet, learns the mechanics by doing, and places the pet on the island before seeing any paywall or auth prompt.
+11 story screens + 2 post-onboarding sheets. Every permission request is framed within the narrative. No screen feels like a form. The user meets their pet, learns the mechanics by doing, and places the pet on the island before seeing any paywall or auth prompt.
 
 **Core principles:**
 - Bond before rules — Uuumi is introduced well before any settings/limits
@@ -12,7 +12,7 @@
 - Every data collection moment feels like a choice, not a form
 - Respect Reduce Motion, provide tap fallbacks for drag interactions
 
-**Progress indicator:** Subtle dot indicator (10 dots) visible on all onboarding screens to reduce "am I watching an ad?" anxiety.
+**Progress indicator:** Subtle dot indicator (11 dots) visible on all onboarding screens to reduce "am I watching an ad?" anxiety.
 
 ---
 
@@ -48,11 +48,11 @@
 
 ---
 
-## ACT 2: THE DEMO (Screens 3-6)
+## ACT 2: THE DEMO (Screens 3-7)
 
 *Hands-on. The user experiences the mechanics. This is what no other screen time app does.*
 
-### Screen 3 — "The Wind" (Wind Mechanic + Screen Time Permission + Data Preview)
+### Screen 3 — "The Wind" (Wind Mechanic + Screen Time Permission)
 
 **Visual:** The island with the blob from screen 2. As text progresses, wind lines gradually appear and intensify. The blob begins to sway, transitions to scared face, and gets pushed toward the edge of the island. Wind stays at medium intensity after the animation settles.
 
@@ -68,19 +68,35 @@
 **CTA button:** "Show my screen time" → Triggers `FamilyControls` / Screen Time authorization prompt from iOS.
 
 **IMPORTANT — Permission is mandatory.** Without Screen Time access, the app's core feature doesn't work. If the user denies:
-- Show message: "Uuumi needs Screen Time access to work. Without it, there's no wind, no protection, no evolution."
+- Show prominent card with warning icon: "Screen Time access is required" + "Without it, there's no wind, no protection, no evolution."
 - "Try again" button (re-prompts or directs to Settings if iOS won't re-prompt)
 - No way to proceed until permission is granted
 
-**After permission granted:** A screen time overview appears showing today's total usage time and top 5 apps (via embedded `DeviceActivityReport` with `.onboardingOverview` context). Continue button appears below the report.
+**After permission granted:** Continue button appears. Data reveal happens on the next screen.
 
-**Technical approach:** Uses a dedicated `OnboardingActivityReport` scene in the DeviceActivityReport extension. Compact layout: "Today" label + large total time + top 5 app rows with icons. Semi-transparent material background.
-
-**Reuses:** `IslandBase`, `WindLinesView`, `PetAnimationEffect` (wind shader), scared face asset swap, `DeviceActivityReport` extension pattern.
+**Reuses:** `IslandBase`, `WindLinesView`, `PetAnimationEffect` (wind shader), scared face asset swap.
 
 ---
 
-### Screen 4 — "Feel The Wind" (The Slider)
+### Screen 4 — "Screen Time Data" (Data Reveal)
+
+**Visual:** Same island scene with wind at gentle intensity (carried over from screen 3). The screen time data animates in from the bottom.
+
+**Text:**
+> "This is what Uuumi is up against."
+
+**Data display:** Horizontal scrolling carousel via embedded `DeviceActivityReport` with `.onboardingOverview` context:
+- Daily average screen time at top ("Daily average" label + large bold time)
+- Horizontal scroll of app icons (60×60 via scaleEffect) with duration below each — no app names
+- Semi-transparent material background card
+
+**Technical approach:** Uses `OnboardingActivityReport` scene in the DeviceActivityReport extension. The carousel view is `OnboardingActivityView` with horizontal `ScrollView`.
+
+**Reuses:** `IslandBase`, `WindLinesView`, `DeviceActivityReport` extension pattern.
+
+---
+
+### Screen 5 — "Feel The Wind" (The Slider)
 
 **Visual:** Full island scene — island, blob on top, wind lines. A slider at the bottom of the screen. Everything uses real existing components with real `WindConfig` interpolation driving all parameters.
 
@@ -99,9 +115,9 @@
 
 ---
 
-### Screen 5 — "The Lock" (Core Mechanic)
+### Screen 6 — "The Lock" (Core Mechanic)
 
-**Visual:** Same island scene from screen 4, but now wind is at medium intensity (blob swaying, looking worried). A floating lock button appears at the bottom — styled like the existing `HomeFloatingLockButton`.
+**Visual:** Same island scene from screen 5, but now wind is at medium intensity (blob swaying, looking worried). A floating lock button appears at the bottom — styled like the existing `HomeFloatingLockButton`.
 
 **Text:**
 > "But you have the power to stop it."
@@ -120,7 +136,7 @@
 
 ---
 
-### Screen 6 — "Uuumi Can Call For You" (Notification Permission)
+### Screen 7 — "Uuumi Can Call For You" (Notification Permission)
 
 **Visual:** The island, blob looking slightly worried. A mock notification slides down from the top of the screen (custom-styled UI element, not a real iOS notification):
 
@@ -147,11 +163,11 @@ The blob's speech bubble shows a worried emoji, synced with the notification.
 
 ---
 
-## ACT 3: SETUP (Screens 7-10)
+## ACT 3: SETUP (Screens 8-11)
 
 *Configuration that feels like commitment, not a form. Each step has narrative framing.*
 
-### Screen 7 — "Evolution" (Aspiration + Premium Seed)
+### Screen 8 — "Evolution" (Aspiration + Premium Seed)
 
 **Visual:** The blob in the center. The plant evolution path is fully visible — showing phases 1 -> 2 -> 3 -> 4, getting progressively more elaborate and beautiful. Other essences (crystal, flame, water) are shown as beautiful but clearly marked as premium — visible designs, not hidden behind silhouettes. The user can see what they could unlock.
 
@@ -175,7 +191,7 @@ The blob's speech bubble shows a worried emoji, synced with the notification.
 
 ---
 
-### Screen 8 — "How Tough Are You?" (Wind Preset)
+### Screen 9 — "How Tough Are You?" (Wind Preset)
 
 **Visual:** Three cards/options, each showing the blob at different wind intensities.
 
@@ -198,7 +214,7 @@ Visual: Strong wind, blob scared.
 
 ---
 
-### Screen 9 — "Name Your Pet" (Ownership)
+### Screen 10 — "Name Your Pet" (Ownership)
 
 **Visual:** The blob in the center, looking up at the user expectantly. Idle breathing. Warm, intimate — no wind, just the user and the blob.
 
@@ -215,7 +231,7 @@ Visual: Strong wind, blob scared.
 
 ---
 
-### Screen 10 — "Place On The Island" (The Drop)
+### Screen 11 — "Place On The Island" (The Drop)
 
 **Visual:** The existing `PetDropStep` from the `CreatePetMultiStep` flow. Island visible in the background with `PetDropZone` glowing softly. Summary card at the bottom shows pet name, selected apps, and preset. Blob sits on the card, ready to be dragged.
 
@@ -241,11 +257,11 @@ Visual: Strong wind, blob scared.
 
 ---
 
-## POST-ONBOARDING (Screens 11-12)
+## POST-ONBOARDING (Screens 12-13)
 
 *These appear after the home screen loads. Sheets/modals, not full-screen onboarding pages.*
 
-### Screen 11 — "Keep [Name] Safe" (Authentication)
+### Screen 12 — "Keep [Name] Safe" (Authentication)
 
 **Appears:** ~1.5 seconds after home screen loads. Slides up as a sheet.
 
@@ -267,7 +283,7 @@ Visual: Strong wind, blob scared.
 
 ---
 
-### Screen 12 — "Give [Name] The Best Start" (Premium / 7-Day Trial)
+### Screen 13 — "Give [Name] The Best Start" (Premium / 7-Day Trial)
 
 **Appears:** After auth sheet dismisses (or after skip). Slides up as a sheet.
 
@@ -301,26 +317,27 @@ Show all essences (plant unlocked, crystal/flame/water as premium) with glimpses
 
 1. **Evolution path previews** — Visual representations of crystal, flame, water evolution paths (at least silhouettes or phase 4 forms). For screens 8 and 13.
 2. **Mock notification UI** — Custom component styled to look like an iOS notification. For screen 7.
+3. No new assets needed for Screen 4 (data reveal) — uses existing `DeviceActivityReport` extension.
 
 ## Existing Components Reused
 
-- `IslandBase` / `IslandView` (screens 1, 2, 3, 4, 5, 6, 10)
-- `PetAnimationEffect` + Metal shader (screens 2, 3, 4, 5)
-- `WindLinesView` (screens 3, 4, 5)
-- `PetReactionType` animations + haptics (screens 2, 9)
-- Scared face asset swap (screens 3, 4)
-- `WindConfig` interpolation (screen 4)
-- `HomeFloatingLockButton` style (screen 5)
-- `BlobDragPreview` + drag system (screen 10)
-- `DeviceActivityReport` extension / `OnboardingActivityReport` (screen 3)
-- Evolution/essence assets (screen 7)
-- `PetDropStep` / `DragPortalSheet` / `PetDropZone` (screen 10)
-- Speech bubble system (screen 6)
+- `IslandBase` / `IslandView` (screens 1, 2, 3, 4, 5, 6, 7, 11)
+- `PetAnimationEffect` + Metal shader (screens 2, 3, 4, 5, 6)
+- `WindLinesView` (screens 3, 4, 5, 6)
+- `PetReactionType` animations + haptics (screens 2, 10)
+- Scared face asset swap (screens 3, 5)
+- `WindConfig` interpolation (screen 5)
+- `HomeFloatingLockButton` style (screen 6)
+- `BlobDragPreview` + drag system (screen 11)
+- `DeviceActivityReport` extension / `OnboardingActivityReport` (screen 4)
+- Evolution/essence assets (screen 8)
+- `PetDropStep` / `DragPortalSheet` / `PetDropZone` (screen 11)
+- Speech bubble system (screen 7)
 
 ## Accessibility Considerations
 
-- **Reduce Motion:** All animation-heavy screens (3, 4, 5) must respect `UIAccessibility.isReduceMotionEnabled`. Simpler transitions, less sway.
-- **Tap fallback:** Screen 10 drag-and-drop must have tap alternative after failed attempts.
+- **Reduce Motion:** All animation-heavy screens (3, 5, 6) must respect `UIAccessibility.isReduceMotionEnabled`. Simpler transitions, less sway.
+- **Tap fallback:** Screen 11 drag-and-drop must have tap alternative after failed attempts.
 - **Haptic toggle:** Respect system haptic settings.
 
 ## Premium Model Summary

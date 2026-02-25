@@ -1,4 +1,3 @@
-import DeviceActivity
 import SwiftUI
 
 struct OnboardingWindStep: View {
@@ -16,6 +15,7 @@ struct OnboardingWindStep: View {
     @State private var showPermissionCTA = false
     @State private var showPermissionDenied = false
     @State private var isRequestingPermission = false
+    @State private var didAdvance = false
     @State private var narrativeBeat = 0
 
     var body: some View {
@@ -47,6 +47,11 @@ struct OnboardingWindStep: View {
                     showSecondLine = true
                     showThirdLine = true
                     showPermissionCTA = true
+
+                    if screenTimeManager.isAuthorized, !didAdvance {
+                        didAdvance = true
+                        onContinue()
+                    }
                 }
             }
             .onDisappear {
@@ -123,13 +128,7 @@ struct OnboardingWindStep: View {
 
     @ViewBuilder
     private var bottomArea: some View {
-        if screenTimeManager.isAuthorized {
-            VStack(spacing: 16) {
-                screenTimeReportView
-                continueButton
-            }
-            .transition(.opacity)
-        } else if showPermissionCTA {
+        if showPermissionCTA && !screenTimeManager.isAuthorized {
             permissionCTAView
                 .transition(.opacity)
         }
@@ -140,11 +139,23 @@ struct OnboardingWindStep: View {
     private var permissionCTAView: some View {
         VStack(spacing: 16) {
             if showPermissionDenied {
-                Text("Uuumi needs Screen Time access to work. Without it, there's no wind, no protection, no evolution.")
-                    .font(AppFont.quicksand(.subheadline, weight: .medium))
-                    .foregroundStyle(.secondary)
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal, 32)
+                VStack(spacing: 8) {
+                    Image(systemName: "exclamationmark.triangle.fill")
+                        .font(.title2)
+                        .foregroundStyle(.orange)
+
+                    Text("Screen Time access is required")
+                        .font(AppFont.quicksand(.headline, weight: .semiBold))
+                        .foregroundStyle(.primary)
+
+                    Text("Without it, there's no wind, no protection, no evolution.")
+                        .font(AppFont.quicksand(.subheadline, weight: .medium))
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
+                }
+                .padding(20)
+                .frame(maxWidth: .infinity)
+                .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
             }
 
             Text("Your data stays on your device. Always.")
@@ -167,36 +178,6 @@ struct OnboardingWindStep: View {
         }
     }
 
-    // MARK: - Screen Time Report
-
-    private var screenTimeReportView: some View {
-        DeviceActivityReport(.onboardingOverview, filter: onboardingReportFilter)
-            .frame(height: 200)
-            .clipShape(RoundedRectangle(cornerRadius: 20))
-    }
-
-    private var onboardingReportFilter: DeviceActivityFilter {
-        let interval = Calendar.current.dateInterval(of: .day, for: .now)
-            ?? DateInterval(start: .now, duration: 86400)
-        return DeviceActivityFilter(
-            segment: .daily(during: interval),
-            users: .all,
-            devices: .init([.iPhone])
-        )
-    }
-
-    // MARK: - Continue
-
-    private var continueButton: some View {
-        Button {
-            HapticType.impactLight.trigger()
-            onContinue()
-        } label: {
-            Text("Continue")
-        }
-        .buttonStyle(.primary)
-    }
-
     // MARK: - Actions
 
     private func requestPermission() {
@@ -205,7 +186,11 @@ struct OnboardingWindStep: View {
         Task {
             await screenTimeManager.requestAuthorization()
             isRequestingPermission = false
-            if !screenTimeManager.isAuthorized {
+            if screenTimeManager.isAuthorized, !didAdvance {
+                didAdvance = true
+                try? await Task.sleep(for: .seconds(0.5))
+                onContinue()
+            } else if !screenTimeManager.isAuthorized {
                 withAnimation {
                     showPermissionDenied = true
                 }
