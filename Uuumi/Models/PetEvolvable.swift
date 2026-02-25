@@ -99,18 +99,10 @@ extension PetEvolvable {
         return phase?.eyesAssetName(for: windLevel) ?? Blob.shared.eyesAssetName(for: windLevel)
     }
 
-    /// Returns the eyes asset name based on wind level and blown away state.
-    func eyesAssetName(for windLevel: WindLevel, isBlownAway: Bool) -> String {
+    func blownAwayEyesAssetName() -> String {
         guard let essence else {
-            return Blob.shared.eyesAssetName(for: windLevel, isBlownAway: isBlownAway)
+            return Blob.shared.blownAwayEyesAssetName()
         }
-        return phase?.eyesAssetName(for: windLevel, isBlownAway: isBlownAway) ?? Blob.shared.eyesAssetName(for: windLevel, isBlownAway: isBlownAway)
-    }
-
-    func scaredEyesAssetName(for windLevel: WindLevel) -> String? {
-        guard let essence else {
-            return Blob.shared.scaredEyesAssetName(for: windLevel)
-        }
-        return phase?.scaredEyesAssetName(for: windLevel)
+        return phase?.blownAwayEyesAssetName() ?? Blob.shared.blownAwayEyesAssetName()
     }
 }

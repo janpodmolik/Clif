@@ -20,7 +20,7 @@ struct ActivePetRow: View {
     private func content(for pet: Pet) -> some View {
         Button(action: onTap) {
             HStack(alignment: .center, spacing: 14) {
-                PetImage(pet, windLevel: pet.windLevel)
+                PetImage(pet)
                     .frame(width: 50, height: 50)
                     .scaleEffect(pet.displayScale)
 

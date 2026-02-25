@@ -9,12 +9,11 @@ struct OnboardingMeetPetStep: View {
     @Binding var onPetTap: (() -> Void)?
     @Binding var speechBubbleConfig: SpeechBubbleConfig?
     @Binding var speechBubbleVisible: Bool
+    @Binding var showTapHint: Bool
 
     @State private var showSecondLine = false
     @State private var textCompleted = false
-    @State private var showTapHint = false
     @State private var hasBeenTapped = false
-    @State private var isPulsing = false
     @State private var speechBubbleTask: Task<Void, Never>?
     @State private var narrativeBeat = 0
 
@@ -24,12 +23,6 @@ struct OnboardingMeetPetStep: View {
                 narrative
                     .padding(.horizontal, 32)
                     .padding(.top, 60)
-            }
-            .overlay(alignment: .center) {
-                if showTapHint && !hasBeenTapped {
-                    tapHintOverlay
-                        .transition(.opacity.animation(.easeOut(duration: 0.4)))
-                }
             }
             .overlay(alignment: .bottom) {
                 if hasBeenTapped {
@@ -74,6 +67,7 @@ struct OnboardingMeetPetStep: View {
             }
             .onDisappear {
                 onPetTap = nil
+                showTapHint = false
                 speechBubbleTask?.cancel()
                 speechBubbleTask = nil
                 // Hide speech bubble when leaving this step
@@ -122,26 +116,6 @@ struct OnboardingMeetPetStep: View {
         .font(AppFont.quicksand(.title3, weight: .medium))
         .foregroundStyle(.primary)
         .multilineTextAlignment(.center)
-    }
-
-    // MARK: - Tap Hint
-
-    private var tapHintOverlay: some View {
-        VStack(spacing: 4) {
-            Image(systemName: "hand.tap.fill")
-                .font(.title3)
-            Text("Tap")
-                .font(AppFont.quicksand(.caption, weight: .medium))
-        }
-        .foregroundStyle(.primary)
-        .scaleEffect(isPulsing ? 1.15 : 1.0)
-        .opacity(isPulsing ? 1.0 : 0.6)
-        .animation(
-            .easeInOut(duration: 0.8).repeatForever(autoreverses: true),
-            value: isPulsing
-        )
-        .onAppear { isPulsing = true }
-        .allowsHitTesting(false)
     }
 
     // MARK: - Continue
@@ -208,7 +182,8 @@ struct OnboardingMeetPetStep: View {
                 showBlob: .constant(true),
                 onPetTap: .constant(nil),
                 speechBubbleConfig: .constant(nil),
-                speechBubbleVisible: .constant(false)
+                speechBubbleVisible: .constant(false),
+                showTapHint: .constant(false)
             )
         }
     }

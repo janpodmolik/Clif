@@ -92,9 +92,6 @@ struct IslandView<TransitionContent: View>: View {
     // Pet animation transform for bubble positioning
     @State private var petTransform: PetAnimationTransform = .zero
 
-    // Scared state - pet is near island edge due to sway displacement
-    @State private var isScared: Bool = false
-
     // Pet image size for evolution transition frame
     @State private var petImageSize: CGSize = .zero
 
@@ -195,10 +192,7 @@ struct IslandView<TransitionContent: View>: View {
     // MARK: - Pet View
 
     private func petEyesAssetName(for pet: any PetDisplayable) -> String {
-        if isScared, let scaredName = pet.scaredEyesAssetName(for: windLevel) {
-            return scaredName
-        }
-        return pet.eyesAssetName(for: windLevel)
+        pet.eyesAssetName(for: windLevel)
     }
 
     @ViewBuilder
@@ -242,7 +236,6 @@ struct IslandView<TransitionContent: View>: View {
                             swayOffset: transform.swayOffset * pet.displayScale,
                             topOffset: transform.topOffset * pet.displayScale
                         )
-                        updateScaredState(swayOffset: transform.swayOffset, pet: pet)
                     }
                 )
                 .scaleEffect(pet.displayScale, anchor: .bottom)
@@ -349,28 +342,6 @@ struct IslandView<TransitionContent: View>: View {
                         }
                 }
             }
-    }
-
-    // MARK: - Scared State
-
-    private func updateScaredState(swayOffset: CGFloat, pet: any PetDisplayable) {
-        guard let screenWidth, pet.scaredEyesAssetName(for: windLevel) != nil else {
-            if isScared { isScared = false }
-            return
-        }
-
-        let displacement = abs(swayOffset * pet.displayScale)
-        let halfScreen = screenWidth * 0.5
-        let ratio = displacement / halfScreen
-
-        // Hysteresis: higher threshold to enter scared, lower to exit
-        let shouldBeScared = isScared
-            ? ratio > 0.05
-            : ratio > 0.25
-
-        if shouldBeScared != isScared {
-            isScared = shouldBeScared
-        }
     }
 
     // MARK: - Actions

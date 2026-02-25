@@ -49,7 +49,7 @@ struct EvolutionScaleDebugView: View {
     }
 
     private var currentPetImage: PetImage {
-        PetImage(currentPet, windLevel: selectedWindLevel)
+        PetImage(currentPet)
     }
 
     private var currentScale: CGFloat {

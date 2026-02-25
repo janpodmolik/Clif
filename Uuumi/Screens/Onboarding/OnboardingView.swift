@@ -16,6 +16,7 @@ struct OnboardingView: View {
     // Speech bubble state — controlled by steps
     @State private var speechBubbleConfig: SpeechBubbleConfig? = nil
     @State private var speechBubbleVisible = false
+    @State private var showTapHint = false
 
     var body: some View {
         GeometryReader { geometry in
@@ -61,7 +62,8 @@ struct OnboardingView: View {
             eyesOverride: eyesOverride,
             speechBubbleConfig: speechBubbleConfig,
             speechBubbleVisible: speechBubbleVisible,
-            onPetTap: onPetTap
+            onPetTap: onPetTap,
+            showTapHint: showTapHint
         )
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
         .ignoresSafeArea(.container, edges: .bottom)
@@ -86,7 +88,8 @@ struct OnboardingView: View {
                 showBlob: $showBlob,
                 onPetTap: $onPetTap,
                 speechBubbleConfig: $speechBubbleConfig,
-                speechBubbleVisible: $speechBubbleVisible
+                speechBubbleVisible: $speechBubbleVisible,
+                showTapHint: $showTapHint
             )
 
         case .wind:

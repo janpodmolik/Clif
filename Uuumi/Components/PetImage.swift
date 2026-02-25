@@ -21,17 +21,21 @@ struct PetImage: View {
 // MARK: - PetDisplayable Convenience
 
 extension PetImage {
-    init(_ pet: any PetDisplayable, windLevel: WindLevel = .none, isBlownAway: Bool = false) {
-        self.bodyAssetName = pet.bodyAssetName(for: windLevel)
-        self.eyesAssetName = pet.eyesAssetName(for: windLevel, isBlownAway: isBlownAway)
+    init(_ pet: any PetDisplayable, isBlownAway: Bool = false) {
+        self.bodyAssetName = pet.bodyAssetName(for: .none)
+        self.eyesAssetName = isBlownAway
+            ? pet.blownAwayEyesAssetName()
+            : pet.eyesAssetName(for: .medium)
     }
 }
 
 // MARK: - PetEvolvable Convenience
 
 extension PetImage {
-    init(_ pet: any PetEvolvable, windLevel: WindLevel = .none, isBlownAway: Bool = false) {
-        self.bodyAssetName = pet.bodyAssetName(for: windLevel)
-        self.eyesAssetName = pet.eyesAssetName(for: windLevel, isBlownAway: isBlownAway)
+    init(_ pet: any PetEvolvable, isBlownAway: Bool = false) {
+        self.bodyAssetName = pet.bodyAssetName(for: .none)
+        self.eyesAssetName = isBlownAway
+            ? pet.blownAwayEyesAssetName()
+            : pet.eyesAssetName(for: .medium)
     }
 }

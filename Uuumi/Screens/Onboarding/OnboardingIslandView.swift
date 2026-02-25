@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Lightweight island view for onboarding — no autoplay, no auto-speech bubbles, no scared state.
+/// Lightweight island view for onboarding — no autoplay, no auto-speech bubbles.
 /// Standalone from production `IslandView` to avoid coupling onboarding to home screen logic.
 struct OnboardingIslandView: View {
     let screenHeight: CGFloat
@@ -11,6 +11,7 @@ struct OnboardingIslandView: View {
     var speechBubbleConfig: SpeechBubbleConfig? = nil
     var speechBubbleVisible: Bool = false
     var onPetTap: (() -> Void)? = nil
+    var showTapHint: Bool = false
 
     // Pet animation state
     @State private var reactionStartTime: TimeInterval = -1
@@ -18,6 +19,7 @@ struct OnboardingIslandView: View {
     @State private var currentReactionConfig: ReactionConfig = .none
     @State private var petTransform: PetAnimationTransform = .zero
     @State private var lastTapTime: Date = .distantPast
+    @State private var isTapHintPulsing = false
 
     private let tapCooldown: TimeInterval = 1.0
 
@@ -55,6 +57,13 @@ struct OnboardingIslandView: View {
     private var petContent: some View {
         ZStack {
             petImageView
+                .overlay(alignment: .top) {
+                    if showTapHint {
+                        tapHintOverlay
+                            .offset(y: -40)
+                            .transition(.opacity.animation(.easeOut(duration: 0.4)))
+                    }
+                }
 
             SpeechBubbleView(
                 config: speechBubbleConfig ?? .default,
@@ -64,6 +73,24 @@ struct OnboardingIslandView: View {
         }
         .padding(.top, petHeight * 0.6)
         .offset(y: petOffset)
+    }
+
+    private var tapHintOverlay: some View {
+        VStack(spacing: 4) {
+            Image(systemName: "hand.tap.fill")
+                .font(.title3)
+            Text("Tap")
+                .font(AppFont.quicksand(.caption, weight: .medium))
+        }
+        .foregroundStyle(.primary)
+        .scaleEffect(isTapHintPulsing ? 1.15 : 1.0)
+        .opacity(isTapHintPulsing ? 1.0 : 0.6)
+        .animation(
+            .easeInOut(duration: 0.8).repeatForever(autoreverses: true),
+            value: isTapHintPulsing
+        )
+        .onAppear { isTapHintPulsing = true }
+        .allowsHitTesting(false)
     }
 
     private var petImageView: some View {

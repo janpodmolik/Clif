@@ -6,8 +6,7 @@ protocol PetDisplayable {
     var idleConfig: IdleConfig { get }
     func bodyAssetName(for windLevel: WindLevel) -> String
     func eyesAssetName(for windLevel: WindLevel) -> String
-    func eyesAssetName(for windLevel: WindLevel, isBlownAway: Bool) -> String
-    func scaredEyesAssetName(for windLevel: WindLevel) -> String?
+    func blownAwayEyesAssetName() -> String
     func reactionConfig(for type: PetReactionType) -> ReactionConfig
 }
 

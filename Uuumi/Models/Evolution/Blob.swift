@@ -15,13 +15,8 @@ struct Blob: Hashable {
         "blob/1/eyes/\(windLevel.eyes)"
     }
 
-    func eyesAssetName(for windLevel: WindLevel, isBlownAway: Bool) -> String {
-        let eyes = isBlownAway ? WindLevel.blownEyes : windLevel.eyes
-        return "blob/1/eyes/\(eyes)"
-    }
-
-    func scaredEyesAssetName(for windLevel: WindLevel) -> String? {
-        "blob/1/eyes/scared"
+    func blownAwayEyesAssetName() -> String {
+        "blob/1/eyes/sad"
     }
 
     func reactionConfig(for type: PetReactionType) -> ReactionConfig {

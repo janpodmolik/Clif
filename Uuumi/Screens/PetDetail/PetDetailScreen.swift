@@ -76,7 +76,6 @@ struct PetDetailScreen: View {
 
                     EvolutionCarousel(
                         pet: pet,
-                        windLevel: pet.windLevel,
                         isBlownAway: pet.isBlown,
                         canUseEssence: pet.canUseEssence
                     )

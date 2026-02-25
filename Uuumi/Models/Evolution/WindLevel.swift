@@ -71,17 +71,14 @@ enum WindLevel: Int, CaseIterable {
     }
 
     /// Eyes asset name based on wind intensity.
-    /// Maps to: happy (none/low), neutral (medium), sad (high)
+    /// Maps to: happy (none/low), neutral (medium), scared (high)
     var eyes: String {
         switch self {
         case .none, .low: return "happy"
         case .medium: return "neutral"
-        case .high: return "sad"
+        case .high: return "scared"
         }
     }
-
-    /// Eyes for blown away state (always sad).
-    static let blownEyes = "sad"
 
     /// Returns the wind level zone for a given usage progress (0-1).
     /// - Parameter progress: Usage progress from 0 (no usage) to 1 (limit reached)
