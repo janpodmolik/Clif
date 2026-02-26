@@ -35,6 +35,8 @@ struct OnboardingLockStep: View {
     @State private var isPulsing = false
     @State private var lockSettled = false
 
+    @State private var hasDisappeared = false
+
     // Phase 2 — post-lock narrative
     @State private var showPostLock = false
     @State private var postLockBeat = 0
@@ -109,6 +111,7 @@ struct OnboardingLockStep: View {
         .onAppear { handleAppear() }
         .onDisappear { handleDisappear() }
         .onChange(of: windProgress) { _, newValue in
+            guard !hasDisappeared else { return }
             eyesOverride = WindLevel.from(progress: newValue).eyes
         }
     }
@@ -370,6 +373,8 @@ struct OnboardingLockStep: View {
     }
 
     private func handleAppear() {
+        hasDisappeared = false
+
         if skipAnimation {
             textCompleted = true
             showSecondLine = true
@@ -391,6 +396,7 @@ struct OnboardingLockStep: View {
     }
 
     private func handleDisappear() {
+        hasDisappeared = true
         windProgress = exitWind
         eyesOverride = WindLevel.from(progress: exitWind).eyes
     }

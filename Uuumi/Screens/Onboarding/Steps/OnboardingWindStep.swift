@@ -49,9 +49,7 @@ struct OnboardingWindStep: View {
                     showPermissionCTA = true
                 }
             }
-            .onDisappear {
-                eyesOverride = nil
-            }
+            // eyesOverride intentionally kept — next step expects neutral eyes during transition
     }
 
     // MARK: - Narrative

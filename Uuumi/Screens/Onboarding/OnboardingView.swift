@@ -43,6 +43,11 @@ struct OnboardingView: View {
 
                 // Progress indicator
                 progressIndicator
+
+                #if DEBUG
+                // Debug overlay — shows binding values to diagnose eye cycling bug
+                debugOverlay
+                #endif
             }
         }
         .gesture(swipeBackGesture, including: currentScreen == .screenTimeData || currentScreen == .windSlider || currentScreen == .lockDemo ? .subviews : .all)
@@ -130,6 +135,14 @@ struct OnboardingView: View {
                 eyesOverride: $eyesOverride
             )
 
+        case .windPreset:
+            OnboardingWindPresetStep(
+                skipAnimation: visitedScreens.contains(.windPreset),
+                onContinue: advanceScreen,
+                windProgress: $windProgress,
+                eyesOverride: $eyesOverride
+            )
+
         default:
             nonStoryLayout
         }
@@ -176,7 +189,7 @@ struct OnboardingView: View {
 
     /// Screens that have dedicated step views (not placeholders).
     private static let implementedScreens: Set<OnboardingScreen> = [
-        .island, .meetPet, .wind, .screenTimeData, .appSelection, .windSlider, .lockDemo,
+        .island, .meetPet, .wind, .screenTimeData, .appSelection, .windSlider, .lockDemo, .windPreset,
     ]
 
     private var nonStoryLayout: some View {
@@ -243,6 +256,45 @@ struct OnboardingView: View {
             currentScreen = next
         }
     }
+
+    #if DEBUG
+    // MARK: - Debug Overlay
+
+    private var debugOverlay: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text("screen: \(currentScreen.title)")
+            Text("wind: \(windProgress, specifier: "%.3f")")
+            Text("eyes: \(eyesOverride ?? "nil")")
+
+            HStack(spacing: 8) {
+                Button("< Prev") {
+                    goBack()
+                }
+                .disabled(currentScreen.previous == nil)
+
+                Button("Skip >") {
+                    advanceScreen()
+                }
+
+                Button("-> WindPreset") {
+                    showBlob = true
+                    windProgress = 0
+                    eyesOverride = "neutral"
+                    visitedScreens = Set(OnboardingScreen.allCases)
+                    withAnimation {
+                        currentScreen = .windPreset
+                    }
+                }
+            }
+        }
+        .font(.caption.monospaced())
+        .padding(8)
+        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 8))
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
+        .padding(.top, 50)
+        .padding(.trailing, 8)
+    }
+    #endif
 }
 
 #if DEBUG

@@ -25,11 +25,11 @@ enum OnboardingScreen: Int, CaseIterable, Identifiable {
     // ACT 2: The Demo
     case windSlider = 5
     case lockDemo = 6
-    case notifications = 7
 
     // ACT 3: Setup
+    case windPreset = 7
     case evolution = 8
-    case windPreset = 9
+    case notifications = 9
     case namePet = 10
     case placePet = 11
 
@@ -38,8 +38,8 @@ enum OnboardingScreen: Int, CaseIterable, Identifiable {
     var act: OnboardingAct {
         switch self {
         case .island, .meetPet, .wind, .screenTimeData, .appSelection: .story
-        case .windSlider, .lockDemo, .notifications: .demo
-        case .evolution, .windPreset, .namePet, .placePet: .setup
+        case .windSlider, .lockDemo: .demo
+        case .evolution, .notifications, .windPreset, .namePet, .placePet: .setup
         }
     }
 
