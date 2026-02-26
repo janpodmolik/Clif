@@ -168,7 +168,7 @@ struct OnboardingLockStep: View {
         VStack(spacing: 12) {
             if skipAnimation {
                 Text("The wind stops. Uuumi is safe.")
-                Text("This isn't about willpower. It's about protecting something you care about.")
+                Text("You just proved you can do it.")
                 Text("When the wind rises, you can lock in and calm it.")
                     .font(AppFont.quicksand(.title2, weight: .semiBold))
                     .padding(.top, 12)
@@ -189,7 +189,7 @@ struct OnboardingLockStep: View {
                 )
 
                 TypewriterText(
-                    text: "This isn't about willpower. It's about protecting something you care about.",
+                    text: "You just proved you can do it.",
                     active: showPostLockLine2,
                     skipRequested: postLockBeat >= 2,
                     onCompleted: {
