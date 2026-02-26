@@ -48,8 +48,8 @@ struct OnboardingLockStep: View {
 
     private var windLabel: String {
         switch windLevel {
-        case .none: "A calm day."
-        case .low: "A little breezy..."
+        case .none: "All calm."
+        case .low: "A light breeze."
         case .medium: "Uuumi is struggling."
         case .high: "Too much. Uuumi can't hold on."
         }
