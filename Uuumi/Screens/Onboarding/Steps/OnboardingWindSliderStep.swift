@@ -17,6 +17,7 @@ struct OnboardingWindSliderStep: View {
     @State private var lastHapticLevel: WindLevel = .none
     @State private var selectionGenerator = UISelectionFeedbackGenerator()
     @State private var thumbPulsing = false
+    @State private var showSlider = false
     @State private var showDragHint = false
     @State private var dragHintPulsing = false
 
@@ -50,8 +51,11 @@ struct OnboardingWindSliderStep: View {
 
             Spacer()
 
-            sliderArea
-                .padding(.horizontal, 24)
+            if showSlider {
+                sliderArea
+                    .padding(.horizontal, 24)
+                    .transition(.opacity.combined(with: .move(edge: .bottom)))
+            }
 
             Spacer()
                 .frame(height: 16)
@@ -79,11 +83,15 @@ struct OnboardingWindSliderStep: View {
             if skipAnimation {
                 textCompleted = true
                 showSecondLine = true
+                showSlider = true
                 hasInteracted = true
             }
         }
         .onChange(of: textCompleted) { _, completed in
             if completed && !hasInteracted {
+                withAnimation(.easeOut(duration: 0.5)) {
+                    showSlider = true
+                }
                 withAnimation(.easeInOut(duration: 0.8).repeatForever(autoreverses: true)) {
                     thumbPulsing = true
                 }

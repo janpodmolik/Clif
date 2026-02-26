@@ -264,7 +264,6 @@ struct OnboardingView: View {
         VStack(alignment: .leading, spacing: 2) {
             Text("screen: \(currentScreen.title)")
             Text("wind: \(windProgress, specifier: "%.3f")")
-            Text("eyes: \(eyesOverride ?? "nil")")
 
             HStack(spacing: 8) {
                 Button("< Prev") {
