@@ -102,17 +102,11 @@ struct OnboardingIslandStep: View {
 
 #if DEBUG
 #Preview {
-    GeometryReader { geometry in
-        ZStack {
-            OnboardingBackgroundView()
-            IslandBase(screenHeight: geometry.size.height)
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
-                .ignoresSafeArea(.container, edges: .bottom)
-            OnboardingIslandStep(
-                skipAnimation: false,
-                onContinue: {}
-            )
-        }
+    OnboardingStepPreview(showBlob: false) { _, _, _ in
+        OnboardingIslandStep(
+            skipAnimation: false,
+            onContinue: {}
+        )
     }
 }
 #endif

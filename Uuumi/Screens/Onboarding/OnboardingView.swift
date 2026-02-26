@@ -45,7 +45,7 @@ struct OnboardingView: View {
                 progressIndicator
             }
         }
-        .gesture(swipeBackGesture, including: currentScreen == .screenTimeData || currentScreen == .windSlider ? .subviews : .all)
+        .gesture(swipeBackGesture, including: currentScreen == .screenTimeData || currentScreen == .windSlider || currentScreen == .lockDemo ? .subviews : .all)
     }
 
     // MARK: - Island Layer
@@ -114,6 +114,14 @@ struct OnboardingView: View {
                 eyesOverride: $eyesOverride
             )
 
+        case .lockDemo:
+            OnboardingLockStep(
+                skipAnimation: visitedScreens.contains(.lockDemo),
+                onContinue: advanceScreen,
+                windProgress: $windProgress,
+                eyesOverride: $eyesOverride
+            )
+
         default:
             nonStoryLayout
         }
@@ -160,7 +168,7 @@ struct OnboardingView: View {
 
     /// Screens that have dedicated step views (not placeholders).
     private static let implementedScreens: Set<OnboardingScreen> = [
-        .island, .meetPet, .wind, .screenTimeData, .windSlider,
+        .island, .meetPet, .wind, .screenTimeData, .windSlider, .lockDemo,
     ]
 
     private var nonStoryLayout: some View {
@@ -204,11 +212,11 @@ struct OnboardingView: View {
         case .meetPet:
             windProgress = 0
             eyesOverride = nil
-        case .screenTimeData:
-            windProgress = 0.15
-            eyesOverride = nil
         default:
-            break
+            if let wind = previous.initialWindProgress {
+                windProgress = wind
+                eyesOverride = WindLevel.from(progress: wind).eyes
+            }
         }
 
         withAnimation(.easeInOut(duration: 0.3)) {

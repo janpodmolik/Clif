@@ -7,12 +7,18 @@ struct OnboardingWindSliderStep: View {
     @Binding var windProgress: CGFloat
     @Binding var eyesOverride: String?
 
+    /// Minimum wind handed to the lock demo screen on disappear.
+    private let minHandoffWind: CGFloat = 0.6
+
     @State private var narrativeBeat = 0
     @State private var showSecondLine = false
     @State private var textCompleted = false
     @State private var hasInteracted = false
     @State private var lastHapticLevel: WindLevel = .none
     @State private var selectionGenerator = UISelectionFeedbackGenerator()
+    @State private var thumbPulsing = false
+    @State private var showDragHint = false
+    @State private var dragHintPulsing = false
 
     private var windLevel: WindLevel {
         WindLevel.from(progress: windProgress)
@@ -41,12 +47,6 @@ struct OnboardingWindSliderStep: View {
             narrative
                 .padding(.horizontal, 32)
                 .padding(.top, 60)
-                .contentShape(Rectangle())
-                .onTapGesture {
-                    guard !textCompleted, !skipAnimation else { return }
-                    HapticType.impactLight.trigger()
-                    narrativeBeat += 1
-                }
 
             Spacer()
 
@@ -61,21 +61,48 @@ struct OnboardingWindSliderStep: View {
                 .opacity(hasInteracted ? 1 : 0)
                 .animation(.easeOut(duration: 0.3), value: hasInteracted)
         }
+        .overlay {
+            if !textCompleted && !skipAnimation {
+                Color.clear
+                    .contentShape(Rectangle())
+                    .onTapGesture {
+                        HapticType.impactLight.trigger()
+                        narrativeBeat += 1
+                    }
+            }
+        }
         .onAppear {
+            let initial = OnboardingScreen.windSlider.initialWindProgress ?? 0.1
+            windProgress = initial
+            eyesOverride = WindLevel.from(progress: initial).eyes
+
             if skipAnimation {
                 textCompleted = true
                 showSecondLine = true
                 hasInteracted = true
-                windProgress = 0.5
-                eyesOverride = WindLevel.from(progress: 0.5).eyes
-            } else {
-                windProgress = 0
-                eyesOverride = "happy"
+            }
+        }
+        .onChange(of: textCompleted) { _, completed in
+            if completed && !hasInteracted {
+                withAnimation(.easeInOut(duration: 0.8).repeatForever(autoreverses: true)) {
+                    thumbPulsing = true
+                }
+                withAnimation(.easeOut(duration: 0.3)) {
+                    showDragHint = true
+                }
+                withAnimation(.easeInOut(duration: 0.8).repeatForever(autoreverses: true)) {
+                    dragHintPulsing = true
+                }
             }
         }
         .onDisappear {
-            windProgress = 0.6
-            eyesOverride = WindLevel.from(progress: 0.6).eyes
+            // Keep user's slider position if it already exceeds the lock demo's entry wind,
+            // otherwise ensure minimum medium wind for the lock demo screen
+            let lockEntryWind = OnboardingScreen.lockDemo.initialWindProgress ?? 0.7
+            if windProgress < lockEntryWind {
+                windProgress = minHandoffWind
+            }
+            eyesOverride = WindLevel.from(progress: windProgress).eyes
         }
         .onChange(of: windProgress) { _, newValue in
             eyesOverride = WindLevel.from(progress: newValue).eyes
@@ -165,12 +192,21 @@ struct OnboardingWindSliderStep: View {
                 .frame(width: max(trackHeight, thumbX), height: trackHeight)
                 .animation(.easeInOut(duration: 0.15), value: sliderColor)
 
-                // Thumb
-                Circle()
-                    .fill(.white)
-                    .frame(width: thumbSize, height: thumbSize)
-                    .shadow(color: .black.opacity(0.12), radius: 6, y: 2)
-                    .position(x: thumbX, y: geometry.size.height / 2)
+                // Thumb + drag hint
+                ZStack {
+                    Circle()
+                        .fill(.white)
+                        .frame(width: thumbSize, height: thumbSize)
+                        .scaleEffect(thumbPulsing ? 1.15 : 1.0)
+                        .shadow(color: .black.opacity(thumbPulsing ? 0.2 : 0.12), radius: thumbPulsing ? 8 : 6, y: 2)
+
+                    if showDragHint {
+                        dragHintOverlay
+                            .offset(y: -44)
+                            .transition(.opacity.animation(.easeOut(duration: 0.3)))
+                    }
+                }
+                .position(x: thumbX, y: geometry.size.height / 2)
             }
             .frame(height: thumbSize)
             .contentShape(Rectangle())
@@ -190,11 +226,26 @@ struct OnboardingWindSliderStep: View {
 
                         if !hasInteracted {
                             hasInteracted = true
+                            withAnimation(.easeOut(duration: 0.3)) {
+                                thumbPulsing = false
+                                showDragHint = false
+                            }
                         }
                     }
             )
         }
         .frame(height: 36)
+    }
+
+    // MARK: - Drag Hint
+
+    private var dragHintOverlay: some View {
+        Image(systemName: "hand.draw.fill")
+            .font(.title3)
+            .foregroundStyle(.primary)
+            .scaleEffect(dragHintPulsing ? 1.1 : 1.0)
+            .opacity(dragHintPulsing ? 1.0 : 0.5)
+            .allowsHitTesting(false)
     }
 
     // MARK: - Continue
@@ -260,31 +311,13 @@ private struct OnboardingWaveShape: Shape {
 
 #if DEBUG
 #Preview {
-    GeometryReader { geometry in
-        ZStack {
-            OnboardingBackgroundView()
-            WindLinesView(
-                windProgress: 0.5,
-                direction: 1.0,
-                windAreaTop: 0.08,
-                windAreaBottom: 0.42
-            )
-            .allowsHitTesting(false)
-            OnboardingIslandView(
-                screenHeight: geometry.size.height,
-                pet: Blob.shared,
-                windProgress: 0.5,
-                eyesOverride: "neutral"
-            )
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
-            .ignoresSafeArea(.container, edges: .bottom)
-            OnboardingWindSliderStep(
-                skipAnimation: false,
-                onContinue: {},
-                windProgress: .constant(0.5),
-                eyesOverride: .constant(nil)
-            )
-        }
+    OnboardingStepPreview(windProgress: 0.1, showWind: true) { _, windProgress, eyesOverride in
+        OnboardingWindSliderStep(
+            skipAnimation: false,
+            onContinue: {},
+            windProgress: windProgress,
+            eyesOverride: eyesOverride
+        )
     }
 }
 #endif

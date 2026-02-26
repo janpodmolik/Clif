@@ -100,28 +100,11 @@ struct OnboardingDataStep: View {
 
 #if DEBUG
 #Preview {
-    GeometryReader { geometry in
-        ZStack {
-            OnboardingBackgroundView()
-            WindLinesView(
-                windProgress: 0.15,
-                direction: 1.0,
-                windAreaTop: 0.08,
-                windAreaBottom: 0.42
-            )
-            .allowsHitTesting(false)
-            OnboardingIslandView(
-                screenHeight: geometry.size.height,
-                pet: Blob.shared,
-                windProgress: 0.15
-            )
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
-            .ignoresSafeArea(.container, edges: .bottom)
-            OnboardingDataStep(
-                skipAnimation: false,
-                onContinue: {}
-            )
-        }
+    OnboardingStepPreview(windProgress: 0.15, showWind: true) { _, _, _ in
+        OnboardingDataStep(
+            skipAnimation: false,
+            onContinue: {}
+        )
     }
 }
 #endif

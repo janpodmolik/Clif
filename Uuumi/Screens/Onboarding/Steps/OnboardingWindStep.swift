@@ -41,7 +41,7 @@ struct OnboardingWindStep: View {
             }
             .onAppear {
                 if skipAnimation {
-                    windProgress = 0.15
+                    windProgress = OnboardingScreen.wind.initialWindProgress ?? 0.15
                     eyesOverride = "neutral"
                     textCompleted = true
                     showSecondLine = true
@@ -94,7 +94,7 @@ struct OnboardingWindStep: View {
                     skipRequested: narrativeBeat >= 2,
                     onCompleted: {
                         withAnimation(.easeInOut(duration: skipped ? 0.5 : 1.0)) {
-                            windProgress = 0.15
+                            windProgress = OnboardingScreen.wind.initialWindProgress ?? 0.15
                         }
                         Task {
                             if narrativeBeat < 2 {
@@ -201,30 +201,13 @@ struct OnboardingWindStep: View {
 
 #if DEBUG
 #Preview {
-    GeometryReader { geometry in
-        ZStack {
-            OnboardingBackgroundView()
-            WindLinesView(
-                windProgress: 0.15,
-                direction: 1.0,
-                windAreaTop: 0.08,
-                windAreaBottom: 0.42
-            )
-            .allowsHitTesting(false)
-            OnboardingIslandView(
-                screenHeight: geometry.size.height,
-                pet: Blob.shared,
-                windProgress: 0.15
-            )
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
-            .ignoresSafeArea(.container, edges: .bottom)
-            OnboardingWindStep(
-                skipAnimation: false,
-                onContinue: {},
-                windProgress: .constant(0.15),
-                eyesOverride: .constant(nil)
-            )
-        }
+    OnboardingStepPreview(windProgress: 0.15, showWind: true) { _, windProgress, eyesOverride in
+        OnboardingWindStep(
+            skipAnimation: false,
+            onContinue: {},
+            windProgress: windProgress,
+            eyesOverride: eyesOverride
+        )
     }
 }
 #endif

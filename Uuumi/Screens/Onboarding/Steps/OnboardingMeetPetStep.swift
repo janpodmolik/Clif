@@ -166,26 +166,17 @@ struct OnboardingMeetPetStep: View {
 
 #if DEBUG
 #Preview {
-    GeometryReader { geometry in
-        ZStack {
-            OnboardingBackgroundView()
-            OnboardingIslandView(
-                screenHeight: geometry.size.height,
-                pet: Blob.shared
-            )
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
-            .ignoresSafeArea(.container, edges: .bottom)
-            OnboardingMeetPetStep(
-                screenHeight: geometry.size.height,
-                skipAnimation: false,
-                onContinue: {},
-                showBlob: .constant(true),
-                onPetTap: .constant(nil),
-                speechBubbleConfig: .constant(nil),
-                speechBubbleVisible: .constant(false),
-                showTapHint: .constant(false)
-            )
-        }
+    OnboardingStepPreview { geometry, _, _ in
+        OnboardingMeetPetStep(
+            screenHeight: geometry.size.height,
+            skipAnimation: false,
+            onContinue: {},
+            showBlob: .constant(true),
+            onPetTap: .constant(nil),
+            speechBubbleConfig: .constant(nil),
+            speechBubbleVisible: .constant(false),
+            showTapHint: .constant(false)
+        )
     }
 }
 #endif
