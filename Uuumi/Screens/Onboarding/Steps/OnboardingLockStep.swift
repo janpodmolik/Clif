@@ -81,11 +81,14 @@ struct OnboardingLockStep: View {
                 Spacer()
                     .frame(height: 16)
 
-                continueButton
-                    .padding(.horizontal, 24)
-                    .opacity(postLockTextCompleted && lockSettled ? 1 : 0)
-                    .animation(.easeOut(duration: 0.3), value: postLockTextCompleted)
-                    .animation(.easeOut(duration: 0.3), value: lockSettled)
+                VStack(spacing: 12) {
+                    lockInfo
+                    continueButton
+                }
+                .padding(.horizontal, 24)
+                .opacity(postLockTextCompleted && lockSettled ? 1 : 0)
+                .animation(.easeOut(duration: 0.3), value: postLockTextCompleted)
+                .animation(.easeOut(duration: 0.3), value: lockSettled)
             }
             .overlay {
                 lockButtonView
@@ -281,6 +284,18 @@ struct OnboardingLockStep: View {
                     }
             }
         }
+    }
+
+    // MARK: - Lock Info
+
+    private var lockInfo: some View {
+        Label {
+            Text("While locked, your selected apps won't open.")
+        } icon: {
+            Image(systemName: "lock.fill")
+        }
+        .font(AppFont.quicksand(.caption, weight: .medium))
+        .foregroundStyle(.secondary)
     }
 
     // MARK: - Continue Button

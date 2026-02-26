@@ -4,6 +4,7 @@ import SwiftUI
 struct OnboardingDataStep: View {
     let skipAnimation: Bool
     var onContinue: () -> Void
+    @Binding var eyesOverride: String?
 
     @State private var showReport = false
     @State private var showContinue = false
@@ -31,6 +32,8 @@ struct OnboardingDataStep: View {
             }
         }
             .onAppear {
+                eyesOverride = "neutral"
+
                 if skipAnimation {
                     showReport = true
                     showContinue = true
@@ -100,10 +103,11 @@ struct OnboardingDataStep: View {
 
 #if DEBUG
 #Preview {
-    OnboardingStepPreview(windProgress: 0.15, showWind: true) { _, _, _ in
+    OnboardingStepPreview(windProgress: 0.15, showWind: true) { _, _, eyesOverride in
         OnboardingDataStep(
             skipAnimation: false,
-            onContinue: {}
+            onContinue: {},
+            eyesOverride: eyesOverride
         )
     }
 }

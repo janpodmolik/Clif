@@ -103,7 +103,15 @@ struct OnboardingView: View {
         case .screenTimeData:
             OnboardingDataStep(
                 skipAnimation: visitedScreens.contains(.screenTimeData),
-                onContinue: advanceScreen
+                onContinue: advanceScreen,
+                eyesOverride: $eyesOverride
+            )
+
+        case .appSelection:
+            OnboardingAppSelectionStep(
+                skipAnimation: visitedScreens.contains(.appSelection),
+                onContinue: advanceScreen,
+                eyesOverride: $eyesOverride
             )
 
         case .windSlider:
@@ -168,7 +176,7 @@ struct OnboardingView: View {
 
     /// Screens that have dedicated step views (not placeholders).
     private static let implementedScreens: Set<OnboardingScreen> = [
-        .island, .meetPet, .wind, .screenTimeData, .windSlider, .lockDemo,
+        .island, .meetPet, .wind, .screenTimeData, .appSelection, .windSlider, .lockDemo,
     ]
 
     private var nonStoryLayout: some View {

@@ -20,23 +20,24 @@ enum OnboardingScreen: Int, CaseIterable, Identifiable {
     case meetPet = 1
     case wind = 2
     case screenTimeData = 3
+    case appSelection = 4
 
     // ACT 2: The Demo
-    case windSlider = 4
-    case lockDemo = 5
-    case notifications = 6
+    case windSlider = 5
+    case lockDemo = 6
+    case notifications = 7
 
     // ACT 3: Setup
-    case evolution = 7
-    case windPreset = 8
-    case namePet = 9
-    case placePet = 10
+    case evolution = 8
+    case windPreset = 9
+    case namePet = 10
+    case placePet = 11
 
     var id: Int { rawValue }
 
     var act: OnboardingAct {
         switch self {
-        case .island, .meetPet, .wind, .screenTimeData: .story
+        case .island, .meetPet, .wind, .screenTimeData, .appSelection: .story
         case .windSlider, .lockDemo, .notifications: .demo
         case .evolution, .windPreset, .namePet, .placePet: .setup
         }
@@ -48,6 +49,7 @@ enum OnboardingScreen: Int, CaseIterable, Identifiable {
         case .meetPet: "Meet Uuumi"
         case .wind: "The Wind"
         case .screenTimeData: "Screen Time"
+        case .appSelection: "Your Apps"
         case .windSlider: "Feel The Wind"
         case .lockDemo: "The Lock"
         case .notifications: "Notifications"
@@ -64,6 +66,7 @@ enum OnboardingScreen: Int, CaseIterable, Identifiable {
         case .meetPet: "Blob appears, user taps to interact"
         case .wind: "Wind mechanic intro + Screen Time permission"
         case .screenTimeData: "Screen time data reveal with horizontal app carousel"
+        case .appSelection: "Choose which apps create the wind"
         case .windSlider: "Interactive slider driving wind intensity"
         case .lockDemo: "Tap lock to stop the wind"
         case .notifications: "Mock notifications + permission prompt"

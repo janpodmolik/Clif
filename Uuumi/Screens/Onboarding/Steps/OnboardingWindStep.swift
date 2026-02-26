@@ -47,11 +47,6 @@ struct OnboardingWindStep: View {
                     showSecondLine = true
                     showThirdLine = true
                     showPermissionCTA = true
-
-                    if screenTimeManager.isAuthorized, !didAdvance {
-                        didAdvance = true
-                        onContinue()
-                    }
                 }
             }
             .onDisappear {
@@ -131,7 +126,21 @@ struct OnboardingWindStep: View {
         if showPermissionCTA && !screenTimeManager.isAuthorized {
             permissionCTAView
                 .transition(.opacity)
+        } else if showPermissionCTA && screenTimeManager.isAuthorized {
+            continueButton
+                .transition(.opacity)
         }
+    }
+
+    private var continueButton: some View {
+        Button {
+            HapticType.impactLight.trigger()
+            onContinue()
+        } label: {
+            Text("Continue")
+        }
+        .buttonStyle(.primary)
+        .padding(.horizontal, 24)
     }
 
     // MARK: - Permission CTA
