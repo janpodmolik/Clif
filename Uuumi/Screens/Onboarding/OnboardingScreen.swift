@@ -28,10 +28,11 @@ enum OnboardingScreen: Int, CaseIterable, Identifiable {
 
     // ACT 3: Setup
     case windPreset = 7
-    case evolution = 8
-    case notifications = 9
-    case namePet = 10
-    case placePet = 11
+    case essence = 8
+    case evolution = 9
+    case notifications = 10
+    case namePet = 11
+    case placePet = 12
 
     var id: Int { rawValue }
 
@@ -39,7 +40,7 @@ enum OnboardingScreen: Int, CaseIterable, Identifiable {
         switch self {
         case .island, .meetPet, .wind, .screenTimeData, .appSelection: .story
         case .windSlider, .lockDemo: .demo
-        case .evolution, .notifications, .windPreset, .namePet, .placePet: .setup
+        case .essence, .evolution, .notifications, .windPreset, .namePet, .placePet: .setup
         }
     }
 
@@ -52,6 +53,7 @@ enum OnboardingScreen: Int, CaseIterable, Identifiable {
         case .appSelection: "Your Apps"
         case .windSlider: "Feel The Wind"
         case .lockDemo: "The Lock"
+        case .essence: "Essence"
         case .notifications: "Notifications"
         case .evolution: "Evolution"
         case .windPreset: "Wind Preset"
@@ -69,8 +71,9 @@ enum OnboardingScreen: Int, CaseIterable, Identifiable {
         case .appSelection: "Choose which apps create the wind"
         case .windSlider: "Interactive slider driving wind intensity"
         case .lockDemo: "Tap lock to stop the wind"
+        case .essence: "Drag essence onto your pet"
         case .notifications: "Mock notifications + permission prompt"
-        case .evolution: "Evolution paths preview"
+        case .evolution: "Evolution narrative"
         case .windPreset: "Gentle / Balanced / Intense cards"
         case .namePet: "Text field for pet name"
         case .placePet: "Drag & drop blob onto island"
@@ -86,6 +89,7 @@ enum OnboardingScreen: Int, CaseIterable, Identifiable {
         case .wind, .screenTimeData: 0.15
         case .windSlider: 0.1
         case .lockDemo: 0.7
+        case .windPreset, .essence, .evolution: 0
         default: nil
         }
     }

@@ -18,6 +18,12 @@ struct OnboardingView: View {
     @State private var speechBubbleVisible = false
     @State private var showTapHint = false
 
+    // Essence step state — drop zone + reaction
+    @State private var showDropZone = false
+    @State private var isOnTarget = false
+    @State private var petDropFrame: CGRect? = nil
+    @State private var petReactionTrigger: UUID?
+
     var body: some View {
         GeometryReader { geometry in
             ZStack {
@@ -45,8 +51,8 @@ struct OnboardingView: View {
                 progressIndicator
 
                 #if DEBUG
-                // Debug overlay — shows binding values to diagnose eye cycling bug
                 debugOverlay
+                    .offset(y: 200)
                 #endif
             }
         }
@@ -68,7 +74,11 @@ struct OnboardingView: View {
             speechBubbleConfig: speechBubbleConfig,
             speechBubbleVisible: speechBubbleVisible,
             onPetTap: onPetTap,
-            showTapHint: showTapHint
+            showTapHint: showTapHint,
+            showDropZone: showDropZone,
+            isOnTarget: isOnTarget,
+            onPetFrameChange: { petDropFrame = $0 },
+            reactionTrigger: petReactionTrigger
         )
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
         .ignoresSafeArea(.container, edges: .bottom)
@@ -143,6 +153,25 @@ struct OnboardingView: View {
                 eyesOverride: $eyesOverride
             )
 
+        case .essence:
+            OnboardingEssenceStep(
+                skipAnimation: visitedScreens.contains(.essence),
+                onContinue: advanceScreen,
+                windProgress: $windProgress,
+                eyesOverride: $eyesOverride,
+                showDropZone: $showDropZone,
+                isOnTarget: $isOnTarget,
+                reactionTrigger: $petReactionTrigger,
+                petDropFrame: petDropFrame
+            )
+
+        case .evolution:
+            OnboardingEvolutionStep(
+                skipAnimation: visitedScreens.contains(.evolution),
+                onContinue: advanceScreen,
+                eyesOverride: $eyesOverride
+            )
+
         default:
             nonStoryLayout
         }
@@ -189,7 +218,7 @@ struct OnboardingView: View {
 
     /// Screens that have dedicated step views (not placeholders).
     private static let implementedScreens: Set<OnboardingScreen> = [
-        .island, .meetPet, .wind, .screenTimeData, .appSelection, .windSlider, .lockDemo, .windPreset,
+        .island, .meetPet, .wind, .screenTimeData, .appSelection, .windSlider, .lockDemo, .windPreset, .essence, .evolution,
     ]
 
     private var nonStoryLayout: some View {

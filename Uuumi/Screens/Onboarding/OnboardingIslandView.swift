@@ -13,6 +13,12 @@ struct OnboardingIslandView: View {
     var onPetTap: (() -> Void)? = nil
     var showTapHint: Bool = false
 
+    // Essence step — drop zone + reaction
+    var showDropZone: Bool = false
+    var isOnTarget: Bool = false
+    var onPetFrameChange: ((CGRect) -> Void)? = nil
+    var reactionTrigger: UUID?
+
     // Pet animation state
     @State private var reactionStartTime: TimeInterval = -1
     @State private var currentTapType: PetReactionType = .none
@@ -56,6 +62,11 @@ struct OnboardingIslandView: View {
 
     private var petContent: some View {
         ZStack {
+            if showDropZone {
+                dropZoneLayer
+                    .transition(.opacity)
+            }
+
             petImageView
                 .overlay(alignment: .top) {
                     if showTapHint {
@@ -73,6 +84,29 @@ struct OnboardingIslandView: View {
         }
         .padding(.top, petHeight * 0.6)
         .offset(y: petOffset)
+    }
+
+    private var dropZoneLayer: some View {
+        Image(pet.bodyAssetName(for: windLevel))
+            .resizable()
+            .scaledToFit()
+            .frame(height: petHeight * pet.displayScale)
+            .opacity(0)
+            .overlay {
+                PetDropZone(isOnTarget: isOnTarget)
+            }
+            .background {
+                GeometryReader { proxy in
+                    Color.clear
+                        .onChange(of: proxy.frame(in: .global)) { _, newFrame in
+                            onPetFrameChange?(newFrame)
+                        }
+                        .onAppear {
+                            onPetFrameChange?(proxy.frame(in: .global))
+                        }
+                }
+            }
+            .frame(height: petHeight, alignment: .bottom)
     }
 
     private var tapHintOverlay: some View {
@@ -126,6 +160,11 @@ struct OnboardingIslandView: View {
         .onTapGesture {
             handleTap()
         }
+        .onChange(of: reactionTrigger) {
+            if reactionTrigger != nil {
+                triggerReaction(.bounce)
+            }
+        }
     }
 
     // MARK: - Actions
@@ -135,16 +174,18 @@ struct OnboardingIslandView: View {
         lastTapTime = Date()
 
         let type: PetReactionType = [.wiggle, .squeeze, .jiggle, .bounce].randomElement() ?? .wiggle
-        let config = pet.reactionConfig(for: type)
+        triggerReaction(type)
+        onPetTap?()
+    }
 
+    private func triggerReaction(_ type: PetReactionType) {
+        let config = pet.reactionConfig(for: type)
         currentTapType = type
         currentReactionConfig = config
         reactionStartTime = Date().timeIntervalSinceReferenceDate
 
         let generator = UIImpactFeedbackGenerator(style: type.hapticStyle)
         generator.impactOccurred()
-
-        onPetTap?()
     }
 }
 
