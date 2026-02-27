@@ -4,6 +4,7 @@ struct OnboardingEvolutionStep: View {
     let skipAnimation: Bool
     var onContinue: () -> Void
     @Binding var eyesOverride: String?
+    @Binding var showThoughtBubble: Bool
 
     @State private var narrativeBeat = 0
     @State private var showSecondLine = false
@@ -37,6 +38,7 @@ struct OnboardingEvolutionStep: View {
         }
         .animation(.easeOut(duration: 0.3), value: showButton)
         .onAppear { handleAppear() }
+        .onDisappear { handleDisappear() }
     }
 
     // MARK: - Narrative
@@ -70,6 +72,7 @@ struct OnboardingEvolutionStep: View {
                     skipRequested: narrativeBeat >= 2,
                     onCompleted: {
                         textCompleted = true
+                        showThoughtBubble = true
                         Task {
                             try? await Task.sleep(for: .seconds(0.3))
                             withAnimation { showButton = true }
@@ -91,6 +94,7 @@ struct OnboardingEvolutionStep: View {
     private var continueButton: some View {
         Button {
             HapticType.impactLight.trigger()
+            showThoughtBubble = false
             onContinue()
         } label: {
             Text("Continue")
@@ -107,17 +111,23 @@ struct OnboardingEvolutionStep: View {
             showSecondLine = true
             textCompleted = true
             showButton = true
+            showThoughtBubble = true
         }
+    }
+
+    private func handleDisappear() {
+        showThoughtBubble = false
     }
 }
 
 #if DEBUG
 #Preview {
-    OnboardingStepPreview(showBlob: true, showWind: false) { _, _, eyesOverride in
+    OnboardingStepPreview(showBlob: true, showWind: false) { _, _, eyesOverride, showThoughtBubble in
         OnboardingEvolutionStep(
             skipAnimation: false,
             onContinue: {},
-            eyesOverride: eyesOverride
+            eyesOverride: eyesOverride,
+            showThoughtBubble: showThoughtBubble
         )
     }
 }

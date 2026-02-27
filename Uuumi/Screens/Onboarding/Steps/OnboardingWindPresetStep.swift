@@ -240,7 +240,7 @@ private struct PresetCard: View {
 
 #if DEBUG
 #Preview {
-    OnboardingStepPreview(showBlob: true, showWind: false) { _, windProgress, eyesOverride in
+    OnboardingStepPreview(showBlob: true, showWind: false) { _, windProgress, eyesOverride, _ in
         OnboardingWindPresetStep(
             skipAnimation: false,
             onContinue: {},

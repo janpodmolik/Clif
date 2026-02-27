@@ -208,7 +208,7 @@ struct OnboardingWindStep: View {
 
 #if DEBUG
 #Preview {
-    OnboardingStepPreview(windProgress: 0.15, showWind: true) { _, windProgress, eyesOverride in
+    OnboardingStepPreview(windProgress: 0.15, showWind: true) { _, windProgress, eyesOverride, _ in
         OnboardingWindStep(
             skipAnimation: false,
             onContinue: {},

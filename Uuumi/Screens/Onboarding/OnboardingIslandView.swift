@@ -19,6 +19,9 @@ struct OnboardingIslandView: View {
     var onPetFrameChange: ((CGRect) -> Void)? = nil
     var reactionTrigger: UUID?
 
+    // Evolution step — thought bubble
+    var showThoughtBubble: Bool = false
+
     // Pet animation state
     @State private var reactionStartTime: TimeInterval = -1
     @State private var currentTapType: PetReactionType = .none
@@ -79,6 +82,11 @@ struct OnboardingIslandView: View {
             SpeechBubbleView(
                 config: speechBubbleConfig ?? .default,
                 isVisible: speechBubbleVisible,
+                petTransform: petTransform
+            )
+
+            ThoughtBubbleView(
+                isVisible: showThoughtBubble,
                 petTransform: petTransform
             )
         }

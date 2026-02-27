@@ -7,10 +7,11 @@ struct OnboardingStepPreview<Content: View>: View {
     @State var windProgress: CGFloat
     @State var eyesOverride: String?
     @State var showBlob: Bool
+    @State var showThoughtBubble: Bool
 
     let showWind: Bool
     let showIsland: Bool
-    let content: (GeometryProxy, Binding<CGFloat>, Binding<String?>) -> Content
+    let content: (GeometryProxy, Binding<CGFloat>, Binding<String?>, Binding<Bool>) -> Content
 
     init(
         windProgress: CGFloat = 0,
@@ -18,11 +19,13 @@ struct OnboardingStepPreview<Content: View>: View {
         showBlob: Bool = true,
         showWind: Bool = false,
         showIsland: Bool = true,
-        @ViewBuilder content: @escaping (GeometryProxy, Binding<CGFloat>, Binding<String?>) -> Content
+        showThoughtBubble: Bool = false,
+        @ViewBuilder content: @escaping (GeometryProxy, Binding<CGFloat>, Binding<String?>, Binding<Bool>) -> Content
     ) {
         self._windProgress = State(initialValue: windProgress)
         self._eyesOverride = State(initialValue: eyesOverride)
         self._showBlob = State(initialValue: showBlob)
+        self._showThoughtBubble = State(initialValue: showThoughtBubble)
         self.showWind = showWind
         self.showIsland = showIsland
         self.content = content
@@ -49,13 +52,14 @@ struct OnboardingStepPreview<Content: View>: View {
                         pet: Blob.shared,
                         petOpacity: showBlob ? 1.0 : 0.0,
                         windProgress: windProgress,
-                        eyesOverride: eyesOverride
+                        eyesOverride: eyesOverride,
+                        showThoughtBubble: showThoughtBubble
                     )
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
                     .ignoresSafeArea(.container, edges: .bottom)
                 }
 
-                content(geometry, $windProgress, $eyesOverride)
+                content(geometry, $windProgress, $eyesOverride, $showThoughtBubble)
             }
         }
     }

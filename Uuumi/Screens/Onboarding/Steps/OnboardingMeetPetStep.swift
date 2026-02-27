@@ -166,7 +166,7 @@ struct OnboardingMeetPetStep: View {
 
 #if DEBUG
 #Preview {
-    OnboardingStepPreview { geometry, _, _ in
+    OnboardingStepPreview { geometry, _, _, _ in
         OnboardingMeetPetStep(
             screenHeight: geometry.size.height,
             skipAnimation: false,

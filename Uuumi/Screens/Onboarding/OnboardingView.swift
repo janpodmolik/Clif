@@ -24,6 +24,9 @@ struct OnboardingView: View {
     @State private var petDropFrame: CGRect? = nil
     @State private var petReactionTrigger: UUID?
 
+    // Evolution step state — thought bubble
+    @State private var showThoughtBubble = false
+
     var body: some View {
         GeometryReader { geometry in
             ZStack {
@@ -52,7 +55,7 @@ struct OnboardingView: View {
 
                 #if DEBUG
                 debugOverlay
-                    .offset(y: 200)
+                    .offset(y: 600)
                 #endif
             }
         }
@@ -78,7 +81,8 @@ struct OnboardingView: View {
             showDropZone: showDropZone,
             isOnTarget: isOnTarget,
             onPetFrameChange: { petDropFrame = $0 },
-            reactionTrigger: petReactionTrigger
+            reactionTrigger: petReactionTrigger,
+            showThoughtBubble: showThoughtBubble
         )
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
         .ignoresSafeArea(.container, edges: .bottom)
@@ -169,7 +173,8 @@ struct OnboardingView: View {
             OnboardingEvolutionStep(
                 skipAnimation: visitedScreens.contains(.evolution),
                 onContinue: advanceScreen,
-                eyesOverride: $eyesOverride
+                eyesOverride: $eyesOverride,
+                showThoughtBubble: $showThoughtBubble
             )
 
         default:

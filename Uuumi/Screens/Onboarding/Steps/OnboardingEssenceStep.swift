@@ -258,7 +258,7 @@ struct OnboardingEssenceStep: View {
 
 #if DEBUG
 #Preview {
-    OnboardingStepPreview(showBlob: true, showWind: false) { _, windProgress, eyesOverride in
+    OnboardingStepPreview(showBlob: true, showWind: false) { _, windProgress, eyesOverride, _ in
         OnboardingEssenceStep(
             skipAnimation: false,
             onContinue: {},

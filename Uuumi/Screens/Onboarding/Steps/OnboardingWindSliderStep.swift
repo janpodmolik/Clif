@@ -319,7 +319,7 @@ private struct OnboardingWaveShape: Shape {
 
 #if DEBUG
 #Preview {
-    OnboardingStepPreview(windProgress: 0.1, showWind: true) { _, windProgress, eyesOverride in
+    OnboardingStepPreview(windProgress: 0.1, showWind: true) { _, windProgress, eyesOverride, _ in
         OnboardingWindSliderStep(
             skipAnimation: false,
             onContinue: {},

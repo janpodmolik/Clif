@@ -103,7 +103,7 @@ struct OnboardingDataStep: View {
 
 #if DEBUG
 #Preview {
-    OnboardingStepPreview(windProgress: 0.15, showWind: true) { _, _, eyesOverride in
+    OnboardingStepPreview(windProgress: 0.15, showWind: true) { _, _, eyesOverride, _ in
         OnboardingDataStep(
             skipAnimation: false,
             onContinue: {},

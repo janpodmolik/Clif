@@ -102,7 +102,7 @@ struct OnboardingIslandStep: View {
 
 #if DEBUG
 #Preview {
-    OnboardingStepPreview(showBlob: false) { _, _, _ in
+    OnboardingStepPreview(showBlob: false) { _, _, _, _ in
         OnboardingIslandStep(
             skipAnimation: false,
             onContinue: {}

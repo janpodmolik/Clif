@@ -249,7 +249,7 @@ struct OnboardingAppSelectionStep: View {
 
 #if DEBUG
 #Preview {
-    OnboardingStepPreview(showBlob: true, showWind: false) { _, _, eyesOverride in
+    OnboardingStepPreview(showBlob: true, showWind: false) { _, _, eyesOverride, _ in
         OnboardingAppSelectionStep(
             skipAnimation: false,
             onContinue: {},
