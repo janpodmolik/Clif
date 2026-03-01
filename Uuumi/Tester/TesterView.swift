@@ -11,9 +11,14 @@ struct TesterView: View {
     @State private var recoverMinutes = TesterConfig.minutesToRecover
     @State private var refreshTick = 0
 
+    @AppStorage(DefaultsKeys.hasCompletedOnboarding)
+    private var hasCompletedOnboarding = false
+
     var body: some View {
         NavigationStack {
             List {
+                onboardingSection
+
                 if let pet = petManager.currentPet {
                     evolutionSection(pet)
                     windOverrideSection
@@ -32,6 +37,19 @@ struct TesterView: View {
                     Button("Done") { dismiss() }
                 }
             }
+        }
+    }
+
+    // MARK: - Onboarding
+
+    private var onboardingSection: some View {
+        Section {
+            Button("Restart Onboarding") {
+                hasCompletedOnboarding = false
+                dismiss()
+            }
+        } header: {
+            Text("Onboarding")
         }
     }
 

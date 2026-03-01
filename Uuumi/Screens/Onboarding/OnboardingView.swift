@@ -177,6 +177,15 @@ struct OnboardingView: View {
                 showThoughtBubble: $showThoughtBubble
             )
 
+        case .notifications:
+            OnboardingNotificationStep(
+                skipAnimation: visitedScreens.contains(.notifications),
+                onContinue: advanceScreen,
+                eyesOverride: $eyesOverride,
+                speechBubbleConfig: $speechBubbleConfig,
+                speechBubbleVisible: $speechBubbleVisible
+            )
+
         default:
             nonStoryLayout
         }
@@ -223,7 +232,7 @@ struct OnboardingView: View {
 
     /// Screens that have dedicated step views (not placeholders).
     private static let implementedScreens: Set<OnboardingScreen> = [
-        .island, .meetPet, .wind, .screenTimeData, .appSelection, .windSlider, .lockDemo, .windPreset, .essence, .evolution,
+        .island, .meetPet, .wind, .screenTimeData, .appSelection, .windSlider, .lockDemo, .windPreset, .essence, .evolution, .notifications,
     ]
 
     private var nonStoryLayout: some View {
