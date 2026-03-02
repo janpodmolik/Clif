@@ -64,6 +64,7 @@ struct ContentView: View {
             mainContent
         } else {
             OnboardingView()
+                .ignoresSafeArea(.keyboard)
                 .preferredColorScheme(resolvedColorScheme)
         }
     }
