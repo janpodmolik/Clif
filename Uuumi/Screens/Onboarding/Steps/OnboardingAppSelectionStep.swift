@@ -170,14 +170,18 @@ struct OnboardingAppSelectionStep: View {
             }
             .navigationTitle("Select apps to limit")
             .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button("Done") {
-                        showPickerSheet = false
-                    }
-                    .fontWeight(.semibold)
-                    .disabled(!hasSelection)
+            .dismissButton()
+            .safeAreaInset(edge: .bottom) {
+                Button {
+                    HapticType.impactLight.trigger()
+                    showPickerSheet = false
+                } label: {
+                    Text("Confirm")
                 }
+                .buttonStyle(.primary)
+                .disabled(!hasSelection)
+                .padding(.horizontal, 24)
+                .padding(.bottom, 16)
             }
         }
     }
