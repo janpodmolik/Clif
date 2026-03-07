@@ -28,6 +28,7 @@ struct OnboardingMeetPetStep: View {
                 if hasBeenTapped {
                     continueButton
                         .padding(.horizontal, 24)
+                        .padding(.bottom, 16)
                         .transition(.opacity)
                 }
             }

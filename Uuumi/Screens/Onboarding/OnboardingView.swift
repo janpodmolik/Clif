@@ -55,7 +55,7 @@ struct OnboardingView: View {
 
                 #if DEBUG
                 debugOverlay
-                    .offset(y: 500)
+                    .offset(y: 100)
                 #endif
             }
         }

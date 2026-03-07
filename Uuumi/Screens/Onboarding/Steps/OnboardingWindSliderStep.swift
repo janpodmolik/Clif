@@ -62,6 +62,7 @@ struct OnboardingWindSliderStep: View {
 
             continueButton
                 .padding(.horizontal, 24)
+                .padding(.bottom, 16)
                 .opacity(hasInteracted ? 1 : 0)
                 .animation(.easeOut(duration: 0.3), value: hasInteracted)
         }

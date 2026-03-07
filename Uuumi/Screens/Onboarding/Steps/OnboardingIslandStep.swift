@@ -20,6 +20,7 @@ struct OnboardingIslandStep: View {
                 if textCompleted || skipAnimation {
                     continueButton
                         .padding(.horizontal, 24)
+                        .padding(.bottom, 16)
                         .transition(.opacity)
                 }
             }

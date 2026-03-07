@@ -28,6 +28,7 @@ struct OnboardingWindStep: View {
             .overlay(alignment: .bottom) {
                 bottomArea
                     .padding(.horizontal, 24)
+                    .padding(.bottom, 16)
             }
             .overlay {
                 if !textCompleted && !skipAnimation {

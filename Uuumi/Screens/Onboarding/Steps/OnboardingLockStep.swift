@@ -88,6 +88,7 @@ struct OnboardingLockStep: View {
                     continueButton
                 }
                 .padding(.horizontal, 24)
+                .padding(.bottom, 16)
                 .opacity(postLockTextCompleted && lockSettled ? 1 : 0)
                 .animation(.easeOut(duration: 0.3), value: postLockTextCompleted)
                 .animation(.easeOut(duration: 0.3), value: lockSettled)
