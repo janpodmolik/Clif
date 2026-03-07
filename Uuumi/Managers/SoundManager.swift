@@ -5,7 +5,10 @@ final class SoundManager {
 
     private var players: [SoundEffect: AVAudioPlayer] = [:]
 
+    private let volume: Float = 0.5
+
     private init() {
+        configureAudioSession()
         preload()
     }
 
@@ -28,6 +31,16 @@ final class SoundManager {
         players[effect]?.stop()
     }
 
+    private func configureAudioSession() {
+        do {
+            try AVAudioSession.sharedInstance().setCategory(.ambient)
+        } catch {
+            #if DEBUG
+            print("[SoundManager] Failed to configure audio session: \(error)")
+            #endif
+        }
+    }
+
     private func preload() {
         for effect in SoundEffect.allCases {
             guard let url = Bundle.main.url(forResource: effect.rawValue, withExtension: effect.fileExtension) else {
@@ -38,6 +51,7 @@ final class SoundManager {
             }
             do {
                 let player = try AVAudioPlayer(contentsOf: url)
+                player.volume = volume
                 player.prepareToPlay()
                 players[effect] = player
             } catch {
