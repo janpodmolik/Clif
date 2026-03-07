@@ -55,7 +55,7 @@ struct OnboardingView: View {
 
                 #if DEBUG
                 debugOverlay
-                    .offset(y: 600)
+                    .offset(y: 500)
                 #endif
             }
         }
@@ -349,5 +349,6 @@ struct OnboardingView: View {
 #if DEBUG
 #Preview {
     OnboardingView()
+        .environment(PetManager())
 }
 #endif
