@@ -43,19 +43,6 @@ struct EvolutionTransitionView: View {
                 let particleOverscan = particleOverscanScale(for: size)
 
                 ZStack {
-                    if glowOpacity > 0 {
-                        backgroundGlow(size: size)
-                            .opacity(glowOpacity)
-                            .blendMode(.screen)
-                    }
-
-                    if shockwave.opacity > 0 {
-                        shockwaveRing(size: size)
-                            .scaleEffect(shockwave.scale)
-                            .opacity(shockwave.opacity)
-                            .blendMode(.screen)
-                    }
-
                     // Old pet (fading out) - hide after flash completes
                     if progress < config.oldImageHidePoint() {
                         petImage(
@@ -102,8 +89,18 @@ struct EvolutionTransitionView: View {
                         .blendMode(.screen)
                     }
                 }
-                .scaleEffect(cameraScale)
-                .offset(shakeOffset)
+                .background {
+                    // Glow + shockwave in background so they don't affect ZStack layout sizing
+                    backgroundGlow(size: size)
+                        .opacity(glowOpacity)
+                        .blendMode(.screen)
+                }
+                .background {
+                    shockwaveRing(size: size)
+                        .scaleEffect(shockwave.scale)
+                        .opacity(shockwave.opacity)
+                        .blendMode(.screen)
+                }
                 .preference(key: CameraTransformPreferenceKey.self, value: currentTransform)
                 .onChange(of: progress >= squashStartPoint()) { _, reached in
                     if reached && !hasTriggeredSustainedHaptic {

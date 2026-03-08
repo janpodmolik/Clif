@@ -289,7 +289,7 @@ struct IslandView<TransitionContent: View>: View {
 
             if isEvolutionTransitioning {
                 transitionContent
-                    .frame(width: transitionFrameSize.width, height: transitionFrameSize.height)
+                    .frame(height: petHeight)
                     .allowsHitTesting(false)
             }
         }
