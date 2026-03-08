@@ -1,8 +1,11 @@
 import SwiftUI
+import UserNotifications
 
 struct NotificationSettingsScreen: View {
     @Environment(PetManager.self) private var petManager
+    @Environment(\.scenePhase) private var scenePhase
     @State private var limitSettings = SharedDefaults.limitSettings
+    @State private var systemNotificationsEnabled = true
 
     private var notifications: Binding<NotificationSettings> {
         $limitSettings.notifications
@@ -14,6 +17,33 @@ struct NotificationSettingsScreen: View {
 
     var body: some View {
         Form {
+            if !systemNotificationsEnabled {
+                Section {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Label {
+                            Text("Notifikace jsou vypnuté v systému")
+                                .font(AppFont.quicksand(.subheadline, weight: .semiBold))
+                        } icon: {
+                            Image(systemName: "bell.slash.fill")
+                                .foregroundStyle(.orange)
+                        }
+
+                        Text("Pro příjem notifikací je zapni v Nastavení.")
+                            .font(AppFont.quicksand(.caption, weight: .medium))
+                            .foregroundStyle(.secondary)
+
+                        Button("Otevřít Nastavení") {
+                            if let url = URL(string: UIApplication.openSettingsURLString) {
+                                UIApplication.shared.open(url)
+                            }
+                        }
+                        .font(AppFont.quicksand(.subheadline, weight: .semiBold))
+                        .padding(.top, 4)
+                    }
+                    .padding(.vertical, 4)
+                }
+            }
+
             Section {
                 Toggle("Notifikace", isOn: notifications.masterEnabled)
                     .tint(.blue)
@@ -110,6 +140,12 @@ struct NotificationSettingsScreen: View {
         }
         .navigationTitle("Notifikace")
         .navigationBarTitleDisplayMode(.inline)
+        .task { await checkNotificationStatus() }
+        .onChange(of: scenePhase) {
+            if scenePhase == .active {
+                Task { await checkNotificationStatus() }
+            }
+        }
         .onChange(of: limitSettings) { _, newValue in
             SharedDefaults.limitSettings = newValue
 
@@ -118,6 +154,16 @@ struct NotificationSettingsScreen: View {
                 hasPet: petManager.hasPet,
                 nextEvolutionUnlockDate: petManager.currentPet?.evolutionHistory.nextEvolutionUnlockDate
             )
+        }
+    }
+
+    // MARK: - Notification Status
+
+    private func checkNotificationStatus() async {
+        let settings = await UNUserNotificationCenter.current().notificationSettings()
+        let enabled = settings.authorizationStatus == .authorized
+        if systemNotificationsEnabled != enabled {
+            systemNotificationsEnabled = enabled
         }
     }
 
