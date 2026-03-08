@@ -24,7 +24,7 @@ extension EvolutionPath {
     static func path(for essence: Essence) -> EvolutionPath {
         switch essence {
         case .plant: return .plant
-        case .owl: return .owl
+        case .troll: return .troll
         }
     }
 }
@@ -45,21 +45,20 @@ extension EvolutionPath {
     )
 }
 
-// MARK: - Owl Evolution Path
+// MARK: - Troll Evolution Path
 
 extension EvolutionPath {
-    static let owl = EvolutionPath(
-        id: "owl",
-        displayName: "Owl",
-        themeColor: .green,
+    static let troll = EvolutionPath(
+        id: "troll",
+        displayName: "Troll",
+        themeColor: .purple,
         phases: [
-            EvolutionPhase(phaseNumber: 1, evolutionId: "owl", displayScale: 0.75, idleConfig: .default),
-            EvolutionPhase(phaseNumber: 2, evolutionId: "owl", displayScale: 0.80, idleConfig: .default),
-            EvolutionPhase(phaseNumber: 3, evolutionId: "owl", displayScale: 0.85, idleConfig: .default),
-            EvolutionPhase(phaseNumber: 4, evolutionId: "owl", displayScale: 1.00, idleConfig: .default),
-            EvolutionPhase(phaseNumber: 5, evolutionId: "owl", displayScale: 1.15, idleConfig: .default),
-            EvolutionPhase(phaseNumber: 6, evolutionId: "owl", displayScale: 1.20, idleConfig: .default),
-            EvolutionPhase(phaseNumber: 7, evolutionId: "owl", displayScale: 1.40, idleConfig: .default),
+            EvolutionPhase(phaseNumber: 1, evolutionId: "troll", displayScale: 0.80, idleConfig: .default),
+            EvolutionPhase(phaseNumber: 2, evolutionId: "troll", displayScale: 0.80, idleConfig: .default),
+            EvolutionPhase(phaseNumber: 3, evolutionId: "troll", displayScale: 0.80, idleConfig: .default),
+            EvolutionPhase(phaseNumber: 4, evolutionId: "troll", displayScale: 0.84, idleConfig: .default),
+            EvolutionPhase(phaseNumber: 5, evolutionId: "troll", displayScale: 1.10, idleConfig: .default),
+            EvolutionPhase(phaseNumber: 6, evolutionId: "troll", displayScale: 1.25, idleConfig: .default),
         ]
     )
 }

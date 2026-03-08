@@ -10,7 +10,7 @@ enum Essence: String, Codable, CaseIterable, Transferable {
     }
 
     case plant
-    case owl
+    case troll
     // Future: crystal, flame, water
 
     /// Essences unlocked by default for all users.
@@ -26,14 +26,14 @@ enum Essence: String, Codable, CaseIterable, Transferable {
     var catalogDescription: String {
         switch self {
         case .plant: return "Cesta růstu a klidu. Tvůj pet se vyvíjí jako rostlina."
-        case .owl: return "Cesta moudrosti a noci. Tvůj pet se vyvíjí jako sova."
+        case .troll: return "Cesta síly a odvahy. Tvůj pet se vyvíjí jako troll."
         }
     }
 
     var rarity: EssenceRarity {
         switch self {
         case .plant: return .common
-        case .owl: return .rare
+        case .troll: return .rare
         }
     }
 }

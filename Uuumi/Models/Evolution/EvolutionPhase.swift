@@ -16,7 +16,7 @@ struct EvolutionPhase: Hashable {
     }
 
     func blownAwayEyesAssetName() -> String {
-        "evolutions/\(evolutionId)/\(phaseNumber)/eyes/sad"
+        "evolutions/\(evolutionId)/\(phaseNumber)/eyes/scared"
     }
 
     func reactionConfig(for type: PetReactionType) -> ReactionConfig {

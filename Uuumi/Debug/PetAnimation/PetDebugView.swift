@@ -85,13 +85,13 @@ struct PetDebugView: View {
     enum EvolutionTypeOption: String, CaseIterable {
         case blob = "Blob"
         case plant = "Plant"
-        case owl = "Owl"
+        case troll = "Troll"
 
         var evolutionPath: EvolutionPath? {
             switch self {
             case .blob: return nil
             case .plant: return .plant
-            case .owl: return .owl
+            case .troll: return .troll
             }
         }
 
