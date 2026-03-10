@@ -272,7 +272,7 @@ struct EssenceFilterSheet: View {
 
                             if selection.contains(essence) {
                                 Image(systemName: "checkmark.circle.fill")
-                                    .foregroundStyle(path.themeColor)
+                                    .foregroundStyle(.green)
                             } else {
                                 Image(systemName: "circle")
                                     .foregroundStyle(.secondary)

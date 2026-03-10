@@ -19,10 +19,6 @@ struct PetDetailScreen: View {
     @State private var showWindNotCalmAlert = false
     @State private var showBreakTypePicker = false
 
-    private var themeColor: Color {
-        pet.themeColor
-    }
-
     /// canUseEssence for blob, canEvolve for evolved
     private var canProgress: Bool {
         pet.isBlob ? pet.canUseEssence : pet.canEvolve
@@ -109,8 +105,7 @@ struct PetDetailScreen: View {
 
                     if showOverviewActions {
                         OverviewPetActionsCard(
-                            isBlownAway: pet.isBlown,
-                            themeColor: themeColor
+                            isBlownAway: pet.isBlown
                         ) { action in
                             switch action {
                             case .delete: showDeleteConfirmation = true
@@ -124,8 +119,7 @@ struct PetDetailScreen: View {
                             isFullyEvolved: pet.isFullyEvolved && !pet.isBlown,
                             canProgress: canProgress,
                             canArchiveEarly: canArchiveEarly,
-                            isBlownAway: pet.isBlown,
-                            themeColor: themeColor
+                            isBlownAway: pet.isBlown
                         ) { action in
                             switch action {
                             case .progress:
@@ -193,7 +187,6 @@ struct PetDetailScreen: View {
             .sheet(isPresented: $showArchiveConfirmation) {
                 SuccessArchiveSheet(
                     petName: pet.name,
-                    themeColor: themeColor,
                     onArchive: {
                         onAction(.archive)
                         dismiss()

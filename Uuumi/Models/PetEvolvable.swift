@@ -71,11 +71,6 @@ extension PetEvolvable {
 
     // MARK: - Display Properties
 
-    /// Theme color for the pet. Falls back to `.secondary` for blobs.
-    var themeColor: Color {
-        evolutionPath?.themeColor ?? .secondary
-    }
-
     /// Display scale for the current evolution phase.
     var displayScale: CGFloat {
         phase?.displayScale ?? Blob.shared.displayScale

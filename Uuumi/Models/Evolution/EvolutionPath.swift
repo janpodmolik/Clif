@@ -1,11 +1,10 @@
-import SwiftUI
+import Foundation
 
 /// Represents an evolution path with all its phases.
 /// Each Essence maps to exactly one EvolutionPath.
 struct EvolutionPath: Hashable {
     let id: String
     let displayName: String
-    let themeColor: Color
     let phases: [EvolutionPhase]
 
     /// Returns the phase at given 1-indexed position.
@@ -35,7 +34,6 @@ extension EvolutionPath {
     static let plant = EvolutionPath(
         id: "plant",
         displayName: "Plant",
-        themeColor: .green,
         phases: [
             EvolutionPhase(phaseNumber: 1, evolutionId: "plant", displayScale: 0.95, idleConfig: .default),
             EvolutionPhase(phaseNumber: 2, evolutionId: "plant", displayScale: 1.05, idleConfig: .default),
@@ -51,7 +49,6 @@ extension EvolutionPath {
     static let troll = EvolutionPath(
         id: "troll",
         displayName: "Troll",
-        themeColor: .purple,
         phases: [
             EvolutionPhase(phaseNumber: 1, evolutionId: "troll", displayScale: 0.80, idleConfig: .default),
             EvolutionPhase(phaseNumber: 2, evolutionId: "troll", displayScale: 0.80, idleConfig: .default),

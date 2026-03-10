@@ -4,7 +4,6 @@ import SwiftUI
 /// Shows congratulatory message and confirms permanent archive.
 struct SuccessArchiveSheet: View {
     let petName: String
-    let themeColor: Color
     var onArchive: () -> Void = {}
 
     var body: some View {
@@ -12,7 +11,7 @@ struct SuccessArchiveSheet: View {
             navigationTitle: "Archive Pet",
             header: ConfirmationSheetHeader(
                 icon: "checkmark.seal.fill",
-                iconColor: themeColor,
+                iconColor: .green,
                 title: "\(petName) reached max evolution!",
                 subtitle: "Archived pet will be stored in Overview but cannot be restored."
             ),
@@ -21,7 +20,7 @@ struct SuccessArchiveSheet: View {
                     icon: "archivebox",
                     title: "Archive",
                     subtitle: "Safely store in Overview",
-                    background: .tinted(themeColor),
+                    background: .tinted(.green),
                     action: onArchive
                 )
             ],
@@ -36,7 +35,6 @@ struct SuccessArchiveSheet: View {
         .sheet(isPresented: .constant(true)) {
             SuccessArchiveSheet(
                 petName: "Fern",
-                themeColor: .green,
                 onArchive: { print("Archive") }
             )
         }

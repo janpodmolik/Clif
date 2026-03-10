@@ -96,7 +96,7 @@ struct ArchivedPetRow: View {
                         .fill(.ultraThinMaterial)
                 } else {
                     RoundedRectangle(cornerRadius: 16)
-                        .fill(pet.themeColor.opacity(0.15))
+                        .fill(Color.green.opacity(0.15))
                         .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
                 }
             }

@@ -16,7 +16,6 @@ struct ActivePetActionsCard: View {
     let canProgress: Bool
     let canArchiveEarly: Bool
     let isBlownAway: Bool
-    var themeColor: Color = .green
     var onAction: (ActivePetAction) -> Void = { _ in }
 
     @State private var showBlowAwayConfirmation = false
@@ -58,7 +57,7 @@ struct ActivePetActionsCard: View {
     @ViewBuilder
     private var progressSection: some View {
         if isFullyEvolved {
-            ActionButton(icon: "checkmark.seal.fill", label: "Archive", color: themeColor) {
+            ActionButton(icon: "checkmark.seal.fill", label: "Archive", color: .green) {
                 onAction(.archive)
             }
         } else if canProgress {
@@ -132,8 +131,7 @@ struct ActivePetActionsCard: View {
         isFullyEvolved: true,
         canProgress: false,
         canArchiveEarly: false,
-        isBlownAway: false,
-        themeColor: .green
+        isBlownAway: false
     )
     .padding()
 }

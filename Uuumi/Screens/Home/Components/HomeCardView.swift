@@ -338,7 +338,7 @@ struct HomeCardView: View {
             .foregroundStyle(.white)
             .padding(.horizontal, 16)
             .padding(.vertical, 8)
-            .background(pet.themeColor, in: Capsule())
+            .background(Color.green, in: Capsule())
         }
         .buttonStyle(.plain)
     }

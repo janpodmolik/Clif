@@ -26,7 +26,6 @@ struct FallbackScreenTimeCard: View {
 
             UsageChart(
                 stats: stats,
-                themeColor: .green,
                 onDayTap: { day in
                     selectedDay = day
                 }

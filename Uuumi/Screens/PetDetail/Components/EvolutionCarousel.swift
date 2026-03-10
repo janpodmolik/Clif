@@ -17,7 +17,6 @@ struct EvolutionCarousel<Pet: PetEvolvable>: View {
     private var currentPhase: Int { pet.currentPhase }
     private var essence: Essence? { pet.essence }
     private var isBlob: Bool { pet.isBlob }
-    private var themeColor: Color { pet.themeColor }
     private var evolutionPath: EvolutionPath? { pet.evolutionPath }
 
     /// Total cards = 1 for blob, or 1 (origin) + maxPhase (evolution phases) for evolved
@@ -135,7 +134,7 @@ struct EvolutionCarousel<Pet: PetEvolvable>: View {
             // Blob-only card (no essence yet)
             BlobOnlyCard(isBlownAway: isBlownAway, canUseEssence: canUseEssence, showStatusBadge: showBlobStatusBadge)
         } else if index == 0, let essence, let path = evolutionPath {
-            EvolutionOriginCard(essence: essence, path: path, isBlownAway: isBlownAway, themeColor: themeColor)
+            EvolutionOriginCard(essence: essence, path: path, isBlownAway: isBlownAway)
         } else if let path = evolutionPath {
             EvolutionPhaseCard(
                 phase: index,
@@ -143,7 +142,6 @@ struct EvolutionCarousel<Pet: PetEvolvable>: View {
                 isLocked: index > currentPhase,
                 evolutionPath: path,
                 isBlownAway: isBlownAway,
-                themeColor: themeColor,
                 showCurrentBadge: showCurrentBadge
             )
         }
@@ -152,9 +150,8 @@ struct EvolutionCarousel<Pet: PetEvolvable>: View {
     private func dotColor(for index: Int) -> Color {
         let phase = index // phase number = index (origin is 0, phases are 1+)
 
-        // All unlocked phases (including origin) use themeColor
         if phase <= currentPhase {
-            return themeColor
+            return .green
         }
 
         // Locked phases
@@ -224,7 +221,6 @@ struct EvolutionOriginCard: View {
     let essence: Essence
     let path: EvolutionPath
     var isBlownAway: Bool = false
-    var themeColor: Color = .green
 
     var body: some View {
         VStack(spacing: 12) {
@@ -273,16 +269,16 @@ struct EvolutionOriginCard: View {
         if #available(iOS 26.0, *) {
             Color.clear
                 .glassEffect(
-                    .regular.tint(themeColor.opacity(0.08)),
+                    .regular.tint(Color.green.opacity(0.08)),
                     in: RoundedRectangle(cornerRadius: 20)
                 )
         } else {
             RoundedRectangle(cornerRadius: 20)
-                .fill(themeColor.opacity(0.08))
+                .fill(Color.green.opacity(0.08))
                 .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 20))
                 .overlay {
                     RoundedRectangle(cornerRadius: 20)
-                        .stroke(themeColor.opacity(0.15), lineWidth: 1)
+                        .stroke(Color.green.opacity(0.15), lineWidth: 1)
                 }
         }
     }
@@ -296,7 +292,6 @@ struct EvolutionPhaseCard: View {
     let isLocked: Bool
     let evolutionPath: EvolutionPath
     var isBlownAway: Bool = false
-    var themeColor: Color = .green
     var showCurrentBadge: Bool = true
 
     var body: some View {
@@ -346,7 +341,7 @@ struct EvolutionPhaseCard: View {
                 .foregroundStyle(.white)
                 .padding(.horizontal, 10)
                 .padding(.vertical, 4)
-                .background(themeColor, in: Capsule())
+                .background(Color.green, in: Capsule())
         } else if isLocked {
             Text("Locked")
                 .font(.caption2)
@@ -385,7 +380,7 @@ struct EvolutionPhaseCard: View {
     }
 
     private var cardTintColor: Color {
-        themeColor
+        .green
     }
 }
 

@@ -113,7 +113,7 @@ struct EssenceCollectionCarousel: View {
 
     private func dotColor(for record: EssenceRecord, at index: Int) -> Color {
         let isSelected = (scrollTarget ?? 0) == index
-        return isSelected ? record.evolutionPath.themeColor : record.evolutionPath.themeColor.opacity(0.35)
+        return isSelected ? Color.green : Color.green.opacity(0.35)
     }
 }
 
@@ -136,7 +136,7 @@ private struct EssenceCard: View {
             essenceBadge
 
             VStack(spacing: 0) {
-                record.evolutionPath.themeColor.opacity(0.15)
+                Color.green.opacity(0.15)
                     .frame(height: 1)
 
                 VStack(spacing: 6) {
@@ -203,7 +203,7 @@ private struct EssenceCard: View {
     private var progressionDots: some View {
         let maxPhases = record.evolutionPath.maxPhases
         let reached = record.bestPhase ?? 0
-        let color = record.evolutionPath.themeColor
+        let color = Color.green
 
         return HStack(spacing: 6) {
             ForEach(1...maxPhases, id: \.self) { phase in
@@ -216,7 +216,7 @@ private struct EssenceCard: View {
 
     @ViewBuilder
     private var unlockedBackground: some View {
-        let color = record.evolutionPath.themeColor
+        let color = Color.green
         if #available(iOS 26.0, *) {
             Color.clear
                 .glassEffect(

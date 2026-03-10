@@ -4,7 +4,6 @@ struct UsageChart<Stats: UsageStatsProtocol>: View {
     let stats: Stats
     var scrollable: Bool = false
     var showDateLabel: Bool = false
-    var themeColor: Color = .green
     var onDayTap: ((DailyUsageStat) -> Void)?
 
     @State private var glowPhase: CGFloat = 0
@@ -156,8 +155,8 @@ struct UsageChart<Stats: UsageStatsProtocol>: View {
         }
         return LinearGradient(
             colors: isToday
-                ? [themeColor, themeColor.opacity(0.7)]
-                : [themeColor.opacity(0.9), themeColor.opacity(0.5)],
+                ? [.green, .green.opacity(0.7)]
+                : [.green.opacity(0.9), .green.opacity(0.5)],
             startPoint: .bottom,
             endPoint: .top
         )
@@ -177,8 +176,7 @@ struct UsageChart<Stats: UsageStatsProtocol>: View {
 
 #Preview("Weekly (fixed)") {
     UsageChart(
-        stats: WeeklyUsageStats.mock(),
-        themeColor: .green
+        stats: WeeklyUsageStats.mock()
     )
     .padding()
 }
@@ -187,8 +185,7 @@ struct UsageChart<Stats: UsageStatsProtocol>: View {
     UsageChart(
         stats: FullUsageStats.mock(days: 14),
         scrollable: true,
-        showDateLabel: true,
-        themeColor: .purple
+        showDateLabel: true
     )
     .padding()
 }
@@ -197,8 +194,7 @@ struct UsageChart<Stats: UsageStatsProtocol>: View {
     UsageChart(
         stats: FullUsageStats.mock(days: 30),
         scrollable: true,
-        showDateLabel: true,
-        themeColor: .green
+        showDateLabel: true
     )
     .padding()
 }

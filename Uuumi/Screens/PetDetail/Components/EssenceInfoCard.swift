@@ -17,7 +17,7 @@ struct EssenceInfoCard: View {
     }
 
     private func cardContent(essence: Essence) -> some View {
-        let color = EvolutionPath.path(for: essence).themeColor
+        let color: Color = .green
         let name = EvolutionPath.path(for: essence).displayName
 
         return HStack(spacing: 16) {

@@ -122,7 +122,7 @@ struct DayDetailSheet: View {
         HStack {
             Image(systemName: preset.iconName)
                 .font(.title2)
-                .foregroundStyle(preset.themeColor)
+                .foregroundStyle(.green)
 
             VStack(alignment: .leading, spacing: 2) {
                 Text("Preset")

@@ -241,7 +241,6 @@ struct HomeScreen: View {
             if let pet = currentPet {
                 SuccessArchiveSheet(
                     petName: pet.name,
-                    themeColor: pet.themeColor,
                     onArchive: {
                         let petId = pet.id
                         showSuccessArchivePrompt = false

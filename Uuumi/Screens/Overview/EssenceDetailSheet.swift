@@ -8,7 +8,7 @@ struct EssenceDetailSheet: View {
     @State private var showSearch = false
 
     private var path: EvolutionPath { record.evolutionPath }
-    private var color: Color { path.themeColor }
+    private var color: Color { .green }
 
     private var matchingSummaries: [ArchivedPetSummary] {
         summaries.filter { $0.essence == record.essence }

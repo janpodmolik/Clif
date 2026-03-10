@@ -5,7 +5,7 @@ struct EssenceCatalogGridItem: View {
     let essenceRecord: EssenceRecord?
 
     private var path: EvolutionPath { entry.evolutionPath }
-    private var color: Color { path.themeColor }
+    private var color: Color { .green }
 
     var body: some View {
         VStack(spacing: 10) {

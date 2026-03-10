@@ -106,7 +106,7 @@ private struct EssenceRow: View {
 
                 Image(systemName: "chevron.right")
                     .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(path.themeColor)
+                    .foregroundStyle(.green)
             }
             .padding()
             .background(rowBackground)
@@ -119,16 +119,16 @@ private struct EssenceRow: View {
         if #available(iOS 26.0, *) {
             Color.clear
                 .glassEffect(
-                    .regular.tint(path.themeColor.opacity(0.1)),
+                    .regular.tint(.green.opacity(0.1)),
                     in: RoundedRectangle(cornerRadius: 16)
                 )
         } else {
             RoundedRectangle(cornerRadius: 16)
-                .fill(path.themeColor.opacity(0.08))
+                .fill(.green.opacity(0.08))
                 .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
                 .overlay {
                     RoundedRectangle(cornerRadius: 16)
-                        .stroke(path.themeColor.opacity(0.15), lineWidth: 1)
+                        .stroke(.green.opacity(0.15), lineWidth: 1)
                 }
         }
     }

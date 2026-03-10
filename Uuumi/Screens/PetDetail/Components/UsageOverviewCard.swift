@@ -107,7 +107,7 @@ struct UsageOverviewCard: View {
                 ForEach(sorted, id: \.0) { preset, count in
                     let fraction = CGFloat(count) / CGFloat(max(total, 1))
                     RoundedRectangle(cornerRadius: 4)
-                        .fill(preset.themeColor)
+                        .fill(.green)
                         .frame(width: max((geo.size.width - CGFloat(sorted.count - 1) * 2) * fraction, 4))
                 }
             }
@@ -119,7 +119,7 @@ struct UsageOverviewCard: View {
     private func presetLegendItem(preset: WindPreset, count: Int) -> some View {
         HStack(spacing: 4) {
             Circle()
-                .fill(preset.themeColor)
+                .fill(.green)
                 .frame(width: 8, height: 8)
 
             Text("\(preset.displayName)")

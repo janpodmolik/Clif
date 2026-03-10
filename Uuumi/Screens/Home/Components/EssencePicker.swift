@@ -210,23 +210,23 @@ private struct EssenceCatalogCard: View {
             Color.clear
                 .glassEffect(
                     isSelected
-                        ? .regular.tint(path.themeColor.opacity(CardStyle.glassTintOpacity))
+                        ? .regular.tint(.green.opacity(CardStyle.glassTintOpacity))
                         : .regular,
                     in: shape
                 )
                 .overlay {
                     shape.stroke(
-                        isSelected ? path.themeColor.opacity(CardStyle.subtleStrokeOpacity) : Color.clear,
+                        isSelected ? .green.opacity(CardStyle.subtleStrokeOpacity) : Color.clear,
                         lineWidth: 1
                     )
                 }
         } else {
             shape
-                .fill(isSelected ? path.themeColor.opacity(CardStyle.fillOpacity) : Color.clear)
+                .fill(isSelected ? .green.opacity(CardStyle.fillOpacity) : Color.clear)
                 .background(.ultraThinMaterial, in: shape)
                 .overlay {
                     shape.stroke(
-                        isSelected ? path.themeColor.opacity(CardStyle.subtleStrokeOpacity) : Color.clear,
+                        isSelected ? .green.opacity(CardStyle.subtleStrokeOpacity) : Color.clear,
                         lineWidth: 1
                     )
                 }

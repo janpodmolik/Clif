@@ -10,7 +10,6 @@ enum OverviewPetAction {
 /// Shows delete + show on homepage, or replay + delete when blown away.
 struct OverviewPetActionsCard: View {
     let isBlownAway: Bool
-    let themeColor: Color
     var onAction: (OverviewPetAction) -> Void = { _ in }
 
     var body: some View {
@@ -31,7 +30,7 @@ struct OverviewPetActionsCard: View {
                 onAction(.delete)
             }
             Spacer()
-            ActionButton(icon: "house.fill", label: "Zobrazit", color: themeColor) {
+            ActionButton(icon: "house.fill", label: "Zobrazit", color: .green) {
                 onAction(.showOnHomepage)
             }
         }
@@ -53,16 +52,14 @@ struct OverviewPetActionsCard: View {
 #if DEBUG
 #Preview("Normal") {
     OverviewPetActionsCard(
-        isBlownAway: false,
-        themeColor: .green
+        isBlownAway: false
     )
     .padding()
 }
 
 #Preview("Blown away") {
     OverviewPetActionsCard(
-        isBlownAway: true,
-        themeColor: .green
+        isBlownAway: true
     )
     .padding()
 }

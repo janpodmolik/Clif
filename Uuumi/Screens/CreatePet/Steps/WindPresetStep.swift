@@ -67,7 +67,7 @@ private struct WindPresetCard: View {
                 VStack(alignment: .trailing, spacing: 2) {
                     Text("\(Int(preset.minutesToBlowAway)) min")
                         .font(.subheadline.weight(.semibold))
-                        .foregroundStyle(preset.themeColor)
+                        .foregroundStyle(.green)
 
                     Text("to blow away")
                         .font(.caption2)
@@ -75,7 +75,7 @@ private struct WindPresetCard: View {
                 }
 
                 Image(systemName: "checkmark.circle.fill")
-                    .foregroundStyle(preset.themeColor)
+                    .foregroundStyle(.green)
                     .font(.title3)
                     .opacity(isSelected ? 1 : 0)
             }
@@ -84,7 +84,7 @@ private struct WindPresetCard: View {
             .glassSelectableBackground(
                 cornerRadius: Layout.cornerRadius,
                 isSelected: isSelected,
-                tintColor: preset.themeColor
+                tintColor: .green
             )
         }
         .buttonStyle(.plain)
@@ -93,7 +93,7 @@ private struct WindPresetCard: View {
     private var iconView: some View {
         Image(systemName: preset.iconName)
             .font(.title3)
-            .foregroundStyle(preset.themeColor)
+            .foregroundStyle(.green)
             .frame(width: 28, height: 28)
     }
 }
