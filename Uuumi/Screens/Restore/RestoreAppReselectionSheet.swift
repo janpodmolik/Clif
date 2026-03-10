@@ -2,11 +2,11 @@ import FamilyControls
 import SwiftUI
 
 /// Sheet shown after cloud restore when tokens are invalid (reinstall).
-/// Three phases:
-/// 1. **Intro** — pet info, changes remaining, "Znovu povolit" button + blow away/archive/delete
+/// Two phases:
+/// 1. **Intro** — pet info, "Znovu povolit" button + archive/delete
 /// 2. **Picker** — after authorization, FamilyActivityPicker for app re-selection
-/// 3. **Exhausted** — no changes remaining, only blow away/archive/delete
 ///
+/// Restore is always allowed regardless of daily change limit.
 /// Non-dismissable — user must complete selection or decide pet's fate.
 struct RestoreAppReselectionSheet: View {
     enum Action {
@@ -17,9 +17,6 @@ struct RestoreAppReselectionSheet: View {
     }
 
     let petName: String
-    let changesUsed: Int
-    let changesTotal: Int
-    let canChange: Bool
     let canArchive: Bool
     var onAction: ((Action) async throws -> Void)?
 
@@ -47,15 +44,11 @@ struct RestoreAppReselectionSheet: View {
 
     var body: some View {
         NavigationStack {
-            if !canChange {
-                exhaustedContent
-            } else {
-                switch phase {
-                case .intro:
-                    introContent
-                case .picker:
-                    pickerContent
-                }
+            switch phase {
+            case .intro:
+                introContent
+            case .picker:
+                pickerContent
             }
         }
         .interactiveDismissDisabled()
@@ -74,8 +67,6 @@ struct RestoreAppReselectionSheet: View {
                 title: "\(petName) je zpátky!",
                 subtitle: "Po reinstalaci je potřeba znovu povolit přístup k času u obrazovky a vybrat sledované aplikace."
             )
-
-            changesInfo
 
             VStack(spacing: 12) {
                 reauthorizeButton
@@ -108,32 +99,6 @@ struct RestoreAppReselectionSheet: View {
 
             footer
         }
-        .navigationBarTitleDisplayMode(.inline)
-    }
-
-    // MARK: - Exhausted Content (no changes remaining)
-
-    private var exhaustedContent: some View {
-        VStack(spacing: 24) {
-            Spacer()
-                .frame(height: 8)
-
-            ConfirmationHeader(
-                icon: "app.badge",
-                iconColor: .orange,
-                title: "Změny vyčerpány",
-                subtitle: "\(petName) nemůže pokračovat bez sledovaných aplikací. Vyčerpal jsi všechny změny."
-            )
-
-            ChangesIndicator(used: changesUsed, total: changesTotal)
-
-            VStack(spacing: 12) {
-                fateActions
-            }
-
-            Spacer()
-        }
-        .padding(24)
         .navigationBarTitleDisplayMode(.inline)
     }
 
@@ -203,8 +168,6 @@ struct RestoreAppReselectionSheet: View {
                 title: "\(petName) je zpátky!",
                 subtitle: "Vyber sledované aplikace."
             )
-
-            changesInfo
         }
         .padding(.horizontal, Layout.headerPadding)
         .padding(.vertical, Layout.headerPadding)
@@ -212,26 +175,6 @@ struct RestoreAppReselectionSheet: View {
         .glassBackground(cornerRadius: Layout.headerCornerRadius)
         .padding(.horizontal, Layout.headerPadding)
         .padding(.top, 8)
-    }
-
-    private var changesInfo: some View {
-        HStack(spacing: 8) {
-            ChangesIndicator(used: changesUsed, total: changesTotal)
-
-            Text(changesInfoText)
-                .font(.caption)
-                .foregroundStyle(Color.gray)
-        }
-    }
-
-    private var changesInfoText: String {
-        let remaining = changesTotal - changesUsed
-        switch remaining {
-        case 0: return "Žádná zbývající změna"
-        case 1: return "Zbývá 1 změna"
-        case 2, 3, 4: return "Zbývají \(remaining) změny"
-        default: return "Zbývá \(remaining) změn"
-        }
     }
 
     // MARK: - Footer
@@ -270,40 +213,21 @@ struct RestoreAppReselectionSheet: View {
 }
 
 #if DEBUG
-#Preview("Intro (Can Change)") {
+#Preview("Intro") {
     Color.clear
         .sheet(isPresented: .constant(true)) {
             RestoreAppReselectionSheet(
                 petName: "Fern",
-                changesUsed: 1,
-                changesTotal: 3,
-                canChange: true,
                 canArchive: true
             )
         }
 }
 
-#Preview("Changes Exhausted - Can Archive") {
-    Color.clear
-        .sheet(isPresented: .constant(true)) {
-            RestoreAppReselectionSheet(
-                petName: "Fern",
-                changesUsed: 3,
-                changesTotal: 3,
-                canChange: false,
-                canArchive: true
-            )
-        }
-}
-
-#Preview("Changes Exhausted - Too Young") {
+#Preview("Intro - Too Young") {
     Color.clear
         .sheet(isPresented: .constant(true)) {
             RestoreAppReselectionSheet(
                 petName: "Sprout",
-                changesUsed: 3,
-                changesTotal: 3,
-                canChange: false,
                 canArchive: false
             )
         }

@@ -5,8 +5,7 @@ import SwiftUI
 /// Layout mirrors the pet creation flow: header overview on top,
 /// FamilyActivityPicker in the middle, sticky save button at bottom.
 struct EditLimitedSourcesSheet: View {
-    let changesUsed: Int
-    let changesTotal: Int
+    let changeState: LimitedSourceChangeState
     var onSave: ((FamilyActivitySelection) -> Void)?
 
     @Environment(\.dismiss) private var dismiss
@@ -22,10 +21,6 @@ struct EditLimitedSourcesSheet: View {
         static let headerCornerRadius: CGFloat = 20
         static let fadeHeight: CGFloat = 16
         static let footerPadding: CGFloat = 16
-    }
-
-    private var remainingChanges: Int {
-        changesTotal - changesUsed
     }
 
     private var hasEditSelection: Bool {
@@ -66,7 +61,7 @@ struct EditLimitedSourcesSheet: View {
                 }
                 Button("Zrušit", role: .cancel) {}
             } message: {
-                Text("Po této změně ti \(remainingChangesText(after: remainingChanges - 1)).")
+                Text(confirmationMessage)
             }
         }
         .onAppear {
@@ -90,8 +85,6 @@ struct EditLimitedSourcesSheet: View {
             }
 
             selectionSummary
-
-            changesInfo
         }
         .padding(.horizontal, Layout.headerPadding)
         .padding(.vertical, Layout.headerPadding)
@@ -124,23 +117,14 @@ struct EditLimitedSourcesSheet: View {
         .animation(.easeInOut(duration: 0.2), value: hasEditSelection)
     }
 
-    private var changesInfo: some View {
-        HStack(spacing: 8) {
-            ChangesIndicator(used: changesUsed, total: changesTotal)
-
-            Text(changesInfoText)
-                .font(.caption)
-                .foregroundStyle(Color.gray)
-        }
-    }
-
-    private var changesInfoText: String {
-        let remaining = remainingChanges
-        switch remaining {
-        case 0: return "Žádná zbývající změna"
-        case 1: return "Zbývá 1 změna"
-        case 2, 3, 4: return "Zbývají \(remaining) změny"
-        default: return "Zbývá \(remaining) změn"
+    private var confirmationMessage: String {
+        switch changeState {
+        case .unlimited:
+            "Výběr sledovaných aplikací bude aktualizován."
+        case .available:
+            "Po této změně budeš moci znovu změnit zítra."
+        case .usedToday, .blown:
+            "Dnes již nelze měnit."
         }
     }
 
@@ -173,36 +157,23 @@ struct EditLimitedSourcesSheet: View {
             .fill(.ultraThinMaterial)
             .ignoresSafeArea(edges: .bottom)
     }
-
-    // MARK: - Helpers
-
-    private func remainingChangesText(after count: Int) -> String {
-        switch count {
-        case 0: "nezbývá žádná další změna"
-        case 1: "zbývá 1 změna"
-        case 2, 3, 4: "zbývají \(count) změny"
-        default: "zbývá \(count) změn"
-        }
-    }
 }
 
 #if DEBUG
-#Preview("Fresh - 0 changes used") {
+#Preview("Unlimited (blob)") {
     Color.clear
         .sheet(isPresented: .constant(true)) {
             EditLimitedSourcesSheet(
-                changesUsed: 0,
-                changesTotal: 3
+                changeState: .unlimited
             ) { _ in }
         }
 }
 
-#Preview("2 changes used") {
+#Preview("Available") {
     Color.clear
         .sheet(isPresented: .constant(true)) {
             EditLimitedSourcesSheet(
-                changesUsed: 2,
-                changesTotal: 3
+                changeState: .available
             ) { _ in }
         }
 }

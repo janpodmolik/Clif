@@ -1,13 +1,20 @@
 import FamilyControls
 import SwiftUI
 
+/// State of limited source change availability.
+enum LimitedSourceChangeState {
+    case unlimited      // before essence (blob) — no restrictions
+    case available      // after essence, not changed today
+    case usedToday      // after essence, already changed today
+    case blown          // pet is blown away — no changes allowed
+}
+
 /// Sheet displaying limited apps, categories, and websites grouped by type.
 /// Shows only icon and name (no usage minutes - Apple API limitation).
 /// Optionally shows a sticky footer with edit button when changes are available.
 struct LimitedAppsSheet: View {
     let sources: [LimitedSource]
-    var changesUsed: Int?
-    var changesTotal: Int?
+    var changeState: LimitedSourceChangeState?
     var activeBreakType: BreakType?
     var onEdit: ((FamilyActivitySelection) -> Void)?
     var onEndFreeBreak: (() -> Void)?
@@ -15,6 +22,7 @@ struct LimitedAppsSheet: View {
     @Environment(\.dismiss) private var dismiss
     @State private var showEditSheet = false
     @State private var showBlockedAlert: BlockedReason?
+    @State private var showChangeInfo = false
 
     private enum BlockedReason: Identifiable {
         case freeBreak   // free break -> can end break
@@ -40,12 +48,12 @@ struct LimitedAppsSheet: View {
     }
 
     private var showFooter: Bool {
-        changesUsed != nil && changesTotal != nil && onEdit != nil
+        changeState != nil && onEdit != nil
     }
 
-    private var hasChangesRemaining: Bool {
-        guard let used = changesUsed, let total = changesTotal else { return false }
-        return used < total
+    private var canEdit: Bool {
+        guard let changeState else { return false }
+        return changeState == .unlimited || changeState == .available
     }
 
     private var blockedReason: BlockedReason? {
@@ -86,10 +94,9 @@ struct LimitedAppsSheet: View {
             .navigationBarTitleDisplayMode(.inline)
             .dismissButton()
             .sheet(isPresented: $showEditSheet) {
-                if let changesUsed, let changesTotal {
+                if let changeState {
                     EditLimitedSourcesSheet(
-                        changesUsed: changesUsed,
-                        changesTotal: changesTotal
+                        changeState: changeState
                     ) { selection in
                         onEdit?(selection)
                         dismiss()
@@ -114,6 +121,11 @@ struct LimitedAppsSheet: View {
                     Text("Během aktivní pauzy nelze měnit sledované aplikace.")
                 }
             }
+            .alert("Změny aplikací", isPresented: $showChangeInfo) {
+                Button("OK") {}
+            } message: {
+                Text("Dokud tvůj pet nemá essenci, můžeš měnit sledované aplikace bez omezení. Po získání essence je možná 1 změna denně.")
+            }
         }
         .presentationDetents([.medium, .large])
         .presentationDragIndicator(.visible)
@@ -123,14 +135,8 @@ struct LimitedAppsSheet: View {
 
     private var editFooter: some View {
         VStack(spacing: 10) {
-            if let used = changesUsed, let total = changesTotal {
-                HStack(spacing: 8) {
-                    ChangesIndicator(used: used, total: total)
-
-                    Text(changesInfoText(remaining: total - used))
-                        .font(.caption)
-                        .foregroundStyle(Color.gray)
-                }
+            if let changeState {
+                changeStateRow(changeState)
             }
 
             Button {
@@ -143,7 +149,7 @@ struct LimitedAppsSheet: View {
                 Text("Změnit aplikace")
             }
             .buttonStyle(.primary)
-            .disabled(!hasChangesRemaining)
+            .disabled(!canEdit)
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 16)
@@ -151,6 +157,25 @@ struct LimitedAppsSheet: View {
             Rectangle()
                 .fill(Color(.systemBackground))
                 .ignoresSafeArea(edges: .bottom)
+        }
+    }
+
+    private func changeStateRow(_ state: LimitedSourceChangeState) -> some View {
+        HStack(spacing: 6) {
+            Text(changeStateText(state))
+                .font(.footnote.weight(.medium))
+                .foregroundStyle(changeStateColor(state))
+
+            Button {
+                showChangeInfo = true
+            } label: {
+                Image(systemName: "info.circle")
+                    .font(.footnote)
+                    .padding(6)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.borderless)
+            .foregroundStyle(.secondary)
         }
     }
 
@@ -191,12 +216,21 @@ struct LimitedAppsSheet: View {
 
     // MARK: - Helpers
 
-    private func changesInfoText(remaining: Int) -> String {
-        switch remaining {
-        case 0: "Žádná zbývající změna"
-        case 1: "Zbývá 1 změna"
-        case 2, 3, 4: "Zbývají \(remaining) změny"
-        default: "Zbývá \(remaining) změn"
+    private func changeStateText(_ state: LimitedSourceChangeState) -> String {
+        switch state {
+        case .unlimited: "Neomezené změny"
+        case .available: "Zbývá 1/1 změna dnes"
+        case .usedToday: "Vyčerpáno 1/1 — obnoví se zítra"
+        case .blown: "Pet je odfouknutý"
+        }
+    }
+
+    private func changeStateColor(_ state: LimitedSourceChangeState) -> Color {
+        switch state {
+        case .unlimited: .green
+        case .available: .blue
+        case .usedToday: .orange
+        case .blown: .red
         }
     }
 }
@@ -281,11 +315,18 @@ private struct SourceRow: View {
 }
 
 #if DEBUG
-#Preview("With Sources") {
+#Preview("With Sources - Available") {
     LimitedAppsSheet(
         sources: LimitedSource.mockList(),
-        changesUsed: 1,
-        changesTotal: 3,
+        changeState: .available,
+        onEdit: { _ in }
+    )
+}
+
+#Preview("With Sources - Unlimited (blob)") {
+    LimitedAppsSheet(
+        sources: LimitedSource.mockList(),
+        changeState: .unlimited,
         onEdit: { _ in }
     )
 }
@@ -293,19 +334,17 @@ private struct SourceRow: View {
 #Preview("Free Break") {
     LimitedAppsSheet(
         sources: LimitedSource.mockList(),
-        changesUsed: 1,
-        changesTotal: 3,
+        changeState: .available,
         activeBreakType: .free,
         onEdit: { _ in },
         onEndFreeBreak: {}
     )
 }
 
-#Preview("No changes left") {
+#Preview("Used Today") {
     LimitedAppsSheet(
         sources: LimitedSource.mockList(),
-        changesUsed: 3,
-        changesTotal: 3
+        changeState: .usedToday
     )
 }
 

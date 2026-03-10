@@ -270,9 +270,6 @@ struct HomeScreen: View {
             if let pet = petManager.currentPet {
                 RestoreAppReselectionSheet(
                     petName: pet.name,
-                    changesUsed: pet.limitedSourceChangesCount,
-                    changesTotal: Pet.maxLimitedSourceChanges,
-                    canChange: pet.canChangeLimitedSources,
                     canArchive: pet.daysSinceCreation >= PetManager.minimumArchiveDays
                 ) { action in
                     switch action {

@@ -271,11 +271,11 @@ final class PetManager {
 
     /// Completes the post-restore app re-selection flow.
     /// Replaces invalid tokens with fresh ones and starts monitoring.
-    /// Counts toward `limitedSourceChangesCount` (same as manual change).
+    /// Does NOT consume the daily change limit — re-selection after reinstall is always free.
     func handleAppReselectionComplete(_ newSources: [LimitedSource], selection: FamilyActivitySelection) {
         guard let pet else { return }
 
-        pet.updateLimitedSources(newSources)
+        pet.restoreLimitedSources(newSources)
         saveActivePet()
 
         SharedDefaults.saveFamilyActivitySelection(selection)

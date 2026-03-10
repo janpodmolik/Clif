@@ -8,7 +8,7 @@ struct ActivePetSupabaseDTO: Codable {
     let name: String
     let purpose: String?
     let preset: String
-    let limitedSourceChangesCount: Int
+    let lastLimitedSourceChangeDate: Date?
     let evolutionHistory: EvolutionHistory
     let dailyStats: [DailyUsageStat]
     let limitedSources: [LimitedSource]
@@ -23,7 +23,7 @@ struct ActivePetSupabaseDTO: Codable {
     enum CodingKeys: String, CodingKey {
         case id, name, purpose, preset
         case userId = "user_id"
-        case limitedSourceChangesCount = "limited_source_changes_count"
+        case lastLimitedSourceChangeDate = "last_limited_source_change_date"
         case evolutionHistory = "evolution_history"
         case dailyStats = "daily_stats"
         case limitedSources = "limited_sources"
@@ -50,7 +50,7 @@ struct ActivePetSupabaseDTO: Codable {
         self.name = petDTO.name
         self.purpose = petDTO.purpose
         self.preset = petDTO.preset.rawValue
-        self.limitedSourceChangesCount = petDTO.limitedSourceChangesCount
+        self.lastLimitedSourceChangeDate = petDTO.lastLimitedSourceChangeDate
         self.evolutionHistory = petDTO.evolutionHistory
         self.dailyStats = petDTO.dailyStats
         self.limitedSources = petDTO.limitedSources
@@ -77,7 +77,7 @@ extension PetDTO {
             preset: WindPreset(rawValue: supabaseDTO.preset) ?? .balanced,
             dailyStats: supabaseDTO.dailyStats,
             limitedSources: supabaseDTO.limitedSources,
-            limitedSourceChangesCount: supabaseDTO.limitedSourceChangesCount,
+            lastLimitedSourceChangeDate: supabaseDTO.lastLimitedSourceChangeDate,
             breakHistory: supabaseDTO.breakHistory
         )
     }

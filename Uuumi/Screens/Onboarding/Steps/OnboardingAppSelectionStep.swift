@@ -128,7 +128,7 @@ struct OnboardingAppSelectionStep: View {
 
     private var info: some View {
         Label {
-            Text("You can change your selection once a day.")
+            Text("You can change your selection freely until your pet gets an essence, then once a day.")
         } icon: {
             Image(systemName: "arrow.triangle.2.circlepath")
         }

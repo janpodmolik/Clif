@@ -10,7 +10,7 @@ struct PetDTO: Codable {
     let preset: WindPreset
     let dailyStats: [DailyUsageStat]
     let limitedSources: [LimitedSource]
-    let limitedSourceChangesCount: Int
+    let lastLimitedSourceChangeDate: Date?
     let breakHistory: [CompletedBreak]
 
     init(
@@ -21,7 +21,7 @@ struct PetDTO: Codable {
         preset: WindPreset,
         dailyStats: [DailyUsageStat],
         limitedSources: [LimitedSource],
-        limitedSourceChangesCount: Int,
+        lastLimitedSourceChangeDate: Date?,
         breakHistory: [CompletedBreak]
     ) {
         self.id = id
@@ -31,7 +31,7 @@ struct PetDTO: Codable {
         self.preset = preset
         self.dailyStats = dailyStats
         self.limitedSources = limitedSources
-        self.limitedSourceChangesCount = limitedSourceChangesCount
+        self.lastLimitedSourceChangeDate = lastLimitedSourceChangeDate
         self.breakHistory = breakHistory
     }
 
@@ -44,7 +44,7 @@ struct PetDTO: Codable {
             preset: pet.preset,
             dailyStats: pet.dailyStats,
             limitedSources: pet.limitedSources,
-            limitedSourceChangesCount: pet.limitedSourceChangesCount,
+            lastLimitedSourceChangeDate: pet.lastLimitedSourceChangeDate,
             breakHistory: pet.breakHistory
         )
     }
@@ -58,7 +58,7 @@ struct PetDTO: Codable {
         preset = try container.decode(WindPreset.self, forKey: .preset)
         dailyStats = try container.decode([DailyUsageStat].self, forKey: .dailyStats)
         limitedSources = try container.decode([LimitedSource].self, forKey: .limitedSources)
-        limitedSourceChangesCount = try container.decodeIfPresent(Int.self, forKey: .limitedSourceChangesCount) ?? 0
+        lastLimitedSourceChangeDate = try container.decodeIfPresent(Date.self, forKey: .lastLimitedSourceChangeDate)
         breakHistory = try container.decode([CompletedBreak].self, forKey: .breakHistory)
     }
 }
@@ -73,7 +73,7 @@ extension Pet {
             preset: dto.preset,
             dailyStats: dto.dailyStats,
             limitedSources: dto.limitedSources,
-            limitedSourceChangesCount: dto.limitedSourceChangesCount,
+            lastLimitedSourceChangeDate: dto.lastLimitedSourceChangeDate,
             breakHistory: dto.breakHistory
         )
     }

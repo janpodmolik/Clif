@@ -158,8 +158,7 @@ struct PetDetailScreen: View {
             .sheet(isPresented: $showLimitedApps) {
                 LimitedAppsSheet(
                     sources: pet.limitedSources,
-                    changesUsed: showOverviewActions ? nil : pet.limitedSourceChangesCount,
-                    changesTotal: showOverviewActions ? nil : Pet.maxLimitedSourceChanges,
+                    changeState: showOverviewActions ? nil : pet.limitedSourceChangeState,
                     activeBreakType: pet.activeBreak?.type,
                     onEdit: showOverviewActions ? nil : { selection in
                         let newSources = LimitedSource.from(selection)

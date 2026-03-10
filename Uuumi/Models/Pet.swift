@@ -55,23 +55,34 @@ final class Pet: Identifiable, PetPresentable, PetEvolvable {
 
     var dailyStats: [DailyUsageStat]
     var limitedSources: [LimitedSource]
-    private(set) var limitedSourceChangesCount: Int
+    private(set) var lastLimitedSourceChangeDate: Date?
 
     var applicationTokens: Set<ApplicationToken> { limitedSources.applicationTokens }
     var categoryTokens: Set<ActivityCategoryToken> { limitedSources.categoryTokens }
     var webDomainTokens: Set<WebDomainToken> { limitedSources.webDomainTokens }
 
-    /// Maximum number of times limited sources can be changed per pet lifetime.
-    static let maxLimitedSourceChanges = 3
-
-    /// Whether limited sources can still be changed.
+    /// Whether limited sources can be changed right now.
+    /// Before essence: unlimited changes (user is still setting up).
+    /// After essence: max 1 change per calendar day.
     var canChangeLimitedSources: Bool {
-        limitedSourceChangesCount < Self.maxLimitedSourceChanges && !isBlown
+        guard !isBlown else { return false }
+        guard !isBlob else { return true }
+        guard let lastChange = lastLimitedSourceChangeDate else { return true }
+        return !Calendar.current.isDateInToday(lastChange)
     }
 
-    /// How many limited source changes remain.
-    var remainingLimitedSourceChanges: Int {
-        Self.maxLimitedSourceChanges - limitedSourceChangesCount
+    /// Whether the user already changed sources today (for UI state).
+    var hasChangedLimitedSourcesToday: Bool {
+        guard let lastChange = lastLimitedSourceChangeDate else { return false }
+        return Calendar.current.isDateInToday(lastChange)
+    }
+
+    /// Change state for UI display.
+    var limitedSourceChangeState: LimitedSourceChangeState {
+        if isBlown { return .blown }
+        if isBlob { return .unlimited }
+        if hasChangedLimitedSourcesToday { return .usedToday }
+        return .available
     }
 
     /// Break history for current session.
@@ -170,11 +181,20 @@ final class Pet: Identifiable, PetPresentable, PetEvolvable {
         evolutionHistory.recordEvolution(to: nextPhase)
     }
 
-    /// Replaces limited sources and increments the change counter.
+    /// Replaces limited sources and records the change date (only after essence).
+    /// Before essence, changes are unlimited so no date is tracked.
     /// Caller is responsible for checking `canChangeLimitedSources` before calling.
     func updateLimitedSources(_ newSources: [LimitedSource]) {
         limitedSources = newSources
-        limitedSourceChangesCount += 1
+        if !isBlob {
+            lastLimitedSourceChangeDate = Date()
+        }
+    }
+
+    /// Replaces limited sources without affecting the daily change limit.
+    /// Used for reinstall/restore flows where re-selection is mandatory.
+    func restoreLimitedSources(_ newSources: [LimitedSource]) {
+        limitedSources = newSources
     }
 
     /// Marks pet as blown away.
@@ -223,7 +243,7 @@ final class Pet: Identifiable, PetPresentable, PetEvolvable {
         preset: WindPreset = .default,
         dailyStats: [DailyUsageStat] = [],
         limitedSources: [LimitedSource] = [],
-        limitedSourceChangesCount: Int = 0,
+        lastLimitedSourceChangeDate: Date? = nil,
         breakHistory: [CompletedBreak] = []
     ) {
         self.id = id
@@ -233,7 +253,7 @@ final class Pet: Identifiable, PetPresentable, PetEvolvable {
         self.preset = preset
         self.dailyStats = dailyStats
         self.limitedSources = limitedSources
-        self.limitedSourceChangesCount = limitedSourceChangesCount
+        self.lastLimitedSourceChangeDate = lastLimitedSourceChangeDate
         self.breakHistory = breakHistory
     }
 }
