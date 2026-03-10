@@ -161,6 +161,9 @@ final class ShieldManager {
 
         guard activateStoreFromStoredTokens() else { return }
 
+        // Day Start Shield is no longer relevant once a real break starts
+        SharedDefaults.isDayStartShieldActive = false
+
         // Store break type and mode (activeBreakType setter syncs isShieldActive)
         let now = startDate ?? Date()
         SharedDefaults.shieldActivatedAt = now

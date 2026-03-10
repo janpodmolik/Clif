@@ -1,5 +1,5 @@
+import Foundation
 import ManagedSettings
-import UserNotifications
 import os.log
 
 /// Shield Action Extension - handles button taps on the shield.
@@ -14,52 +14,48 @@ class ShieldActionExtension: ShieldActionDelegate {
     let store = ManagedSettingsStore()
     let logger = Logger(subsystem: "com.janpodmolik.Uuumi.ShieldAction", category: "ShieldAction")
 
+    // MARK: - Open Containing App
+
+    /// Opens the containing app using LSApplicationWorkspace private API.
+    /// Runs async to avoid blocking the shield UI. Should be called AFTER completionHandler.
+    private func openContainingApp() {
+        logToFile("openContainingApp() - dispatching async")
+
+        DispatchQueue.global(qos: .userInitiated).async { [self] in
+            guard let workspaceClass = NSClassFromString("LSApplicationWorkspace") else {
+                logToFile("LSApplicationWorkspace not available")
+                return
+            }
+
+            let defaultSelector = NSSelectorFromString("defaultWorkspace")
+            guard workspaceClass.responds(to: defaultSelector),
+                  let workspace = (workspaceClass as AnyObject).perform(defaultSelector)?.takeUnretainedValue() else {
+                logToFile("Failed to get workspace instance")
+                return
+            }
+
+            let openSelector = NSSelectorFromString("openApplicationWithBundleID:")
+            guard workspace.responds(to: openSelector) else {
+                logToFile("openApplicationWithBundleID: not available")
+                return
+            }
+
+            logToFile("Opening app via LSApplicationWorkspace.openApplicationWithBundleID:")
+            workspace.perform(openSelector, with: "com.janpodmolik.Uuumi")
+            logToFile("openApplicationWithBundleID: completed")
+        }
+    }
+
     private func logToFile(_ message: String) {
         ExtensionLogger.log(message, prefix: "[ShieldAction]")
     }
 
-    // MARK: - Notifications
-
-    /// Sends notification with custom deeplink.
-    private func sendNotificationWithDeepLink(title: String, body: String, deepLink: String) {
-        let content = UNMutableNotificationContent()
-        content.title = title
-        content.body = body
-        content.sound = nil
-        content.userInfo = ["deepLink": deepLink]
-        content.interruptionLevel = .timeSensitive
-
-        let request = UNNotificationRequest(
-            identifier: "uuumi-\(UUID().uuidString)",
-            content: content,
-            trigger: nil
-        )
-
-        UNUserNotificationCenter.current().add(request) { [weak self] error in
-            if let error = error {
-                self?.logger.error("Failed to send notification: \(error.localizedDescription)")
-            }
-        }
-    }
-
     // MARK: - Day Start Shield Handling
 
-    /// Handles Day Start Shield - always redirects to app for preset selection.
-    /// Returns the ShieldActionResponse to use, or nil if this is not a Day Start Shield action.
-    private func handleDayStartShieldAction(action: ShieldAction) -> ShieldActionResponse? {
-        guard SharedDefaults.isDayStartShieldActive else {
-            return nil
-        }
-
-        // Day Start Shield is active - user must select preset in app
-        // Wind cannot increase while isDayStartShieldActive is true (checked in DeviceActivityMonitor)
-        logger.info("Day Start Shield: Redirecting to app for preset selection")
-        sendNotificationWithDeepLink(
-            title: "Vyber si náročnost dne",
-            body: "Nastav jak náročný den chceš mít",
-            deepLink: DeepLinks.presetPicker
-        )
-        return .close
+    /// Checks if Day Start Shield is active.
+    /// Returns true if handled (caller should call completionHandler(.defer) and then open the app).
+    private var isDayStartShield: Bool {
+        SharedDefaults.isDayStartShieldActive
     }
 
     /// Locks the wind preset for today (prevents changes).
@@ -96,10 +92,10 @@ class ShieldActionExtension: ShieldActionDelegate {
 
     // MARK: - Unlock Handling
 
-    /// Handles unlock request by sending notification to open main app.
-    /// Shield stays active - user must explicitly unlock in the app.
-    private func handleUnlockRequest() {
-        logToFile("handleUnlockRequest() - sending notification to open app")
+    /// Prepares unlock state (locks preset, checks break violation).
+    /// Does NOT open the app — caller should call completionHandler first, then openContainingApp.
+    private func prepareUnlock() {
+        logToFile("prepareUnlock() - preparing state")
         logToFile("Current state: wind=\(SharedDefaults.monitoredWindPoints), isShieldActive=\(SharedDefaults.isShieldActive)")
 
         // Lock preset on first unlock of the day
@@ -110,14 +106,7 @@ class ShieldActionExtension: ShieldActionDelegate {
         // Check if this violates an active break
         handlePotentialBreakViolation()
 
-        // Send notification to open app - shield stays active until user unlocks in app
-        sendNotificationWithDeepLink(
-            title: "Odemknout aplikace",
-            body: "Klepni pro otevření Uuumi a odemčení",
-            deepLink: DeepLinks.home
-        )
-
-        logToFile("handleUnlockRequest() - notification sent, shield stays active")
+        logToFile("prepareUnlock() - done")
     }
 
     // MARK: - ShieldActionDelegate
@@ -126,10 +115,11 @@ class ShieldActionExtension: ShieldActionDelegate {
         logToFile("handle(action:for APPLICATION) - action=\(action == .primaryButtonPressed ? "primary" : "secondary")")
         logToFile("Current state: wind=\(SharedDefaults.monitoredWindPoints), isShieldActive=\(SharedDefaults.isShieldActive), isDayStart=\(SharedDefaults.isDayStartShieldActive)")
 
-        // Check if this is Day Start Shield
-        if let response = handleDayStartShieldAction(action: action) {
-            logToFile("Handled as Day Start Shield -> response=\(response == .close ? "close" : "defer")")
-            completionHandler(response)
+        // Day Start Shield - redirect to preset picker
+        if isDayStartShield {
+            logToFile("Handled as Day Start Shield -> .defer")
+            completionHandler(.defer)
+            openContainingApp()
             return
         }
 
@@ -140,8 +130,9 @@ class ShieldActionExtension: ShieldActionDelegate {
 
         case .secondaryButtonPressed:
             logToFile("Secondary button (Unlock) pressed - redirecting to app")
-            handleUnlockRequest()
-            completionHandler(.close)
+            prepareUnlock()
+            completionHandler(.defer)
+            openContainingApp()
 
         @unknown default:
             logToFile("Unknown action - closing shield")
@@ -152,9 +143,9 @@ class ShieldActionExtension: ShieldActionDelegate {
     override func handle(action: ShieldAction, for webDomain: WebDomainToken, completionHandler: @escaping (ShieldActionResponse) -> Void) {
         logger.info("handle(action:for webDomain:) called")
 
-        // Check if this is Day Start Shield
-        if let response = handleDayStartShieldAction(action: action) {
-            completionHandler(response)
+        if isDayStartShield {
+            completionHandler(.defer)
+            openContainingApp()
             return
         }
 
@@ -165,8 +156,9 @@ class ShieldActionExtension: ShieldActionDelegate {
 
         case .secondaryButtonPressed:
             logger.info("Secondary button (Unlock) pressed for web domain")
-            handleUnlockRequest()
-            completionHandler(.close)
+            prepareUnlock()
+            completionHandler(.defer)
+            openContainingApp()
 
         @unknown default:
             completionHandler(.close)
@@ -176,9 +168,9 @@ class ShieldActionExtension: ShieldActionDelegate {
     override func handle(action: ShieldAction, for category: ActivityCategoryToken, completionHandler: @escaping (ShieldActionResponse) -> Void) {
         logger.info("handle(action:for category:) called")
 
-        // Check if this is Day Start Shield
-        if let response = handleDayStartShieldAction(action: action) {
-            completionHandler(response)
+        if isDayStartShield {
+            completionHandler(.defer)
+            openContainingApp()
             return
         }
 
@@ -189,8 +181,9 @@ class ShieldActionExtension: ShieldActionDelegate {
 
         case .secondaryButtonPressed:
             logger.info("Secondary button (Unlock) pressed for category")
-            handleUnlockRequest()
-            completionHandler(.close)
+            prepareUnlock()
+            completionHandler(.defer)
+            openContainingApp()
 
         @unknown default:
             completionHandler(.close)

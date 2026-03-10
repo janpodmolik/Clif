@@ -503,6 +503,7 @@ struct DebugView: View {
 
                 Button("Clear Shield") {
                     manager.clearShield()
+                    SharedDefaults.isDayStartShieldActive = false
                 }
                 .tint(.green)
 
@@ -510,6 +511,13 @@ struct DebugView: View {
                     manager.updateShield()
                 }
                 .tint(.red)
+
+                Button("Day Start Shield") {
+                    SharedDefaults.resetForNewDay(dayStartShieldEnabled: true)
+                    ShieldManager.shared.activateStoreFromStoredTokens()
+                    openDeepLink(DeepLinks.presetPicker)
+                }
+                .tint(.orange)
 
                 Button("Safety Shield") {
                     simulateSafetyShield()

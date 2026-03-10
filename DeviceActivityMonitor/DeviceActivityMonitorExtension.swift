@@ -300,6 +300,7 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
 
         SharedDefaults.shieldActivatedAt = Date()
         SharedDefaults.activeBreakType = .safety
+        SharedDefaults.isDayStartShieldActive = false
         SharedDefaults.synchronize()
 
         // Notify the main app so it can refresh ShieldState immediately
