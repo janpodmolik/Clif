@@ -35,11 +35,12 @@ struct PetConflictData: Identifiable {
 
         self.cloudDTO = cloudDTO
         self.cloudPetName = cloudDTO.name
-        self.cloudPetPhase = cloudDTO.evolutionHistory.currentPhase
-        self.cloudPetEssence = cloudDTO.evolutionHistory.essence
+        let cloudHistory = EvolutionHistory(from: cloudDTO.evolutionHistory)
+        self.cloudPetPhase = cloudHistory.currentPhase
+        self.cloudPetEssence = cloudHistory.essence
         // Cloud pet doesn't have daysSinceCreation computed — derive from createdAt (calendar days)
         let calendar = Calendar.current
-        let created = calendar.startOfDay(for: cloudDTO.evolutionHistory.createdAt)
+        let created = calendar.startOfDay(for: cloudHistory.createdAt)
         let today = calendar.startOfDay(for: Date())
         let daysFromCreation = calendar.dateComponents([.day], from: created, to: today).day ?? 0
         self.cloudPetDaysAlive = daysFromCreation + 1

@@ -5,7 +5,7 @@ import Foundation
 struct PetDTO: Codable {
     let id: UUID
     let name: String
-    let evolutionHistory: EvolutionHistory
+    let evolutionHistory: EvolutionHistoryDTO
     let purpose: String?
     let preset: WindPreset
     let dailyStats: [DailyUsageStat]
@@ -16,7 +16,7 @@ struct PetDTO: Codable {
     init(
         id: UUID,
         name: String,
-        evolutionHistory: EvolutionHistory,
+        evolutionHistory: EvolutionHistoryDTO,
         purpose: String?,
         preset: WindPreset,
         dailyStats: [DailyUsageStat],
@@ -39,7 +39,7 @@ struct PetDTO: Codable {
         self.init(
             id: pet.id,
             name: pet.name,
-            evolutionHistory: pet.evolutionHistory,
+            evolutionHistory: EvolutionHistoryDTO(from: pet.evolutionHistory),
             purpose: pet.purpose,
             preset: pet.preset,
             dailyStats: pet.dailyStats,
@@ -53,7 +53,7 @@ struct PetDTO: Codable {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         id = try container.decode(UUID.self, forKey: .id)
         name = try container.decode(String.self, forKey: .name)
-        evolutionHistory = try container.decode(EvolutionHistory.self, forKey: .evolutionHistory)
+        evolutionHistory = try container.decode(EvolutionHistoryDTO.self, forKey: .evolutionHistory)
         purpose = try container.decodeIfPresent(String.self, forKey: .purpose)
         preset = try container.decode(WindPreset.self, forKey: .preset)
         dailyStats = try container.decode([DailyUsageStat].self, forKey: .dailyStats)
@@ -68,7 +68,7 @@ extension Pet {
         self.init(
             id: dto.id,
             name: dto.name,
-            evolutionHistory: dto.evolutionHistory,
+            evolutionHistory: EvolutionHistory(from: dto.evolutionHistory),
             purpose: dto.purpose,
             preset: dto.preset,
             dailyStats: dto.dailyStats,

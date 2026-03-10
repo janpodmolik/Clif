@@ -16,7 +16,8 @@ struct EvolutionEvent: Codable, Identifiable, Equatable {
 }
 
 /// Complete evolution history for a pet.
-struct EvolutionHistory: Codable, Equatable {
+/// Not Codable — use EvolutionHistoryDTO for serialization.
+struct EvolutionHistory: Equatable {
     private(set) var createdAt: Date
     private(set) var essence: Essence?
     private(set) var events: [EvolutionEvent]
@@ -24,14 +25,25 @@ struct EvolutionHistory: Codable, Equatable {
     private(set) var lastProgressDate: Date?
     private(set) var nextEvolutionUnlockDate: Date?
 
-    /// True if pet is still a blob (no essence applied yet)
+    /// Raw essence value preserved for round-trip safety.
+    /// When essence is known, equals `essence.rawValue`.
+    /// When essence is unknown (removed/future), holds the original string.
+    private(set) var essenceRawValue: String?
+
+    /// True if pet has an essence we don't recognize (removed or future).
+    var hasUnknownEssence: Bool {
+        essenceRawValue != nil && essence == nil
+    }
+
+    /// True if pet is still a blob (no essence applied yet).
+    /// A pet with an unknown essence is NOT a blob — it had an essence, we just can't resolve it.
     var isBlob: Bool {
-        essence == nil
+        essenceRawValue == nil
     }
 
     /// Current phase: 0 for blob, 1+ for evolved pets
     var currentPhase: Int {
-        guard essence != nil else { return 0 }
+        guard !isBlob else { return 0 }
         return events.last?.toPhase ?? 1
     }
 
@@ -47,7 +59,7 @@ struct EvolutionHistory: Codable, Equatable {
     }
 
     var canEvolve: Bool {
-        guard !isBlob, !isBlown, !hasProgressedToday else { return false }
+        guard !isBlob, !hasUnknownEssence, !isBlown, !hasProgressedToday else { return false }
         guard currentPhase < maxPhase else { return false }
         return isUnlockTimePassed
     }
@@ -60,13 +72,15 @@ struct EvolutionHistory: Codable, Equatable {
 
     /// True if pet has reached the maximum evolution phase.
     var isFullyEvolved: Bool {
-        guard !isBlob else { return false }
+        guard !isBlob, !hasUnknownEssence else { return false }
         return currentPhase >= maxPhase
     }
 
     var isBlown: Bool {
         blownAt != nil
     }
+
+    // MARK: - Init
 
     init(
         createdAt: Date = Date(),
@@ -78,15 +92,38 @@ struct EvolutionHistory: Codable, Equatable {
     ) {
         self.createdAt = createdAt
         self.essence = essence
+        self.essenceRawValue = essence?.rawValue
         self.events = events
         self.blownAt = blownAt
         self.lastProgressDate = lastProgressDate
         self.nextEvolutionUnlockDate = nextEvolutionUnlockDate
     }
 
+    /// Creates an EvolutionHistory from a DTO, gracefully handling unknown essence values.
+    init(from dto: EvolutionHistoryDTO) {
+        self.createdAt = dto.createdAt
+        self.essenceRawValue = dto.essence
+        self.events = dto.events
+        self.blownAt = dto.blownAt
+        self.lastProgressDate = dto.lastProgressDate
+        self.nextEvolutionUnlockDate = dto.nextEvolutionUnlockDate
+
+        if let rawEssence = dto.essence {
+            self.essence = Essence(rawValue: rawEssence)
+            if self.essence == nil {
+                #if DEBUG
+                print("[EvolutionHistory] Unknown essence '\(rawEssence)' — pet will display in last known phase but cannot evolve")
+                #endif
+            }
+        } else {
+            self.essence = nil
+        }
+    }
+
     mutating func applyEssence(_ essence: Essence) {
-        guard self.essence == nil else { return }
+        guard isBlob else { return }
         self.essence = essence
+        self.essenceRawValue = essence.rawValue
         lastProgressDate = Date()
         SharedDefaults.addCoins(CoinRewards.evolution)
         scheduleNextUnlockDate()
@@ -165,11 +202,21 @@ extension EvolutionHistory {
     /// Resets evolution back to blob state (clears essence and all events).
     mutating func debugResetToBlob() {
         essence = nil
+        essenceRawValue = nil
         events = []
         blownAt = nil
         lastProgressDate = nil
         nextEvolutionUnlockDate = nil
         createdAt = Date()
+    }
+
+    /// Sets essence to an unrecognized value for testing unknown essence UI.
+    mutating func debugSetUnknownEssence() {
+        essence = nil
+        essenceRawValue = "mystery"
+        if events.isEmpty {
+            events.append(EvolutionEvent(fromPhase: 1, toPhase: 2, date: Date()))
+        }
     }
 
     /// Clears the daily progress gate so evolution can be tested again immediately.

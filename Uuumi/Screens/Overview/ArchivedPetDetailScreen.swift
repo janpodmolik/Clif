@@ -32,7 +32,7 @@ struct ArchivedPetDetailScreen: View {
                         showBlobStatusBadge: false
                     )
 
-                    if !pet.isBlob {
+                    if !pet.isBlob && !pet.hasUnknownEssence {
                         EvolutionTimelineView(
                             history: pet.evolutionHistory,
                             canEvolve: false,

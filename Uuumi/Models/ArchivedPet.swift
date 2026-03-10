@@ -4,10 +4,14 @@ import Foundation
 struct ArchivedPet: Codable, Identifiable, Equatable, PetEvolvable {
     let id: UUID
     let name: String
-    let evolutionHistory: EvolutionHistory
     let purpose: String?
     let archivedAt: Date
     let archiveReason: ArchiveReason
+
+    // MARK: - Evolution (DTO for storage, cached Model for logic)
+
+    private let evolutionHistoryDTO: EvolutionHistoryDTO
+    let evolutionHistory: EvolutionHistory
 
     // MARK: - Stats
 
@@ -53,6 +57,32 @@ struct ArchivedPet: Codable, Identifiable, Equatable, PetEvolvable {
         FullUsageStats(days: dailyStats)
     }
 
+    // MARK: - Codable
+
+    private enum CodingKeys: String, CodingKey {
+        case id, name, purpose, archivedAt, archiveReason
+        case evolutionHistoryDTO = "evolutionHistory"
+        case dailyStats, breakHistory
+        case peakWindPoints, totalBreakMinutes, totalWindDecreased, preset
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(UUID.self, forKey: .id)
+        name = try container.decode(String.self, forKey: .name)
+        purpose = try container.decodeIfPresent(String.self, forKey: .purpose)
+        archivedAt = try container.decode(Date.self, forKey: .archivedAt)
+        archiveReason = try container.decode(ArchiveReason.self, forKey: .archiveReason)
+        evolutionHistoryDTO = try container.decode(EvolutionHistoryDTO.self, forKey: .evolutionHistoryDTO)
+        evolutionHistory = EvolutionHistory(from: evolutionHistoryDTO)
+        dailyStats = try container.decode([DailyUsageStat].self, forKey: .dailyStats)
+        breakHistory = try container.decode([CompletedBreak].self, forKey: .breakHistory)
+        peakWindPoints = try container.decode(Double.self, forKey: .peakWindPoints)
+        totalBreakMinutes = try container.decode(Double.self, forKey: .totalBreakMinutes)
+        totalWindDecreased = try container.decode(Double.self, forKey: .totalWindDecreased)
+        preset = try container.decode(WindPreset.self, forKey: .preset)
+    }
+
     // MARK: - Init
 
     init(
@@ -71,7 +101,37 @@ struct ArchivedPet: Codable, Identifiable, Equatable, PetEvolvable {
     ) {
         self.id = id
         self.name = name
+        self.evolutionHistoryDTO = EvolutionHistoryDTO(from: evolutionHistory)
         self.evolutionHistory = evolutionHistory
+        self.purpose = purpose
+        self.archivedAt = archivedAt
+        self.archiveReason = archiveReason
+        self.dailyStats = dailyStats
+        self.breakHistory = breakHistory
+        self.peakWindPoints = peakWindPoints
+        self.totalBreakMinutes = totalBreakMinutes
+        self.totalWindDecreased = totalWindDecreased
+        self.preset = preset
+    }
+
+    init(
+        id: UUID = UUID(),
+        name: String,
+        evolutionHistoryDTO: EvolutionHistoryDTO,
+        purpose: String?,
+        archivedAt: Date = Date(),
+        archiveReason: ArchiveReason,
+        dailyStats: [DailyUsageStat] = [],
+        breakHistory: [CompletedBreak] = [],
+        peakWindPoints: Double = 0,
+        totalBreakMinutes: Double = 0,
+        totalWindDecreased: Double = 0,
+        preset: WindPreset = .default
+    ) {
+        self.id = id
+        self.name = name
+        self.evolutionHistoryDTO = evolutionHistoryDTO
+        self.evolutionHistory = EvolutionHistory(from: evolutionHistoryDTO)
         self.purpose = purpose
         self.archivedAt = archivedAt
         self.archiveReason = archiveReason

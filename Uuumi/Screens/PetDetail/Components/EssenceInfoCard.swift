@@ -12,16 +12,25 @@ struct EssenceInfoCard: View {
     }
 
     var body: some View {
-        guard let essence = evolutionHistory.essence else { return AnyView(EmptyView()) }
-        return AnyView(cardContent(essence: essence))
+        if let essence = evolutionHistory.essence {
+            cardContent(
+                iconName: essence.assetName,
+                name: EvolutionPath.path(for: essence).displayName,
+                color: .green
+            )
+        } else if evolutionHistory.hasUnknownEssence, let rawValue = evolutionHistory.essenceRawValue {
+            let capitalized = rawValue.prefix(1).uppercased() + rawValue.dropFirst()
+            cardContent(
+                iconName: "unknown-essence",
+                name: "\(capitalized) Path",
+                color: .orange
+            )
+        }
     }
 
-    private func cardContent(essence: Essence) -> some View {
-        let color: Color = .green
-        let name = EvolutionPath.path(for: essence).displayName
-
-        return HStack(spacing: 16) {
-            Image(essence.assetName)
+    private func cardContent(iconName: String, name: String, color: Color) -> some View {
+        HStack(spacing: 16) {
+            Image(iconName)
                 .resizable()
                 .scaledToFit()
                 .padding(8)
@@ -32,7 +41,11 @@ struct EssenceInfoCard: View {
                 Text(name)
                     .font(.headline)
 
-                if let date = firstEvolutionDate {
+                if evolutionHistory.hasUnknownEssence {
+                    Text("Neznámá esence")
+                        .font(.subheadline)
+                        .foregroundStyle(.orange)
+                } else if let date = firstEvolutionDate {
                     Text("Od \(formatDate(date))")
                         .font(.subheadline)
                         .foregroundStyle(.secondary)

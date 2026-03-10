@@ -76,7 +76,7 @@ struct PetDetailScreen: View {
                         canUseEssence: pet.canUseEssence
                     )
 
-                    if !pet.isBlob {
+                    if !pet.isBlob && !pet.hasUnknownEssence {
                         EvolutionTimelineView(
                             history: pet.evolutionHistory,
                             canEvolve: canProgress,

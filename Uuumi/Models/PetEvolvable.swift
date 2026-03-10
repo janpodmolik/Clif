@@ -13,6 +13,7 @@ extension PetEvolvable {
     var evolutionTypeName: String { essence?.rawValue ?? "blob" }
     var currentPhase: Int { evolutionHistory.currentPhase }
     var isBlob: Bool { evolutionHistory.isBlob }
+    var hasUnknownEssence: Bool { evolutionHistory.hasUnknownEssence }
     var canEvolve: Bool { evolutionHistory.canEvolve }
     var isBlown: Bool { evolutionHistory.isBlown }
     var isFullyEvolved: Bool { evolutionHistory.isFullyEvolved }

@@ -13,7 +13,7 @@ struct ArchivedPetSupabaseDTO: Codable {
     let peakWindPoints: Double
     let totalBreakMinutes: Double
     let totalWindDecreased: Double
-    let evolutionHistory: EvolutionHistory
+    let evolutionHistory: EvolutionHistoryDTO
     let dailyStats: [DailyUsageStat]
     let breakHistory: [CompletedBreak]
     let hourlyAggregate: HourlyAggregate?
@@ -53,7 +53,7 @@ struct ArchivedPetSupabaseDTO: Codable {
         self.peakWindPoints = archivedPet.peakWindPoints
         self.totalBreakMinutes = archivedPet.totalBreakMinutes
         self.totalWindDecreased = archivedPet.totalWindDecreased
-        self.evolutionHistory = archivedPet.evolutionHistory
+        self.evolutionHistory = EvolutionHistoryDTO(from: archivedPet.evolutionHistory)
         self.dailyStats = archivedPet.dailyStats
         self.breakHistory = archivedPet.breakHistory
         self.hourlyAggregate = hourlyAggregate
@@ -70,7 +70,7 @@ extension ArchivedPet {
         self.init(
             id: supabaseDTO.id,
             name: supabaseDTO.name,
-            evolutionHistory: supabaseDTO.evolutionHistory,
+            evolutionHistoryDTO: supabaseDTO.evolutionHistory,
             purpose: supabaseDTO.purpose,
             archivedAt: supabaseDTO.archivedAt,
             archiveReason: ArchiveReason(rawValue: supabaseDTO.archiveReason) ?? .manual,

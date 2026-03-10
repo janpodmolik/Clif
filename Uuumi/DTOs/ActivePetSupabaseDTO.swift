@@ -9,7 +9,7 @@ struct ActivePetSupabaseDTO: Codable {
     let purpose: String?
     let preset: String
     let lastLimitedSourceChangeDate: Date?
-    let evolutionHistory: EvolutionHistory
+    let evolutionHistory: EvolutionHistoryDTO
     let dailyStats: [DailyUsageStat]
     let limitedSources: [LimitedSource]
     let breakHistory: [CompletedBreak]

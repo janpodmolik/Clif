@@ -17,10 +17,12 @@ struct EvolutionCarousel<Pet: PetEvolvable>: View {
     private var currentPhase: Int { pet.currentPhase }
     private var essence: Essence? { pet.essence }
     private var isBlob: Bool { pet.isBlob }
+    private var hasUnknownEssence: Bool { pet.hasUnknownEssence }
     private var evolutionPath: EvolutionPath? { pet.evolutionPath }
 
-    /// Total cards = 1 for blob, or 1 (origin) + maxPhase (evolution phases) for evolved
+    /// Total cards = 1 for blob or unknown essence, or 1 (origin) + maxPhase (evolution phases) for evolved
     private var totalCards: Int {
+        if isBlob || hasUnknownEssence { return 1 }
         guard let evolutionPath else { return 1 }
         return 1 + evolutionPath.maxPhases
     }
@@ -73,8 +75,8 @@ struct EvolutionCarousel<Pet: PetEvolvable>: View {
 
     @ViewBuilder
     private var carousel: some View {
-        if isBlob {
-            // Single centered card for blob - no scrolling needed
+        if isBlob || hasUnknownEssence {
+            // Single centered card for blob or unknown essence - no scrolling needed
             cardView(for: 0)
                 .frame(width: cardWidth, height: cardHeight)
                 .shadow(
@@ -133,6 +135,12 @@ struct EvolutionCarousel<Pet: PetEvolvable>: View {
         if isBlob {
             // Blob-only card (no essence yet)
             BlobOnlyCard(isBlownAway: isBlownAway, canUseEssence: canUseEssence, showStatusBadge: showBlobStatusBadge)
+        } else if hasUnknownEssence, let rawValue = pet.evolutionHistory.essenceRawValue {
+            UnknownEssenceCard(
+                essenceRawValue: rawValue,
+                evolutionCount: pet.evolutionHistory.events.count,
+                currentPhase: currentPhase
+            )
         } else if index == 0, let essence, let path = evolutionPath {
             EvolutionOriginCard(essence: essence, path: path, isBlownAway: isBlownAway)
         } else if let path = evolutionPath {

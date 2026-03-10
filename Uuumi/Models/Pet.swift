@@ -371,6 +371,11 @@ extension Pet {
     func debugResetToBlob() {
         evolutionHistory.debugResetToBlob()
     }
+
+    /// Sets essence to unknown for testing unknown essence UI.
+    func debugSetUnknownEssence() {
+        evolutionHistory.debugSetUnknownEssence()
+    }
 }
 
 // MARK: - Mock Data

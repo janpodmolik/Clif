@@ -160,6 +160,12 @@ struct DebugView: View {
                         .tint(.orange)
                     }
 
+                    Button("Unknown Essence") {
+                        pet.debugSetUnknownEssence()
+                        petManager.savePet()
+                    }
+                    .tint(.orange)
+
                     Button("Reset to Blob") {
                         pet.debugResetToBlob()
                         petManager.savePet()
