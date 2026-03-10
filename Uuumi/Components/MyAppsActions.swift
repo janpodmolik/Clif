@@ -7,20 +7,25 @@ import SwiftUI
 /// Self-contained: hidden when no saved preset exists.
 struct MyAppsLoadButton: View {
     @Binding var selection: FamilyActivitySelection
+    var infoMessage = "Načte tvůj uložený výběr aplikací a kategorií. Uložený výběr můžeš spravovat v Profilu."
     var onLoad: (() -> Void)?
 
     var body: some View {
         if SharedDefaults.hasMyAppsSelection {
-            Button {
-                if let saved = SharedDefaults.loadMyAppsSelection() {
-                    selection = saved
-                    onLoad?()
+            HStack(spacing: 8) {
+                Button {
+                    if let saved = SharedDefaults.loadMyAppsSelection() {
+                        selection = saved
+                        onLoad?()
+                    }
+                } label: {
+                    Label("Použít moje aplikace", systemImage: "arrow.down.app")
+                        .font(.subheadline)
                 }
-            } label: {
-                Label("Použít moje aplikace", systemImage: "arrow.down.app")
-                    .font(.subheadline)
+                .buttonStyle(.borderless)
+
+                MyAppsInfoButton(message: infoMessage)
             }
-            .buttonStyle(.borderless)
         }
     }
 }

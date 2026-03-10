@@ -39,12 +39,8 @@ struct AppSelectionStep: View {
                 selectionSummary
 
                 if !selectionMatchesSaved {
-                    HStack(spacing: 8) {
-                        MyAppsLoadButton(selection: $coordinator.selectedApps) {
-                            pickerID = UUID()
-                        }
-
-                        MyAppsInfoButton(message: "Načte tvůj uložený výběr aplikací a kategorií. Uložený výběr můžeš spravovat v Profilu.")
+                    MyAppsLoadButton(selection: $coordinator.selectedApps) {
+                        pickerID = UUID()
                     }
                     .padding(.top, 4)
                 }

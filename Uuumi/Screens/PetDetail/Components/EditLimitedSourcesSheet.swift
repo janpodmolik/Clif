@@ -73,14 +73,13 @@ struct EditLimitedSourcesSheet: View {
 
     private var header: some View {
         VStack(spacing: Layout.headerSpacing) {
-            HStack {
-                Text("Sledované aplikace")
-                    .font(.title3.weight(.semibold))
+            Text("Sledované aplikace")
+                .font(.title3.weight(.semibold))
 
-                MyAppsInfoButton(message: "Načti si uložený výběr aplikací, nebo ho uprav a ulož znovu. Uložený výběr můžeš spravovat v Profilu.")
-            }
-
-            MyAppsLoadButton(selection: $editSelection) {
+            MyAppsLoadButton(
+                selection: $editSelection,
+                infoMessage: "Načti si uložený výběr aplikací, nebo ho uprav a ulož znovu. Uložený výběr můžeš spravovat v Profilu."
+            ) {
                 pickerID = UUID()
             }
 
