@@ -95,6 +95,7 @@ final class ScreenTimeManager: ObservableObject {
         SharedDefaults.todaySelectedPreset = preset.rawValue
         SharedDefaults.windPresetLockedForToday = true
         SharedDefaults.windPresetLockedDate = Date()
+        SharedDefaults.lastDayResetDate = Calendar.current.startOfDay(for: Date())
 
         // Log preset selection to snapshot analytics
         SnapshotLogging.logPresetSelected(
