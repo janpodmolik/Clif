@@ -39,9 +39,11 @@ enum ScheduledNotificationManager {
         }
     }
 
-    /// Cancels all scheduled notifications (e.g., when pet is deleted/archived).
+    /// Cancels all scheduled notifications (e.g., when pet is deleted/archived/blown away).
     static func cancelAll() {
         DailySummaryNotification.cancel()
         EvolutionReadyNotification.cancel()
+        WindReminderNotification.cancel()
+        BreakNotification.cancelScheduledCommittedBreakEnd()
     }
 }

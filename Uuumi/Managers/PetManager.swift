@@ -199,6 +199,9 @@ final class PetManager {
         ShieldManager.shared.clear()
         ScreenTimeManager.shared.stopMonitoring()
 
+        // Cancel all pending notifications — they're irrelevant for a blown-away pet
+        ScheduledNotificationManager.cancelAll()
+
         // Set wind to 100% so blown away state looks correct visually
         SharedDefaults.monitoredWindPoints = 100
 
