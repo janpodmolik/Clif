@@ -130,7 +130,7 @@ struct PetDropStep: View {
                     .overlay(alignment: .topTrailing) {
                         Image(systemName: coordinator.preset.iconName)
                             .font(.subheadline)
-                            .foregroundStyle(.green)
+                            .foregroundStyle(coordinator.preset.themeColor)
                             .padding(Layout.innerPadding)
                     }
                 }

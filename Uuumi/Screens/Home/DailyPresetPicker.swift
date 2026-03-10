@@ -53,7 +53,7 @@ struct DailyPresetPicker: View {
                         .foregroundStyle(.white)
                         .frame(maxWidth: .infinity)
                         .padding()
-                        .background(Color.green, in: RoundedRectangle(cornerRadius: 16))
+                        .background(selectedPreset.themeColor, in: RoundedRectangle(cornerRadius: 16))
                 }
                 .padding(.horizontal)
                 .padding(.bottom, 24)
@@ -84,7 +84,7 @@ private struct PresetOptionRow: View {
             HStack(spacing: 16) {
                 Image(systemName: preset.iconName)
                     .font(.title2)
-                    .foregroundStyle(.green)
+                    .foregroundStyle(preset.themeColor)
                     .frame(width: 32)
 
                 VStack(alignment: .leading, spacing: 2) {
@@ -102,17 +102,17 @@ private struct PresetOptionRow: View {
                 if isSelected {
                     Image(systemName: "checkmark.circle.fill")
                         .font(.title2)
-                        .foregroundStyle(.green)
+                        .foregroundStyle(preset.themeColor)
                 }
             }
             .padding()
             .background(
                 RoundedRectangle(cornerRadius: 12)
-                    .fill(isSelected ? .green.opacity(0.1) : Color(.secondarySystemBackground))
+                    .fill(isSelected ? preset.themeColor.opacity(0.1) : Color(.secondarySystemBackground))
             )
             .overlay(
                 RoundedRectangle(cornerRadius: 12)
-                    .stroke(isSelected ? .green : .clear, lineWidth: 2)
+                    .stroke(isSelected ? preset.themeColor : .clear, lineWidth: 2)
             )
         }
         .buttonStyle(.plain)

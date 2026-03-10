@@ -60,9 +60,9 @@ struct BreakControlSection: View {
     private var presetIcon: some View {
         Image(systemName: preset.iconName)
             .font(.system(size: 16, weight: .medium))
-            .foregroundStyle(.green)
+            .foregroundStyle(preset.themeColor)
             .frame(width: 32, height: 32)
-            .background(.green.opacity(0.15), in: Circle())
+            .background(preset.themeColor.opacity(0.15), in: Circle())
     }
 
     private var infoButton: some View {
@@ -167,9 +167,9 @@ private struct PresetComparisonCard: View {
         HStack(spacing: 12) {
             Image(systemName: preset.iconName)
                 .font(.system(size: 20, weight: .medium))
-                .foregroundStyle(.green)
+                .foregroundStyle(preset.themeColor)
                 .frame(width: 40, height: 40)
-                .background(.green.opacity(0.15), in: Circle())
+                .background(preset.themeColor.opacity(0.15), in: Circle())
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(preset.displayName)
@@ -194,11 +194,11 @@ private struct PresetComparisonCard: View {
         .padding()
         .background(
             RoundedRectangle(cornerRadius: 12)
-                .fill(isCurrent ? .green.opacity(0.1) : Color.secondary.opacity(0.05))
+                .fill(isCurrent ? preset.themeColor.opacity(0.1) : Color.secondary.opacity(0.05))
         )
         .overlay(
             RoundedRectangle(cornerRadius: 12)
-                .stroke(isCurrent ? .green.opacity(0.3) : .clear, lineWidth: 1)
+                .stroke(isCurrent ? preset.themeColor.opacity(0.3) : .clear, lineWidth: 1)
         )
     }
 }

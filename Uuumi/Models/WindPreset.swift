@@ -94,6 +94,14 @@ enum WindPreset: String, Codable, CaseIterable {
         }
     }
 
+    var themeColor: Color {
+        switch self {
+        case .gentle: .green
+        case .balanced: .blue
+        case .intense: .red
+        }
+    }
+
     var iconName: String {
         switch self {
         case .gentle: "leaf.fill"

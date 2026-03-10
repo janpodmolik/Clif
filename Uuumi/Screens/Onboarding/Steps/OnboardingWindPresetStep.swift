@@ -194,7 +194,7 @@ private struct PresetCard: View {
             HStack(spacing: 12) {
                 Image(systemName: preset.iconName)
                     .font(.title3)
-                    .foregroundStyle(.green)
+                    .foregroundStyle(preset.themeColor)
                     .frame(width: 28, height: 28)
 
                 VStack(alignment: .leading, spacing: 2) {
@@ -206,10 +206,10 @@ private struct PresetCard: View {
                         if preset == .balanced {
                             Text("Recommended")
                                 .font(.caption2.weight(.semibold))
-                                .foregroundStyle(.green)
+                                .foregroundStyle(preset.themeColor)
                                 .padding(.horizontal, 6)
                                 .padding(.vertical, 2)
-                                .background(.green.opacity(0.15), in: Capsule())
+                                .background(preset.themeColor.opacity(0.15), in: Capsule())
                         }
                     }
 
@@ -222,7 +222,7 @@ private struct PresetCard: View {
                 Spacer()
 
                 Image(systemName: "checkmark.circle.fill")
-                    .foregroundStyle(.green)
+                    .foregroundStyle(preset.themeColor)
                     .font(.title3)
                     .opacity(isSelected ? 1 : 0)
             }
@@ -231,7 +231,7 @@ private struct PresetCard: View {
             .glassSelectableBackground(
                 cornerRadius: 16,
                 isSelected: isSelected,
-                tintColor: .green
+                tintColor: preset.themeColor
             )
         }
         .buttonStyle(.plain)

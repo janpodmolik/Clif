@@ -30,7 +30,7 @@ struct SelectionSummaryCard: View {
                 HStack(spacing: 4) {
                     Image(systemName: coordinator.preset.iconName)
                         .font(.system(size: 14))
-                        .foregroundStyle(.green)
+                        .foregroundStyle(coordinator.preset.themeColor)
 
                     Text(coordinator.preset.displayName)
                         .font(.subheadline.weight(.medium))
