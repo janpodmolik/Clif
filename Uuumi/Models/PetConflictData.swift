@@ -15,7 +15,7 @@ struct PetConflictData: Identifiable {
 
     // MARK: - Cloud Pet Info
 
-    let cloudDTO: ActivePetSupabaseDTO
+    let cloudDTO: ActivePetDTO
     let cloudPetName: String
     let cloudPetPhase: Int
     let cloudPetEssence: Essence?
@@ -24,9 +24,9 @@ struct PetConflictData: Identifiable {
 
     // MARK: - Cloud Archived Pets
 
-    let cloudArchivedDTOs: [ArchivedPetSupabaseDTO]
+    let cloudArchivedDTOs: [ArchivedPetDTO]
 
-    init(localPet: Pet, cloudDTO: ActivePetSupabaseDTO, cloudArchivedDTOs: [ArchivedPetSupabaseDTO]) {
+    init(localPet: Pet, cloudDTO: ActivePetDTO, cloudArchivedDTOs: [ArchivedPetDTO]) {
         self.localPetName = localPet.name
         self.localPetPhase = localPet.currentPhase
         self.localPetEssence = localPet.essence
@@ -55,8 +55,8 @@ extension PetConflictData {
     /// Preview-only init with raw values (no DTO dependency).
     static var preview: PetConflictData {
         let localPet = Pet.mock(name: "Fern", phase: 2, essence: .plant, totalDays: 7)
-        let cloudDTO = ActivePetSupabaseDTO(
-            from: PetDTO(from: Pet.mock(name: "Sprout", phase: 3, essence: .plant, totalDays: 14)),
+        let cloudDTO = ActivePetDTO(
+            from: PetLocalDTO(from: Pet.mock(name: "Sprout", phase: 3, essence: .plant, totalDays: 14)),
             userId: UUID(),
             windPoints: 30,
             isBlownAway: false,

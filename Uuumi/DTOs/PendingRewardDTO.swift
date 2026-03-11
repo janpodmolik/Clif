@@ -1,6 +1,6 @@
 import Foundation
 
-/// DTO for the `pending_rewards` Supabase table.
+/// DTO for the `pending_rewards` remote table.
 /// Admin inserts rows manually; app claims them on foreground entry.
 struct PendingRewardDTO: Codable {
     let id: UUID

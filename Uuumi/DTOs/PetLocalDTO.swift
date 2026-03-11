@@ -2,7 +2,7 @@ import Foundation
 
 /// Codable DTO for Pet persistence.
 /// windPoints, lastThresholdSeconds, and activeBreak are NOT stored - Pet reads from SharedDefaults as single source of truth.
-struct PetDTO: Codable {
+struct PetLocalDTO: Codable {
     let id: UUID
     let name: String
     let evolutionHistory: EvolutionHistoryDTO
@@ -64,7 +64,7 @@ struct PetDTO: Codable {
 }
 
 extension Pet {
-    convenience init(from dto: PetDTO) {
+    convenience init(from dto: PetLocalDTO) {
         self.init(
             id: dto.id,
             name: dto.name,

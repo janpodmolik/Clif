@@ -10,9 +10,6 @@ struct ArchivedPetSummary: Codable, Identifiable, Equatable, PetEvolvable {
     let totalDays: Int
     let archiveReason: ArchiveReason
 
-    // MARK: - Evolution (DTO for storage, cached Model for logic)
-
-    private let evolutionHistoryDTO: EvolutionHistoryDTO
     let evolutionHistory: EvolutionHistory
 
     var finalPhase: Int { currentPhase }
@@ -21,7 +18,7 @@ struct ArchivedPetSummary: Codable, Identifiable, Equatable, PetEvolvable {
 
     private enum CodingKeys: String, CodingKey {
         case id, name, purpose, archivedAt, totalDays, archiveReason
-        case evolutionHistoryDTO = "evolutionHistory"
+        case evolutionHistory
     }
 
     init(
@@ -31,7 +28,6 @@ struct ArchivedPetSummary: Codable, Identifiable, Equatable, PetEvolvable {
         archivedAt: Date,
         totalDays: Int,
         archiveReason: ArchiveReason,
-        evolutionHistoryDTO: EvolutionHistoryDTO,
         evolutionHistory: EvolutionHistory
     ) {
         self.id = id
@@ -40,7 +36,6 @@ struct ArchivedPetSummary: Codable, Identifiable, Equatable, PetEvolvable {
         self.archivedAt = archivedAt
         self.totalDays = totalDays
         self.archiveReason = archiveReason
-        self.evolutionHistoryDTO = evolutionHistoryDTO
         self.evolutionHistory = evolutionHistory
     }
 
@@ -52,8 +47,19 @@ struct ArchivedPetSummary: Codable, Identifiable, Equatable, PetEvolvable {
         archivedAt = try container.decode(Date.self, forKey: .archivedAt)
         totalDays = try container.decode(Int.self, forKey: .totalDays)
         archiveReason = try container.decode(ArchiveReason.self, forKey: .archiveReason)
-        evolutionHistoryDTO = try container.decode(EvolutionHistoryDTO.self, forKey: .evolutionHistoryDTO)
-        evolutionHistory = EvolutionHistory(from: evolutionHistoryDTO)
+        let dto = try container.decode(EvolutionHistoryDTO.self, forKey: .evolutionHistory)
+        evolutionHistory = EvolutionHistory(from: dto)
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(id, forKey: .id)
+        try container.encode(name, forKey: .name)
+        try container.encodeIfPresent(purpose, forKey: .purpose)
+        try container.encode(archivedAt, forKey: .archivedAt)
+        try container.encode(totalDays, forKey: .totalDays)
+        try container.encode(archiveReason, forKey: .archiveReason)
+        try container.encode(EvolutionHistoryDTO(from: evolutionHistory), forKey: .evolutionHistory)
     }
 }
 
@@ -61,10 +67,8 @@ struct ArchivedPetSummary: Codable, Identifiable, Equatable, PetEvolvable {
 
 extension ArchivedPetSummary {
     init(from pet: ArchivedPet) {
-        let dto = EvolutionHistoryDTO(from: pet.evolutionHistory)
         self.id = pet.id
         self.name = pet.name
-        self.evolutionHistoryDTO = dto
         self.evolutionHistory = pet.evolutionHistory
         self.purpose = pet.purpose
         self.archivedAt = pet.archivedAt
@@ -82,12 +86,6 @@ extension ArchivedPetSummary {
         archiveReason: ArchiveReason = .completed,
         totalDays: Int = 21
     ) -> ArchivedPetSummary {
-        let history = EvolutionHistory.mock(
-            phase: phase,
-            essence: .plant,
-            totalDays: totalDays,
-            isBlown: archiveReason == .blown
-        )
         return ArchivedPetSummary(
             id: UUID(),
             name: name,
@@ -95,8 +93,12 @@ extension ArchivedPetSummary {
             archivedAt: Date(),
             totalDays: totalDays,
             archiveReason: archiveReason,
-            evolutionHistoryDTO: EvolutionHistoryDTO(from: history),
-            evolutionHistory: history
+            evolutionHistory: .mock(
+                phase: phase,
+                essence: .plant,
+                totalDays: totalDays,
+                isBlown: archiveReason == .blown
+            )
         )
     }
 

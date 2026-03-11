@@ -1,6 +1,6 @@
 import Foundation
 
-/// DTO for the `user_data` Supabase table.
+/// DTO for the `user_data` remote table.
 /// One row per user with a JSONB `data` column containing all syncable user state.
 struct UserDataDTO: Codable {
     let userId: UUID

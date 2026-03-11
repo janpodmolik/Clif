@@ -1,8 +1,8 @@
 import Foundation
 
-/// DTO for the `active_pets` Supabase table.
-/// Maps between local PetDTO and Supabase JSONB columns.
-struct ActivePetSupabaseDTO: Codable {
+/// DTO for the `active_pets` remote table.
+/// Maps between local PetLocalDTO and remote JSONB columns.
+struct ActivePetDTO: Codable {
     let id: UUID
     let userId: UUID
     let name: String
@@ -36,9 +36,9 @@ struct ActivePetSupabaseDTO: Codable {
         case updatedAt = "updated_at"
     }
 
-    /// Creates a Supabase DTO from local PetDTO + sync data.
+    /// Creates a remote DTO from local PetLocalDTO + sync data.
     init(
-        from petDTO: PetDTO,
+        from petDTO: PetLocalDTO,
         userId: UUID,
         windPoints: Double,
         isBlownAway: Bool,
@@ -64,21 +64,21 @@ struct ActivePetSupabaseDTO: Codable {
     }
 }
 
-// MARK: - Conversion to PetDTO
+// MARK: - Conversion to PetLocalDTO
 
-extension PetDTO {
-    /// Creates a PetDTO from a Supabase cloud DTO (used during restore).
-    init(from supabaseDTO: ActivePetSupabaseDTO) {
+extension PetLocalDTO {
+    /// Creates a PetLocalDTO from a cloud DTO (used during restore).
+    init(from remoteDTO: ActivePetDTO) {
         self.init(
-            id: supabaseDTO.id,
-            name: supabaseDTO.name,
-            evolutionHistory: supabaseDTO.evolutionHistory,
-            purpose: supabaseDTO.purpose,
-            preset: WindPreset(rawValue: supabaseDTO.preset) ?? .balanced,
-            dailyStats: supabaseDTO.dailyStats,
-            limitedSources: supabaseDTO.limitedSources,
-            lastLimitedSourceChangeDate: supabaseDTO.lastLimitedSourceChangeDate,
-            breakHistory: supabaseDTO.breakHistory
+            id: remoteDTO.id,
+            name: remoteDTO.name,
+            evolutionHistory: remoteDTO.evolutionHistory,
+            purpose: remoteDTO.purpose,
+            preset: WindPreset(rawValue: remoteDTO.preset) ?? .balanced,
+            dailyStats: remoteDTO.dailyStats,
+            limitedSources: remoteDTO.limitedSources,
+            lastLimitedSourceChangeDate: remoteDTO.lastLimitedSourceChangeDate,
+            breakHistory: remoteDTO.breakHistory
         )
     }
 }

@@ -25,6 +25,8 @@ struct EssenceInfoCard: View {
                 name: "\(capitalized) Path",
                 color: .orange
             )
+        } else {
+            EmptyView()
         }
     }
 

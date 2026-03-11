@@ -8,9 +8,6 @@ struct ArchivedPet: Codable, Identifiable, Equatable, PetEvolvable {
     let archivedAt: Date
     let archiveReason: ArchiveReason
 
-    // MARK: - Evolution (DTO for storage, cached Model for logic)
-
-    private let evolutionHistoryDTO: EvolutionHistoryDTO
     let evolutionHistory: EvolutionHistory
 
     // MARK: - Stats
@@ -61,7 +58,7 @@ struct ArchivedPet: Codable, Identifiable, Equatable, PetEvolvable {
 
     private enum CodingKeys: String, CodingKey {
         case id, name, purpose, archivedAt, archiveReason
-        case evolutionHistoryDTO = "evolutionHistory"
+        case evolutionHistory
         case dailyStats, breakHistory
         case peakWindPoints, totalBreakMinutes, totalWindDecreased, preset
     }
@@ -73,14 +70,30 @@ struct ArchivedPet: Codable, Identifiable, Equatable, PetEvolvable {
         purpose = try container.decodeIfPresent(String.self, forKey: .purpose)
         archivedAt = try container.decode(Date.self, forKey: .archivedAt)
         archiveReason = try container.decode(ArchiveReason.self, forKey: .archiveReason)
-        evolutionHistoryDTO = try container.decode(EvolutionHistoryDTO.self, forKey: .evolutionHistoryDTO)
-        evolutionHistory = EvolutionHistory(from: evolutionHistoryDTO)
+        let dto = try container.decode(EvolutionHistoryDTO.self, forKey: .evolutionHistory)
+        evolutionHistory = EvolutionHistory(from: dto)
         dailyStats = try container.decode([DailyUsageStat].self, forKey: .dailyStats)
         breakHistory = try container.decode([CompletedBreak].self, forKey: .breakHistory)
         peakWindPoints = try container.decode(Double.self, forKey: .peakWindPoints)
         totalBreakMinutes = try container.decode(Double.self, forKey: .totalBreakMinutes)
         totalWindDecreased = try container.decode(Double.self, forKey: .totalWindDecreased)
         preset = try container.decode(WindPreset.self, forKey: .preset)
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(id, forKey: .id)
+        try container.encode(name, forKey: .name)
+        try container.encodeIfPresent(purpose, forKey: .purpose)
+        try container.encode(archivedAt, forKey: .archivedAt)
+        try container.encode(archiveReason, forKey: .archiveReason)
+        try container.encode(EvolutionHistoryDTO(from: evolutionHistory), forKey: .evolutionHistory)
+        try container.encode(dailyStats, forKey: .dailyStats)
+        try container.encode(breakHistory, forKey: .breakHistory)
+        try container.encode(peakWindPoints, forKey: .peakWindPoints)
+        try container.encode(totalBreakMinutes, forKey: .totalBreakMinutes)
+        try container.encode(totalWindDecreased, forKey: .totalWindDecreased)
+        try container.encode(preset, forKey: .preset)
     }
 
     // MARK: - Init
@@ -101,7 +114,6 @@ struct ArchivedPet: Codable, Identifiable, Equatable, PetEvolvable {
     ) {
         self.id = id
         self.name = name
-        self.evolutionHistoryDTO = EvolutionHistoryDTO(from: evolutionHistory)
         self.evolutionHistory = evolutionHistory
         self.purpose = purpose
         self.archivedAt = archivedAt
@@ -114,34 +126,6 @@ struct ArchivedPet: Codable, Identifiable, Equatable, PetEvolvable {
         self.preset = preset
     }
 
-    init(
-        id: UUID = UUID(),
-        name: String,
-        evolutionHistoryDTO: EvolutionHistoryDTO,
-        purpose: String?,
-        archivedAt: Date = Date(),
-        archiveReason: ArchiveReason,
-        dailyStats: [DailyUsageStat] = [],
-        breakHistory: [CompletedBreak] = [],
-        peakWindPoints: Double = 0,
-        totalBreakMinutes: Double = 0,
-        totalWindDecreased: Double = 0,
-        preset: WindPreset = .default
-    ) {
-        self.id = id
-        self.name = name
-        self.evolutionHistoryDTO = evolutionHistoryDTO
-        self.evolutionHistory = EvolutionHistory(from: evolutionHistoryDTO)
-        self.purpose = purpose
-        self.archivedAt = archivedAt
-        self.archiveReason = archiveReason
-        self.dailyStats = dailyStats
-        self.breakHistory = breakHistory
-        self.peakWindPoints = peakWindPoints
-        self.totalBreakMinutes = totalBreakMinutes
-        self.totalWindDecreased = totalWindDecreased
-        self.preset = preset
-    }
 }
 
 // MARK: - Archiving from Pet

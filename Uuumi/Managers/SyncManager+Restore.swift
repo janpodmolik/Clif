@@ -5,7 +5,7 @@ import Supabase
 
 extension SyncManager {
 
-    /// Restores active pet + archived pets from Supabase after a fresh install.
+    /// Restores active pet + archived pets from the cloud after a fresh install.
     /// Only runs when authenticated and no local pet exists.
     func restoreFromCloud(
         petManager: PetManager,
@@ -18,7 +18,7 @@ extension SyncManager {
 
         do {
             // 1. Restore active pet
-            let activePetResponse: [ActivePetSupabaseDTO] = try await client
+            let activePetResponse: [ActivePetDTO] = try await client
                 .from("active_pets")
                 .select()
                 .eq("user_id", value: userId.uuidString)
@@ -50,7 +50,7 @@ extension SyncManager {
             }
 
             // 2. Restore archived pets
-            let archivedResponse: [ArchivedPetSupabaseDTO] = try await client
+            let archivedResponse: [ArchivedPetDTO] = try await client
                 .from("archived_pets")
                 .select()
                 .eq("user_id", value: userId.uuidString)
@@ -94,7 +94,7 @@ extension SyncManager {
 
     /// Restores archived pets from cloud DTOs + stores hourly data. Reusable helper.
     func restoreArchivedPetsIfNeeded(
-        _ dtos: [ArchivedPetSupabaseDTO],
+        _ dtos: [ArchivedPetDTO],
         into archivedPetManager: ArchivedPetManager
     ) {
         guard !dtos.isEmpty else { return }

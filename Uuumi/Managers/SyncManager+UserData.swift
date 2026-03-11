@@ -7,7 +7,7 @@ extension SyncManager {
 
     // MARK: - User Data Sync
 
-    /// Uploads current local user data to Supabase (upsert on user_id).
+    /// Uploads current local user data to the cloud (upsert on user_id).
     func syncUserData(essenceCatalogManager: EssenceCatalogManager) async {
         guard let userId = await currentUserId() else { return }
 
@@ -46,7 +46,7 @@ extension SyncManager {
         await syncUserData(essenceCatalogManager: essenceCatalogManager)
     }
 
-    /// Restores user data from Supabase to local storage.
+    /// Restores user data from the cloud to local storage.
     /// Called during cloud restore (fresh install) or sign-in with existing account.
     func restoreUserData(essenceCatalogManager: EssenceCatalogManager) async {
         guard let userId = await currentUserId() else { return }
@@ -106,7 +106,7 @@ extension SyncManager {
 
     // MARK: - Pending Rewards
 
-    /// Claims unclaimed rewards from Supabase, adds coins locally, and marks them as claimed.
+    /// Claims unclaimed rewards from the cloud, adds coins locally, and marks them as claimed.
     /// Returns the total coins claimed (0 if none).
     @discardableResult
     func claimPendingRewards() async -> Int {
@@ -153,7 +153,7 @@ extension SyncManager {
     // MARK: - Schema Migration
 
     /// Migrates a cloud DTO to the current schema version if needed.
-    func migrateIfNeeded(_ dto: ActivePetSupabaseDTO) -> ActivePetSupabaseDTO {
+    func migrateIfNeeded(_ dto: ActivePetDTO) -> ActivePetDTO {
         switch dto.schemaVersion {
         case 1: return dto // current version
         // case 1: return migrateV1toV2(dto) // future migrations

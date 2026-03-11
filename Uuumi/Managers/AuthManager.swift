@@ -246,7 +246,7 @@ final class AuthManager {
 
     // MARK: - Delete Account
 
-    /// Deletes the current user via a Supabase database function.
+    /// Deletes the current user via a remote database function.
     /// Requires a `delete_user()` SQL function with `SECURITY DEFINER` on the backend.
     func deleteAccount() async -> Bool {
         error = nil

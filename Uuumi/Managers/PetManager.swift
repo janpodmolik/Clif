@@ -324,7 +324,7 @@ final class PetManager {
     // MARK: - Sign Out Cleanup
 
     /// Clears all local pet data when the user signs out.
-    /// Data remains in cloud for future restore. Does NOT delete from Supabase.
+    /// Data remains in cloud for future restore. Does NOT delete from the cloud.
     func clearOnSignOut() {
         guard let pet else { return }
 
@@ -371,14 +371,14 @@ final class PetManager {
     /// After restore, detects token validity:
     /// - Auth `.approved` (sign-out/sign-in, no reinstall) → tokens valid → starts monitoring
     /// - Auth `.notDetermined` (reinstall) → tokens invalid → sets `needsAppReselection`
-    func restoreActivePet(from supabaseDTO: ActivePetSupabaseDTO) -> Pet? {
+    func restoreActivePet(from remoteDTO: ActivePetDTO) -> Pet? {
         guard pet == nil else { return nil }
 
-        let dto = PetDTO(from: supabaseDTO)
+        let dto = PetLocalDTO(from: remoteDTO)
         let restoredPet = Pet(from: dto)
 
         // Restore wind state to SharedDefaults (Pet reads windPoints from there)
-        SharedDefaults.monitoredWindPoints = supabaseDTO.windPoints
+        SharedDefaults.monitoredWindPoints = remoteDTO.windPoints
         SharedDefaults.monitoredPetId = restoredPet.id
 
         pet = restoredPet
@@ -539,7 +539,7 @@ private extension PetManager {
     /// Loads the active pet from storage.
     func loadActivePet() {
         guard let data = SharedDefaults.data(forKey: DefaultsKeys.activePet),
-              let dto = try? JSONDecoder().decode(PetDTO.self, from: data) else {
+              let dto = try? JSONDecoder().decode(PetLocalDTO.self, from: data) else {
             return
         }
         pet = Pet(from: dto)
@@ -548,7 +548,7 @@ private extension PetManager {
     /// Saves the active pet to SharedDefaults.
     func saveActivePet() {
         if let pet = pet,
-           let data = try? JSONEncoder().encode(PetDTO(from: pet)) {
+           let data = try? JSONEncoder().encode(PetLocalDTO(from: pet)) {
             SharedDefaults.setData(data, forKey: DefaultsKeys.activePet)
         } else {
             SharedDefaults.removeObject(forKey: DefaultsKeys.activePet)

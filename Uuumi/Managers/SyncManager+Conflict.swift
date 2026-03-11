@@ -28,7 +28,7 @@ extension SyncManager {
 
         do {
             // Fetch cloud active pet
-            let activePetResponse: [ActivePetSupabaseDTO] = try await client
+            let activePetResponse: [ActivePetDTO] = try await client
                 .from("active_pets")
                 .select()
                 .eq("user_id", value: userId.uuidString)
@@ -36,7 +36,7 @@ extension SyncManager {
                 .value
 
             // Fetch cloud archived pets (needed for both paths)
-            let archivedResponse: [ArchivedPetSupabaseDTO] = try await client
+            let archivedResponse: [ArchivedPetDTO] = try await client
                 .from("archived_pets")
                 .select()
                 .eq("user_id", value: userId.uuidString)

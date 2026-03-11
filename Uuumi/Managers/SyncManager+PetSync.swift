@@ -7,7 +7,7 @@ extension SyncManager {
 
     // MARK: - Active Pet Sync
 
-    /// Syncs the active pet to Supabase. Always runs (ignores debounce).
+    /// Syncs the active pet to the cloud. Always runs (ignores debounce).
     func syncActivePet(petManager: PetManager) async {
         guard let pet = petManager.currentPet,
               let userId = await currentUserId() else { return }
@@ -16,11 +16,11 @@ extension SyncManager {
         defer { isSyncing = false }
 
         do {
-            let dto = PetDTO(from: pet)
+            let dto = PetLocalDTO(from: pet)
             let hourlyAggregate = SnapshotStore.shared.computeHourlyAggregate()
             let hourlyPerDay = SnapshotStore.shared.computeDailyHourlyBreakdowns(petId: pet.id)
 
-            let supabaseDTO = ActivePetSupabaseDTO(
+            let remoteDTO = ActivePetDTO(
                 from: dto,
                 userId: userId,
                 windPoints: pet.windPoints,
@@ -31,7 +31,7 @@ extension SyncManager {
 
             try await client
                 .from("active_pets")
-                .upsert(supabaseDTO, onConflict: "user_id")
+                .upsert(remoteDTO, onConflict: "user_id")
                 .execute()
 
             lastSyncDate = Date()
@@ -61,14 +61,14 @@ extension SyncManager {
 
     // MARK: - Archived Pet Sync
 
-    /// Syncs an archived pet to Supabase. Inserts directly + optionally deletes active pet.
+    /// Syncs an archived pet to the cloud. Inserts directly + optionally deletes active pet.
     func syncArchivedPet(_ archivedPet: ArchivedPet, deletingActivePetId: UUID? = nil) async {
         guard let userId = await currentUserId() else { return }
 
         do {
             let hourlyPerDay = SnapshotStore.shared.computeDailyHourlyBreakdowns(petId: archivedPet.id)
 
-            let supabaseDTO = ArchivedPetSupabaseDTO(
+            let remoteDTO = ArchivedPetDTO(
                 from: archivedPet,
                 userId: userId,
                 hourlyPerDay: hourlyPerDay
@@ -77,7 +77,7 @@ extension SyncManager {
             // Insert archived pet (ON CONFLICT DO NOTHING handled by Supabase)
             try await client
                 .from("archived_pets")
-                .upsert(supabaseDTO, ignoreDuplicates: true)
+                .upsert(remoteDTO, ignoreDuplicates: true)
                 .execute()
 
             // Delete active pet from cloud if provided
@@ -103,7 +103,7 @@ extension SyncManager {
 
     // MARK: - Initial Sync (one-time migration of existing archived pets)
 
-    /// Uploads all locally archived pets to Supabase. Runs once per device.
+    /// Uploads all locally archived pets to the cloud. Runs once per device.
     func initialSyncIfNeeded(archivedPetManager: ArchivedPetManager) async {
         guard !UserDefaults.standard.bool(forKey: "hasCompletedInitialSync") else { return }
         guard await currentUserId() != nil else { return }
@@ -128,7 +128,7 @@ extension SyncManager {
 
     // MARK: - Delete Active Pet from Cloud
 
-    /// Removes the active pet row from Supabase (called when pet is deleted without archiving).
+    /// Removes the active pet row from the cloud (called when pet is deleted without archiving).
     func deleteActivePetFromCloud(petId: UUID) async {
         guard let userId = await currentUserId() else { return }
 

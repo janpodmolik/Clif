@@ -1,8 +1,8 @@
 import Foundation
 
-/// DTO for the `archived_pets` Supabase table.
-/// Maps between local ArchivedPet and Supabase JSONB columns.
-struct ArchivedPetSupabaseDTO: Codable {
+/// DTO for the `archived_pets` remote table.
+/// Maps between local ArchivedPet and remote JSONB columns.
+struct ArchivedPetDTO: Codable {
     let id: UUID
     let userId: UUID
     let name: String
@@ -36,7 +36,7 @@ struct ArchivedPetSupabaseDTO: Codable {
         case schemaVersion = "schema_version"
     }
 
-    /// Creates a Supabase DTO from a local ArchivedPet + hourly data.
+    /// Creates a remote DTO from a local ArchivedPet + hourly data.
     init(
         from archivedPet: ArchivedPet,
         userId: UUID,
@@ -65,21 +65,21 @@ struct ArchivedPetSupabaseDTO: Codable {
 // MARK: - Conversion to ArchivedPet
 
 extension ArchivedPet {
-    /// Creates an ArchivedPet from a Supabase cloud DTO (used during restore).
-    init(from supabaseDTO: ArchivedPetSupabaseDTO) {
+    /// Creates an ArchivedPet from a cloud DTO (used during restore).
+    init(from remoteDTO: ArchivedPetDTO) {
         self.init(
-            id: supabaseDTO.id,
-            name: supabaseDTO.name,
-            evolutionHistoryDTO: supabaseDTO.evolutionHistory,
-            purpose: supabaseDTO.purpose,
-            archivedAt: supabaseDTO.archivedAt,
-            archiveReason: ArchiveReason(rawValue: supabaseDTO.archiveReason) ?? .manual,
-            dailyStats: supabaseDTO.dailyStats,
-            breakHistory: supabaseDTO.breakHistory,
-            peakWindPoints: supabaseDTO.peakWindPoints,
-            totalBreakMinutes: supabaseDTO.totalBreakMinutes,
-            totalWindDecreased: supabaseDTO.totalWindDecreased,
-            preset: WindPreset(rawValue: supabaseDTO.preset) ?? .balanced
+            id: remoteDTO.id,
+            name: remoteDTO.name,
+            evolutionHistory: EvolutionHistory(from: remoteDTO.evolutionHistory),
+            purpose: remoteDTO.purpose,
+            archivedAt: remoteDTO.archivedAt,
+            archiveReason: ArchiveReason(rawValue: remoteDTO.archiveReason) ?? .manual,
+            dailyStats: remoteDTO.dailyStats,
+            breakHistory: remoteDTO.breakHistory,
+            peakWindPoints: remoteDTO.peakWindPoints,
+            totalBreakMinutes: remoteDTO.totalBreakMinutes,
+            totalWindDecreased: remoteDTO.totalWindDecreased,
+            preset: WindPreset(rawValue: remoteDTO.preset) ?? .balanced
         )
     }
 }

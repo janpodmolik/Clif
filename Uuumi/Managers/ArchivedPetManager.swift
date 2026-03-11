@@ -122,7 +122,7 @@ final class ArchivedPetManager {
 
     /// Restores archived pets from cloud DTOs. Saves details to Documents/archived/ and rebuilds summaries.
     /// Skips pets that already exist locally (by ID).
-    func restoreArchivedPets(from dtos: [ArchivedPetSupabaseDTO]) {
+    func restoreArchivedPets(from dtos: [ArchivedPetDTO]) {
         let existingIds = Set(summaries.map(\.id))
 
         for dto in dtos {
