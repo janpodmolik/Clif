@@ -21,6 +21,8 @@ struct OnboardingNotificationStep: View {
 
     // MARK: - Permission State
 
+    @Environment(\.scenePhase) private var scenePhase
+
     @State private var showCTA = false
     @State private var permissionRequested = false
     @State private var permissionDenied = false
@@ -54,6 +56,11 @@ struct OnboardingNotificationStep: View {
         .animation(.easeOut(duration: 0.3), value: permissionDenied)
         .onAppear { handleAppear() }
         .onDisappear { handleDisappear() }
+        .onChange(of: scenePhase) { _, newPhase in
+            if newPhase == .active && permissionRequested {
+                checkIfPermissionGranted()
+            }
+        }
     }
 
     // MARK: - Narrative
@@ -129,10 +136,19 @@ struct OnboardingNotificationStep: View {
         if showButton {
             VStack(spacing: 12) {
                 if permissionDenied {
-                    deniedInfo
+                    Text("You can enable notifications in app settings anytime.")
+                        .font(AppFont.quicksand(.caption, weight: .medium))
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
+                        .transition(.opacity)
+                    goToSettingsButton
+                        .transition(.opacity)
+                    skipButton
+                        .transition(.opacity)
+                } else {
+                    continueButton
                         .transition(.opacity)
                 }
-                continueButton
             }
             .transition(.opacity)
         } else if showCTA {
@@ -151,14 +167,28 @@ struct OnboardingNotificationStep: View {
         .buttonStyle(.primary)
     }
 
-    private var deniedInfo: some View {
-        Label {
-            Text("You can enable this later in Settings.")
-        } icon: {
-            Image(systemName: "info.circle")
+    private var goToSettingsButton: some View {
+        Button {
+            HapticType.impactLight.trigger()
+            openSettings()
+        } label: {
+            Text("Go to Settings")
         }
-        .font(AppFont.quicksand(.caption, weight: .medium))
-        .foregroundStyle(.secondary)
+        .buttonStyle(.primary)
+    }
+
+    private var skipButton: some View {
+        Button {
+            HapticType.impactLight.trigger()
+            onContinue()
+        } label: {
+            Text("Skip")
+                .font(.body.weight(.semibold))
+                .foregroundStyle(Color(.label))
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 14)
+                .background(Color(.systemBackground), in: Capsule())
+        }
     }
 
     private var continueButton: some View {
@@ -175,7 +205,7 @@ struct OnboardingNotificationStep: View {
 
     @ViewBuilder
     private var tapToSkipOverlay: some View {
-        if !skipAnimation {
+        if !skipAnimation && !permissionDenied {
             if !textCompleted {
                 // Skip narrative
                 Color.clear
@@ -248,6 +278,21 @@ struct OnboardingNotificationStep: View {
         )
         withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
             speechBubbleVisible = true
+        }
+    }
+
+    private func openSettings() {
+        guard let url = URL(string: UIApplication.openSettingsURLString) else { return }
+        UIApplication.shared.open(url)
+    }
+
+    private func checkIfPermissionGranted() {
+        Task {
+            let settings = await UNUserNotificationCenter.current().notificationSettings()
+            let granted = settings.authorizationStatus == .authorized
+            withAnimation {
+                permissionDenied = !granted
+            }
         }
     }
 
