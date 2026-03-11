@@ -26,10 +26,6 @@ struct OnboardingNamingStep: View {
         case purpose
     }
 
-    // MARK: - Completion
-
-    @State private var showButton = false
-
     var body: some View {
         VStack(spacing: 0) {
             narrative
@@ -47,18 +43,21 @@ struct OnboardingNamingStep: View {
 
             Spacer()
 
-            if showButton {
+            if showInput {
                 continueButton
                     .padding(.horizontal, 24)
                     .padding(.bottom, 16)
                     .transition(.opacity)
+                    .disabled(!isNameValid)
             }
         }
         .overlay {
             tapToSkipOverlay
         }
         .animation(.easeOut(duration: 0.3), value: showInput)
-        .animation(.easeOut(duration: 0.3), value: showButton)
+        .onChange(of: showInput) { _, visible in
+            if visible { focusedField = .name }
+        }
         .onAppear { handleAppear() }
     }
 
@@ -113,14 +112,9 @@ struct OnboardingNamingStep: View {
             TextField("e.g. Fern", text: $petName)
                 .textFieldStyle(GlassTextFieldStyle())
                 .focused($focusedField, equals: .name)
-                .submitLabel(.next)
+                .submitLabel(.done)
                 .onSubmit {
-                    focusedField = .purpose
-                }
-                .onChange(of: petName) {
-                    withAnimation {
-                        showButton = isNameValid
-                    }
+                    focusedField = nil
                 }
 
             VStack(alignment: .leading, spacing: 6) {
@@ -182,8 +176,6 @@ struct OnboardingNamingStep: View {
         Task {
             try? await Task.sleep(for: .seconds(0.3))
             withAnimation { showInput = true }
-            try? await Task.sleep(for: .seconds(0.4))
-            focusedField = .name
         }
     }
 
@@ -222,7 +214,6 @@ struct OnboardingNamingStep: View {
             showSecondLine = true
             textCompleted = true
             showInput = true
-            showButton = isNameValid
         }
     }
 }
