@@ -207,9 +207,6 @@ final class CreatePetCoordinator {
             SharedDefaults.saveMyAppsSelection(selectedApps)
         }
 
-        // Apply preset (locks it for today, starts monitoring, resets wind)
-        ScreenTimeManager.shared.applyDailyPreset(preset, for: pet)
-
         analyticsManager.send(.petCreated(essenceType: "blob"))
         analyticsManager.send(.presetSelected(presetName: preset.rawValue, context: .creation))
 

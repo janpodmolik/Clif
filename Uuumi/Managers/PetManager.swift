@@ -56,9 +56,6 @@ final class PetManager {
     ) -> Pet? {
         guard pet == nil else { return nil }
 
-        // Ensure clean wind state for new pet
-        SharedDefaults.resetWindState()
-
         let calendar = Calendar.current
         let day2 = calendar.date(byAdding: .day, value: 1, to: calendar.startOfDay(for: Date()))!
         let unlockDate = EvolutionHistory.randomUnlockDate(on: day2)
@@ -72,6 +69,10 @@ final class PetManager {
         )
         pet = newPet
         saveActivePet()
+
+        // Lock preset for today and start monitoring (prevents Daily Preset picker from re-appearing)
+        ScreenTimeManager.shared.applyDailyPreset(preset, for: newPet)
+
         Task { await AppDelegate.requestNotificationPermission() }
         ScheduledNotificationManager.refresh(
             isEvolutionAvailable: false,
