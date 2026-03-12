@@ -534,6 +534,11 @@ struct DebugView: View {
                     simulateMidnightReset()
                 }
                 .tint(.orange)
+
+                Button("Overnight Break") {
+                    simulateOvernightBreak()
+                }
+                .tint(.pink)
             }
             .buttonStyle(.bordered)
             .controlSize(.small)
@@ -562,6 +567,27 @@ struct DebugView: View {
         ShieldManager.shared.resumeBreakMonitoringIfNeeded()
 
         log("Midnight reset: type=\(result.breakType), minutes=\(result.actualMinutes), coins=\(coins)")
+    }
+
+    /// Simulates opening the app after an overnight committed break.
+    /// Sets day state to "yesterday" so the next scenePhase .active triggers the daily preset picker.
+    /// Steps: sets lastDayResetDate to yesterday, locks preset for yesterday, clears break flags.
+    private func simulateOvernightBreak() {
+        let yesterday = Calendar.current.date(byAdding: .day, value: -1, to: Calendar.current.startOfDay(for: Date()))!
+
+        // Simulate state as if daily reset happened yesterday and preset was selected
+        SharedDefaults.lastDayResetDate = yesterday
+        SharedDefaults.windPresetLockedForToday = true
+        SharedDefaults.windPresetLockedDate = yesterday
+        SharedDefaults.isDayStartShieldActive = false
+
+        // Clear any active break (as if committed break ended overnight)
+        SharedDefaults.resetShieldFlags()
+        ShieldManager.shared.clear()
+
+        SharedDefaults.synchronize()
+
+        print("[DebugTools] Simulated overnight break state — backgrounding and foregrounding should trigger daily preset picker")
     }
 
     /// Simulates what the extension does when wind reaches 100%:

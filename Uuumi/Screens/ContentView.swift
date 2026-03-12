@@ -159,6 +159,7 @@ struct ContentView: View {
         .onChange(of: scenePhase) { _, newPhase in
             if newPhase == .active {
                 ShieldState.shared.refresh()
+                checkDayResetAndShowPicker()
             }
         }
         .onChange(of: shieldState.lastEarnedCoins) { _, coins in
@@ -251,6 +252,7 @@ struct ContentView: View {
         }
 
         guard petManager.hasPet,
+              !SharedDefaults.isShieldActive,
               SharedDefaults.isDayStartShieldActive,
               !SharedDefaults.windPresetLockedForToday else {
             return
