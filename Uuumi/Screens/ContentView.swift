@@ -60,14 +60,17 @@ struct ContentView: View {
     #endif
 
     var body: some View {
-        Group {
-            if hasCompletedOnboarding {
-                mainContent
-            } else {
-                OnboardingView()
-                    .ignoresSafeArea(.keyboard)
-                    .preferredColorScheme(resolvedColorScheme)
+        GeometryReader { rootGeometry in
+            Group {
+                if hasCompletedOnboarding {
+                    mainContent
+                } else {
+                    OnboardingView()
+                        .ignoresSafeArea(.keyboard)
+                        .preferredColorScheme(resolvedColorScheme)
+                }
             }
+            .environment(\.fullScreenHeight, rootGeometry.size.height)
         }
         .sheet(item: Bindable(syncManager).pendingWelcomeBack) { cloudPet in
             WelcomeBackSheet(cloudPet: cloudPet) { action, appSelection in

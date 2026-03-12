@@ -66,4 +66,15 @@ extension EnvironmentValues {
         get { self[SheetCornerRadiusKey.self] }
         set { self[SheetCornerRadiusKey.self] = newValue }
     }
+
+    /// Full screen height measured above TabView, ensuring consistent sizing
+    /// for island/pet calculations across onboarding and home screen.
+    var fullScreenHeight: CGFloat {
+        get { self[FullScreenHeightKey.self] }
+        set { self[FullScreenHeightKey.self] = newValue }
+    }
+}
+
+private struct FullScreenHeightKey: EnvironmentKey {
+    static let defaultValue: CGFloat = 0
 }

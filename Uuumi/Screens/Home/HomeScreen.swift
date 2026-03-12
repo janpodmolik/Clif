@@ -13,6 +13,7 @@ struct HomeScreen: View {
     @Environment(SyncManager.self) private var syncManager
     @Environment(CoinsRewardAnimator.self) private var coinsAnimator
     @Environment(AnalyticsManager.self) private var analytics
+    @Environment(\.fullScreenHeight) private var fullScreenHeight
 
     @State private var windRhythm = WindRhythm()
     @State private var blowAwayAnimator = BlowAwayAnimator()
@@ -29,6 +30,7 @@ struct HomeScreen: View {
     @State private var dropZoneFrame: CGRect = .zero
     @State private var evolutionAnimator = EvolutionTransitionAnimator()
     @State private var reactionAnimator = PetReactionAnimator()
+    @State private var cardRevealed = false
 
     /// Timer-driven refresh trigger for real-time wind updates during active shield.
     /// Increments periodically to force UI recalculation of effectiveWindPoints.
@@ -129,13 +131,13 @@ struct HomeScreen: View {
 
                 // Card layer — switches between homeCard and emptyIslandCard
                 ZStack {
-                    if let pet = currentPet, !isInCreationMode {
+                    if let pet = currentPet, !isInCreationMode, cardRevealed {
                         homeCard(for: pet, windProgress: pet.windProgress)
                             .offset(y: ascensionAnimator.cardOffsetY)
                             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
                             .padding(homeCardInset)
                             .transition(.move(edge: .top).combined(with: .opacity))
-                    } else if !isInCreationMode {
+                    } else if !isInCreationMode, cardRevealed {
                         emptyIslandCard
                             .modifier(HomeCardBackgroundModifier(cornerRadius: homeCardCornerRadius))
                             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
@@ -148,7 +150,7 @@ struct HomeScreen: View {
 
                 // Floating lock button
                 if currentPet != nil, !isInCreationMode {
-                    HomeFloatingLockButton(bottomPadding: geometry.size.height * 0.3)
+                    HomeFloatingLockButton(bottomPadding: fullScreenHeight * 0.3)
                 }
 
                 #if DEBUG
@@ -165,16 +167,26 @@ struct HomeScreen: View {
             .onAppear {
                 currentScreenWidth = geometry.size.width
                 currentScreenHeight = geometry.size.height
-                createPetCoordinator.petHeight = geometry.size.height * 0.10
+                createPetCoordinator.petHeight = fullScreenHeight * 0.10
                 // If pet was blown in background, set off-screen immediately
                 if currentPet?.isBlownAway == true {
                     blowAwayAnimator.setBlownState(screenWidth: geometry.size.width)
+                }
+                // Animate card reveal on first appearance
+                if currentPet != nil {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                        withAnimation(.easeOut(duration: 0.5)) {
+                            cardRevealed = true
+                        }
+                    }
+                } else {
+                    cardRevealed = true
                 }
             }
             .onChange(of: geometry.size) { _, newSize in
                 currentScreenWidth = newSize.width
                 currentScreenHeight = newSize.height
-                createPetCoordinator.petHeight = newSize.height * 0.10
+                createPetCoordinator.petHeight = fullScreenHeight * 0.10
             }
         }
         .fullScreenCover(isPresented: $showPetDetail, onDismiss: {
@@ -372,7 +384,7 @@ struct HomeScreen: View {
             let effectiveProgress = pet.windProgress
 
             IslandView(
-                screenHeight: geometry.size.height,
+                screenHeight: fullScreenHeight,
                 screenWidth: geometry.size.width,
                 content: .pet(
                     pet.phase ?? Blob.shared,
@@ -436,7 +448,7 @@ struct HomeScreen: View {
             .offset(evolutionAnimator.cameraTransform.offset)
         } else {
             IslandView(
-                screenHeight: geometry.size.height,
+                screenHeight: fullScreenHeight,
                 screenWidth: geometry.size.width,
                 content: createPetCoordinator.isDropping
                     ? .dropZone(
@@ -571,7 +583,7 @@ struct HomeScreen: View {
             analytics.send(.petArchived(essenceType: pet.evolutionTypeName, evolutionPhase: pet.currentPhase, totalDays: pet.totalDays, reason: reason))
         }
 
-        let screenHeight = currentScreenHeight ?? 800
+        let screenHeight = fullScreenHeight > 0 ? fullScreenHeight : 800
         ascensionAnimator.trigger(screenHeight: screenHeight) { [petManager, archivedPetManager] in
             // Archive without animation — pet is already off-screen.
             // The empty island card slides in via its own transition.
