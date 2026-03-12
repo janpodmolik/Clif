@@ -155,4 +155,5 @@ enum DefaultsKeys {
     static let selectedDayTheme = "selectedDayTheme"
     static let selectedNightTheme = "selectedNightTheme"
     static let lockButtonSide = "lockButtonSide"
+    static let lockButtonSize = "lockButtonSize"
 }

@@ -6,6 +6,7 @@ enum ProfileDestination: Hashable {
     case essenceCatalog
     case notificationSettings
     case shieldSettings
+    case lockButtonSettings
     case feedback
 }
 
@@ -17,7 +18,6 @@ struct ProfileScreen: View {
     @AppStorage(DefaultsKeys.appearanceMode) private var appearanceMode: AppearanceMode = .automatic
     @AppStorage(DefaultsKeys.selectedDayTheme) private var dayTheme: DayTheme = .morningHaze
     @AppStorage(DefaultsKeys.selectedNightTheme) private var nightTheme: NightTheme = .deepNight
-    @AppStorage(DefaultsKeys.lockButtonSide) private var lockButtonSide: LockButtonSide = .trailing
     @State private var limitSettings = SharedDefaults.limitSettings
     @State private var showPremiumSheet = false
     @State private var showAuthSheet = false
@@ -78,11 +78,7 @@ struct ProfileScreen: View {
                         Label("Shield", systemImage: "shield.fill")
                     }
 
-                    Picker(selection: $lockButtonSide) {
-                        ForEach(LockButtonSide.allCases, id: \.self) { side in
-                            Text(side.label).tag(side)
-                        }
-                    } label: {
+                    NavigationLink(value: ProfileDestination.lockButtonSettings) {
                         Label("Lock tlačítko", systemImage: "lock.fill")
                     }
 
@@ -198,6 +194,8 @@ struct ProfileScreen: View {
                     NotificationSettingsScreen()
                 case .shieldSettings:
                     ShieldSettingsScreen()
+                case .lockButtonSettings:
+                    LockButtonSettingsScreen()
                 case .feedback:
                     FeedbackScreen(showSuccess: $showFeedbackSuccess)
                 }

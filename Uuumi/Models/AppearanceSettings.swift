@@ -21,12 +21,37 @@ enum AppearanceMode: String, CaseIterable, Codable {
 }
 
 enum LockButtonSide: String, CaseIterable, Codable {
-    case trailing, leading
+    case leading, trailing
 
     var label: String {
         switch self {
         case .trailing: "Vpravo"
         case .leading: "Vlevo"
+        }
+    }
+}
+
+enum LockButtonSize: String, CaseIterable, Codable {
+    case normal, large
+
+    var label: String {
+        switch self {
+        case .normal: "Normální"
+        case .large: "Velká"
+        }
+    }
+
+    var frameSize: CGFloat {
+        switch self {
+        case .normal: 55
+        case .large: 70
+        }
+    }
+
+    var iconFont: Font {
+        switch self {
+        case .normal: .title2.weight(.semibold)
+        case .large: .title.weight(.semibold)
         }
     }
 }

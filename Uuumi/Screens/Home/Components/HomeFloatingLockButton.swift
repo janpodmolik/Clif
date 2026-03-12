@@ -5,6 +5,7 @@ import SwiftUI
 struct HomeFloatingLockButton: View {
     @Environment(AnalyticsManager.self) private var analytics
     @AppStorage(DefaultsKeys.lockButtonSide) private var lockButtonSide: LockButtonSide = .trailing
+    @AppStorage(DefaultsKeys.lockButtonSize) private var lockButtonSize: LockButtonSize = .normal
 
     @State private var showBreakTypePicker = false
     @State private var showCommittedUnlock = false
@@ -72,9 +73,9 @@ struct HomeFloatingLockButton: View {
             }
         } label: {
             Image(systemName: shieldState.isActive ? "lock.fill" : "lock.open.fill")
-                .font(.title2.weight(.semibold))
+                .font(lockButtonSize.iconFont)
                 .contentTransition(.symbolEffect(.replace))
-                .frame(width: 55, height: 55)
+                .frame(width: lockButtonSize.frameSize, height: lockButtonSize.frameSize)
         }
         .contentShape(Circle().inset(by: -10))
         .buttonStyle(.pressableButton)
