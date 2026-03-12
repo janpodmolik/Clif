@@ -304,9 +304,14 @@ struct OnboardingNotificationStep: View {
             let settings = await UNUserNotificationCenter.current().notificationSettings()
             let granted = settings.authorizationStatus == .authorized
 
+            if granted {
+                onContinue()
+                return
+            }
+
             withAnimation {
                 showCTA = false
-                permissionDenied = !granted
+                permissionDenied = true
                 showButton = true
             }
         }
