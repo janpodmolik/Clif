@@ -17,8 +17,8 @@ struct OnboardingLockStep: View {
     private let buttonSize: CGFloat = 55
     private let unlockedScale: CGFloat = 80 / 55
     /// Lock animation: total duration and step count for the wind drop.
-    private let windDropDuration: Double = 2.5
-    private let windDropSteps = 20
+    private let windDropDuration: Double = 4.0
+    private let windDropSteps = 30
     /// How much wind must drop before the lock slides to the trailing edge.
     private let settleDropThreshold: CGFloat = 0.15
 
