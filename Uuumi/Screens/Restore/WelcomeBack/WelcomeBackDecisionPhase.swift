@@ -7,6 +7,9 @@ struct WelcomeBackDecisionPhase: View {
     let onArchive: () -> Void
     let onDelete: () -> Void
 
+    @State private var showArchiveConfirm = false
+    @State private var showDeleteConfirm = false
+
     private var cloudEvolutionHistory: EvolutionHistory {
         EvolutionHistory(from: cloudPet.evolutionHistory)
     }
@@ -52,7 +55,7 @@ struct WelcomeBackDecisionPhase: View {
                         title: "Archivovat \(cloudPet.name)",
                         subtitle: "Pet jde do archívu, začni znovu",
                         iconColor: .orange,
-                        action: onArchive
+                        action: { showArchiveConfirm = true }
                     )
                 }
 
@@ -61,7 +64,7 @@ struct WelcomeBackDecisionPhase: View {
                     title: "Smazat \(cloudPet.name)",
                     subtitle: "Pet bude trvale odstraněn",
                     iconColor: .red,
-                    action: onDelete
+                    action: { showDeleteConfirm = true }
                 )
             }
 
@@ -71,6 +74,26 @@ struct WelcomeBackDecisionPhase: View {
         .disabled(isResolving)
         .overlay {
             if isResolving { ProgressView().scaleEffect(1.5) }
+        }
+        .confirmationDialog(
+            "\(cloudPet.name) bude archivován",
+            isPresented: $showArchiveConfirm,
+            titleVisibility: .visible
+        ) {
+            Button("Archivovat", role: .destructive, action: onArchive)
+            Button("Zpět", role: .cancel) {}
+        } message: {
+            Text("Pet půjde do archívu a ty budeš pokračovat v onboardingu.")
+        }
+        .confirmationDialog(
+            "\(cloudPet.name) bude smazán",
+            isPresented: $showDeleteConfirm,
+            titleVisibility: .visible
+        ) {
+            Button("Smazat", role: .destructive, action: onDelete)
+            Button("Zpět", role: .cancel) {}
+        } message: {
+            Text("Pet bude trvale odstraněn a ty budeš pokračovat v onboardingu.")
         }
     }
 
