@@ -33,9 +33,9 @@ struct BreakTypePicker: View {
 
     private var durationSteps: [Int] {
         #if DEBUG
-        [0, 5, 10, 15, 20, 30, 45, 60, 90, 120]
+        [0, 5, 10, 15, 30, 45, 60, 90, 120]
         #else
-        [5, 10, 15, 20, 30, 45, 60, 90, 120]
+        [5, 10, 15, 30, 45, 60, 90, 120]
         #endif
     }
 
