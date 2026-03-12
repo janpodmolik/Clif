@@ -70,7 +70,7 @@ struct ContentView: View {
             }
         }
         .sheet(item: Bindable(syncManager).pendingWelcomeBack) { cloudPet in
-            WelcomeBackSheet(cloudPet: cloudPet) { action, runOnboarding, appSelection in
+            WelcomeBackSheet(cloudPet: cloudPet) { action, appSelection in
                 Task {
                     await syncManager.resolveWelcomeBack(
                         action,
@@ -78,16 +78,15 @@ struct ContentView: View {
                         archivedPetManager: archivedPetManager,
                         essenceCatalogManager: essenceCatalogManager
                     )
-                    // Apply app selection and clear needsAppReselection before going to HomeScreen
-                    if let appSelection {
-                        let sources = LimitedSource.from(appSelection)
-                        petManager.handleAppReselectionComplete(sources, selection: appSelection)
-                    }
-                    if action == .continueWithPet || !runOnboarding {
+                    if action == .continueWithPet {
+                        // Apply app selection before going to HomeScreen
+                        if let appSelection {
+                            let sources = LimitedSource.from(appSelection)
+                            petManager.handleAppReselectionComplete(sources, selection: appSelection)
+                        }
                         hasCompletedOnboarding = true
                     }
-                    // If runOnboarding == true (after archive/delete), hasCompletedOnboarding
-                    // stays false, so OnboardingView appears automatically.
+                    // archive/delete: hasCompletedOnboarding stays false → OnboardingView appears
                 }
             }
         }
