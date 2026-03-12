@@ -60,12 +60,36 @@ struct ContentView: View {
     #endif
 
     var body: some View {
-        if hasCompletedOnboarding {
-            mainContent
-        } else {
-            OnboardingView()
-                .ignoresSafeArea(.keyboard)
-                .preferredColorScheme(resolvedColorScheme)
+        Group {
+            if hasCompletedOnboarding {
+                mainContent
+            } else {
+                OnboardingView()
+                    .ignoresSafeArea(.keyboard)
+                    .preferredColorScheme(resolvedColorScheme)
+            }
+        }
+        .sheet(item: Bindable(syncManager).pendingWelcomeBack) { cloudPet in
+            WelcomeBackSheet(cloudPet: cloudPet) { action, runOnboarding, appSelection in
+                Task {
+                    await syncManager.resolveWelcomeBack(
+                        action,
+                        petManager: petManager,
+                        archivedPetManager: archivedPetManager,
+                        essenceCatalogManager: essenceCatalogManager
+                    )
+                    // Apply app selection and clear needsAppReselection before going to HomeScreen
+                    if let appSelection {
+                        let sources = LimitedSource.from(appSelection)
+                        petManager.handleAppReselectionComplete(sources, selection: appSelection)
+                    }
+                    if action == .continueWithPet || !runOnboarding {
+                        hasCompletedOnboarding = true
+                    }
+                    // If runOnboarding == true (after archive/delete), hasCompletedOnboarding
+                    // stays false, so OnboardingView appears automatically.
+                }
+            }
         }
     }
 

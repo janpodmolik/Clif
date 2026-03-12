@@ -2,7 +2,7 @@ import Foundation
 
 /// DTO for the `active_pets` remote table.
 /// Maps between local PetLocalDTO and remote JSONB columns.
-struct ActivePetDTO: Codable {
+struct ActivePetDTO: Codable, Identifiable {
     let id: UUID
     let userId: UUID
     let name: String

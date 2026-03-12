@@ -17,6 +17,10 @@ final class SyncManager {
     /// HomeScreen observes this to show PetConflictSheet.
     var pendingConflict: PetConflictData?
 
+    /// Set when reinstall is detected (Keychain token survived but onboarding was wiped).
+    /// ContentView observes this to show WelcomeBackSheet instead of OnboardingView.
+    var pendingWelcomeBack: ActivePetDTO?
+
     /// Total coins from the last `claimPendingRewards()` call. ContentView observes
     /// this to trigger the coin reward animation; reset to 0 after consuming.
     var lastClaimedRewards: Int = 0
@@ -24,6 +28,12 @@ final class SyncManager {
     enum ConflictResolution {
         case keepLocal
         case keepCloud
+    }
+
+    enum WelcomeBackAction {
+        case continueWithPet
+        case archivePet
+        case deletePet
     }
 
     // MARK: - Private
@@ -92,5 +102,6 @@ final class SyncManager {
         UserDefaults.standard.removeObject(forKey: DefaultsKeys.lastUserDataSync)
         UserDefaults.standard.removeObject(forKey: "hasCompletedInitialSync")
         pendingConflict = nil
+        pendingWelcomeBack = nil
     }
 }

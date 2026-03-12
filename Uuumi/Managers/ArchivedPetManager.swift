@@ -88,6 +88,14 @@ final class ArchivedPetManager {
         saveSummaries()
     }
 
+    /// Saves a pre-built ArchivedPet (e.g., constructed from a cloud DTO) to local storage.
+    func archiveExisting(_ archivedPet: ArchivedPet) {
+        let summary = ArchivedPetSummary(from: archivedPet)
+        saveDetail(archivedPet, for: archivedPet.id)
+        summaries.insert(summary, at: 0)
+        saveSummaries()
+    }
+
     // MARK: - Public API: Essence Records
 
     /// Build essence records for the collection carousel.

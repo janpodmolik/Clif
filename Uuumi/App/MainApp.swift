@@ -9,6 +9,9 @@ struct MainApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self)
     var appDelegate
 
+    @AppStorage(DefaultsKeys.hasCompletedOnboarding)
+    private var hasCompletedOnboarding = false
+
     @Environment(\.scenePhase) private var scenePhase
 
     @State private var petManager = PetManager()
@@ -89,13 +92,27 @@ struct MainApp: App {
                     }
                 }
             } else {
-                // No local pet — restore settings first, then pet (reinstall recovery)
-                Task {
-                    await syncManager.restoreUserData(essenceCatalogManager: essenceCatalogManager)
-                    await syncManager.restoreFromCloud(
-                        petManager: petManager,
-                        archivedPetManager: archivedPetManager
-                    )
+                // No local pet — check if this is a reinstall with an existing cloud pet
+                if !hasCompletedOnboarding {
+                    // Reinstall scenario: Keychain token survived but onboarding was wiped.
+                    // Show WelcomeBackSheet if a cloud pet exists, otherwise treat as new user.
+                    Task {
+                        await syncManager.checkForWelcomeBack(
+                            petManager: petManager,
+                            archivedPetManager: archivedPetManager,
+                            essenceCatalogManager: essenceCatalogManager
+                        )
+                    }
+                } else {
+                    // Onboarding already completed but no local pet — restore from cloud
+                    // (e.g. onboarding flag survived reinstall, or local pet file was lost)
+                    Task {
+                        await syncManager.restoreUserData(essenceCatalogManager: essenceCatalogManager)
+                        await syncManager.restoreFromCloud(
+                            petManager: petManager,
+                            archivedPetManager: archivedPetManager
+                        )
+                    }
                 }
             }
 
