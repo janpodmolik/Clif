@@ -86,12 +86,14 @@ struct PetDebugView: View {
         case blob = "Blob"
         case plant = "Plant"
         case troll = "Troll"
+        case orc = "Orc"
 
         var evolutionPath: EvolutionPath? {
             switch self {
             case .blob: return nil
             case .plant: return .plant
             case .troll: return .troll
+            case .orc: return .orc
             }
         }
 

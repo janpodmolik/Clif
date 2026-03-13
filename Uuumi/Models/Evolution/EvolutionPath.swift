@@ -24,6 +24,7 @@ extension EvolutionPath {
         switch essence {
         case .plant: return .plant
         case .troll: return .troll
+        case .orc: return .orc
         }
     }
 }
@@ -39,6 +40,9 @@ extension EvolutionPath {
             EvolutionPhase(phaseNumber: 2, evolutionId: "plant", displayScale: 1.05, idleConfig: .default),
             EvolutionPhase(phaseNumber: 3, evolutionId: "plant", displayScale: 1.12, idleConfig: .default),
             EvolutionPhase(phaseNumber: 4, evolutionId: "plant", displayScale: 1.40, idleConfig: .default),
+            EvolutionPhase(phaseNumber: 5, evolutionId: "plant", displayScale: 1.40, idleConfig: .default),
+            EvolutionPhase(phaseNumber: 6, evolutionId: "plant", displayScale: 1.40, idleConfig: .default),
+            EvolutionPhase(phaseNumber: 7, evolutionId: "plant", displayScale: 1.50, idleConfig: .default),
         ]
     )
 }
@@ -56,6 +60,22 @@ extension EvolutionPath {
             EvolutionPhase(phaseNumber: 4, evolutionId: "troll", displayScale: 0.84, idleConfig: .default),
             EvolutionPhase(phaseNumber: 5, evolutionId: "troll", displayScale: 1.10, idleConfig: .default),
             EvolutionPhase(phaseNumber: 6, evolutionId: "troll", displayScale: 1.25, idleConfig: .default),
+        ]
+    )
+}
+
+// MARK: - Orc Evolution Path
+
+extension EvolutionPath {
+    static let orc = EvolutionPath(
+        id: "orc",
+        displayName: "Orc",
+        phases: [
+            EvolutionPhase(phaseNumber: 1, evolutionId: "orc", displayScale: 0.85, idleConfig: .default),
+            EvolutionPhase(phaseNumber: 2, evolutionId: "orc", displayScale: 0.90, idleConfig: .default),
+            EvolutionPhase(phaseNumber: 3, evolutionId: "orc", displayScale: 1.00, idleConfig: .default),
+            EvolutionPhase(phaseNumber: 4, evolutionId: "orc", displayScale: 1.00, idleConfig: .default),
+            EvolutionPhase(phaseNumber: 5, evolutionId: "orc", displayScale: 1.10, idleConfig: .default),
         ]
     )
 }
