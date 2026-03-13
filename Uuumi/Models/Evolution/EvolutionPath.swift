@@ -43,6 +43,7 @@ extension EvolutionPath {
             EvolutionPhase(phaseNumber: 5, evolutionId: "plant", displayScale: 1.40, idleConfig: .default),
             EvolutionPhase(phaseNumber: 6, evolutionId: "plant", displayScale: 1.40, idleConfig: .default),
             EvolutionPhase(phaseNumber: 7, evolutionId: "plant", displayScale: 1.50, idleConfig: .default),
+            EvolutionPhase(phaseNumber: 8, evolutionId: "plant", displayScale: 1.50, idleConfig: .default),
         ]
     )
 }
