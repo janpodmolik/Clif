@@ -25,6 +25,7 @@ extension EvolutionPath {
         case .plant: return .plant
         case .troll: return .troll
         case .orc: return .orc
+        case .clicker: return .clicker
         }
     }
 }
@@ -77,6 +78,21 @@ extension EvolutionPath {
             EvolutionPhase(phaseNumber: 3, evolutionId: "orc", displayScale: 1.00, idleConfig: .default),
             EvolutionPhase(phaseNumber: 4, evolutionId: "orc", displayScale: 1.00, idleConfig: .default),
             EvolutionPhase(phaseNumber: 5, evolutionId: "orc", displayScale: 1.10, idleConfig: .default),
+        ]
+    )
+}
+
+// MARK: - Clicker Evolution Path
+
+extension EvolutionPath {
+    static let clicker = EvolutionPath(
+        id: "clicker",
+        displayName: "Clicker",
+        phases: [
+            EvolutionPhase(phaseNumber: 1, evolutionId: "clicker", displayScale: 0.85, idleConfig: .default),
+            EvolutionPhase(phaseNumber: 2, evolutionId: "clicker", displayScale: 0.95, idleConfig: .default),
+            EvolutionPhase(phaseNumber: 3, evolutionId: "clicker", displayScale: 1.05, idleConfig: .default),
+            EvolutionPhase(phaseNumber: 4, evolutionId: "clicker", displayScale: 1.15, idleConfig: .default),
         ]
     )
 }

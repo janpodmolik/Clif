@@ -12,6 +12,7 @@ enum Essence: String, Codable, CaseIterable, Transferable {
     case plant
     case troll
     case orc
+    case clicker
 
     /// Essences unlocked by default for all users.
     static let defaultUnlocked: Set<Essence> = [.plant]
@@ -28,6 +29,7 @@ enum Essence: String, Codable, CaseIterable, Transferable {
         case .plant: return "Cesta růstu a klidu. Tvůj pet se vyvíjí jako rostlina."
         case .troll: return "Cesta síly a odvahy. Tvůj pet se vyvíjí jako troll."
         case .orc: return "Cesta divočiny a zuřivosti. Tvůj pet se vyvíjí jako ork."
+        case .clicker: return "Cesta rychlosti a reflexů. Tvůj pet se vyvíjí jako clicker."
         }
     }
 
@@ -36,6 +38,7 @@ enum Essence: String, Codable, CaseIterable, Transferable {
         case .plant: return .common
         case .troll: return .rare
         case .orc: return .rare
+        case .clicker: return .rare
         }
     }
 }
