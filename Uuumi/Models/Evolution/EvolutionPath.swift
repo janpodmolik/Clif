@@ -26,6 +26,7 @@ extension EvolutionPath {
         case .troll: return .troll
         case .orc: return .orc
         case .clicker: return .clicker
+        case .lion: return .lion
         }
     }
 }
@@ -93,6 +94,22 @@ extension EvolutionPath {
             EvolutionPhase(phaseNumber: 2, evolutionId: "clicker", displayScale: 0.95, idleConfig: .default),
             EvolutionPhase(phaseNumber: 3, evolutionId: "clicker", displayScale: 1.05, idleConfig: .default),
             EvolutionPhase(phaseNumber: 4, evolutionId: "clicker", displayScale: 1.15, idleConfig: .default),
+        ]
+    )
+}
+
+// MARK: - Lion Evolution Path
+
+extension EvolutionPath {
+    static let lion = EvolutionPath(
+        id: "lion",
+        displayName: "Lion",
+        phases: [
+            EvolutionPhase(phaseNumber: 1, evolutionId: "lion", displayScale: 0.85, idleConfig: .default),
+            EvolutionPhase(phaseNumber: 2, evolutionId: "lion", displayScale: 0.95, idleConfig: .default),
+            EvolutionPhase(phaseNumber: 3, evolutionId: "lion", displayScale: 1.05, idleConfig: .default),
+            EvolutionPhase(phaseNumber: 4, evolutionId: "lion", displayScale: 1.15, idleConfig: .default),
+            EvolutionPhase(phaseNumber: 5, evolutionId: "lion", displayScale: 1.25, idleConfig: .default),
         ]
     )
 }
