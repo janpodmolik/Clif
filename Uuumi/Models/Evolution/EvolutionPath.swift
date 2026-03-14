@@ -29,6 +29,8 @@ extension EvolutionPath {
         case .lion: return .lion
         case .stitches: return .stitches
         case .racoon: return .racoon
+        case .moss: return .moss
+        case .shroom: return .shroom
         }
     }
 }
@@ -142,6 +144,36 @@ extension EvolutionPath {
             EvolutionPhase(phaseNumber: 2, evolutionId: "racoon", displayScale: 0.95, idleConfig: .default),
             EvolutionPhase(phaseNumber: 3, evolutionId: "racoon", displayScale: 1.05, idleConfig: .default),
             EvolutionPhase(phaseNumber: 4, evolutionId: "racoon", displayScale: 1.15, idleConfig: .default),
+        ]
+    )
+}
+
+// MARK: - Mossy Evolution Path
+
+extension EvolutionPath {
+    static let moss = EvolutionPath(
+        id: "moss",
+        displayName: "Mossy",
+        phases: [
+            EvolutionPhase(phaseNumber: 1, evolutionId: "moss", displayScale: 0.85, idleConfig: .default),
+            EvolutionPhase(phaseNumber: 2, evolutionId: "moss", displayScale: 0.95, idleConfig: .default),
+            EvolutionPhase(phaseNumber: 3, evolutionId: "moss", displayScale: 1.05, idleConfig: .default),
+            EvolutionPhase(phaseNumber: 4, evolutionId: "moss", displayScale: 1.15, idleConfig: .default),
+        ]
+    )
+}
+
+// MARK: - Shroom Evolution Path
+
+extension EvolutionPath {
+    static let shroom = EvolutionPath(
+        id: "shroom",
+        displayName: "Shroom",
+        phases: [
+            EvolutionPhase(phaseNumber: 1, evolutionId: "shroom", displayScale: 0.85, idleConfig: .default),
+            EvolutionPhase(phaseNumber: 2, evolutionId: "shroom", displayScale: 0.95, idleConfig: .default),
+            EvolutionPhase(phaseNumber: 3, evolutionId: "shroom", displayScale: 1.05, idleConfig: .default),
+            EvolutionPhase(phaseNumber: 4, evolutionId: "shroom", displayScale: 1.15, idleConfig: .default),
         ]
     )
 }
