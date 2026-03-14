@@ -149,7 +149,7 @@ struct HomeScreen: View {
                 .animation(.easeInOut(duration: 0.5), value: isInCreationMode)
 
                 // Floating lock button
-                if currentPet != nil, !isInCreationMode {
+                if currentPet != nil, !isInCreationMode, currentPet?.isBlownAway != true {
                     HomeFloatingLockButton(bottomPadding: fullScreenHeight * 0.3)
                 }
 
