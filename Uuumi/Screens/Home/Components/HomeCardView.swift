@@ -43,6 +43,8 @@ private enum HomeCardAnimation {
     static let contentShowDelay: Double = 0.15
     // Bump content hide animation duration (fast, before shape collapses)
     static let contentHideDuration: Double = 0.12
+    /// Delay before bump appears on initial card reveal (synced with card slide-in)
+    static let initialBumpDelay: Double = 0.4
 }
 
 // MARK: - Bump Type
@@ -205,12 +207,16 @@ struct HomeCardView: View {
             if isShieldActive {
                 isBreakPulsing = true
             }
-            // Initialize cached bump type and dimensions immediately on appear (no animation needed)
             if let bumpType = currentBumpType {
                 cachedBumpType = bumpType
-                showBumpContent = true
-                animatedBumpWidth = targetBumpWidth
-                animatedBumpHeight = targetBumpHeight
+                // Delay bump appearance to sync with card slide-in transition
+                DispatchQueue.main.asyncAfter(deadline: .now() + HomeCardAnimation.initialBumpDelay) {
+                    animatedBumpWidth = targetBumpWidth
+                    animatedBumpHeight = targetBumpHeight
+                    withAnimation(.spring(duration: 0.25, bounce: 0.3)) {
+                        showBumpContent = true
+                    }
+                }
             }
         }
         .onChange(of: isShieldActive) { _, newValue in
