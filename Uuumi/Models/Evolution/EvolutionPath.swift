@@ -27,6 +27,8 @@ extension EvolutionPath {
         case .orc: return .orc
         case .clicker: return .clicker
         case .lion: return .lion
+        case .stitches: return .stitches
+        case .racoon: return .racoon
         }
     }
 }
@@ -110,6 +112,36 @@ extension EvolutionPath {
             EvolutionPhase(phaseNumber: 3, evolutionId: "lion", displayScale: 1.05, idleConfig: .default),
             EvolutionPhase(phaseNumber: 4, evolutionId: "lion", displayScale: 1.15, idleConfig: .default),
             EvolutionPhase(phaseNumber: 5, evolutionId: "lion", displayScale: 1.25, idleConfig: .default),
+        ]
+    )
+}
+
+// MARK: - Stitches Evolution Path
+
+extension EvolutionPath {
+    static let stitches = EvolutionPath(
+        id: "stitches",
+        displayName: "Stitches",
+        phases: [
+            EvolutionPhase(phaseNumber: 1, evolutionId: "stitches", displayScale: 0.85, idleConfig: .default),
+            EvolutionPhase(phaseNumber: 2, evolutionId: "stitches", displayScale: 0.95, idleConfig: .default),
+            EvolutionPhase(phaseNumber: 3, evolutionId: "stitches", displayScale: 1.05, idleConfig: .default),
+            EvolutionPhase(phaseNumber: 4, evolutionId: "stitches", displayScale: 1.15, idleConfig: .default),
+        ]
+    )
+}
+
+// MARK: - Racoon Evolution Path
+
+extension EvolutionPath {
+    static let racoon = EvolutionPath(
+        id: "racoon",
+        displayName: "Racoon",
+        phases: [
+            EvolutionPhase(phaseNumber: 1, evolutionId: "racoon", displayScale: 0.85, idleConfig: .default),
+            EvolutionPhase(phaseNumber: 2, evolutionId: "racoon", displayScale: 0.95, idleConfig: .default),
+            EvolutionPhase(phaseNumber: 3, evolutionId: "racoon", displayScale: 1.05, idleConfig: .default),
+            EvolutionPhase(phaseNumber: 4, evolutionId: "racoon", displayScale: 1.15, idleConfig: .default),
         ]
     )
 }
