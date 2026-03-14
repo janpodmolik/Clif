@@ -84,7 +84,6 @@ struct OnboardingLockStep: View {
                     .frame(height: 16)
 
                 VStack(spacing: 12) {
-                    lockInfo
                     continueButton
                 }
                 .padding(.horizontal, 24)
@@ -175,10 +174,10 @@ struct OnboardingLockStep: View {
         VStack(spacing: 12) {
             if skipAnimation {
                 Text("The wind stops. Uuumi is safe.")
-                Text("You just proved you can do it.")
-                Text("When the wind rises, you can lock in and calm it.")
+                Text("Your selected apps are now blocked.")
                     .font(AppFont.quicksand(.title2, weight: .semiBold))
                     .padding(.top, 12)
+                Text("You just proved you can do it.")
             } else {
                 let skipped = postLockBeat >= 1
 
@@ -196,7 +195,7 @@ struct OnboardingLockStep: View {
                 )
 
                 TypewriterText(
-                    text: "You just proved you can do it.",
+                    text: "Your selected apps are now blocked.",
                     active: showPostLockLine2,
                     skipRequested: postLockBeat >= 2,
                     onCompleted: {
@@ -208,19 +207,19 @@ struct OnboardingLockStep: View {
                         }
                     }
                 )
+                .font(AppFont.quicksand(.title2, weight: .semiBold))
                 .opacity(showPostLockLine2 ? 1 : 0)
+                .padding(.top, 12)
 
                 TypewriterText(
-                    text: "When the wind rises, you can lock in and calm it.",
+                    text: "You just proved you can do it.",
                     active: showPostLockLine3,
                     skipRequested: postLockBeat >= 3,
                     onCompleted: {
                         postLockTextCompleted = true
                     }
                 )
-                .font(AppFont.quicksand(.title2, weight: .semiBold))
                 .opacity(showPostLockLine3 ? 1 : 0)
-                .padding(.top, 12)
             }
         }
         .font(AppFont.quicksand(.title3, weight: .medium))
@@ -288,18 +287,6 @@ struct OnboardingLockStep: View {
                     }
             }
         }
-    }
-
-    // MARK: - Lock Info
-
-    private var lockInfo: some View {
-        Label {
-            Text("While locked, your selected apps won't open.")
-        } icon: {
-            Image(systemName: "lock.fill")
-        }
-        .font(AppFont.quicksand(.caption, weight: .medium))
-        .foregroundStyle(.secondary)
     }
 
     // MARK: - Continue Button
