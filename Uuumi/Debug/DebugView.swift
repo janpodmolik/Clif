@@ -539,6 +539,11 @@ struct DebugView: View {
                     simulateOvernightBreak()
                 }
                 .tint(.pink)
+
+                Button("Zombie Break") {
+                    simulateZombieCommittedBreak()
+                }
+                .tint(.red)
             }
             .buttonStyle(.bordered)
             .controlSize(.small)
@@ -588,6 +593,40 @@ struct DebugView: View {
         SharedDefaults.synchronize()
 
         print("[DebugTools] Simulated overnight break state — backgrounding and foregrounding should trigger daily preset picker")
+    }
+
+    /// Simulates a committed break that started 9 hours ago but never completed,
+    /// then runs midnight reset. Verifies that coins are capped to planned duration (1, not 36).
+    private func simulateZombieCommittedBreak() {
+        func log(_ message: String) {
+            ExtensionLogger.log(message, prefix: "[DebugZombie]")
+            print(message)
+        }
+
+        let nineHoursAgo = Date().addingTimeInterval(-9 * 3600)
+        SharedDefaults.shieldActivatedAt = nineHoursAgo
+        SharedDefaults.breakStartedAt = nineHoursAgo
+        SharedDefaults.activeBreakType = .committed
+        SharedDefaults.committedBreakMode = .timed(minutes: 15)
+        SharedDefaults.monitoredWindPoints = 50
+        SharedDefaults.synchronize()
+
+        let coinsBefore = SharedDefaults.coinsBalance
+
+        // Use Date() as cutoff (simulates "midnight just happened" — in reality the extension
+        // calls this at 00:00 when the break started yesterday, so cutoff > breakStartedAt)
+        if let result = SharedDefaults.endBreakAtMidnight(cutoff: Date()) {
+            let coins = SnapshotLogging.processMidnightBreak(result)
+            log("Midnight reset: type=\(result.breakType), minutes=\(result.actualMinutes), coins=\(coins)")
+        } else {
+            log("Midnight reset: no active break found")
+        }
+
+        ShieldManager.shared.clear()
+        ShieldManager.shared.resumeBreakMonitoringIfNeeded()
+
+        let coinsAwarded = SharedDefaults.coinsBalance - coinsBefore
+        log("Coins awarded: \(coinsAwarded) (expected: 1, bug would show: 36)")
     }
 
     /// Simulates what the extension does when wind reaches 100%:

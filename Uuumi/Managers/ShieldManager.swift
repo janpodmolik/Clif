@@ -229,8 +229,8 @@ final class ShieldManager {
             if let seconds = SharedDefaults.committedBreakMode?.durationSeconds {
                 coinMinutes = Int(seconds / 60)
             } else if let startedAt = SharedDefaults.shieldActivatedAt {
-                // Open-ended modes (untilZeroWind, untilEndOfDay): use actual elapsed time
-                coinMinutes = Int(Date().timeIntervalSince(startedAt) / 60)
+                // Open-ended modes (untilZeroWind, untilEndOfDay): use actual elapsed time, capped at 24h
+                coinMinutes = min(Int(Date().timeIntervalSince(startedAt) / 60), 24 * 60)
             } else {
                 coinMinutes = 0
             }

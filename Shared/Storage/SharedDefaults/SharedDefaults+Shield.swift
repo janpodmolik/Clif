@@ -119,7 +119,13 @@ extension SharedDefaults {
         }
 
         let elapsed = cutoff.timeIntervalSince(breakStartedAt)
-        let actualMinutes = Int(round(max(0, elapsed) / 60))
+        var actualMinutes = Int(round(max(0, elapsed) / 60))
+
+        // Cap to planned duration for timed committed breaks (prevents inflated coins when break survives overnight)
+        if let durationSeconds = committedBreakMode?.durationSeconds {
+            actualMinutes = min(actualMinutes, Int(durationSeconds / 60))
+        }
+
         let windPoints = monitoredWindPoints
         let petId = monitoredPetId
 
