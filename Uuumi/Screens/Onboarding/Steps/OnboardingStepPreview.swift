@@ -9,6 +9,12 @@ struct OnboardingStepPreview<Content: View>: View {
     @State var showBlob: Bool
     @State var showThoughtBubble: Bool
 
+    // Blow away state
+    @State var blowAwayOffsetX: CGFloat = 0
+    @State var blowAwayRotation: CGFloat = 0
+    @State var windDirection: CGFloat = 1.0
+    @State var windBurstActive: Bool = false
+
     let showWind: Bool
     let showIsland: Bool
     let content: (GeometryProxy, Binding<CGFloat>, Binding<String?>, Binding<Bool>) -> Content
@@ -39,9 +45,10 @@ struct OnboardingStepPreview<Content: View>: View {
                 if showWind {
                     WindLinesView(
                         windProgress: windProgress,
-                        direction: 1.0,
+                        direction: windDirection,
                         windAreaTop: 0.08,
-                        windAreaBottom: 0.42
+                        windAreaBottom: 0.42,
+                        overrideConfig: windBurstActive ? .burst : nil
                     )
                     .allowsHitTesting(false)
                 }
@@ -53,7 +60,9 @@ struct OnboardingStepPreview<Content: View>: View {
                         petOpacity: showBlob ? 1.0 : 0.0,
                         windProgress: windProgress,
                         eyesOverride: eyesOverride,
-                        showThoughtBubble: showThoughtBubble
+                        showThoughtBubble: showThoughtBubble,
+                        blowAwayOffsetX: blowAwayOffsetX,
+                        blowAwayRotation: blowAwayRotation
                     )
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
                     .ignoresSafeArea(.container, edges: .bottom)

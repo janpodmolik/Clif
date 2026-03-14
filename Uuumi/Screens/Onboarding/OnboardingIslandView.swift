@@ -22,6 +22,10 @@ struct OnboardingIslandView: View {
     // Evolution step — thought bubble
     var showThoughtBubble: Bool = false
 
+    // Blow away — offset + rotation driven by wind slider step
+    var blowAwayOffsetX: CGFloat = 0
+    var blowAwayRotation: CGFloat = 0
+
     // Pet animation state
     @State private var reactionStartTime: TimeInterval = -1
     @State private var currentTapType: PetReactionType = .none
@@ -164,6 +168,8 @@ struct OnboardingIslandView: View {
             }
         )
         .scaleEffect(pet.displayScale, anchor: .bottom)
+        .offset(x: blowAwayOffsetX)
+        .rotationEffect(.degrees(blowAwayRotation), anchor: .bottom)
         .opacity(petOpacity)
         .onTapGesture {
             handleTap()

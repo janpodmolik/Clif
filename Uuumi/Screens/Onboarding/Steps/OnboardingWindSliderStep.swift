@@ -6,13 +6,39 @@ struct OnboardingWindSliderStep: View {
 
     @Binding var windProgress: CGFloat
     @Binding var eyesOverride: String?
+    @Binding var blowAwayOffsetX: CGFloat
+    @Binding var blowAwayRotation: CGFloat
+    @Binding var windDirection: CGFloat
+    @Binding var windBurstActive: Bool
 
-    /// Minimum wind handed to the lock demo screen on disappear.
-    private let minHandoffWind: CGFloat = 0.6
+    // MARK: - Phase
+
+    private enum SliderPhase {
+        case slider
+        case blowAway
+        case rewind
+        case done
+    }
+
+    @State private var phase: SliderPhase = .slider
+
+    // MARK: - Narrative State
 
     @State private var narrativeBeat = 0
     @State private var showSecondLine = false
     @State private var textCompleted = false
+
+    // Blow away narrative
+    @State private var showBlowAwayText = false
+
+    // Post-rewind narrative
+    @State private var showPostRewindLine1 = false
+    @State private var showPostRewindLine2 = false
+    @State private var postRewindBeat = 0
+    @State private var postRewindTextCompleted = false
+
+    // MARK: - Slider State
+
     @State private var hasInteracted = false
     @State private var lastHapticLevel: WindLevel = .none
     @State private var selectionGenerator = UISelectionFeedbackGenerator()
@@ -20,6 +46,12 @@ struct OnboardingWindSliderStep: View {
     @State private var showSlider = false
     @State private var showDragHint = false
     @State private var dragHintPulsing = false
+
+    // MARK: - Rewind State
+
+    @State private var showRewindButton = false
+    @State private var rewindOverlayVisible = false
+    @State private var animationTask: Task<Void, Never>?
 
     private var windLevel: WindLevel {
         WindLevel.from(progress: windProgress)
@@ -44,83 +76,113 @@ struct OnboardingWindSliderStep: View {
     }
 
     var body: some View {
-        VStack(spacing: 0) {
-            narrative
-                .padding(.horizontal, 32)
-                .padding(.top, 60)
+        GeometryReader { geometry in
+            let screenWidth = geometry.size.width
 
-            Spacer()
+            VStack(spacing: 0) {
+                narrativeArea
+                    .padding(.horizontal, 32)
+                    .padding(.top, 60)
 
-            if showSlider {
-                sliderArea
+                Spacer()
+
+                if showSlider && phase == .slider {
+                    sliderArea
+                        .padding(.horizontal, 24)
+                        .transition(.opacity.combined(with: .move(edge: .bottom)))
+                }
+
+                Spacer()
+                    .frame(height: 16)
+
+                bottomArea
                     .padding(.horizontal, 24)
-                    .transition(.opacity.combined(with: .move(edge: .bottom)))
+                    .padding(.bottom, 16)
             }
+            .overlay {
+                if !textCompleted && !skipAnimation && phase == .slider {
+                    Color.clear
+                        .contentShape(Rectangle())
+                        .onTapGesture {
+                            HapticType.impactLight.trigger()
+                            narrativeBeat += 1
+                        }
+                }
 
-            Spacer()
-                .frame(height: 16)
-
-            continueButton
-                .padding(.horizontal, 24)
-                .padding(.bottom, 16)
-                .opacity(hasInteracted ? 1 : 0)
-                .animation(.easeOut(duration: 0.3), value: hasInteracted)
-        }
-        .overlay {
-            if !textCompleted && !skipAnimation {
-                Color.clear
-                    .contentShape(Rectangle())
-                    .onTapGesture {
-                        HapticType.impactLight.trigger()
-                        narrativeBeat += 1
+                if phase == .done && !postRewindTextCompleted && !skipAnimation {
+                    Color.clear
+                        .contentShape(Rectangle())
+                        .onTapGesture {
+                            HapticType.impactLight.trigger()
+                            postRewindBeat += 1
+                        }
+                }
+            }
+            .overlay {
+                RewindOverlayVHS(isVisible: rewindOverlayVisible)
+                    .allowsHitTesting(false)
+            }
+            .onAppear {
+                handleAppear()
+            }
+            .onChange(of: textCompleted) { _, completed in
+                if completed && !hasInteracted {
+                    withAnimation(.easeOut(duration: 0.5)) {
+                        showSlider = true
                     }
+                    withAnimation(.easeInOut(duration: 0.8).repeatForever(autoreverses: true)) {
+                        thumbPulsing = true
+                    }
+                    withAnimation(.easeOut(duration: 0.3)) {
+                        showDragHint = true
+                    }
+                    withAnimation(.easeInOut(duration: 0.8).repeatForever(autoreverses: true)) {
+                        dragHintPulsing = true
+                    }
+                }
             }
-        }
-        .onAppear {
-            let initial = OnboardingScreen.windSlider.initialWindProgress ?? 0.1
-            windProgress = initial
-            eyesOverride = WindLevel.from(progress: initial).eyes
+            .onChange(of: windProgress) { _, newValue in
+                eyesOverride = WindLevel.from(progress: newValue).eyes
 
-            if skipAnimation {
-                textCompleted = true
-                showSecondLine = true
-                showSlider = true
-                hasInteracted = true
-            }
-        }
-        .onChange(of: textCompleted) { _, completed in
-            if completed && !hasInteracted {
-                withAnimation(.easeOut(duration: 0.5)) {
-                    showSlider = true
-                }
-                withAnimation(.easeInOut(duration: 0.8).repeatForever(autoreverses: true)) {
-                    thumbPulsing = true
-                }
-                withAnimation(.easeOut(duration: 0.3)) {
-                    showDragHint = true
-                }
-                withAnimation(.easeInOut(duration: 0.8).repeatForever(autoreverses: true)) {
-                    dragHintPulsing = true
+                if newValue >= 0.95 && phase == .slider && hasInteracted {
+                    triggerBlowAway(screenWidth: screenWidth)
                 }
             }
-        }
-        .onDisappear {
-            // Keep user's slider position if it already exceeds the lock demo's entry wind,
-            // otherwise ensure minimum medium wind for the lock demo screen
-            let lockEntryWind = OnboardingScreen.lockDemo.initialWindProgress ?? 0.7
-            if windProgress < lockEntryWind {
-                windProgress = minHandoffWind
+            .onDisappear {
+                animationTask?.cancel()
+                animationTask = nil
+
+                eyesOverride = WindLevel.from(progress: windProgress).eyes
+
+                // Reset blow away visual state
+                blowAwayOffsetX = 0
+                blowAwayRotation = 0
+                windDirection = 1.0
+                windBurstActive = false
             }
-            eyesOverride = WindLevel.from(progress: windProgress).eyes
-        }
-        .onChange(of: windProgress) { _, newValue in
-            eyesOverride = WindLevel.from(progress: newValue).eyes
         }
     }
 
     // MARK: - Narrative
 
-    private var narrative: some View {
+    @ViewBuilder
+    private var narrativeArea: some View {
+        switch phase {
+        case .slider:
+            sliderNarrative
+                .transition(.opacity)
+        case .blowAway:
+            blowAwayNarrative
+                .transition(.opacity)
+        case .rewind:
+            EmptyView()
+        case .done:
+            postRewindNarrative
+                .transition(.opacity)
+        }
+    }
+
+    private var sliderNarrative: some View {
         VStack(spacing: 12) {
             if skipAnimation {
                 Text("This is what happens when you scroll.")
@@ -153,6 +215,59 @@ struct OnboardingWindSliderStep: View {
                 )
                 .font(AppFont.quicksand(.title2, weight: .semiBold))
                 .opacity(showSecondLine ? 1 : 0)
+                .padding(.top, 12)
+            }
+        }
+        .font(AppFont.quicksand(.title3, weight: .medium))
+        .foregroundStyle(.primary)
+        .multilineTextAlignment(.center)
+    }
+
+    private var blowAwayNarrative: some View {
+        VStack(spacing: 12) {
+            if showBlowAwayText {
+                Text("Too much. Uuumi is gone.")
+                    .transition(.opacity)
+            }
+        }
+        .font(AppFont.quicksand(.title3, weight: .medium))
+        .foregroundStyle(.primary)
+        .multilineTextAlignment(.center)
+    }
+
+    private var postRewindNarrative: some View {
+        VStack(spacing: 12) {
+            if skipAnimation {
+                Text("This was just practice.")
+                Text("Out there, there's no rewind.")
+                    .font(AppFont.quicksand(.title2, weight: .semiBold))
+                    .padding(.top, 12)
+            } else {
+                TypewriterText(
+                    text: "This was just practice.",
+                    active: showPostRewindLine1,
+                    skipRequested: postRewindBeat >= 1,
+                    onCompleted: {
+                        Task {
+                            if postRewindBeat < 1 {
+                                try? await Task.sleep(for: .seconds(0.5))
+                            }
+                            withAnimation { showPostRewindLine2 = true }
+                        }
+                    }
+                )
+                .opacity(showPostRewindLine1 ? 1 : 0)
+
+                TypewriterText(
+                    text: "Out there, there's no rewind.",
+                    active: showPostRewindLine2,
+                    skipRequested: postRewindBeat >= 2,
+                    onCompleted: {
+                        postRewindTextCompleted = true
+                    }
+                )
+                .font(AppFont.quicksand(.title2, weight: .semiBold))
+                .opacity(showPostRewindLine2 ? 1 : 0)
                 .padding(.top, 12)
             }
         }
@@ -222,6 +337,8 @@ struct OnboardingWindSliderStep: View {
             .gesture(
                 DragGesture(minimumDistance: 0)
                     .onChanged { value in
+                        guard phase == .slider else { return }
+
                         let fraction = (value.location.x - thumbSize / 2) / usableWidth
                         windProgress = min(max(fraction, 0), 1)
 
@@ -257,7 +374,42 @@ struct OnboardingWindSliderStep: View {
             .allowsHitTesting(false)
     }
 
-    // MARK: - Continue
+    // MARK: - Bottom Area
+
+    @ViewBuilder
+    private var bottomArea: some View {
+        switch phase {
+        case .slider:
+            // No button — blow away triggers automatically at 0.95
+            Color.clear.frame(height: 50)
+
+        case .blowAway:
+            if showRewindButton {
+                rewindButton
+                    .transition(.opacity.combined(with: .move(edge: .bottom)))
+            } else {
+                Color.clear.frame(height: 50)
+            }
+
+        case .rewind:
+            Color.clear.frame(height: 50)
+
+        case .done:
+            continueButton
+                .opacity(postRewindTextCompleted || skipAnimation ? 1 : 0)
+                .animation(.easeOut(duration: 0.3), value: postRewindTextCompleted)
+        }
+    }
+
+    private var rewindButton: some View {
+        Button {
+            HapticType.notificationSuccess.trigger()
+            triggerRewind()
+        } label: {
+            Label("Rewind", systemImage: "backward.fill")
+        }
+        .buttonStyle(.primary)
+    }
 
     private var continueButton: some View {
         Button {
@@ -267,6 +419,114 @@ struct OnboardingWindSliderStep: View {
             Text("Continue")
         }
         .buttonStyle(.primary)
+    }
+
+    // MARK: - Appear
+
+    private func handleAppear() {
+        let initial = OnboardingScreen.windSlider.initialWindProgress ?? 0.1
+        windProgress = initial
+        eyesOverride = WindLevel.from(progress: initial).eyes
+
+        if skipAnimation {
+            textCompleted = true
+            showSecondLine = true
+            showSlider = true
+            hasInteracted = true
+            phase = .done
+            showPostRewindLine1 = true
+            showPostRewindLine2 = true
+            postRewindTextCompleted = true
+            windProgress = 1.0
+            eyesOverride = WindLevel.from(progress: 1.0).eyes
+        }
+    }
+
+    // MARK: - Blow Away
+
+    private func triggerBlowAway(screenWidth: CGFloat) {
+        phase = .blowAway
+
+        // Lock slider value at 1.0
+        windProgress = 1.0
+        eyesOverride = "scared"
+
+        animationTask?.cancel()
+        animationTask = Task {
+            // Brief pause before blow away
+            try? await Task.sleep(for: .seconds(0.5))
+            guard !Task.isCancelled else { return }
+
+            // Wind burst
+            windBurstActive = true
+            HapticType.notificationError.trigger()
+
+            // Pet flies off-screen
+            withAnimation(.easeIn(duration: BlowAwayConfig.default.duration)) {
+                blowAwayOffsetX = screenWidth + 150
+                blowAwayRotation = BlowAwayConfig.default.rotationDegrees
+            }
+
+            // After blow away completes
+            try? await Task.sleep(for: .seconds(BlowAwayConfig.default.duration + 0.3))
+            guard !Task.isCancelled else { return }
+            windBurstActive = false
+
+            // Show narrative
+            withAnimation(.easeOut(duration: 0.4)) {
+                showBlowAwayText = true
+            }
+
+            // Show rewind button after delay
+            try? await Task.sleep(for: .seconds(1.5))
+            guard !Task.isCancelled else { return }
+            withAnimation(.spring(response: 0.5, dampingFraction: 0.7)) {
+                showRewindButton = true
+            }
+        }
+    }
+
+    // MARK: - Rewind
+
+    private func triggerRewind() {
+        phase = .rewind
+        showRewindButton = false
+        showBlowAwayText = false
+
+        // Show overlay + reverse wind direction
+        rewindOverlayVisible = true
+        windDirection = -1.0
+
+        animationTask?.cancel()
+        animationTask = Task {
+            // Pet flies back
+            withAnimation(.easeOut(duration: 1.0)) {
+                blowAwayOffsetX = 0
+                blowAwayRotation = 0
+            }
+
+            // Wind stays at 1.0 during rewind
+            try? await Task.sleep(for: .seconds(1.0))
+            guard !Task.isCancelled else { return }
+
+            // Hide overlay, restore wind direction
+            try? await Task.sleep(for: .seconds(0.2))
+            guard !Task.isCancelled else { return }
+            withAnimation(.easeInOut(duration: 0.3)) {
+                rewindOverlayVisible = false
+            }
+            windDirection = 1.0
+
+            // Transition to done phase
+            try? await Task.sleep(for: .seconds(0.3))
+            guard !Task.isCancelled else { return }
+            eyesOverride = WindLevel.from(progress: windProgress).eyes
+
+            withAnimation(.easeOut(duration: 0.3)) {
+                phase = .done
+                showPostRewindLine1 = true
+            }
+        }
     }
 }
 
@@ -319,14 +579,55 @@ private struct OnboardingWaveShape: Shape {
 }
 
 #if DEBUG
-#Preview {
-    OnboardingStepPreview(windProgress: 0.1, showWind: true) { _, windProgress, eyesOverride, _ in
-        OnboardingWindSliderStep(
-            skipAnimation: false,
-            onContinue: {},
-            windProgress: windProgress,
-            eyesOverride: eyesOverride
-        )
+private struct WindSliderPreview: View {
+    @State var windProgress: CGFloat = 0.1
+    @State var eyesOverride: String?
+    @State var blowAwayOffsetX: CGFloat = 0
+    @State var blowAwayRotation: CGFloat = 0
+    @State var windDirection: CGFloat = 1.0
+    @State var windBurstActive = false
+
+    var body: some View {
+        GeometryReader { geometry in
+            ZStack {
+                OnboardingBackgroundView()
+
+                WindLinesView(
+                    windProgress: windProgress,
+                    direction: windDirection,
+                    windAreaTop: 0.08,
+                    windAreaBottom: 0.42,
+                    overrideConfig: windBurstActive ? .burst : nil
+                )
+                .allowsHitTesting(false)
+
+                OnboardingIslandView(
+                    screenHeight: geometry.size.height,
+                    pet: Blob.shared,
+                    windProgress: windProgress,
+                    eyesOverride: eyesOverride,
+                    blowAwayOffsetX: blowAwayOffsetX,
+                    blowAwayRotation: blowAwayRotation
+                )
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
+                .ignoresSafeArea(.container, edges: .bottom)
+
+                OnboardingWindSliderStep(
+                    skipAnimation: false,
+                    onContinue: {},
+                    windProgress: $windProgress,
+                    eyesOverride: $eyesOverride,
+                    blowAwayOffsetX: $blowAwayOffsetX,
+                    blowAwayRotation: $blowAwayRotation,
+                    windDirection: $windDirection,
+                    windBurstActive: $windBurstActive
+                )
+            }
+        }
     }
+}
+
+#Preview {
+    WindSliderPreview()
 }
 #endif

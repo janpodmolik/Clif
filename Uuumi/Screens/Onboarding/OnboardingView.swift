@@ -18,6 +18,12 @@ struct OnboardingView: View {
     @State private var speechBubbleVisible = false
     @State private var showTapHint = false
 
+    // Blow away state — driven by wind slider step
+    @State private var blowAwayOffsetX: CGFloat = 0
+    @State private var blowAwayRotation: CGFloat = 0
+    @State private var windDirection: CGFloat = 1.0
+    @State private var windBurstActive = false
+
     // Essence step state — drop zone + reaction
     @State private var showDropZone = false
     @State private var isOnTarget = false
@@ -36,9 +42,10 @@ struct OnboardingView: View {
                 if currentScreen.showsWind {
                     WindLinesView(
                         windProgress: windProgress,
-                        direction: 1.0,
+                        direction: windDirection,
                         windAreaTop: 0.08,
-                        windAreaBottom: 0.42
+                        windAreaBottom: 0.42,
+                        overrideConfig: windBurstActive ? .burst : nil
                     )
                     .allowsHitTesting(false)
                 }
@@ -82,7 +89,9 @@ struct OnboardingView: View {
             isOnTarget: isOnTarget,
             onPetFrameChange: { petDropFrame = $0 },
             reactionTrigger: petReactionTrigger,
-            showThoughtBubble: showThoughtBubble
+            showThoughtBubble: showThoughtBubble,
+            blowAwayOffsetX: blowAwayOffsetX,
+            blowAwayRotation: blowAwayRotation
         )
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
         .ignoresSafeArea(.container, edges: .bottom)
@@ -138,7 +147,11 @@ struct OnboardingView: View {
                 skipAnimation: visitedScreens.contains(.windSlider),
                 onContinue: advanceScreen,
                 windProgress: $windProgress,
-                eyesOverride: $eyesOverride
+                eyesOverride: $eyesOverride,
+                blowAwayOffsetX: $blowAwayOffsetX,
+                blowAwayRotation: $blowAwayRotation,
+                windDirection: $windDirection,
+                windBurstActive: $windBurstActive
             )
 
         case .lockDemo:
@@ -299,6 +312,12 @@ struct OnboardingView: View {
                 eyesOverride = WindLevel.from(progress: wind).eyes
             }
         }
+
+        // Reset blow away state when navigating back
+        blowAwayOffsetX = 0
+        blowAwayRotation = 0
+        windDirection = 1.0
+        windBurstActive = false
 
         withAnimation(.easeInOut(duration: 0.3)) {
             currentScreen = previous

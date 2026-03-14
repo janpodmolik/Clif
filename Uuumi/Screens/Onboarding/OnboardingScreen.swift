@@ -88,7 +88,7 @@ enum OnboardingScreen: Int, CaseIterable, Identifiable {
         switch self {
         case .wind, .screenTimeData: 0.15
         case .windSlider: 0.1
-        case .lockDemo: 0.7
+        case .lockDemo: 1.0
         case .windPreset, .essence, .evolution, .notifications, .namePet, .review: 0
         default: nil
         }
