@@ -33,16 +33,16 @@ class ShieldConfigurationExtension: ShieldConfigurationDataSource {
 
     private func getDayStartShieldConfiguration() -> ShieldConfiguration {
         return ShieldConfiguration(
-            backgroundBlurStyle: .systemMaterial,
-            backgroundColor: UIColor.systemBackground,
-            icon: UIImage(systemName: DayStartGreeting.iconName),
+            backgroundBlurStyle: .prominent,
+            backgroundColor: .systemBlue,
+            icon: UIImage.Shields.dailyPreset,
             title: ShieldConfiguration.Label(text: DayStartGreeting.text, color: .label),
             subtitle: ShieldConfiguration.Label(
                 text: "Jak náročný den chceš mít?",
                 color: .secondaryLabel
             ),
-            primaryButtonLabel: ShieldConfiguration.Label(text: "Otevřít Uuumi", color: .white),
-            primaryButtonBackgroundColor: .systemBlue,
+            primaryButtonLabel: ShieldConfiguration.Label(text: "Začít den", color: .black),
+            primaryButtonBackgroundColor: .white,
             secondaryButtonLabel: nil
         )
     }
