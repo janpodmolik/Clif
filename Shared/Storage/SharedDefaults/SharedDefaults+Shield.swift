@@ -82,6 +82,7 @@ extension SharedDefaults {
         breakStartedAt = nil
         committedBreakMode = nil
         windZeroNotified = false
+        pendingShieldUnlock = false
     }
 
     // MARK: - Pending Coin Rewards
@@ -139,6 +140,22 @@ extension SharedDefaults {
             petId: petId,
             cutoff: cutoff
         )
+    }
+
+    // MARK: - Shield Unlock Redirect
+
+    /// Set by ShieldAction extension when user taps "Unlock in Uuumi".
+    /// Main app reads this on foreground to highlight the lock button.
+    static var pendingShieldUnlock: Bool {
+        get {
+            let fresh = UserDefaults(suiteName: AppConstants.appGroupIdentifier)
+            fresh?.synchronize()
+            return fresh?.bool(forKey: DefaultsKeys.pendingShieldUnlock) ?? false
+        }
+        set {
+            defaults?.set(newValue, forKey: DefaultsKeys.pendingShieldUnlock)
+            defaults?.synchronize()
+        }
     }
 
     // MARK: - Break Picker Preferences

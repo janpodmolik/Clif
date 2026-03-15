@@ -106,6 +106,9 @@ class ShieldActionExtension: ShieldActionDelegate {
         // Check if this violates an active break
         handlePotentialBreakViolation()
 
+        // Signal main app to highlight the unlock button
+        SharedDefaults.pendingShieldUnlock = true
+
         logToFile("prepareUnlock() - done")
     }
 

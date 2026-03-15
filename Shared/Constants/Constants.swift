@@ -107,6 +107,10 @@ enum DefaultsKeys {
     static let committedBreakMode = "committedBreakMode"
     static let windZeroNotified = "windZeroNotified"
 
+    // MARK: - Shield Unlock Redirect
+
+    static let pendingShieldUnlock = "pendingShieldUnlock"
+
     // MARK: - Break Picker Preferences
 
     static let preferredBreakType = "preferredBreakType"
