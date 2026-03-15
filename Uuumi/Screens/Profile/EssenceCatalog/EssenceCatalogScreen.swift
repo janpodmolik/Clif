@@ -12,8 +12,6 @@ struct EssenceCatalogScreen: View {
         GridItem(.flexible(), spacing: 12),
     ]
 
-    private let comingSoonEssences = ["Crystal", "Flame", "Water"]
-
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
@@ -65,10 +63,6 @@ struct EssenceCatalogScreen: View {
                         petCount: 0
                     )
                 }
-            }
-
-            ForEach(comingSoonEssences, id: \.self) { name in
-                ComingSoonGridItem(name: name)
             }
         }
     }
