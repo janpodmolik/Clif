@@ -21,7 +21,7 @@ struct DailyPresetPicker: View {
                     Text(DayStartGreeting.text)
                         .font(.title.bold())
 
-                    Text("Jak náročný den chceš mít?")
+                    Text("What kind of day do you want?")
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                 }
@@ -48,7 +48,7 @@ struct DailyPresetPicker: View {
                 Button {
                     confirmSelection()
                 } label: {
-                    Text("Začít den")
+                    Text("Start your day")
                         .font(.headline)
                         .foregroundStyle(.white)
                         .frame(maxWidth: .infinity)

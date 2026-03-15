@@ -7,10 +7,10 @@ enum DayStartGreeting {
     private static let morningHourLimit = 10
 
     /// Returns appropriate greeting text based on current hour.
-    /// "Dobré ráno!" before 10:00, "Ahoj!" otherwise.
+    /// "Good morning!" before 10:00, "Hey there!" otherwise.
     static var text: String {
         let hour = Calendar.current.component(.hour, from: Date())
-        return hour < morningHourLimit ? "Dobré ráno!" : "Ahoj!"
+        return hour < morningHourLimit ? "Good morning!" : "Hey there!"
     }
 
     /// Returns SF Symbol name for greeting icon.

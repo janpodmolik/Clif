@@ -38,10 +38,10 @@ class ShieldConfigurationExtension: ShieldConfigurationDataSource {
             icon: UIImage.Shields.dailyPreset,
             title: ShieldConfiguration.Label(text: DayStartGreeting.text, color: .label),
             subtitle: ShieldConfiguration.Label(
-                text: "Jak náročný den chceš mít?",
+                text: "What kind of day do you want?",
                 color: .secondaryLabel
             ),
-            primaryButtonLabel: ShieldConfiguration.Label(text: "Začít den", color: .black),
+            primaryButtonLabel: ShieldConfiguration.Label(text: "Start your day", color: .black),
             primaryButtonBackgroundColor: .white,
             secondaryButtonLabel: nil
         )
@@ -49,18 +49,29 @@ class ShieldConfigurationExtension: ShieldConfigurationDataSource {
 
     private func getUsageShieldConfiguration() -> ShieldConfiguration {
         let petName = SharedDefaults.monitoredPetName
-        let subtitleText = petName.map { "Blokováno pro \($0)" } ?? "Blokováno"
+        let titleText = petName.map { "Blocked for \($0)" } ?? "Blocked"
+        let breakType = SharedDefaults.activeBreakType
 
-        logToFile("getUsageShieldConfiguration() subtitle: \(subtitleText)")
+        let subtitleText: String
+        switch breakType {
+        case .committed:
+            subtitleText = "Check how much time is left in Uuumi."
+        case .safety:
+            subtitleText = "Check if it's safe to unlock in Uuumi."
+        default:
+            subtitleText = "You can safely end your break in Uuumi."
+        }
+
+        logToFile("getUsageShieldConfiguration() title: \(titleText), breakType: \(String(describing: breakType))")
         return ShieldConfiguration(
-            backgroundBlurStyle: .systemMaterial,
-            backgroundColor: UIColor.systemBackground,
-            icon: UIImage(systemName: "wind"),
-            title: ShieldConfiguration.Label(text: "Uuumi", color: .label),
+            backgroundBlurStyle: .prominent,
+            backgroundColor: .systemBlue,
+            icon: UIImage.Shields.break,
+            title: ShieldConfiguration.Label(text: titleText, color: .label),
             subtitle: ShieldConfiguration.Label(text: subtitleText, color: .secondaryLabel),
-            primaryButtonLabel: ShieldConfiguration.Label(text: "Zavřít app", color: .white),
+            primaryButtonLabel: ShieldConfiguration.Label(text: "Close", color: .white),
             primaryButtonBackgroundColor: .systemGray,
-            secondaryButtonLabel: ShieldConfiguration.Label(text: "Odemknout", color: .systemBlue)
+            secondaryButtonLabel: ShieldConfiguration.Label(text: "Unlock in Uuumi", color: .systemBlue)
         )
     }
 
