@@ -75,7 +75,7 @@ struct WindPresetCard: View {
     let onTap: () -> Void
 
     private enum Layout {
-        static let cornerRadius: CGFloat = 16
+        static let cornerRadius: CGFloat = 20
         static let padding: CGFloat = 16
     }
 
@@ -89,7 +89,11 @@ struct WindPresetCard: View {
                         .font(.headline)
                         .foregroundStyle(.primary)
 
-                    Text(preset.detailDescription)
+                    Text("~\(Int(preset.minutesToBlowAway)) min to blow away")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+
+                    Text("~\(Int(preset.minutesToRecover)) min to recover")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }

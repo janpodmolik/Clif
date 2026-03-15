@@ -124,7 +124,11 @@ private struct PresetOptionRow: View {
                         .font(.headline)
                         .foregroundStyle(.primary)
 
-                    Text(preset.detailDescription)
+                    Text("~\(Int(preset.minutesToBlowAway)) min to blow away")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+
+                    Text("~\(Int(preset.minutesToRecover)) min to recover")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }

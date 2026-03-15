@@ -37,20 +37,24 @@ struct DailyPresetSettingsScreen: View {
                                 Text(preset.displayName)
                                     .font(.headline)
 
-                                Text(preset.detailDescription)
+                                Text("~\(Int(preset.minutesToBlowAway)) min to blow away")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+
+                                Text("~\(Int(preset.minutesToRecover)) min to recover")
                                     .font(.caption)
                                     .foregroundStyle(.secondary)
                             }
                         }
                         .padding(16)
                         .frame(maxWidth: .infinity, alignment: .leading)
-                        .glassBackground(cornerRadius: 16)
+                        .glassBackground(cornerRadius: 20)
                     } else {
                         Label("Not yet selected", systemImage: "questionmark.circle")
                             .foregroundStyle(.secondary)
                             .padding(16)
                             .frame(maxWidth: .infinity, alignment: .leading)
-                            .glassBackground(cornerRadius: 16)
+                            .glassBackground(cornerRadius: 20)
                     }
                 } header: {
                     Text("Today")
@@ -102,6 +106,11 @@ struct DailyPresetSettingsScreen: View {
                     }
                 }
                 .tint(.blue)
+                .padding(16)
+                .glassBackground(cornerRadius: 20)
+                .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
+                .listRowBackground(Color.clear)
+                .listRowSeparator(.hidden)
             }
         }
         .navigationTitle("Daily Preset")

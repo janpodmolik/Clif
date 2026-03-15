@@ -79,6 +79,10 @@ struct ProfileScreen: View {
                         Label("Shield", systemImage: "shield.fill")
                     }
 
+                    NavigationLink(value: ProfileDestination.lockButtonSettings) {
+                        Label("Lock tlačítko", systemImage: "lock.fill")
+                    }
+
                     NavigationLink(value: ProfileDestination.dailyPresetSettings) {
                         HStack {
                             Label("Daily Preset", systemImage: "arrow.triangle.2.circlepath")
@@ -86,10 +90,6 @@ struct ProfileScreen: View {
                             Text((WindPreset(rawValue: limitSettings.defaultWindPresetRaw) ?? .balanced).displayName)
                                 .foregroundStyle(.secondary)
                         }
-                    }
-
-                    NavigationLink(value: ProfileDestination.lockButtonSettings) {
-                        Label("Lock tlačítko", systemImage: "lock.fill")
                     }
 
                     Picker(selection: $appearanceMode) {
