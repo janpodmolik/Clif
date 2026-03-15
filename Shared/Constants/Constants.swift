@@ -28,6 +28,11 @@ enum AppConstants {
 
     /// Maximum apps to display initially in activity report
     static let maxDisplayedApps = 8
+
+    // MARK: - Pet Input Limits
+
+    static let maxPetNameLength = 15
+    static let maxPetPurposeLength = 30
 }
 
 /// Logging category identifiers

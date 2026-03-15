@@ -35,6 +35,11 @@ struct PetInfoStep: View {
                         .onSubmit {
                             focusedField = .purpose
                         }
+                        .onChange(of: coordinator.petName) { _, newValue in
+                            if newValue.count > AppConstants.maxPetNameLength {
+                                coordinator.petName = String(newValue.prefix(AppConstants.maxPetNameLength))
+                            }
+                        }
                 }
 
                 VStack(alignment: .leading, spacing: 6) {
@@ -54,6 +59,11 @@ struct PetInfoStep: View {
                         .submitLabel(.done)
                         .onSubmit {
                             focusedField = nil
+                        }
+                        .onChange(of: coordinator.petPurpose) { _, newValue in
+                            if newValue.count > AppConstants.maxPetPurposeLength {
+                                coordinator.petPurpose = String(newValue.prefix(AppConstants.maxPetPurposeLength))
+                            }
                         }
                 }
             }

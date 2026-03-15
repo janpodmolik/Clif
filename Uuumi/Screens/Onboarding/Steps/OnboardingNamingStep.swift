@@ -116,6 +116,11 @@ struct OnboardingNamingStep: View {
                 .onSubmit {
                     focusedField = nil
                 }
+                .onChange(of: petName) { _, newValue in
+                    if newValue.count > AppConstants.maxPetNameLength {
+                        petName = String(newValue.prefix(AppConstants.maxPetNameLength))
+                    }
+                }
 
             VStack(alignment: .leading, spacing: 6) {
                 HStack {
@@ -135,6 +140,11 @@ struct OnboardingNamingStep: View {
                     .submitLabel(.done)
                     .onSubmit {
                         focusedField = nil
+                    }
+                    .onChange(of: petPurpose) { _, newValue in
+                        if newValue.count > AppConstants.maxPetPurposeLength {
+                            petPurpose = String(newValue.prefix(AppConstants.maxPetPurposeLength))
+                        }
                     }
             }
         }
@@ -179,8 +189,13 @@ struct OnboardingNamingStep: View {
         }
     }
 
+    private func sanitize(_ text: String) -> String {
+        text.trimmingCharacters(in: .whitespaces)
+            .replacingOccurrences(of: "\\s+", with: " ", options: .regularExpression)
+    }
+
     private func createPet() {
-        let trimmedName = petName.trimmingCharacters(in: .whitespaces)
+        let trimmedName = sanitize(petName)
         guard !trimmedName.isEmpty else { return }
 
         focusedField = nil
@@ -193,7 +208,7 @@ struct OnboardingNamingStep: View {
             limitedSources = LimitedSource.from(selection)
         }
 
-        let trimmedPurpose = petPurpose.trimmingCharacters(in: .whitespaces)
+        let trimmedPurpose = sanitize(petPurpose)
 
         petManager.create(
             name: trimmedName,

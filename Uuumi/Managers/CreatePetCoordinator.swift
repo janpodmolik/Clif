@@ -81,7 +81,7 @@ final class CreatePetCoordinator {
         case .presetSelection:
             true
         case .petInfo:
-            !petName.trimmingCharacters(in: .whitespaces).isEmpty
+            !sanitize(petName).isEmpty
         }
     }
 
@@ -180,6 +180,11 @@ final class CreatePetCoordinator {
         }
     }
 
+    private func sanitize(_ text: String) -> String {
+        text.trimmingCharacters(in: .whitespaces)
+            .replacingOccurrences(of: "\\s+", with: " ", options: .regularExpression)
+    }
+
     func handleBlobDrop(petManager: PetManager, analyticsManager: AnalyticsManager) {
         // Guard: cannot create if pet already exists
         guard !petManager.hasPet else {
@@ -188,10 +193,12 @@ final class CreatePetCoordinator {
         }
 
         let limitedSources = LimitedSource.from(selectedApps)
+        let sanitizedName = sanitize(petName)
+        let sanitizedPurpose = sanitize(petPurpose)
 
         guard let pet = petManager.create(
-            name: petName,
-            purpose: petPurpose.isEmpty ? nil : petPurpose,
+            name: sanitizedName,
+            purpose: sanitizedPurpose.isEmpty ? nil : sanitizedPurpose,
             preset: preset,
             limitedSources: limitedSources
         ) else {
