@@ -6,7 +6,7 @@ struct ArchivedPetRow: View {
 
     private static let relativeDateFormatter: RelativeDateTimeFormatter = {
         let formatter = RelativeDateTimeFormatter()
-        formatter.locale = Locale(identifier: "cs_CZ")
+        formatter.locale = Locale(identifier: "en_US")
         formatter.unitsStyle = .short
         return formatter
     }()
@@ -22,7 +22,7 @@ struct ArchivedPetRow: View {
 
     private var reasonLabel: (icon: String, text: String, color: Color)? {
         switch pet.archiveReason {
-        case .blown: ("wind", "Odfouknut", .red)
+        case .blown: ("wind", "Blown Away", .red)
         case .completed, .manual: nil
         }
     }
@@ -50,7 +50,7 @@ struct ArchivedPetRow: View {
                         HStack(spacing: 4) {
                             Image(systemName: "calendar")
                                 .foregroundStyle(.secondary)
-                            Text("\(pet.totalDays) dní")
+                            Text("\(pet.totalDays) days")
                         }
 
                         if pet.finalPhase < pet.evolutionHistory.maxPhase {

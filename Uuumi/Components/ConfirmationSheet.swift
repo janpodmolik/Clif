@@ -208,26 +208,26 @@ struct ConfirmationAction: View {
     Text("Tap to show")
         .sheet(isPresented: .constant(true)) {
             ConfirmationSheet(
-                navigationTitle: "Odstranit peta",
+                navigationTitle: "Remove pet",
                 height: 340
             ) {
                 ConfirmationHeader(
                     icon: "questionmark.circle",
                     iconColor: .orange,
-                    title: "Co chceš udělat s Fern?"
+                    title: "What do you want to do with Fern?"
                 )
 
                 VStack(spacing: 12) {
                     ConfirmationAction(
                         icon: "archivebox",
-                        title: "Archivovat",
-                        subtitle: "Zachová historii v přehledu"
+                        title: "Archive",
+                        subtitle: "Preserves history in overview"
                     ) {}
 
                     ConfirmationAction(
                         icon: "trash",
-                        title: "Smazat trvale",
-                        subtitle: "Odstraní všechna data",
+                        title: "Delete permanently",
+                        subtitle: "Removes all data",
                         foregroundColor: .red,
                         background: .tinted(.red)
                     ) {}

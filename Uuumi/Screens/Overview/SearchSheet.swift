@@ -77,7 +77,7 @@ struct SearchSheet: View {
                 }
             }
             .background(Color(.systemGroupedBackground))
-            .navigationTitle("Hledat")
+            .navigationTitle("Search")
             .navigationBarTitleDisplayMode(.inline)
             .dismissButton()
             .toolbar {
@@ -94,7 +94,7 @@ struct SearchSheet: View {
             .safeAreaInset(edge: .top) {
                 filterPillsBar
             }
-            .searchable(text: $filter.searchText, prompt: "Hledat pety...")
+            .searchable(text: $filter.searchText, prompt: "Search pets...")
         }
         .tint(.primary)
         .sheet(item: $activeFilterSheet) { type in
@@ -111,21 +111,21 @@ struct SearchSheet: View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 8) {
                 FilterPill(
-                    label: filter.statusFilter == .all ? "Stav" : filter.statusFilter.rawValue,
+                    label: filter.statusFilter == .all ? String(localized: "Status") : filter.statusFilter.label,
                     isActive: filter.statusFilter != .all
                 ) {
                     activeFilterSheet = .status
                 }
 
                 FilterPill(
-                    label: filter.dateRange == .all ? "Období" : filter.dateRange.rawValue,
+                    label: filter.dateRange == .all ? String(localized: "Period") : filter.dateRange.label,
                     isActive: filter.dateRange != .all
                 ) {
                     activeFilterSheet = .date
                 }
 
                 FilterPill(
-                    label: filter.isDurationFiltered ? filter.durationLabel : "Délka",
+                    label: filter.isDurationFiltered ? filter.durationLabel : String(localized: "Duration"),
                     isActive: filter.isDurationFiltered
                 ) {
                     activeFilterSheet = .duration
@@ -148,7 +148,7 @@ struct SearchSheet: View {
         ScrollView {
             LazyVStack(spacing: 12) {
                 HStack {
-                    Text("\(filteredPets.count) výsledků")
+                    Text("\(filteredPets.count) results")
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
 
@@ -196,15 +196,15 @@ struct SearchSheet: View {
                     .font(.system(size: 48))
                     .foregroundStyle(.secondary)
 
-                Text("Žádné výsledky")
+                Text("No results")
                     .font(.title2.weight(.semibold))
 
-                Text("Zkus změnit vyhledávání nebo filtry.")
+                Text("Try changing your search or filters.")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
 
-                Button("Vymazat filtry") {
+                Button("Clear filters") {
                     withAnimation {
                         filter.reset()
                     }
@@ -215,10 +215,10 @@ struct SearchSheet: View {
                     .font(.system(size: 48))
                     .foregroundStyle(.secondary)
 
-                Text("Vyhledávání v historii")
+                Text("Search history")
                     .font(.title2.weight(.semibold))
 
-                Text("Zadej jméno peta nebo použij filtry.")
+                Text("Enter a pet name or use filters.")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)

@@ -90,9 +90,9 @@ struct OverviewScreen: View {
     private var headerSection: some View {
         HStack(alignment: .top) {
             VStack(alignment: .leading, spacing: 8) {
-                Text("Přehled")
+                Text("Overview")
                     .font(.system(size: 32, weight: .bold))
-                Text("Historie tvých petů a času u obrazovky.")
+                Text("History of your pets and screen time.")
                     .foregroundStyle(.secondary)
             }
             Spacer()
@@ -110,7 +110,7 @@ struct OverviewScreen: View {
 
     private var activeSection: some View {
         VStack(alignment: .leading, spacing: 14) {
-            Text("Aktuální")
+            Text("Current")
                 .font(.headline)
 
             if let pet = activePet {
@@ -128,10 +128,10 @@ struct OverviewScreen: View {
             Image(systemName: "leaf.fill")
                 .font(.system(size: 40))
                 .foregroundStyle(.secondary)
-            Text("Žádný aktivní pet")
+            Text("No active pet")
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
-            Text("Vytvoř si nového peta na homepage.")
+            Text("Create a new pet on the homepage.")
                 .font(.caption)
                 .foregroundStyle(.tertiary)
         }
@@ -153,7 +153,7 @@ struct OverviewScreen: View {
     private var historySection: some View {
         VStack(alignment: .leading, spacing: 14) {
             HStack {
-                Text("Historie")
+                Text("History")
                     .font(.headline)
                 Spacer()
 
@@ -210,10 +210,10 @@ struct OverviewScreen: View {
             Image(systemName: "clock.arrow.circlepath")
                 .font(.system(size: 40))
                 .foregroundStyle(.secondary)
-            Text("Zatím žádná historie")
+            Text("No history yet")
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
-            Text("Archivovaní peti se zobrazí zde.")
+            Text("Archived pets will appear here.")
                 .font(.caption)
                 .foregroundStyle(.tertiary)
         }

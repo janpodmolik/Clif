@@ -162,17 +162,17 @@ enum BlowAwayReason: String, Codable {
 
     var label: String {
         switch self {
-        case .limitExceeded: "Překročen limit"
-        case .breakViolation: "Porušena pauza"
-        case .userChoice: "Vlastní volba"
+        case .limitExceeded: String(localized: "Limit exceeded")
+        case .breakViolation: String(localized: "Break violated")
+        case .userChoice: String(localized: "Own choice")
         }
     }
 
     var description: String {
         switch self {
-        case .limitExceeded: "Pet byl odfouknut, protože jsi překročil/a denní limit."
-        case .breakViolation: "Pet byl odfouknut, protože jsi porušil/a závaznou pauzu."
-        case .userChoice: "Pet byl odfouknut na tvé vlastní přání."
+        case .limitExceeded: String(localized: "Pet was blown away because you exceeded the daily limit.")
+        case .breakViolation: String(localized: "Pet was blown away because you violated a committed break.")
+        case .userChoice: String(localized: "Pet was blown away at your own request.")
         }
     }
 

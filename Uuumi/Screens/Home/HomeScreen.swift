@@ -300,12 +300,12 @@ struct HomeScreen: View {
         }
         .windNotCalmSheet(isPresented: $showWindNotCalmAlert)
         .alert(
-            "Přístup k času u obrazovky",
+            "Screen Time Access",
             isPresented: $showAuthorizationAlert
         ) {
             Button("OK") {}
         } message: {
-            Text("Pro vytvoření peta je potřeba povolit přístup k času u obrazovky v Nastavení.")
+            Text("To create a pet, you need to allow Screen Time access in Settings.")
         }
         .onAppear {
             windRhythm.start()

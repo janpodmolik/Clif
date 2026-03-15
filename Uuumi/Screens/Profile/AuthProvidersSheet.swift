@@ -16,9 +16,9 @@ struct AuthProvidersSheet: View {
                 Spacer()
 
                 // Title
-                Text("Začni s ")
+                Text("Get started with ")
                     .font(.title.weight(.bold)) +
-                Text("Uuumim")
+                Text("Uuumi")
                     .font(.title.weight(.bold))
                     .foregroundColor(Color(.label))
 
@@ -40,7 +40,7 @@ struct AuthProvidersSheet: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(Color(.systemBackground))
             .dismissButton()
-            .alert("Chyba", isPresented: hasError, presenting: authManager.error) { _ in
+            .alert("Error", isPresented: hasError, presenting: authManager.error) { _ in
                 Button("OK") { authManager.clearError() }
             } message: { error in
                 Text(error.localizedDescription)
@@ -91,7 +91,7 @@ struct AuthProvidersSheet: View {
                 Image("google-logo")
                     .resizable()
                     .frame(width: 22, height: 22)
-                Text("Pokračovat přes Google")
+                Text("Continue with Google")
                     .font(.body.weight(.medium))
             }
             .frame(maxWidth: .infinity)
@@ -112,7 +112,7 @@ struct AuthProvidersSheet: View {
             HStack(spacing: 12) {
                 Image(systemName: "envelope.fill")
                     .font(.body)
-                Text("Pokračovat e-mailem")
+                Text("Continue with Email")
                     .font(.body.weight(.medium))
             }
             .frame(maxWidth: .infinity)
@@ -127,11 +127,11 @@ struct AuthProvidersSheet: View {
 
     // TODO: Make legal links tappable once privacy policy & terms pages are live
     private var legalFooter: some View {
-        (Text("Pokračováním souhlasíš se ") +
-        Text("Zásadami ochrany osobních údajů")
+        (Text("By continuing, you agree to the ") +
+        Text("Privacy Policy")
             .underline() +
-        Text(" a ") +
-        Text("Podmínkami používání")
+        Text(" and ") +
+        Text("Terms of Service")
             .underline())
         .font(.caption)
         .foregroundStyle(.secondary)

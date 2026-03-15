@@ -13,10 +13,10 @@ struct WelcomeBackReauthorizePhase: View {
             Spacer().frame(height: 8)
 
             VStack(spacing: 8) {
-                Text("\(petName) je zpátky!")
+                Text("\(petName) is back!")
                     .font(.headline)
                     .multilineTextAlignment(.center)
-                Text("Po reinstalaci je potřeba znovu povolit přístup k času u obrazovky a vybrat sledované aplikace.")
+                Text("After reinstalling, you need to reauthorize Screen Time access and select tracked apps.")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
@@ -25,8 +25,8 @@ struct WelcomeBackReauthorizePhase: View {
 
             WelcomeBackActionButton(
                 icon: "checkmark.shield",
-                title: "Znovu povolit",
-                subtitle: "Povolí přístup a umožní výběr aplikací",
+                title: "Reauthorize",
+                subtitle: "Grants access and allows app selection",
                 iconColor: nil,
                 isLoading: isAuthorizing,
                 action: { Task { await authorize() } }
@@ -38,7 +38,7 @@ struct WelcomeBackReauthorizePhase: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
-                Button("Zpět", action: onBack)
+                Button("Back", action: onBack)
             }
         }
     }

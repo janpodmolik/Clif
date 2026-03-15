@@ -37,7 +37,7 @@ struct PremiumSheet: View {
                     selectedProduct = storeManager.yearlyProduct
                 }
             }
-            .alert("Chyba", isPresented: hasError, presenting: storeManager.error) { _ in
+            .alert("Error", isPresented: hasError, presenting: storeManager.error) { _ in
                 Button("OK") { storeManager.clearError() }
             } message: { error in
                 Text(error.localizedDescription)
@@ -56,7 +56,7 @@ struct PremiumSheet: View {
             Text("Uuumi Premium")
                 .font(.title.weight(.bold))
 
-            Text("Odemkni plný potenciál svých petů.")
+            Text("Unlock the full potential of your pets.")
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
@@ -71,7 +71,7 @@ struct PremiumSheet: View {
             HStack {
                 Image(systemName: "checkmark.seal.fill")
                     .foregroundStyle(.green)
-                Text("Premium je aktivní")
+                Text("Premium is Active")
                     .font(.headline)
             }
 
@@ -82,7 +82,7 @@ struct PremiumSheet: View {
             }
 
             if let expiration = storeManager.expirationDate {
-                Text("Obnovení: \(expiration.formatted(.dateTime.day().month(.wide).year()))")
+                Text("Renewal: \(expiration.formatted(.dateTime.day().month(.wide).year()))")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
@@ -90,7 +90,7 @@ struct PremiumSheet: View {
             Button {
                 Task { await storeManager.showManageSubscriptions() }
             } label: {
-                Text("Spravovat předplatné")
+                Text("Manage Subscription")
                     .font(.subheadline.weight(.medium))
             }
             .padding(.top, 4)
@@ -104,10 +104,10 @@ struct PremiumSheet: View {
 
     private var featureList: some View {
         VStack(alignment: .leading, spacing: 12) {
-            featureRow(icon: "sparkles", text: "Exkluzivní evoluce")
-            featureRow(icon: "paintpalette.fill", text: "Speciální témata")
-            featureRow(icon: "chart.bar.fill", text: "Detailní statistiky")
-            featureRow(icon: "infinity", text: "Neomezený počet petů")
+            featureRow(icon: "sparkles", text: "Exclusive Evolutions")
+            featureRow(icon: "paintpalette.fill", text: "Special Themes")
+            featureRow(icon: "chart.bar.fill", text: "Detailed Statistics")
+            featureRow(icon: "infinity", text: "Unlimited Pets")
         }
         .padding()
         .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
@@ -188,7 +188,7 @@ struct PremiumSheet: View {
                     ProgressView()
                         .tint(.black)
                 } else {
-                    Text("Získat Premium")
+                    Text("Get Premium")
                         .font(.headline)
                 }
             }
@@ -207,7 +207,7 @@ struct PremiumSheet: View {
         Button {
             Task { await storeManager.restorePurchases() }
         } label: {
-            Text("Obnovit nákupy")
+            Text("Restore Purchases")
                 .font(.subheadline.weight(.medium))
         }
     }
@@ -216,9 +216,9 @@ struct PremiumSheet: View {
 
     private var legalLinks: some View {
         HStack(spacing: 16) {
-            Link("Podmínky", destination: URL(string: "https://uuumi.app/terms")!)
+            Link("Terms", destination: URL(string: "https://uuumi.app/terms")!)
             Text("·").foregroundStyle(.secondary)
-            Link("Ochrana soukromí", destination: URL(string: "https://uuumi.app/privacy")!)
+            Link("Privacy", destination: URL(string: "https://uuumi.app/privacy")!)
         }
         .font(.caption)
         .foregroundStyle(.secondary)
@@ -239,8 +239,8 @@ struct PremiumSheet: View {
 
     private func planLabel(for productId: String) -> String {
         switch productId {
-        case StoreManager.monthlyID: return "Měsíční"
-        case StoreManager.yearlyID: return "Roční"
+        case StoreManager.monthlyID: return String(localized: "Monthly")
+        case StoreManager.yearlyID: return String(localized: "Yearly")
         default: return productId
         }
     }
@@ -253,20 +253,20 @@ struct PremiumSheet: View {
         guard monthlyPerYear > 0 else { return nil }
         let savings = Int(((monthlyPerYear - yearlyPrice) / monthlyPerYear * 100).rounded())
         guard savings > 0 else { return nil }
-        return "Ušetři \(savings) %"
+        return String(localized: "Save \(savings) %")
     }
 
     private func introOfferText(for product: Product) -> String? {
         guard let intro = product.subscription?.introductoryOffer else { return nil }
         switch intro.period.unit {
         case .day:
-            return "\(intro.period.value) dní zdarma"
+            return String(localized: "\(intro.period.value) days free")
         case .week:
-            return "\(intro.period.value) týdnů zdarma"
+            return String(localized: "\(intro.period.value) weeks free")
         case .month:
-            return "\(intro.period.value) měsíců zdarma"
+            return String(localized: "\(intro.period.value) months free")
         case .year:
-            return "\(intro.period.value) rok zdarma"
+            return String(localized: "\(intro.period.value) year free")
         @unknown default:
             return nil
         }

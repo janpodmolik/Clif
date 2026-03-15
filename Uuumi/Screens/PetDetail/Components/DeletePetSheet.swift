@@ -12,21 +12,21 @@ struct DeletePetSheet: View {
 
     var body: some View {
         ConfirmationSheet(
-            navigationTitle: "Odstranit peta",
+            navigationTitle: "Remove pet",
             height: showArchiveOption ? 340 : 280
         ) {
             ConfirmationHeader(
                 icon: showArchiveOption ? "questionmark.circle" : "trash.circle",
                 iconColor: showArchiveOption ? .orange : .red,
-                title: "Co chceš udělat s \(petName)?"
+                title: "What do you want to do with \(petName)?"
             )
 
             VStack(spacing: 12) {
                 if showArchiveOption {
                     ConfirmationAction(
                         icon: "archivebox",
-                        title: "Archivovat",
-                        subtitle: "Zachová historii v přehledu"
+                        title: "Archive",
+                        subtitle: "Keeps history in overview"
                     ) {
                         dismiss()
                         onArchive()
@@ -35,8 +35,8 @@ struct DeletePetSheet: View {
 
                 ConfirmationAction(
                     icon: "trash",
-                    title: "Smazat trvale",
-                    subtitle: "Odstraní všechna data",
+                    title: "Delete permanently",
+                    subtitle: "Removes all data",
                     foregroundColor: .red,
                     background: .tinted(.red)
                 ) {

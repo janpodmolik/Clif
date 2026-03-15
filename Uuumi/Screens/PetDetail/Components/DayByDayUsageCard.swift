@@ -1,8 +1,8 @@
 import SwiftUI
 
 enum UsageViewMode: String, CaseIterable {
-    case week = "7 dní"
-    case all = "Vše"
+    case week = "7 days"
+    case all = "All"
 }
 
 struct DayByDayUsageCard: View {
@@ -57,7 +57,7 @@ struct DayByDayUsageCard: View {
             Image(systemName: "clock.arrow.circlepath")
                 .foregroundStyle(.secondary)
 
-            Text("Historie")
+            Text("History")
                 .font(.headline)
 
             Spacer()
@@ -71,7 +71,7 @@ struct DayByDayUsageCard: View {
                 .pickerStyle(.segmented)
                 .frame(width: 120)
             } else {
-                Text("\(stats.days.count) dní")
+                Text("\(stats.days.count) days")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
@@ -81,7 +81,7 @@ struct DayByDayUsageCard: View {
     private var summaryRow: some View {
         HStack {
             Label {
-                Text("\(formatMinutes(displayedStats.averageMinutes)) průměr")
+                Text("\(formatMinutes(displayedStats.averageMinutes)) average")
             } icon: {
                 Image(systemName: "chart.bar.xaxis")
             }
@@ -90,7 +90,7 @@ struct DayByDayUsageCard: View {
 
             Spacer()
 
-            Text("Celkem: \(formatMinutes(displayedStats.totalMinutes))")
+            Text("Total: \(formatMinutes(displayedStats.totalMinutes))")
                 .font(.caption)
                 .foregroundStyle(.secondary)
         }

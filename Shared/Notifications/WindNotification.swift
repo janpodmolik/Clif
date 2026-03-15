@@ -15,20 +15,20 @@ enum WindNotification: Int, CaseIterable, Codable, Hashable {
 
     var title: String {
         switch self {
-        case .light: return "Lehký vítr"
-        case .strong: return "Silný vítr"
-        case .critical: return "Kritický vítr"
+        case .light: return String(localized: "Light wind")
+        case .strong: return String(localized: "Strong wind")
+        case .critical: return String(localized: "Critical wind")
         }
     }
 
     var body: String {
         switch self {
         case .light:
-            return "Hele, začíná tu foukat... ale tak aspoň nebude horko!"
+            return String(localized: "Hey, it's getting windy... but at least it won't be hot!")
         case .strong:
-            return "Tohle už je pořádnej vítr. Nešlo by s tím něco dělat?"
+            return String(localized: "This is some serious wind. Can we do something about it?")
         case .critical:
-            return "HALOOO?! Začíná to tu bejt dost nebezpečný, pomoc prosím!"
+            return String(localized: "HELLOOO?! It's getting really dangerous here, help please!")
         }
     }
 

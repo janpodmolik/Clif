@@ -16,8 +16,8 @@ extension ButtonStyle where Self == PressableButtonStyle {
 
 enum AppTab: String, CaseIterable {
     case home = "Home"
-    case overview = "Přehled"
-    case profile = "Profil"
+    case overview = "Overview"
+    case profile = "Profile"
 
     var symbol: String {
         switch self {
@@ -101,10 +101,10 @@ struct ContentView: View {
                 Tab("Home", systemImage: "house", value: .home) {
                     HomeScreen()
                 }
-                Tab("Přehled", systemImage: "chart.bar", value: .overview) {
+                Tab("Overview", systemImage: "chart.bar", value: .overview) {
                     OverviewScreen()
                 }
-                Tab("Profil", systemImage: "person", value: .profile) {
+                Tab("Profile", systemImage: "person", value: .profile) {
                     ProfileScreen(navigationPath: navigationPathBinding(for: .profile))
                 }
             }

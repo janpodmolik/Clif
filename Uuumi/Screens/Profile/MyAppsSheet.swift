@@ -47,17 +47,17 @@ struct MyAppsSheet: View {
 
                 footer
             }
-            .navigationTitle("Moje aplikace")
+            .navigationTitle("My Apps")
             .navigationBarTitleDisplayMode(.inline)
             .dismissButton()
-            .alert("Smazat moje aplikace?", isPresented: $showDeleteConfirmation) {
-                Button("Smazat", role: .destructive) {
+            .alert("Delete My Apps?", isPresented: $showDeleteConfirmation) {
+                Button("Delete", role: .destructive) {
                     SharedDefaults.clearMyAppsSelection()
                     dismiss()
                 }
-                Button("Zrušit", role: .cancel) {}
+                Button("Cancel", role: .cancel) {}
             } message: {
-                Text("Uložený výběr bude smazán.")
+                Text("The saved selection will be deleted.")
             }
         }
         .onAppear {
@@ -69,7 +69,7 @@ struct MyAppsSheet: View {
 
     private var header: some View {
         VStack(spacing: Layout.headerSpacing) {
-            Text("Uložený výběr aplikací")
+            Text("Saved App Selection")
                 .font(.title3.weight(.semibold))
 
             selectionSummary
@@ -95,7 +95,7 @@ struct MyAppsSheet: View {
                     webDomainTokens: editSelection.webDomainTokens
                 )
             } else {
-                Text("Vyber aplikace nebo kategorie")
+                Text("Select apps or categories")
                     .font(.footnote)
                     .foregroundStyle(.tertiary)
             }
@@ -115,7 +115,7 @@ struct MyAppsSheet: View {
                 Button(role: .destructive) {
                     showDeleteConfirmation = true
                 } label: {
-                    Text("Smazat uložený výběr")
+                    Text("Delete Saved Selection")
                         .font(.subheadline.weight(.medium))
                 }
             }
@@ -130,7 +130,7 @@ struct MyAppsSheet: View {
             SharedDefaults.saveMyAppsSelection(editSelection)
             dismiss()
         } label: {
-            Text("Uložit")
+            Text("Save")
         }
         .buttonStyle(.primary)
         .disabled(!hasSelection)

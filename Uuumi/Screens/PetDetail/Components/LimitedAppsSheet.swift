@@ -71,15 +71,15 @@ struct LimitedAppsSheet: View {
                         emptyState
                     } else {
                         if !apps.isEmpty {
-                            sourceSection(title: "Aplikace", icon: "app.fill", sources: apps)
+                            sourceSection(title: "Apps", icon: "app.fill", sources: apps)
                         }
 
                         if !categories.isEmpty {
-                            sourceSection(title: "Kategorie", icon: "square.grid.2x2.fill", sources: categories)
+                            sourceSection(title: "Categories", icon: "square.grid.2x2.fill", sources: categories)
                         }
 
                         if !websites.isEmpty {
-                            sourceSection(title: "Webové stránky", icon: "globe", sources: websites)
+                            sourceSection(title: "Websites", icon: "globe", sources: websites)
                         }
                     }
                 }
@@ -90,7 +90,7 @@ struct LimitedAppsSheet: View {
                     editFooter
                 }
             }
-            .navigationTitle("Sledované aplikace")
+            .navigationTitle("Tracked Apps")
             .navigationBarTitleDisplayMode(.inline)
             .dismissButton()
             .sheet(isPresented: $showEditSheet) {
@@ -103,28 +103,28 @@ struct LimitedAppsSheet: View {
                     }
                 }
             }
-            .alert("Nelze změnit aplikace", isPresented: .init(
+            .alert("Cannot change apps", isPresented: .init(
                 get: { showBlockedAlert != nil },
                 set: { if !$0 { showBlockedAlert = nil } }
             ), presenting: showBlockedAlert) { reason in
                 if case .freeBreak = reason {
-                    Button("Ukončit pauzu", role: .destructive) {
+                    Button("End break", role: .destructive) {
                         onEndFreeBreak?()
                     }
                 }
-                Button("Rozumím", role: .cancel) {}
+                Button("Got it", role: .cancel) {}
             } message: { reason in
                 switch reason {
                 case .freeBreak:
-                    Text("Během aktivní pauzy nelze měnit sledované aplikace. Nejdřív ukonči pauzu.")
+                    Text("You can't change tracked apps during an active break. End the break first.")
                 case .otherBreak:
-                    Text("Během aktivní pauzy nelze měnit sledované aplikace.")
+                    Text("You can't change tracked apps during an active break.")
                 }
             }
-            .alert("Změny aplikací", isPresented: $showChangeInfo) {
+            .alert("App changes", isPresented: $showChangeInfo) {
                 Button("OK") {}
             } message: {
-                Text("Dokud tvůj pet nemá essenci, můžeš měnit sledované aplikace bez omezení. Po získání essence je možná 1 změna denně.")
+                Text("Until your pet has an essence, you can change tracked apps without limits. After getting an essence, 1 change per day is allowed.")
             }
         }
         .presentationDetents([.medium, .large])
@@ -146,7 +146,7 @@ struct LimitedAppsSheet: View {
                     showEditSheet = true
                 }
             } label: {
-                Text("Změnit aplikace")
+                Text("Change apps")
             }
             .buttonStyle(.primary)
             .disabled(!canEdit)
@@ -206,9 +206,9 @@ struct LimitedAppsSheet: View {
 
     private var emptyState: some View {
         ContentUnavailableView {
-            Label("Žádné sledované aplikace", systemImage: "app.badge")
+            Label("No tracked apps", systemImage: "app.badge")
         } description: {
-            Text("Přidej aplikace, které chceš sledovat, v nastavení limitu.")
+            Text("Add the apps you want to track in the limit settings.")
         }
         .padding()
         .glassCard()
@@ -218,10 +218,10 @@ struct LimitedAppsSheet: View {
 
     private func changeStateText(_ state: LimitedSourceChangeState) -> String {
         switch state {
-        case .unlimited: "Neomezené změny"
-        case .available: "Zbývá 1/1 změna dnes"
-        case .usedToday: "Vyčerpáno 1/1 — obnoví se zítra"
-        case .blown: "Pet je odfouknutý"
+        case .unlimited: "Unlimited changes"
+        case .available: "1/1 change remaining today"
+        case .usedToday: "1/1 used — resets tomorrow"
+        case .blown: "Pet is blown away"
         }
     }
 

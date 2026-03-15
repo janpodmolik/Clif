@@ -18,12 +18,12 @@ struct PetConflictSheet: View {
             ConfirmationHeader(
                 icon: "arrow.triangle.2.circlepath",
                 iconColor: .orange,
-                title: "Dva petové nalezeni",
-                subtitle: "Na tomto zařízení je pet a v cloudu je také pet. Vyber, kterého chceš ponechat."
+                title: "Two pets found",
+                subtitle: "There is a pet on this device and also one in the cloud. Choose which one to keep."
             )
 
             petCard(
-                label: "Na tomto zařízení",
+                label: "On this device",
                 name: conflict.localPetName,
                 phase: conflict.localPetPhase,
                 essence: conflict.localPetEssence,
@@ -34,7 +34,7 @@ struct PetConflictSheet: View {
             }
 
             petCard(
-                label: "V cloudu",
+                label: "In the cloud",
                 name: conflict.cloudPetName,
                 phase: conflict.cloudPetPhase,
                 essence: conflict.cloudPetEssence,
@@ -84,7 +84,7 @@ struct PetConflictSheet: View {
                             .font(.headline)
 
                         if isBlown {
-                            Label("Odfouknut", systemImage: "wind")
+                            Label("Blown away", systemImage: "wind")
                                 .font(.caption)
                                 .foregroundStyle(.red)
                         }
@@ -92,12 +92,12 @@ struct PetConflictSheet: View {
 
                     HStack(spacing: 12) {
                         if phase > 0 {
-                            Label("Fáze \(phase)", systemImage: "sparkles")
+                            Label("Phase \(phase)", systemImage: "sparkles")
                         } else {
                             Label("Blob", systemImage: "circle.fill")
                         }
 
-                        Label("\(daysAlive) dní", systemImage: "calendar")
+                        Label("\(daysAlive) days", systemImage: "calendar")
                     }
                     .font(.caption)
                     .foregroundStyle(.secondary)
@@ -108,7 +108,7 @@ struct PetConflictSheet: View {
             .padding()
             .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
 
-            Button("Ponechat \(name)", action: onKeep)
+            Button("Keep \(name)", action: onKeep)
                 .buttonStyle(.primary)
         }
     }

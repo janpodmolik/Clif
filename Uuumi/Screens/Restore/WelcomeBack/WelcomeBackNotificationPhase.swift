@@ -14,10 +14,10 @@ struct WelcomeBackNotificationPhase: View {
             Spacer().frame(height: 8)
 
             VStack(spacing: 8) {
-                Text("Zůstaň ve spojení")
+                Text("Stay connected")
                     .font(.headline)
                     .multilineTextAlignment(.center)
-                Text("Uuumi tě může upozornit, když se petu blíží nepřízeň osudu, nebo je připraven se vyvinout.")
+                Text("Uuumi can notify you when your pet is in danger or ready to evolve.")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
@@ -28,7 +28,7 @@ struct WelcomeBackNotificationPhase: View {
 
             VStack(spacing: 12) {
                 if permissionDenied {
-                    Text("Notifikace můžeš zapnout kdykoliv v Nastavení.")
+                    Text("You can enable notifications anytime in Settings.")
                         .font(.footnote)
                         .foregroundStyle(.secondary)
                         .multilineTextAlignment(.center)
@@ -37,7 +37,7 @@ struct WelcomeBackNotificationPhase: View {
                         HapticType.impactLight.trigger()
                         openSettings()
                     } label: {
-                        Text("Otevřít Nastavení")
+                        Text("Open Settings")
                     }
                     .buttonStyle(.primary)
 
@@ -45,7 +45,7 @@ struct WelcomeBackNotificationPhase: View {
                         HapticType.impactLight.trigger()
                         onDone()
                     } label: {
-                        Text("Přeskočit")
+                        Text("Skip")
                             .font(.body.weight(.semibold))
                             .foregroundStyle(Color(.label))
                             .frame(maxWidth: .infinity)
@@ -62,7 +62,7 @@ struct WelcomeBackNotificationPhase: View {
                                 .frame(maxWidth: .infinity)
                                 .padding(.vertical, 14)
                         } else {
-                            Text("Povolit notifikace")
+                            Text("Allow notifications")
                         }
                     }
                     .buttonStyle(.primary)
@@ -72,7 +72,7 @@ struct WelcomeBackNotificationPhase: View {
                         HapticType.impactLight.trigger()
                         onDone()
                     } label: {
-                        Text("Přeskočit")
+                        Text("Skip")
                             .font(.body.weight(.semibold))
                             .foregroundStyle(.secondary)
                     }

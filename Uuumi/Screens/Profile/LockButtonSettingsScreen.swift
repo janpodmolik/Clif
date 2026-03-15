@@ -8,9 +8,9 @@ struct LockButtonSettingsScreen: View {
         Form {
             Section {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("Pozice")
+                    Text("Position")
                         .fontWeight(.bold)
-                    Text("Umístění tlačítka na obrazovce.")
+                    Text("Button placement on screen.")
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                 }
@@ -25,9 +25,9 @@ struct LockButtonSettingsScreen: View {
 
             Section {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("Velikost")
+                    Text("Size")
                         .fontWeight(.bold)
-                    Text("Velikost lock tlačítka.")
+                    Text("Lock button size.")
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                 }
@@ -42,16 +42,16 @@ struct LockButtonSettingsScreen: View {
 
             Section {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("Jak to funguje")
+                    Text("How It Works")
                         .fontWeight(.bold)
-                    Text("Zamknutím aktivuješ break — vybrané aplikace se zablokují. Odemknutím break ukončíš.")
+                    Text("Locking activates a break — selected apps get blocked. Unlocking ends the break.")
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                 }
                 .padding(.vertical, 4)
             }
         }
-        .navigationTitle("Lock tlačítko")
+        .navigationTitle("Lock Button")
         .navigationBarTitleDisplayMode(.inline)
     }
 }

@@ -19,18 +19,18 @@ struct CommittedUnlockSheet: View {
 
     var body: some View {
         ConfirmationSheet(
-            navigationTitle: isCompleted ? "Break dokončen" : "Committed Break",
+            navigationTitle: isCompleted ? "Break completed" : "Committed Break",
             height: 320
         ) {
             ConfirmationHeader(
                 icon: isCompleted ? "checkmark.circle.fill" : "exclamationmark.triangle.fill",
                 iconColor: isCompleted ? .green : .orange,
                 title: isCompleted
-                    ? "Committed break skončil"
-                    : "Opravdu chceš skončit dřív?",
+                    ? "Committed break ended"
+                    : "End early?",
                 subtitle: isCompleted
-                    ? "Můžeš bezpečně odemknout bez ztráty mazlíčka."
-                    : "Předčasné ukončení způsobí okamžitou ztrátu tvého peta."
+                    ? "You can safely unlock without losing your pet."
+                    : "Ending early will cause immediate loss of your pet."
             )
             .contentTransition(.numericText())
             .animation(.easeInOut(duration: 0.4), value: isCompleted)
@@ -38,8 +38,8 @@ struct CommittedUnlockSheet: View {
             if isCompleted {
                 ConfirmationAction(
                     icon: "lock.open.fill",
-                    title: "Odemknout bezpečně",
-                    subtitle: "Break byl úspěšně dokončen",
+                    title: "Unlock safely",
+                    subtitle: "Break was completed successfully",
                     foregroundColor: .green,
                     background: .tinted(.green)
                 ) {
@@ -50,8 +50,8 @@ struct CommittedUnlockSheet: View {
             } else {
                 ConfirmationAction(
                     icon: "xmark.circle",
-                    title: "Ukončit a ztratit peta",
-                    subtitle: "Nevratná akce",
+                    title: "End and lose pet",
+                    subtitle: "Irreversible action",
                     foregroundColor: .red,
                     background: .tinted(.red)
                 ) {

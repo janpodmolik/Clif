@@ -17,7 +17,7 @@ struct UnknownEssenceCard: View {
             Text(displayName)
                 .font(.subheadline.weight(.semibold))
 
-            Text("Neznámá esence")
+            Text("Unknown essence")
                 .font(.caption2)
                 .foregroundStyle(.orange)
 
@@ -36,7 +36,7 @@ struct UnknownEssenceCard: View {
     @ViewBuilder
     private var statusLabel: some View {
         if evolutionCount > 0 {
-            Text("Phase \(currentPhase) · \(evolutionCount) \(evolutionCount == 1 ? "evoluce" : "evolucí")")
+            Text("Phase \(currentPhase) · \(evolutionCount) \(evolutionCount == 1 ? "evolution" : "evolutions")")
                 .font(.caption)
                 .foregroundStyle(.secondary)
         } else {

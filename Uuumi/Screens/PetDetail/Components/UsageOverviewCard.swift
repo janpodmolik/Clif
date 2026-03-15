@@ -7,21 +7,21 @@ struct UsageOverviewCard: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("Přehled")
+            Text("Overview")
                 .font(.headline)
 
             // Total time + average per day
             HStack(spacing: 12) {
                 statItem(
                     value: formatMinutes(stats.totalMinutes),
-                    label: "Celkový čas",
+                    label: "Total time",
                     icon: "clock.fill",
                     color: .blue
                 )
 
                 statItem(
                     value: formatMinutes(stats.averageMinutes),
-                    label: "Průměr/den",
+                    label: "Average/day",
                     icon: "chart.bar.fill",
                     color: .orange
                 )
@@ -32,14 +32,14 @@ struct UsageOverviewCard: View {
                 HStack(spacing: 12) {
                     statItem(
                         value: "\(breakCount)",
-                        label: "Pauz",
+                        label: "Breaks",
                         icon: "pause.circle.fill",
                         color: .green
                     )
 
                     statItem(
                         value: formatMinutes(Int(totalBreakMinutes)),
-                        label: "V pauzách",
+                        label: "In breaks",
                         icon: "timer",
                         color: .teal
                     )
@@ -84,7 +84,7 @@ struct UsageOverviewCard: View {
 
     private func presetDistributionSection(_ distribution: [WindPreset: Int]) -> some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("Režimy")
+            Text("Presets")
                 .font(.subheadline.weight(.medium))
                 .foregroundStyle(.secondary)
 

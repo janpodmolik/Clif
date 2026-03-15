@@ -67,17 +67,17 @@ struct BreakTypePicker: View {
         }
         .presentationDetents([.medium])
         .confirmationDialog(
-            "Spustit Committed Break?",
+            "Start Committed Break?",
             isPresented: $showConfirmation,
             titleVisibility: .visible
         ) {
-            Button("Spustit") {
+            Button("Start") {
                 onConfirmCommitted(committedBreakMode)
                 dismiss()
             }
-            Button("Zrušit", role: .cancel) {}
+            Button("Cancel", role: .cancel) {}
         } message: {
-            Text("Předčasné ukončení tohoto breaku způsobí okamžitou ztrátu tvého peta.")
+            Text("Ending this break early will cause immediate loss of your pet.")
         }
         .task {
             // Wait for sheet presentation animation to complete (~0.35s)
@@ -150,10 +150,10 @@ struct BreakTypePicker: View {
                     .font(.system(size: 44))
                     .foregroundStyle(BreakType.free.color)
 
-                Text("Neomezená pauza")
+                Text("Unlimited break")
                     .font(.title3.weight(.semibold))
 
-                Text("Bez časového limitu, bez penalizace")
+                Text("No time limit, no penalty")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
             }
@@ -246,7 +246,7 @@ struct BreakTypePicker: View {
         } label: {
             HStack(spacing: 6) {
                 Image(systemName: "wind")
-                Text("Do 0% větru")
+                Text("Until 0% wind")
             }
             .font(.subheadline.weight(.medium))
             .foregroundStyle(isActive ? AnyShapeStyle(.white) : isDisabled ? AnyShapeStyle(.tertiary) : AnyShapeStyle(.primary))
@@ -278,7 +278,7 @@ struct BreakTypePicker: View {
         } label: {
             HStack(spacing: 6) {
                 Image(systemName: "moon.fill")
-                Text("Do konce dne")
+                Text("Until end of day")
             }
             .font(.subheadline.weight(.medium))
             .foregroundStyle(isActive ? .white : .primary)
@@ -301,7 +301,7 @@ struct BreakTypePicker: View {
     private var confirmButton: some View {
         VStack(spacing: 8) {
             if selection == .committed {
-                Text("Předčasné ukončení způsobí ztrátu peta")
+                Text("Early termination will cause loss of pet")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
@@ -314,7 +314,7 @@ struct BreakTypePicker: View {
                     showConfirmation = true
                 }
             } label: {
-                Text("Zahájit pauzu")
+                Text("Start break")
                     .font(.headline)
                     .foregroundStyle(.white)
                     .frame(maxWidth: .infinity)

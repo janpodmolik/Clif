@@ -12,7 +12,7 @@ struct DayDetailSheet: View {
 
     private let dateFormatter: DateFormatter = {
         let f = DateFormatter()
-        f.locale = Locale(identifier: "cs_CZ")
+        f.locale = Locale(identifier: "en_US")
         f.dateStyle = .full
         return f
     }()
@@ -74,7 +74,7 @@ struct DayDetailSheet: View {
                 .foregroundStyle(.blue)
 
             VStack(alignment: .leading, spacing: 2) {
-                Text("Celkový čas")
+                Text("Total time")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
                 Text(formatMinutes(day.totalMinutes))
@@ -85,7 +85,7 @@ struct DayDetailSheet: View {
 
             if let reason = blowAwayReason {
                 VStack(alignment: .trailing, spacing: 2) {
-                    Label("Odfouknut", systemImage: reason.icon)
+                    Label("Blown Away", systemImage: reason.icon)
                         .font(.caption.bold())
                         .foregroundStyle(.red)
                     Text(reason.label)
@@ -105,7 +105,7 @@ struct DayDetailSheet: View {
                 .foregroundStyle(.cyan)
 
             VStack(alignment: .leading, spacing: 2) {
-                Text("\(breakCount) \(breakCount == 1 ? "pauza" : breakCount < 5 ? "pauzy" : "pauz")")
+                Text("\(breakCount) \(breakCount == 1 ? "break" : "breaks")")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
                 Text(formatMinutes(totalBreakMinutes))
@@ -162,7 +162,7 @@ struct DayDetailSheet: View {
             Image(systemName: "chart.xyaxis.line")
                 .font(.title)
                 .foregroundStyle(.secondary)
-            Text("Detail aktivity není dostupný")
+            Text("Activity detail is not available")
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
         }

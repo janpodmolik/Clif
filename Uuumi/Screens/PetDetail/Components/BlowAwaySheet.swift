@@ -6,18 +6,18 @@ struct BlowAwaySheet: View {
 
     var body: some View {
         ConfirmationSheet(
-            navigationTitle: "Odfoukout peta?",
+            navigationTitle: "Blow away pet?",
             header: ConfirmationSheetHeader(
                 icon: "wind",
                 iconColor: .red,
-                title: "Odfoukout peta?",
-                subtitle: "Tvůj pet bude odfouknut a budeš muset začít znovu. Tato akce je nevratná."
+                title: "Blow away pet?",
+                subtitle: "Your pet will be blown away and you'll have to start over. This action is irreversible."
             ),
             actions: [
                 ConfirmationSheetAction(
                     icon: "wind",
-                    title: "Odfoukout",
-                    subtitle: "Nevratná akce",
+                    title: "Blow Away",
+                    subtitle: "Irreversible action",
                     foregroundColor: .red,
                     background: .tinted(.red),
                     action: onBlowAway

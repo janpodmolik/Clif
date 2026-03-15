@@ -55,7 +55,7 @@ struct EssenceCatalogGridItem: View {
         let maxPhases = path.maxPhases
         let reached = essenceRecord?.bestPhase ?? 0
 
-        return Text("\(reached)/\(maxPhases) evolucí")
+        return Text("\(reached)/\(maxPhases) evolutions")
             .font(.caption2)
             .foregroundStyle(reached > 0 ? AnyShapeStyle(color) : AnyShapeStyle(.tertiary))
             .opacity(entry.isUnlocked ? 1.0 : 0.5)

@@ -28,10 +28,10 @@ struct WelcomeBackDecisionPhase: View {
             Spacer().frame(height: 8)
 
             VStack(spacing: 8) {
-                Text("Vítej zpět!")
+                Text("Welcome back!")
                     .font(.headline)
                     .multilineTextAlignment(.center)
-                Text("Tvůj pet na tebe čekal v cloudu. Co chceš udělat?")
+                Text("Your pet was waiting for you in the cloud. What would you like to do?")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
@@ -43,8 +43,8 @@ struct WelcomeBackDecisionPhase: View {
             VStack(spacing: 12) {
                 WelcomeBackActionButton(
                     icon: "arrow.right.circle.fill",
-                    title: "Pokračovat s \(cloudPet.name)",
-                    subtitle: "Pet se obnoví ze cloudu",
+                    title: "Continue with \(cloudPet.name)",
+                    subtitle: "Pet will be restored from cloud",
                     iconColor: nil,
                     action: onContinue
                 )
@@ -52,8 +52,8 @@ struct WelcomeBackDecisionPhase: View {
                 if canArchive {
                     WelcomeBackActionButton(
                         icon: "archivebox.fill",
-                        title: "Archivovat \(cloudPet.name)",
-                        subtitle: "Pet jde do archívu, začni znovu",
+                        title: "Archive \(cloudPet.name)",
+                        subtitle: "Pet goes to archive, start fresh",
                         iconColor: .orange,
                         action: { showArchiveConfirm = true }
                     )
@@ -61,8 +61,8 @@ struct WelcomeBackDecisionPhase: View {
 
                 WelcomeBackActionButton(
                     icon: "trash.fill",
-                    title: "Smazat \(cloudPet.name)",
-                    subtitle: "Pet bude trvale odstraněn",
+                    title: "Delete \(cloudPet.name)",
+                    subtitle: "Pet will be permanently deleted",
                     iconColor: .red,
                     action: { showDeleteConfirm = true }
                 )
@@ -76,24 +76,24 @@ struct WelcomeBackDecisionPhase: View {
             if isResolving { ProgressView().scaleEffect(1.5) }
         }
         .confirmationDialog(
-            "\(cloudPet.name) bude archivován",
+            "\(cloudPet.name) will be archived",
             isPresented: $showArchiveConfirm,
             titleVisibility: .visible
         ) {
-            Button("Archivovat", role: .destructive, action: onArchive)
-            Button("Zpět", role: .cancel) {}
+            Button("Archive", role: .destructive, action: onArchive)
+            Button("Cancel", role: .cancel) {}
         } message: {
-            Text("Pet půjde do archívu a ty budeš pokračovat v onboardingu.")
+            Text("Pet will go to the archive and you will continue with onboarding.")
         }
         .confirmationDialog(
-            "\(cloudPet.name) bude smazán",
+            "\(cloudPet.name) will be deleted",
             isPresented: $showDeleteConfirm,
             titleVisibility: .visible
         ) {
-            Button("Smazat", role: .destructive, action: onDelete)
-            Button("Zpět", role: .cancel) {}
+            Button("Delete", role: .destructive, action: onDelete)
+            Button("Cancel", role: .cancel) {}
         } message: {
-            Text("Pet bude trvale odstraněn a ty budeš pokračovat v onboardingu.")
+            Text("Pet will be permanently deleted and you will continue with onboarding.")
         }
     }
 
@@ -108,11 +108,11 @@ struct WelcomeBackDecisionPhase: View {
 
                 HStack(spacing: 12) {
                     if cloudPhase > 0 {
-                        Label("Fáze \(cloudPhase)", systemImage: "sparkles")
+                        Label("Phase \(cloudPhase)", systemImage: "sparkles")
                     } else {
                         Label("Blob", systemImage: "circle.fill")
                     }
-                    Label("\(cloudDaysAlive) dní", systemImage: "calendar")
+                    Label("\(cloudDaysAlive) days", systemImage: "calendar")
                 }
                 .font(.caption)
                 .foregroundStyle(.secondary)

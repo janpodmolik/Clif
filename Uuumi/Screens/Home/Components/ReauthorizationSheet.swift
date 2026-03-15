@@ -16,15 +16,15 @@ struct ReauthorizationSheet: View {
             ConfirmationHeader(
                 icon: "exclamationmark.triangle",
                 iconColor: .orange,
-                title: "\(petName) nemá přístup k aplikacím",
-                subtitle: "Přístup k času u obrazovky byl odebrán. Pokud ho znovu povolíš, \(petName) může žít dál."
+                title: "\(petName) doesn't have app access",
+                subtitle: "Screen Time access was revoked. If you allow it again, \(petName) can continue living."
             )
 
             VStack(spacing: 12) {
                 ConfirmationAction(
                     icon: "checkmark.shield",
-                    title: "Znovu povolit",
-                    subtitle: "Obnoví přístup a monitoring",
+                    title: "Allow again",
+                    subtitle: "Restores access and monitoring",
                     foregroundColor: .green,
                     background: .tinted(.green),
                     action: onReauthorize
@@ -32,8 +32,8 @@ struct ReauthorizationSheet: View {
 
                 ConfirmationAction(
                     icon: "wind",
-                    title: "Nechat odejít",
-                    subtitle: "\(petName) bude archivován jako ztracený",
+                    title: "Let go",
+                    subtitle: "\(petName) will be archived as lost",
                     foregroundColor: .red,
                     background: .tinted(.red),
                     action: onDecline

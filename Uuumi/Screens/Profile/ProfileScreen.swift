@@ -37,7 +37,7 @@ struct ProfileScreen: View {
                 }
 
                 // MARK: - Účet
-                Section(header: Text("Účet")) {
+                Section(header: Text("Account")) {
                     Button {
                         showPremiumSheet = true
                     } label: {
@@ -46,7 +46,7 @@ struct ProfileScreen: View {
                                 .foregroundStyle(Color("PremiumGold"))
                             if storeManager.isPremium {
                                 Spacer()
-                                Text("Aktivní")
+                                Text("Active")
                                     .font(.caption.weight(.medium))
                                     .foregroundStyle(Color("PremiumGold"))
                             }
@@ -55,7 +55,7 @@ struct ProfileScreen: View {
 
                     NavigationLink(value: ProfileDestination.essenceCatalog) {
                         HStack {
-                            Label("Katalog Essencí", systemImage: "sparkles")
+                            Label("Essence Catalog", systemImage: "sparkles")
                             Spacer()
                             Text("\(catalogManager.allUnlocked.count)/\(Essence.allCases.count)")
                                 .foregroundStyle(.secondary)
@@ -65,12 +65,12 @@ struct ProfileScreen: View {
                 }
 
                 // MARK: - Přizpůsobit
-                Section(header: Text("Přizpůsobit")) {
+                Section(header: Text("Customize")) {
                     NavigationLink(value: ProfileDestination.notificationSettings) {
                         HStack {
-                            Label("Notifikace", systemImage: "bell.fill")
+                            Label("Notifications", systemImage: "bell.fill")
                             Spacer()
-                            Text(limitSettings.notifications.masterEnabled ? "Zapnuto" : "Vypnuto")
+                            Text(limitSettings.notifications.masterEnabled ? "On" : "Off")
                                 .foregroundStyle(.secondary)
                         }
                     }
@@ -80,7 +80,7 @@ struct ProfileScreen: View {
                     }
 
                     NavigationLink(value: ProfileDestination.lockButtonSettings) {
-                        Label("Lock tlačítko", systemImage: "lock.fill")
+                        Label("Lock Button", systemImage: "lock.fill")
                     }
 
                     NavigationLink(value: ProfileDestination.dailyPresetSettings) {
@@ -97,7 +97,7 @@ struct ProfileScreen: View {
                             Label(mode.label, systemImage: mode.icon).tag(mode)
                         }
                     } label: {
-                        Label("Vzhled", systemImage: "paintbrush.fill")
+                        Label("Appearance", systemImage: "paintbrush.fill")
                     }
 
                     switch appearanceMode {
@@ -122,13 +122,13 @@ struct ProfileScreen: View {
                 }
 
                 // MARK: - Moje aplikace
-                Section(header: Text("Moje aplikace")) {
+                Section(header: Text("My Apps")) {
                     Button {
                         showMyAppsSheet = true
                     } label: {
                         if let selection = myAppsSelection {
                             HStack(spacing: 8) {
-                                Label("Uložený výběr", systemImage: "app.dashed")
+                                Label("Saved Selection", systemImage: "app.dashed")
                                 Spacer()
                                 LimitedSourcesPreview(
                                     applicationTokens: Array(selection.applicationTokens),
@@ -138,15 +138,15 @@ struct ProfileScreen: View {
                                 )
                             }
                         } else {
-                            Label("Žádný uložený výběr", systemImage: "app.dashed")
+                            Label("No Saved Selection", systemImage: "app.dashed")
                         }
                     }
                 }
 
                 // MARK: - Pomoc
-                Section(header: Text("Pomoc")) {
+                Section(header: Text("Help")) {
                     HStack {
-                        Label("Verze", systemImage: "info.circle")
+                        Label("Version", systemImage: "info.circle")
                         Spacer()
                         Text(appVersion)
                             .foregroundStyle(.secondary)
@@ -157,7 +157,7 @@ struct ProfileScreen: View {
                     }
 
                     NavigationLink(value: ProfileDestination.feedback) {
-                        Label("Zpětná vazba", systemImage: "text.bubble")
+                        Label("Feedback", systemImage: "text.bubble")
                     }
                 }
 
@@ -218,15 +218,15 @@ struct ProfileScreen: View {
             .onChange(of: limitSettings) { _, newValue in
                 SharedDefaults.limitSettings = newValue
             }
-            .alert("Chyba", isPresented: hasAuthError, presenting: authManager.error) { _ in
+            .alert("Error", isPresented: hasAuthError, presenting: authManager.error) { _ in
                 Button("OK") { authManager.clearError() }
             } message: { error in
                 Text(error.localizedDescription)
             }
-            .alert("Odesláno!", isPresented: $showFeedbackSuccess) {
+            .alert("Sent!", isPresented: $showFeedbackSuccess) {
                 Button("OK") {}
             } message: {
-                Text("Děkujeme za tvůj feedback!")
+                Text("Thank you for your feedback!")
             }
         }
     }
@@ -250,7 +250,7 @@ struct ProfileScreen: View {
                     .foregroundStyle(authManager.isAuthenticated ? .secondary : Color(.systemGray3))
 
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(authManager.isAuthenticated ? displayName : "Host")
+                    Text(authManager.isAuthenticated ? displayName : "Guest")
                         .font(.title3.weight(.semibold))
                         .foregroundStyle(.primary)
 
@@ -261,7 +261,7 @@ struct ProfileScreen: View {
                                 .foregroundStyle(.secondary)
                         }
                     } else {
-                        Text("Přihlásit se / Registrovat se")
+                        Text("Sign In / Sign Up")
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
                     }
@@ -286,7 +286,7 @@ struct ProfileScreen: View {
            case .string(let value) = name, !value.isEmpty {
             return value
         }
-        return authManager.userEmail?.components(separatedBy: "@").first ?? "Uživatel"
+        return authManager.userEmail?.components(separatedBy: "@").first ?? String(localized: "User")
     }
 
     private var hasAuthError: Binding<Bool> {
@@ -300,12 +300,12 @@ struct ProfileScreen: View {
     private var syncStatusRow: some View {
         HStack {
             if syncManager.isSyncing {
-                Label("Synchronizace...", systemImage: "arrow.triangle.2.circlepath")
+                Label("Syncing...", systemImage: "arrow.triangle.2.circlepath")
             } else if syncManager.lastError != nil {
-                Label("Sync selhal", systemImage: "exclamationmark.icloud")
+                Label("Sync Failed", systemImage: "exclamationmark.icloud")
                     .foregroundStyle(.orange)
             } else {
-                Label("Synchronizace", systemImage: "checkmark.icloud")
+                Label("Sync", systemImage: "checkmark.icloud")
             }
             Spacer()
             if syncManager.isSyncing {

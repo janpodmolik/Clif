@@ -24,11 +24,11 @@ final class StoreManager {
         var errorDescription: String? {
             switch self {
             case .failedVerification:
-                return "Ověření nákupu selhalo"
+                return String(localized: "Purchase verification failed")
             case .purchaseCancelled:
-                return "Nákup byl zrušen"
+                return String(localized: "Purchase was cancelled")
             case .purchasePending:
-                return "Nákup čeká na schválení"
+                return String(localized: "Purchase is pending approval")
             case .unknown(let error):
                 return error.localizedDescription
             }

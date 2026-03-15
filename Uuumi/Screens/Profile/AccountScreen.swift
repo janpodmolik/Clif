@@ -13,7 +13,7 @@ struct AccountScreen: View {
         NavigationStack {
             VStack(spacing: 20) {
                 // Display name (editable)
-                TextField("Jméno", text: $displayName)
+                TextField("Name", text: $displayName)
                     .font(.body)
                     .padding(.horizontal, 16)
                     .padding(.vertical, 12)
@@ -46,7 +46,7 @@ struct AccountScreen: View {
                     dismiss()
                     Task { await authManager.signOut() }
                 } label: {
-                    Text("Odhlásit se")
+                    Text("Sign Out")
                         .font(.subheadline.weight(.medium))
                         .padding(.horizontal, 20)
                         .padding(.vertical, 10)
@@ -65,7 +65,7 @@ struct AccountScreen: View {
                     if isDeleting {
                         ProgressView()
                     } else {
-                        Text("Smazat účet")
+                        Text("Delete Account")
                             .font(.caption)
                     }
                 }
@@ -73,11 +73,11 @@ struct AccountScreen: View {
                 .foregroundStyle(.red)
                 .disabled(isDeleting)
                 .confirmationDialog(
-                    "Opravdu chceš smazat účet?",
+                    "Are you sure you want to delete your account?",
                     isPresented: $showDeleteConfirmation,
                     titleVisibility: .visible
                 ) {
-                    Button("Smazat účet", role: .destructive) {
+                    Button("Delete Account", role: .destructive) {
                         Task {
                             isDeleting = true
                             let success = await authManager.deleteAccount()
@@ -87,14 +87,14 @@ struct AccountScreen: View {
                             }
                         }
                     }
-                    Button("Zrušit", role: .cancel) { }
+                    Button("Cancel", role: .cancel) { }
                 } message: {
-                    Text("Tato akce je nevratná. Všechna data spojená s účtem budou smazána.")
+                    Text("This action is irreversible. All data associated with the account will be deleted.")
                 }
                 .padding(.bottom, 16)
             }
             .frame(maxWidth: .infinity)
-            .navigationTitle("Účet")
+            .navigationTitle("Account")
             .navigationBarTitleDisplayMode(.inline)
             .dismissButton()
             .toolbar {

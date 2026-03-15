@@ -7,10 +7,10 @@ enum DailySummaryNotification {
 
     private static let identifier = "daily_summary_scheduled"
 
-    static var title: String { "Denní souhrn" }
+    static var title: String { String(localized: "Daily summary") }
 
     static var body: String {
-        "Jak ti to dneska šlo? Koukni se na svůj denní přehled!"
+        String(localized: "How did you do today? Check your daily overview!")
     }
 
     // MARK: - Scheduling

@@ -44,11 +44,11 @@ struct EssenceInfoCard: View {
                     .font(.headline)
 
                 if evolutionHistory.hasUnknownEssence {
-                    Text("Neznámá esence")
+                    Text("Unknown essence")
                         .font(.subheadline)
                         .foregroundStyle(.orange)
                 } else if let date = firstEvolutionDate {
-                    Text("Od \(formatDate(date))")
+                    Text("Since \(formatDate(date))")
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                 }
@@ -62,7 +62,7 @@ struct EssenceInfoCard: View {
                         .font(.title2.weight(.semibold))
                         .foregroundStyle(color)
 
-                    Text(evolutionCount == 1 ? "evoluce" : "evolucí")
+                    Text(evolutionCount == 1 ? "evolution" : "evolutions")
                         .font(.caption2)
                         .foregroundStyle(.secondary)
                 }
@@ -76,8 +76,8 @@ struct EssenceInfoCard: View {
 
     private func formatDate(_ date: Date) -> String {
         let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "cs_CZ")
-        formatter.setLocalizedDateFormatFromTemplate("d. MMMM yyyy")
+        formatter.locale = Locale(identifier: "en_US")
+        formatter.setLocalizedDateFormatFromTemplate("MMMM d, yyyy")
         return formatter.string(from: date)
     }
 }

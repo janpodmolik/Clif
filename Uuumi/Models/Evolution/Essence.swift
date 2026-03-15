@@ -31,15 +31,15 @@ enum Essence: String, Codable, CaseIterable, Transferable {
 
     var catalogDescription: String {
         switch self {
-        case .plant: return "Cesta růstu a klidu. Tvůj pet se vyvíjí jako rostlina."
-        case .troll: return "Cesta síly a odvahy. Tvůj pet se vyvíjí jako troll."
-        case .orc: return "Cesta divočiny a zuřivosti. Tvůj pet se vyvíjí jako ork."
-        case .clicker: return "Cesta rychlosti a reflexů. Tvůj pet se vyvíjí jako clicker."
-        case .lion: return "Cesta odvahy a majestátu. Tvůj pet se vyvíjí jako lev."
-        case .stitches: return "Cesta kreativity a přeměny. Tvůj pet se vyvíjí jako stitches."
-        case .racoon: return "Cesta lstivosti a vynalézavosti. Tvůj pet se vyvíjí jako mýval."
-        case .moss: return "Cesta přírody a harmonie. Tvůj pet se vyvíjí jako moss."
-        case .shroom: return "Cesta tajemství a spór. Tvůj pet se vyvíjí jako shroom."
+        case .plant: return String(localized: "A path of growth and calm. Your pet evolves as a plant.")
+        case .troll: return String(localized: "A path of strength and courage. Your pet evolves as a troll.")
+        case .orc: return String(localized: "A path of wildness and fury. Your pet evolves as an orc.")
+        case .clicker: return String(localized: "A path of speed and reflexes. Your pet evolves as a clicker.")
+        case .lion: return String(localized: "A path of courage and majesty. Your pet evolves as a lion.")
+        case .stitches: return String(localized: "A path of creativity and transformation. Your pet evolves as stitches.")
+        case .racoon: return String(localized: "A path of cunning and resourcefulness. Your pet evolves as a racoon.")
+        case .moss: return String(localized: "A path of nature and harmony. Your pet evolves as moss.")
+        case .shroom: return String(localized: "A path of mystery and spores. Your pet evolves as a shroom.")
         }
     }
 
@@ -67,9 +67,9 @@ enum EssenceRarity: String, Codable {
 
     var displayName: String {
         switch self {
-        case .common: return "Běžná"
-        case .rare: return "Vzácná"
-        case .legendary: return "Legendární"
+        case .common: return String(localized: "Common")
+        case .rare: return String(localized: "Rare")
+        case .legendary: return String(localized: "Legendary")
         }
     }
 

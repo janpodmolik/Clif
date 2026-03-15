@@ -15,7 +15,7 @@ struct StatusFilterSheet: View {
                         dismiss()
                     } label: {
                         HStack {
-                            Label(status.rawValue, systemImage: status.icon)
+                            Label(status.label, systemImage: status.icon)
                                 .foregroundStyle(.primary)
 
                             Spacer()
@@ -30,7 +30,7 @@ struct StatusFilterSheet: View {
                 }
             }
             .listStyle(.insetGrouped)
-            .navigationTitle("Stav")
+            .navigationTitle("Status")
             .navigationBarTitleDisplayMode(.inline)
             .dismissButton()
         }
@@ -67,7 +67,7 @@ struct DateFilterSheet: View {
                         }
                     } label: {
                         HStack {
-                            Text(range.rawValue)
+                            Text(range.label)
                                 .foregroundStyle(.primary)
 
                             Spacer()
@@ -83,7 +83,7 @@ struct DateFilterSheet: View {
 
                 if dateRange == .custom {
                     DatePicker(
-                        "Od",
+                        "From",
                         selection: Binding(
                             get: { customStart ?? Date() },
                             set: {
@@ -98,7 +98,7 @@ struct DateFilterSheet: View {
                     )
 
                     DatePicker(
-                        "Do",
+                        "To",
                         selection: Binding(
                             get: { customEnd ?? Date() },
                             set: { customEnd = $0 }
@@ -109,7 +109,7 @@ struct DateFilterSheet: View {
                 }
             }
             .listStyle(.insetGrouped)
-            .navigationTitle("Období")
+            .navigationTitle("Period")
             .navigationBarTitleDisplayMode(.inline)
             .dismissButton()
             .toolbar {
@@ -145,13 +145,13 @@ struct DurationFilterSheet: View {
 
     private var durationLabel: String {
         if minDuration == 0 && maxDuration >= 60 {
-            return "Vše"
+            return String(localized: "All")
         } else if maxDuration >= 60 {
-            return "\(minDuration)+ dní"
+            return "\(minDuration)+ \(String(localized: "days"))"
         } else if minDuration == 0 {
-            return "do \(maxDuration) dní"
+            return String(localized: "up to \(maxDuration) days")
         } else {
-            return "\(minDuration)-\(maxDuration) dní"
+            return "\(minDuration)-\(maxDuration) \(String(localized: "days"))"
         }
     }
 
@@ -161,7 +161,7 @@ struct DurationFilterSheet: View {
                 Section {
                     VStack(alignment: .leading, spacing: 16) {
                         HStack {
-                            Text("Aktuální rozsah")
+                            Text("Current range")
                             Spacer()
                             Text(durationLabel)
                                 .foregroundStyle(.secondary)
@@ -169,7 +169,7 @@ struct DurationFilterSheet: View {
 
                         VStack(spacing: 12) {
                             HStack {
-                                Text("Min: \(minDuration) dní")
+                                Text("Min: \(minDuration) days")
                                     .font(.caption)
                                     .foregroundStyle(.secondary)
                                 Spacer()
@@ -190,7 +190,7 @@ struct DurationFilterSheet: View {
                             )
 
                             HStack {
-                                Text("Max: \(maxDuration >= 60 ? "60+" : "\(maxDuration)") dní")
+                                Text("Max: \(maxDuration >= 60 ? "60+" : "\(maxDuration)") days")
                                     .font(.caption)
                                     .foregroundStyle(.secondary)
                                 Spacer()
@@ -216,7 +216,7 @@ struct DurationFilterSheet: View {
 
             }
             .listStyle(.insetGrouped)
-            .navigationTitle("Délka života")
+            .navigationTitle("Lifespan")
             .navigationBarTitleDisplayMode(.inline)
             .dismissButton()
             .toolbar {
@@ -287,7 +287,7 @@ struct EssenceFilterSheet: View {
             .dismissButton()
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button(allSelected ? "Odvybrat vše" : "Vybrat vše") {
+                    Button(allSelected ? "Deselect all" : "Select all") {
                         if allSelected {
                             selection = []
                         } else {

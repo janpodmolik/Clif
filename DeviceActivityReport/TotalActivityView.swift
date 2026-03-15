@@ -83,7 +83,7 @@ struct TotalActivityView: View {
             ScrollView(.vertical, showsIndicators: false) {
                 VStack(spacing: 8) {
                     if data.apps.isEmpty {
-                        Text("Žádná aktivita")
+                        Text("No activity")
                             .font(.subheadline)
                             .foregroundColor(.secondary)
                             .padding(.top, 40)

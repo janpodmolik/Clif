@@ -38,27 +38,27 @@ enum HapticType: String, CaseIterable {
     var description: String {
         switch self {
         case .impactLight:
-            return "Jemný tap"
+            return "Soft tap"
         case .impactMedium:
-            return "Střední tap"
+            return "Medium tap"
         case .impactHeavy:
-            return "Silný tap"
+            return "Strong tap"
         case .impactSoft:
-            return "Měkké zavrnění"
+            return "Soft rumble"
         case .impactRigid:
-            return "Ostré klepnutí"
+            return "Sharp knock"
         case .notificationSuccess:
-            return "Dvojité vibrace"
+            return "Double vibration"
         case .notificationWarning:
-            return "Varování"
+            return "Warning"
         case .notificationError:
-            return "Trojité vibrace"
+            return "Triple vibration"
         case .selection:
-            return "Jemné tick"
+            return "Soft tick"
         case .continuousBuzz:
-            return "Delší vibrace (nastavitelná)"
+            return "Longer vibration (adjustable)"
         case .purr:
-            return "Opakované jemné pulzy"
+            return "Repeated soft pulses"
         }
     }
 

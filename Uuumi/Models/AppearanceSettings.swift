@@ -5,9 +5,9 @@ enum AppearanceMode: String, CaseIterable, Codable {
 
     var label: String {
         switch self {
-        case .automatic: "Automatický"
-        case .light: "Světlý"
-        case .dark: "Tmavý"
+        case .automatic: String(localized: "Automatic")
+        case .light: String(localized: "Light")
+        case .dark: String(localized: "Dark")
         }
     }
 
@@ -25,8 +25,8 @@ enum LockButtonSide: String, CaseIterable, Codable {
 
     var label: String {
         switch self {
-        case .trailing: "Vpravo"
-        case .leading: "Vlevo"
+        case .trailing: String(localized: "Right")
+        case .leading: String(localized: "Left")
         }
     }
 }
@@ -36,8 +36,8 @@ enum LockButtonSize: String, CaseIterable, Codable {
 
     var label: String {
         switch self {
-        case .normal: "Normální"
-        case .large: "Velká"
+        case .normal: String(localized: "Normal")
+        case .large: String(localized: "Large")
         }
     }
 
@@ -64,8 +64,8 @@ enum DayTheme: String, CaseIterable, Codable, Identifiable {
 
     var label: String {
         switch self {
-        case .morningHaze: "Ranní opár"
-        case .clearSky: "Jasné nebe"
+        case .morningHaze: String(localized: "Morning Haze")
+        case .clearSky: String(localized: "Clear Sky")
         }
     }
 
@@ -97,8 +97,8 @@ enum NightTheme: String, CaseIterable, Codable, Identifiable {
 
     var label: String {
         switch self {
-        case .deepNight: "Hluboká noc"
-        case .twilight: "Soumrak"
+        case .deepNight: String(localized: "Deep Night")
+        case .twilight: String(localized: "Twilight")
         }
     }
 

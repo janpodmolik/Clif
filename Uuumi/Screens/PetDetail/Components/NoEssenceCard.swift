@@ -11,10 +11,10 @@ struct NoEssenceCard: View {
                 .background(.ultraThinMaterial, in: Circle())
 
             VStack(alignment: .leading, spacing: 4) {
-                Text("Zatím bez esence")
+                Text("No essence yet")
                     .font(.headline)
 
-                Text("Podívej se na dostupné esence v katalogu")
+                Text("Check out available essences in the catalog")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
             }

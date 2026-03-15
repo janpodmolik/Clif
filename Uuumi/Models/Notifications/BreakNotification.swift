@@ -28,22 +28,22 @@ enum BreakNotification {
     var title: String {
         switch self {
         case .committedBreakEnded:
-            return "Break skončil"
+            return String(localized: "Break ended")
         case .freeBreakWindZero:
-            return "Vítr ustal"
+            return String(localized: "Wind has stopped")
         case .safetyBreakWindZero:
-            return "Vítr ustal"
+            return String(localized: "Wind has stopped")
         }
     }
 
     var body: String {
         switch self {
         case .committedBreakEnded:
-            return "Tvůj committed break skončil! Pauza byla úspěšná."
+            return String(localized: "Your committed break has ended! Break was successful.")
         case .freeBreakWindZero:
-            return "Vítr úplně ustal – tvůj mazlíček je v bezpečí!"
+            return String(localized: "Wind has completely stopped – your pet is safe!")
         case .safetyBreakWindZero:
-            return "Vítr ustal – můžeš bezpečně odemknout telefon."
+            return String(localized: "Wind has stopped – you can safely unlock your phone.")
         }
     }
 

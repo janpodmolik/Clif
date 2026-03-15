@@ -27,13 +27,13 @@ struct PetSearchFilter: Equatable {
 
     var durationLabel: String {
         if minDuration == 0 && maxDuration >= 60 {
-            return "Vše"
+            return String(localized: "All")
         } else if maxDuration >= 60 {
-            return "\(minDuration)+ dní"
+            return "\(minDuration)+ \(String(localized: "days"))"
         } else if minDuration == 0 {
-            return "do \(maxDuration) dní"
+            return String(localized: "up to \(maxDuration) days")
         } else {
-            return "\(minDuration)-\(maxDuration) dní"
+            return "\(minDuration)-\(maxDuration) \(String(localized: "days"))"
         }
     }
 
@@ -67,14 +67,25 @@ struct PetSearchFilter: Equatable {
 
 extension PetSearchFilter {
     enum DateRange: String, CaseIterable, Identifiable {
-        case all = "Vše"
-        case lastWeek = "Poslední týden"
-        case lastMonth = "Poslední měsíc"
-        case last3Months = "Poslední 3 měsíce"
-        case lastYear = "Poslední rok"
-        case custom = "Vlastní rozsah"
+        case all
+        case lastWeek
+        case lastMonth
+        case last3Months
+        case lastYear
+        case custom
 
         var id: String { rawValue }
+
+        var label: String {
+            switch self {
+            case .all: String(localized: "All")
+            case .lastWeek: String(localized: "Last week")
+            case .lastMonth: String(localized: "Last month")
+            case .last3Months: String(localized: "Last 3 months")
+            case .lastYear: String(localized: "Last year")
+            case .custom: String(localized: "Custom range")
+            }
+        }
 
         func dateInterval(customStart: Date?, customEnd: Date?) -> DateInterval? {
             let calendar = Calendar.current
@@ -103,12 +114,21 @@ extension PetSearchFilter {
     }
 
     enum StatusFilter: String, CaseIterable, Identifiable {
-        case all = "Všichni"
-        case completed = "Dokončení"
-        case blownAway = "Odfouknutí"
-        case manual = "Archivovaní"
+        case all
+        case completed
+        case blownAway
+        case manual
 
         var id: String { rawValue }
+
+        var label: String {
+            switch self {
+            case .all: String(localized: "All")
+            case .completed: String(localized: "Completed")
+            case .blownAway: String(localized: "Blown away")
+            case .manual: String(localized: "Archived")
+            }
+        }
 
         var icon: String {
             switch self {

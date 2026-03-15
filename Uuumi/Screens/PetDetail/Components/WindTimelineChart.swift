@@ -73,7 +73,7 @@ struct WindTimelineChart: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("Průběh větru")
+            Text("Wind timeline")
                 .font(.subheadline.weight(.medium))
                 .foregroundStyle(.secondary)
 
@@ -90,8 +90,8 @@ struct WindTimelineChart: View {
         Chart {
             ForEach(dataPoints) { point in
                 AreaMark(
-                    x: .value("Čas", point.timestamp),
-                    y: .value("Vítr", point.windPoints)
+                    x: .value("Time", point.timestamp),
+                    y: .value("Wind", point.windPoints)
                 )
                 .interpolationMethod(.monotone)
                 .foregroundStyle(areaGradient)
@@ -99,8 +99,8 @@ struct WindTimelineChart: View {
 
             ForEach(dataPoints) { point in
                 LineMark(
-                    x: .value("Čas", point.timestamp),
-                    y: .value("Vítr", point.windPoints)
+                    x: .value("Time", point.timestamp),
+                    y: .value("Wind", point.windPoints)
                 )
                 .interpolationMethod(.monotone)
                 .foregroundStyle(windGradient)
@@ -119,13 +119,13 @@ struct WindTimelineChart: View {
             // Selected point indicator
             if let selected = selectedPoint {
                 PointMark(
-                    x: .value("Čas", selected.timestamp),
-                    y: .value("Vítr", selected.windPoints)
+                    x: .value("Time", selected.timestamp),
+                    y: .value("Wind", selected.windPoints)
                 )
                 .foregroundStyle(windColor(for: selected.windPoints))
                 .symbolSize(100)
 
-                RuleMark(x: .value("Čas", selected.timestamp))
+                RuleMark(x: .value("Time", selected.timestamp))
                     .foregroundStyle(.secondary.opacity(0.3))
                     .lineStyle(StrokeStyle(lineWidth: 1))
             }
@@ -180,7 +180,7 @@ struct WindTimelineChart: View {
                 Image(systemName: "wind")
                     .font(.title2)
                     .foregroundStyle(.tertiary)
-                Text("Žádná data o větru")
+                Text("No wind data")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }

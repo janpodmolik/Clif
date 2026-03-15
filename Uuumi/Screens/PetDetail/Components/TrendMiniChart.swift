@@ -7,8 +7,8 @@ struct TrendMiniChart: View {
 
     private static var dateFormatter: DateFormatter = {
         let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "cs_CZ")
-        formatter.dateFormat = "d.M."
+        formatter.locale = Locale(identifier: "en_US")
+        formatter.dateFormat = "M/d"
         return formatter
     }()
 
@@ -26,7 +26,7 @@ struct TrendMiniChart: View {
 
     private var headerRow: some View {
         HStack {
-            Text("Vývoj")
+            Text("Trend")
                 .font(.headline)
 
             Spacer()
@@ -91,7 +91,7 @@ struct TrendMiniChart: View {
 
             Spacer()
 
-            Text("Ø \(formatMinutes(stats.averageMinutes))/den")
+            Text("Ø \(formatMinutes(stats.averageMinutes))/day")
         }
         .font(.caption)
         .foregroundStyle(.secondary)

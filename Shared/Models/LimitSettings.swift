@@ -9,9 +9,9 @@ enum NotificationMode: String, Codable, CaseIterable {
 
     var label: String {
         switch self {
-        case .off: return "Vypnuto"
-        case .important: return "Jen důležité"
-        case .all: return "Všechny"
+        case .off: return String(localized: "Off")
+        case .important: return String(localized: "Important only")
+        case .all: return String(localized: "All")
         }
     }
 }

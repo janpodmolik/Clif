@@ -56,14 +56,14 @@ struct WelcomeBackPickerPhase: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
-                Button("Zpět", action: onBack)
+                Button("Back", action: onBack)
             }
         }
     }
 
     private var header: some View {
         VStack(spacing: Layout.headerSpacing) {
-            Text("Vyber sledované aplikace")
+            Text("Select tracked apps")
                 .font(.title3.weight(.semibold))
 
             selectionSummary
@@ -95,7 +95,7 @@ struct WelcomeBackPickerPhase: View {
                     webDomainTokens: appSelection.webDomainTokens
                 )
             } else {
-                Text("Klepni a vyber aplikace nebo kategorie")
+                Text("Tap to select apps or categories")
                     .font(.footnote)
                     .foregroundStyle(.tertiary)
             }
@@ -107,7 +107,7 @@ struct WelcomeBackPickerPhase: View {
 
     private var footer: some View {
         Button(action: onConfirm) {
-            Text("Potvrdit výběr")
+            Text("Confirm selection")
         }
         .buttonStyle(.primary)
         .disabled(!hasSelection)

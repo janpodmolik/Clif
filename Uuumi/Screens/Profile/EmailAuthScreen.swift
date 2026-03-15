@@ -20,11 +20,11 @@ struct EmailAuthScreen: View {
                 VStack(spacing: 24) {
                     // Title
                     VStack(spacing: 8) {
-                        Text(isSignUp ? "Vytvoř si účet" : "Přihlásit se")
+                        Text(isSignUp ? "Create an Account" : "Sign In")
                             .font(.title.weight(.bold))
                         Text(isSignUp
-                             ? "Zadej svůj email a heslo pro registraci."
-                             : "Zadej svůj email a heslo.")
+                             ? "Enter your email and password to sign up."
+                             : "Enter your email and password.")
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
                     }
@@ -46,7 +46,7 @@ struct EmailAuthScreen: View {
                             )
 
                         VStack(alignment: .leading, spacing: 4) {
-                            SecureField("Heslo", text: $password)
+                            SecureField("Password", text: $password)
                                 .textContentType(isSignUp ? .newPassword : .password)
                                 .padding()
                                 .background(Color(.secondarySystemGroupedBackground))
@@ -57,7 +57,7 @@ struct EmailAuthScreen: View {
                                 )
 
                             if isSignUp {
-                                Text("Minimálně 8 znaků")
+                                Text("At least 8 characters")
                                     .font(.caption2)
                                     .foregroundStyle(.secondary)
                                     .padding(.leading, 16)
@@ -75,7 +75,7 @@ struct EmailAuthScreen: View {
                                     case .confirmationRequired:
                                         showConfirmationInfo = true
                                     case .emailAlreadyUsed:
-                                        localError = "Tento email je již registrovaný. Zkus se přihlásit."
+                                        localError = String(localized: "This email is already registered. Try signing in.")
                                     case .success:
                                         break // onChange(of: isAuthenticated) handles dismiss
                                     case nil:
@@ -98,7 +98,7 @@ struct EmailAuthScreen: View {
                                 ProgressView()
                                     .tint(Color(.systemBackground))
                             } else {
-                                Text(isSignUp ? "Zaregistrovat se" : "Přihlásit se")
+                                Text(isSignUp ? "Sign Up" : "Sign In")
                             }
                         }
                         .buttonStyle(.primary)
@@ -106,7 +106,7 @@ struct EmailAuthScreen: View {
                         .padding(.top, 4)
 
                         HStack {
-                            Button(isSignUp ? "Už máš účet? Přihlásit se" : "Nemáš účet? Zaregistrovat se") {
+                            Button(isSignUp ? "Already have an account? Sign In" : "Don't have an account? Sign Up") {
                                 withAnimation { isSignUp.toggle() }
                             }
                             .font(.caption)
@@ -114,7 +114,7 @@ struct EmailAuthScreen: View {
                             Spacer()
 
                             if !isSignUp {
-                                Button("Zapomenuté heslo?") {
+                                Button("Forgot Password?") {
                                     resetEmail = email
                                     showPasswordReset = true
                                 }
@@ -126,20 +126,20 @@ struct EmailAuthScreen: View {
                 .padding(.horizontal, 24)
             }
             .dismissButton(placement: .topBarTrailing)
-            .alert("Chyba", isPresented: hasLocalError) {
+            .alert("Error", isPresented: hasLocalError) {
                 Button("OK") { localError = nil }
             } message: {
                 Text(localError ?? "")
             }
-            .alert("Ověř svůj email", isPresented: $showConfirmationInfo) {
+            .alert("Verify Your Email", isPresented: $showConfirmationInfo) {
                 Button("OK") { dismiss() }
             } message: {
-                Text("Poslali jsme ti potvrzovací odkaz na \(email). Klikni na něj a pak se přihlas.")
+                Text("We sent a confirmation link to \(email). Click on it and then sign in.")
             }
-            .alert("Odkaz odeslán", isPresented: $showResetConfirmation) {
+            .alert("Link Sent", isPresented: $showResetConfirmation) {
                 Button("OK") { }
             } message: {
-                Text("Odkaz pro reset hesla byl odeslán na \(resetEmail).")
+                Text("A password reset link has been sent to \(resetEmail).")
             }
             .sheet(isPresented: $showPasswordReset) {
                 passwordResetSheet
@@ -163,17 +163,17 @@ struct EmailAuthScreen: View {
                         .autocorrectionDisabled()
                         .keyboardType(.emailAddress)
                 } footer: {
-                    Text("Pošleme ti odkaz pro reset hesla.")
+                    Text("We'll send you a password reset link.")
                 }
             }
-            .navigationTitle("Reset hesla")
+            .navigationTitle("Reset Password")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Zrušit") { showPasswordReset = false }
+                    Button("Cancel") { showPasswordReset = false }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Odeslat") {
+                    Button("Send") {
                         Task {
                             await authManager.resetPassword(email: resetEmail)
                             showPasswordReset = false

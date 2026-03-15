@@ -37,7 +37,7 @@ struct ActivePetRow: View {
                     HStack(spacing: 12) {
                         HStack(spacing: 4) {
                             Image(systemName: "calendar")
-                            Text("\(pet.totalDays) dní")
+                            Text("\(pet.totalDays) days")
                         }
 
                         if !pet.isBlob {

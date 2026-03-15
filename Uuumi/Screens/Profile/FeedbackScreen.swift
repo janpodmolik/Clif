@@ -15,12 +15,12 @@ struct FeedbackScreen: View {
     var body: some View {
         Form {
             Section {
-                Text("Napiš nám, co ti chybí, co by šlo zlepšit, nebo na jaký problém jsi narazil/a.")
+                Text("Tell us what's missing, what could be improved, or what problem you encountered.")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
             }
 
-            Section(header: Text("Tvoje zpráva")) {
+            Section(header: Text("Your Message")) {
                 TextEditor(text: $message)
                     .focused($editorFocused)
                     .frame(minHeight: 150)
@@ -35,7 +35,7 @@ struct FeedbackScreen: View {
                         if isSending {
                             ProgressView()
                         } else {
-                            Text("Odeslat")
+                            Text("Send")
                         }
                         Spacer()
                     }
@@ -43,9 +43,9 @@ struct FeedbackScreen: View {
                 .disabled(message.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || isSending)
             }
         }
-        .navigationTitle("Zpětná vazba")
+        .navigationTitle("Feedback")
         .navigationBarTitleDisplayMode(.inline)
-        .alert("Chyba", isPresented: $showError) {
+        .alert("Error", isPresented: $showError) {
             Button("OK") {}
         } message: {
             Text(errorMessage)

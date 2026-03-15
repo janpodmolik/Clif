@@ -9,9 +9,9 @@ struct ShieldSettingsScreen: View {
 
             Section {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("Spustit safety shield při")
+                    Text("Activate Safety Shield at")
                         .fontWeight(.bold)
-                    Text("Automatická ochrana při dosažení procenta větru.")
+                    Text("Automatic protection when the wind percentage is reached.")
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                 }
@@ -25,9 +25,9 @@ struct ShieldSettingsScreen: View {
 
             Section {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("Bezpečné odemknutí pod")
+                    Text("Safe Unlock Below")
                         .fontWeight(.bold)
-                    Text("Vítr musí klesnout pod zvolený práh pro odemknutí bez postihu.")
+                    Text("Wind must drop below the selected threshold to unlock without penalty.")
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                 }
@@ -43,8 +43,8 @@ struct ShieldSettingsScreen: View {
 
             Section {
                 SettingsRow(
-                    title: "Auto-lock po committed breaku",
-                    description: "Zapne free break po dokončení committed breaku.",
+                    title: "Auto-lock After Committed Break",
+                    description: "Enables free break after completing a committed break.",
                     isOn: $limitSettings.autoLockAfterCommittedBreak
                 )
             }

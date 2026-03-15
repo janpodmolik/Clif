@@ -21,22 +21,22 @@ struct WindNotCalmSheet: View {
 
     var body: some View {
         ConfirmationSheet(
-            navigationTitle: isSafe ? "Vítr je klidný" : "Vítr musí být klidný",
+            navigationTitle: isSafe ? "Wind is calm" : "Wind must be calm",
             height: 320
         ) {
             ConfirmationHeader(
                 icon: isSafe ? "sun.max.fill" : isBreakActive ? "hourglass" : "wind",
                 iconColor: isSafe ? .green : isBreakActive ? .blue : .orange,
                 title: isSafe
-                    ? "Vítr klesl na 0 %"
+                    ? "Wind dropped to 0%"
                     : isBreakActive
-                        ? "Pauza běží"
-                        : "Sniž vítr na 0 %",
+                        ? "Break is running"
+                        : "Lower wind to 0%",
                 subtitle: isSafe
-                    ? "Můžeš pokračovat v evoluci nebo archivaci."
+                    ? "You can continue with evolution or archiving."
                     : isBreakActive
-                        ? "Počkej, až vítr klesne na 0 %."
-                        : "Před použitím essence nebo archivací musí být vítr klidný."
+                        ? "Wait for wind to drop to 0%."
+                        : "Wind must be calm before using essence or archiving."
             )
             .contentTransition(.numericText())
             .animation(.easeInOut(duration: 0.4), value: isSafe)
@@ -45,8 +45,8 @@ struct WindNotCalmSheet: View {
             if isSafe {
                 ConfirmationAction(
                     icon: "checkmark.circle.fill",
-                    title: "Pokračovat",
-                    subtitle: "Vítr je klidný",
+                    title: "Continue",
+                    subtitle: "Wind is calm",
                     foregroundColor: .green,
                     background: .tinted(.green)
                 ) {
@@ -56,8 +56,8 @@ struct WindNotCalmSheet: View {
             } else if isBreakActive {
                 ConfirmationAction(
                     icon: "xmark.circle.fill",
-                    title: "Zavřít",
-                    subtitle: "Pauza stále snižuje vítr"
+                    title: "Close",
+                    subtitle: "Break is still lowering wind"
                 ) {
                     isPresented = false
                 }
@@ -65,8 +65,8 @@ struct WindNotCalmSheet: View {
             } else {
                 ConfirmationAction(
                     icon: "lock.open.fill",
-                    title: "Spustit pauzu",
-                    subtitle: "Sníží vítr během pauzy"
+                    title: "Start break",
+                    subtitle: "Will lower wind during break"
                 ) {
                     isPresented = false
                     if let onStartBreak {

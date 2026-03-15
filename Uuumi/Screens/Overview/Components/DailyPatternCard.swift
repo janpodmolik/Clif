@@ -26,10 +26,10 @@ struct DailyPatternCard: View {
         .padding(18)
         .glassCard()
         .onChange(of: daysLimit) { selectedHour = nil }
-        .alert("Denní vzor", isPresented: $showInfo) {
+        .alert("Daily pattern", isPresented: $showInfo) {
             Button("OK", role: .cancel) {}
         } message: {
-            Text("Graf zobrazuje průměrný čas u obrazovky v blokovaných aplikacích v průběhu dne. Data jsou průměrována za \(aggregate.dayCount) dní. Klepnutím na sloupec zobrazíš detail konkrétní hodiny.")
+            Text("The chart shows average screen time in blocked apps throughout the day. Data is averaged over \(aggregate.dayCount) days. Tap a bar to see details for a specific hour.")
         }
     }
 
@@ -40,7 +40,7 @@ struct DailyPatternCard: View {
             Image(systemName: "clock.badge.checkmark")
                 .foregroundStyle(.secondary)
 
-            Text("Denní vzor")
+            Text("Daily pattern")
                 .font(.headline)
 
             Button {
@@ -82,10 +82,10 @@ struct DailyPatternCard: View {
 
         var label: String {
             switch self {
-            case .days7: "7 dní"
-            case .days14: "14 dní"
-            case .days30: "30 dní"
-            case .all: "Vše"
+            case .days7: "7 days"
+            case .days14: "14 days"
+            case .days30: "30 days"
+            case .all: "All"
             }
         }
 
@@ -114,7 +114,7 @@ struct DailyPatternCard: View {
     private var daysMenu: some View {
         let options = availableOptions
         if options.count > 1 {
-            Picker("Období", selection: selectedOption) {
+            Picker("Period", selection: selectedOption) {
                 ForEach(options, id: \.self) { option in
                     Text(option.label).tag(option)
                 }
@@ -134,7 +134,7 @@ struct DailyPatternCard: View {
         VStack(alignment: .leading, spacing: 2) {
             Text(formatMinutesLong(aggregate.totalDailyAverage))
                 .font(.system(size: 28, weight: .bold))
-            Text("průměrný denní čas")
+            Text("average daily time")
                 .font(.caption)
                 .foregroundStyle(.secondary)
         }
@@ -213,7 +213,7 @@ struct DailyPatternCard: View {
                 VStack(alignment: .leading, spacing: 1) {
                     Text("\(formatHour(hour))–\(formatHour((hour + 1) % 24))")
                         .font(.subheadline.weight(.semibold))
-                    Text("nejvytíženější hodina")
+                    Text("busiest hour")
                         .font(.caption2)
                         .foregroundStyle(.secondary)
                 }
@@ -222,7 +222,7 @@ struct DailyPatternCard: View {
                     Text("\(Int(averages[hour]))m")
                         .font(.subheadline.weight(.semibold))
                         .foregroundStyle(.orange)
-                    Text("průměr")
+                    Text("average")
                         .font(.caption2)
                         .foregroundStyle(.secondary)
                 }
@@ -231,7 +231,7 @@ struct DailyPatternCard: View {
                 VStack(alignment: .leading, spacing: 1) {
                     Text("\(formatHour(hour))–\(formatHour((hour + 1) % 24))")
                         .font(.subheadline.weight(.semibold))
-                    Text("vybraná hodina")
+                    Text("selected hour")
                         .font(.caption2)
                         .foregroundStyle(.secondary)
                 }
@@ -240,7 +240,7 @@ struct DailyPatternCard: View {
                     Text("\(Int(averages[hour]))m")
                         .font(.subheadline.weight(.semibold))
                         .foregroundStyle(.blue)
-                    Text("průměr")
+                    Text("average")
                         .font(.caption2)
                         .foregroundStyle(.secondary)
                 }
@@ -284,12 +284,12 @@ struct DailyPatternCard: View {
 // MARK: - Preview
 
 #if DEBUG
-#Preview("S daty") {
+#Preview("With data") {
     DailyPatternCard(aggregate: .mock(), daysLimit: .constant(14))
         .padding()
 }
 
-#Preview("Minimum dat") {
+#Preview("Minimum data") {
     DailyPatternCard(aggregate: .mock(days: 2), daysLimit: .constant(nil))
         .padding()
 }

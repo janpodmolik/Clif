@@ -27,10 +27,10 @@ enum WindLevel: Int, CaseIterable {
 
     var label: String {
         switch self {
-        case .none: return "Klid"
-        case .low: return "Mírný"
-        case .medium: return "Střední"
-        case .high: return "Silný"
+        case .none: return String(localized: "Calm")
+        case .low: return String(localized: "Mild")
+        case .medium: return String(localized: "Medium")
+        case .high: return String(localized: "Strong")
         }
     }
 

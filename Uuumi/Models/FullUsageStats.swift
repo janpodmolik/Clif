@@ -8,9 +8,9 @@ enum UsageTrend: String, Codable {
 
     var displayName: String {
         switch self {
-        case .improving: "Klesá"
-        case .stable: "Stabilní"
-        case .worsening: "Roste"
+        case .improving: String(localized: "Decreasing")
+        case .stable: String(localized: "Stable")
+        case .worsening: String(localized: "Increasing")
         }
     }
 

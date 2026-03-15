@@ -91,13 +91,13 @@ struct EssenceDetailSheet: View {
 
     private var statsRow: some View {
         HStack(spacing: 0) {
-            statItem(value: "\(record.petCount)", label: "Petů")
+            statItem(value: "\(record.petCount)", label: "Pets")
             divider
             statItem(value: "\(record.bestPhase ?? 0)/\(path.maxPhases)", label: "Best Phase")
             divider
-            statItem(value: "\(completedCount)", label: "Dokončeno")
+            statItem(value: "\(completedCount)", label: "Completed")
             divider
-            statItem(value: "\(blownCount)", label: "Odfouknutí")
+            statItem(value: "\(blownCount)", label: "Blown away")
         }
         .padding(.vertical, 12)
         .padding(.horizontal, 16)
@@ -130,7 +130,7 @@ struct EssenceDetailSheet: View {
         } label: {
             HStack {
                 Image(systemName: "magnifyingglass")
-                Text("Zobrazit pety")
+                Text("Show pets")
             }
             .font(.subheadline.weight(.medium))
             .frame(maxWidth: .infinity)

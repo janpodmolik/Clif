@@ -7,7 +7,7 @@ import SwiftUI
 /// Self-contained: hidden when no saved preset exists.
 struct MyAppsLoadButton: View {
     @Binding var selection: FamilyActivitySelection
-    var infoMessage = "Načte tvůj uložený výběr aplikací a kategorií. Uložený výběr můžeš spravovat v Profilu."
+    var infoMessage = String(localized: "Loads your saved app and category selection. You can manage your saved selection in Profile.")
     var onLoad: (() -> Void)?
 
     var body: some View {
@@ -19,7 +19,7 @@ struct MyAppsLoadButton: View {
                         onLoad?()
                     }
                 } label: {
-                    Label("Použít moje aplikace", systemImage: "arrow.down.app")
+                    Label("Use my apps", systemImage: "arrow.down.app")
                         .font(.subheadline)
                 }
                 .buttonStyle(.borderless)
@@ -40,11 +40,11 @@ struct SaveAsMyAppsToggle: View {
     var body: some View {
         Toggle(isOn: $isOn) {
             HStack(spacing: 8) {
-                Label("Uložit jako moje aplikace", systemImage: "square.and.arrow.down")
+                Label("Save as my apps", systemImage: "square.and.arrow.down")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
 
-                MyAppsInfoButton(message: "Aktuální výběr se uloží jako tvoje oblíbené aplikace. Příště ho můžeš rychle načíst při vytváření nové cesty.")
+                MyAppsInfoButton(message: String(localized: "Current selection will be saved as your favorite apps. Next time you can quickly load it when creating a new path."))
             }
         }
         .tint(.accentColor)
@@ -56,7 +56,7 @@ struct SaveAsMyAppsToggle: View {
 /// Info button (ⓘ) with alert explaining "Moje aplikace" feature.
 /// Pass custom `message` to tailor the explanation for each context.
 struct MyAppsInfoButton: View {
-    var message: String = "Ulož si výběr aplikací a kategorií, abys ho mohl rychle použít při vytváření nové cesty. Uložený výběr můžeš spravovat v Profilu."
+    var message: String = String(localized: "Save your app and category selection so you can quickly use it when creating a new path. You can manage your saved selection in Profile.")
 
     @State private var showInfo = false
 
@@ -69,7 +69,7 @@ struct MyAppsInfoButton: View {
         }
         .buttonStyle(.borderless)
         .foregroundStyle(.secondary)
-        .alert("Moje aplikace", isPresented: $showInfo) {
+        .alert("My apps", isPresented: $showInfo) {
             Button("OK") {}
         } message: {
             Text(message)

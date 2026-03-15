@@ -45,7 +45,7 @@ struct EssenceCollectionCarousel: View {
                 Image(systemName: "sparkles")
                     .font(.system(size: 32))
                     .foregroundStyle(.secondary)
-                Text("Žádné essence k zobrazení")
+                Text("No essences to display")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
             }

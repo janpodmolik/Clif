@@ -13,7 +13,7 @@ struct DayHourlyChart: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Aktivita v průběhu dne")
+            Text("Activity throughout the day")
                 .font(.subheadline.weight(.medium))
                 .foregroundStyle(.secondary)
 
@@ -33,8 +33,8 @@ struct DayHourlyChart: View {
         Chart {
             ForEach(0..<24, id: \.self) { hour in
                 BarMark(
-                    x: .value("Hodina", hour),
-                    y: .value("Minuty", breakdown.hourlyMinutes[hour]),
+                    x: .value("Hour", hour),
+                    y: .value("Minutes", breakdown.hourlyMinutes[hour]),
                     width: .fixed(8)
                 )
                 .foregroundStyle(barColor(for: hour))
@@ -100,7 +100,7 @@ struct DayHourlyChart: View {
                 VStack(alignment: .leading, spacing: 1) {
                     Text("\(hour):00–\((hour + 1) % 24):00")
                         .font(.subheadline.weight(.semibold))
-                    Text("nejvytíženější hodina")
+                    Text("busiest hour")
                         .font(.caption2)
                         .foregroundStyle(.secondary)
                 }
@@ -109,7 +109,7 @@ struct DayHourlyChart: View {
                     Text("\(Int(breakdown.hourlyMinutes[hour]))m")
                         .font(.subheadline.weight(.semibold))
                         .foregroundStyle(.orange)
-                    Text("celkem")
+                    Text("total")
                         .font(.caption2)
                         .foregroundStyle(.secondary)
                 }
@@ -118,7 +118,7 @@ struct DayHourlyChart: View {
                 VStack(alignment: .leading, spacing: 1) {
                     Text("\(hour):00–\((hour + 1) % 24):00")
                         .font(.subheadline.weight(.semibold))
-                    Text("vybraná hodina")
+                    Text("selected hour")
                         .font(.caption2)
                         .foregroundStyle(.secondary)
                 }
@@ -127,7 +127,7 @@ struct DayHourlyChart: View {
                     Text("\(Int(breakdown.hourlyMinutes[hour]))m")
                         .font(.subheadline.weight(.semibold))
                         .foregroundStyle(.blue)
-                    Text("celkem")
+                    Text("total")
                         .font(.caption2)
                         .foregroundStyle(.secondary)
                 }

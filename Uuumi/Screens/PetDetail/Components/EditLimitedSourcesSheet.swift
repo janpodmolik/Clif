@@ -51,15 +51,15 @@ struct EditLimitedSourcesSheet: View {
             }
             .navigationBarTitleDisplayMode(.inline)
             .dismissButton()
-            .alert("Změnit sledované aplikace?", isPresented: $showConfirmation) {
-                Button("Změnit", role: .destructive) {
+            .alert("Change tracked apps?", isPresented: $showConfirmation) {
+                Button("Change", role: .destructive) {
                     if saveAsMyApps {
                         SharedDefaults.saveMyAppsSelection(editSelection)
                     }
                     onSave?(editSelection)
                     dismiss()
                 }
-                Button("Zrušit", role: .cancel) {}
+                Button("Cancel", role: .cancel) {}
             } message: {
                 Text(confirmationMessage)
             }
@@ -73,12 +73,12 @@ struct EditLimitedSourcesSheet: View {
 
     private var header: some View {
         VStack(spacing: Layout.headerSpacing) {
-            Text("Sledované aplikace")
+            Text("Tracked Apps")
                 .font(.title3.weight(.semibold))
 
             MyAppsLoadButton(
                 selection: $editSelection,
-                infoMessage: "Načti si uložený výběr aplikací, nebo ho uprav a ulož znovu. Uložený výběr můžeš spravovat v Profilu."
+                infoMessage: "Load your saved app selection, or edit and save it again. You can manage your saved selection in Profile."
             ) {
                 pickerID = UUID()
             }
@@ -106,7 +106,7 @@ struct EditLimitedSourcesSheet: View {
                     webDomainTokens: editSelection.webDomainTokens
                 )
             } else {
-                Text("Vyber aplikace nebo kategorie")
+                Text("Select apps or categories")
                     .font(.footnote)
                     .foregroundStyle(.tertiary)
             }
@@ -119,11 +119,11 @@ struct EditLimitedSourcesSheet: View {
     private var confirmationMessage: String {
         switch changeState {
         case .unlimited:
-            "Výběr sledovaných aplikací bude aktualizován."
+            "Your tracked app selection will be updated."
         case .available:
-            "Po této změně budeš moci znovu změnit zítra."
+            "After this change, you can change again tomorrow."
         case .usedToday, .blown:
-            "Dnes již nelze měnit."
+            "No more changes available today."
         }
     }
 
@@ -144,7 +144,7 @@ struct EditLimitedSourcesSheet: View {
         Button {
             showConfirmation = true
         } label: {
-            Text("Uložit změny")
+            Text("Save changes")
         }
         .buttonStyle(.primary)
         .disabled(!hasEditSelection)

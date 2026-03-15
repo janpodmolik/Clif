@@ -42,11 +42,11 @@ final class AuthManager {
         var errorDescription: String? {
             switch self {
             case .invalidCredential:
-                return "Neplatné přihlašovací údaje"
+                return String(localized: "Invalid credentials")
             case .missingNonce:
-                return "Chyba při přihlašování (chybí nonce)"
+                return String(localized: "Sign-in error (missing nonce)")
             case .missingIdentityToken:
-                return "Nelze získat Apple identity token"
+                return String(localized: "Cannot get Apple identity token")
             case .supabase(let error):
                 return error.localizedDescription
             }

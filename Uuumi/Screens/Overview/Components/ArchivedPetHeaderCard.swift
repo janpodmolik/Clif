@@ -11,9 +11,9 @@ struct ArchivedPetHeaderCard: View {
 
     private var statusText: String {
         switch archiveReason {
-        case .blown: "Odfouknut"
-        case .completed: "Plně evolvován"
-        case .manual: "Archivován"
+        case .blown: "Blown Away"
+        case .completed: "Fully evolved"
+        case .manual: "Archived"
         }
     }
 
@@ -78,7 +78,7 @@ struct ArchivedPetHeaderCard: View {
                             .foregroundStyle(.secondary)
                     }
 
-                    Text("Od \(formatDate(createdAt))")
+                    Text("Since \(formatDate(createdAt))")
                         .font(.caption)
                         .foregroundStyle(.tertiary)
                 }
@@ -133,8 +133,8 @@ struct ArchivedPetHeaderCard: View {
 
     private func formatDate(_ date: Date) -> String {
         let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "cs_CZ")
-        formatter.setLocalizedDateFormatFromTemplate("d. MMMM yyyy")
+        formatter.locale = Locale(identifier: "en_US")
+        formatter.setLocalizedDateFormatFromTemplate("MMMM d, yyyy")
         return formatter.string(from: date)
     }
 }

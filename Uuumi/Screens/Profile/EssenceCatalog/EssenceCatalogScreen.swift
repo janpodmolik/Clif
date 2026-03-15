@@ -22,7 +22,7 @@ struct EssenceCatalogScreen: View {
             .padding(.top, 12)
             .padding(.bottom, 40)
         }
-        .navigationTitle("Katalog Essencí")
+        .navigationTitle("Essence Catalog")
         .navigationBarTitleDisplayMode(.inline)
         .sheet(item: $selectedEssenceRecord) { record in
             EssenceDetailSheet(
@@ -36,11 +36,11 @@ struct EssenceCatalogScreen: View {
 
     private var headerSection: some View {
         VStack(alignment: .leading, spacing: 4) {
-            Text("Odemkni nové evoluční cesty pro své pety.")
+            Text("Unlock new evolution paths for your pets.")
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
 
-            Text("\(catalogManager.allUnlocked.count)/\(Essence.allCases.count) odemčeno")
+            Text("\(catalogManager.allUnlocked.count)/\(Essence.allCases.count) unlocked")
                 .font(.caption)
                 .foregroundStyle(.tertiary)
         }

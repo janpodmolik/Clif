@@ -21,16 +21,16 @@ struct SafetyUnlockSheet: View {
 
     var body: some View {
         ConfirmationSheet(
-            navigationTitle: isSafe ? "Bezpečné odemčení" : "Odemknout Safety Shield?",
+            navigationTitle: isSafe ? "Safe unlock" : "Unlock Safety Shield?",
             height: 320
         ) {
             ConfirmationHeader(
                 icon: isSafe ? "checkmark.shield.fill" : "exclamationmark.triangle.fill",
                 iconColor: isSafe ? .green : .orange,
-                title: isSafe ? "Vítr klesl pod \(unlockThreshold) %" : "Vítr je nad \(unlockThreshold) %",
+                title: isSafe ? "Wind dropped below \(unlockThreshold) %" : "Wind is above \(unlockThreshold) %",
                 subtitle: isSafe
-                    ? "Můžeš bezpečně odemknout bez ztráty mazlíčka."
-                    : "Odemčení teď způsobí ztrátu tvého mazlíčka."
+                    ? "You can safely unlock without losing your pet."
+                    : "Unlocking now will cause loss of your pet."
             )
             .contentTransition(.numericText())
             .animation(.easeInOut(duration: 0.4), value: isSafe)
@@ -38,8 +38,8 @@ struct SafetyUnlockSheet: View {
             if isSafe {
                 ConfirmationAction(
                     icon: "lock.open.fill",
-                    title: "Odemknout bezpečně",
-                    subtitle: "Vítr je pod \(unlockThreshold) %",
+                    title: "Unlock safely",
+                    subtitle: "Wind is below \(unlockThreshold) %",
                     foregroundColor: .green,
                     background: .tinted(.green)
                 ) {
@@ -50,8 +50,8 @@ struct SafetyUnlockSheet: View {
             } else {
                 ConfirmationAction(
                     icon: "lock.trianglebadge.exclamationmark.fill",
-                    title: "Odemknout a ztratit peta",
-                    subtitle: "Vítr je stále nad \(unlockThreshold) %",
+                    title: "Unlock and lose pet",
+                    subtitle: "Wind is still above \(unlockThreshold) %",
                     foregroundColor: .red,
                     background: .tinted(.red)
                 ) {

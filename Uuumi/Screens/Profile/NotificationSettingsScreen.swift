@@ -21,18 +21,18 @@ struct NotificationSettingsScreen: View {
                 Section {
                     VStack(alignment: .leading, spacing: 8) {
                         Label {
-                            Text("Notifikace jsou vypnuté v systému")
+                            Text("Notifications are disabled in system settings")
                                 .font(AppFont.quicksand(.subheadline, weight: .semiBold))
                         } icon: {
                             Image(systemName: "bell.slash.fill")
                                 .foregroundStyle(.orange)
                         }
 
-                        Text("Pro příjem notifikací je zapni v Nastavení.")
+                        Text("Enable them in Settings to receive notifications.")
                             .font(AppFont.quicksand(.caption, weight: .medium))
                             .foregroundStyle(.secondary)
 
-                        Button("Otevřít Nastavení") {
+                        Button("Open Settings") {
                             if let url = URL(string: UIApplication.openSettingsURLString) {
                                 UIApplication.shared.open(url)
                             }
@@ -45,7 +45,7 @@ struct NotificationSettingsScreen: View {
             }
 
             Section {
-                Toggle("Notifikace", isOn: notifications.masterEnabled)
+                Toggle("Notifications", isOn: notifications.masterEnabled)
                     .tint(.blue)
             }
 
@@ -53,8 +53,8 @@ struct NotificationSettingsScreen: View {
 
             Section {
                 SettingsRow(
-                    title: "Upozornění na vítr",
-                    description: "Oznámení při dosažení prahů větru.",
+                    title: "Wind Alerts",
+                    description: "Notifications when wind thresholds are reached.",
                     isOn: Binding(
                         get: { limitSettings.notifications.anyWindEnabled },
                         set: { newValue in
@@ -82,8 +82,8 @@ struct NotificationSettingsScreen: View {
 
             Section {
                 SettingsRow(
-                    title: "Připomenutí vysokého větru",
-                    description: "Po 30 minutách vysokého větru bez pauzy.",
+                    title: "High Wind Reminder",
+                    description: "After 30 minutes of high wind without a break.",
                     isOn: notifications.windReminder,
                     disabled: disabled
                 )
@@ -93,8 +93,8 @@ struct NotificationSettingsScreen: View {
 
             Section {
                 SettingsRow(
-                    title: "Konec committed breaku",
-                    description: "Oznámení po vypršení naplánovaného breaku.",
+                    title: "Committed Break Ended",
+                    description: "Notification when a scheduled break expires.",
                     isOn: notifications.breakCommittedEnded,
                     disabled: disabled
                 )
@@ -102,8 +102,8 @@ struct NotificationSettingsScreen: View {
 
             Section {
                 SettingsRow(
-                    title: "Vítr na 0% během pauzy",
-                    description: "Oznámení, když vítr klesne na 0% během pauzy.",
+                    title: "Wind at 0% During Break",
+                    description: "Notification when wind drops to 0% during a break.",
                     isOn: notifications.breakWindZero,
                     disabled: disabled
                 )
@@ -113,8 +113,8 @@ struct NotificationSettingsScreen: View {
 
             Section {
                 SettingsRow(
-                    title: "Evoluce připravena",
-                    description: "Oznámení, když Uuumi může evolvovat.",
+                    title: "Evolution Ready",
+                    description: "Notification when Uuumi can evolve.",
                     isOn: notifications.evolutionReady,
                     disabled: disabled
                 )
@@ -122,15 +122,15 @@ struct NotificationSettingsScreen: View {
 
             Section {
                 SettingsRow(
-                    title: "Denní souhrn",
-                    description: "Přehled screen time a stavu Uuumi.",
+                    title: "Daily Summary",
+                    description: "Overview of screen time and Uuumi's status.",
                     isOn: notifications.dailySummary,
                     disabled: disabled
                 )
 
                 if limitSettings.notifications.dailySummary {
                     DatePicker(
-                        "Čas",
+                        "Time",
                         selection: dailySummaryTimeBinding,
                         displayedComponents: .hourAndMinute
                     )
@@ -138,7 +138,7 @@ struct NotificationSettingsScreen: View {
                 }
             }
         }
-        .navigationTitle("Notifikace")
+        .navigationTitle("Notifications")
         .navigationBarTitleDisplayMode(.inline)
         .task { await checkNotificationStatus() }
         .onChange(of: scenePhase) {

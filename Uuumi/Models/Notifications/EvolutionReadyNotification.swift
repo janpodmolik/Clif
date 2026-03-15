@@ -7,10 +7,10 @@ enum EvolutionReadyNotification {
 
     static let identifier = "evolution_ready_scheduled"
 
-    static var title: String { "Evoluce připravena!" }
+    static var title: String { String(localized: "Evolution ready!") }
 
     static var body: String {
-        "Tvůj Uuumi je připraven evolvovat. Nenech ho čekat!"
+        String(localized: "Your Uuumi is ready to evolve. Don't keep it waiting!")
     }
 
     // MARK: - Scheduling

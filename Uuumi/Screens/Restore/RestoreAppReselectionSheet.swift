@@ -64,8 +64,8 @@ struct RestoreAppReselectionSheet: View {
             ConfirmationHeader(
                 icon: "arrow.clockwise.icloud",
                 iconColor: .blue,
-                title: "\(petName) je zpátky!",
-                subtitle: "Po reinstalaci je potřeba znovu povolit přístup k času u obrazovky a vybrat sledované aplikace."
+                title: "\(petName) is back!",
+                subtitle: "After reinstalling, you need to reauthorize Screen Time access and select tracked apps."
             )
 
             VStack(spacing: 12) {
@@ -117,10 +117,10 @@ struct RestoreAppReselectionSheet: View {
                         .foregroundStyle(.primary)
                 }
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("Znovu povolit")
+                    Text("Reauthorize")
                         .font(.headline)
                         .foregroundStyle(.primary)
-                    Text("Povolí přístup a umožní výběr aplikací")
+                    Text("Grants access and allows app selection")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
@@ -141,8 +141,8 @@ struct RestoreAppReselectionSheet: View {
         if canArchive {
             ConfirmationAction(
                 icon: "archivebox",
-                title: "Archivovat",
-                subtitle: "Zachová historii v přehledu",
+                title: "Archive",
+                subtitle: "Preserves history in overview",
                 background: .material,
                 action: { Task { try? await onAction?(.archive) } }
             )
@@ -150,8 +150,8 @@ struct RestoreAppReselectionSheet: View {
 
         ConfirmationAction(
             icon: "trash",
-            title: "Smazat trvale",
-            subtitle: "Odstraní všechna data",
+            title: "Delete permanently",
+            subtitle: "Removes all data",
             foregroundColor: .red,
             background: .tinted(.red),
             action: { Task { try? await onAction?(.delete) } }
@@ -165,8 +165,8 @@ struct RestoreAppReselectionSheet: View {
             ConfirmationHeader(
                 icon: "arrow.clockwise.icloud",
                 iconColor: .blue,
-                title: "\(petName) je zpátky!",
-                subtitle: "Vyber sledované aplikace."
+                title: "\(petName) is back!",
+                subtitle: "Select tracked apps."
             )
         }
         .padding(.horizontal, Layout.headerPadding)
@@ -183,7 +183,7 @@ struct RestoreAppReselectionSheet: View {
         Button {
             Task { try? await onAction?(.save(selection)) }
         } label: {
-            Text("Potvrdit výběr")
+            Text("Confirm selection")
         }
         .buttonStyle(.primary)
         .disabled(!hasSelection)
