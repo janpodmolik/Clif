@@ -158,6 +158,10 @@ enum DefaultsKeys {
 
     static let hasCompletedOnboarding = "hasCompletedOnboarding"
 
+    // MARK: - Premium Cache
+
+    static let isPremiumCached = "isPremiumCached"
+
     // MARK: - Appearance Preferences
 
     static let appearanceMode = "appearanceMode"

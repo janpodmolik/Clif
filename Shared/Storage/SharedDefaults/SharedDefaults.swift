@@ -53,6 +53,14 @@ struct SharedDefaults {
         set { defaults?.set(newValue, forKey: DefaultsKeys.needsAppReselection) }
     }
 
+    // MARK: - Premium Cache
+
+    /// Cached premium status for extensions (updated by StoreManager in main app).
+    static var isPremiumCached: Bool {
+        get { defaults?.bool(forKey: DefaultsKeys.isPremiumCached) ?? false }
+        set { defaults?.set(newValue, forKey: DefaultsKeys.isPremiumCached) }
+    }
+
     // MARK: - Sync
 
     /// Forces synchronization of UserDefaults (important for cross-process communication).

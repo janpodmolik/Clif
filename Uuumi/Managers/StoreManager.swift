@@ -173,6 +173,7 @@ final class StoreManager {
             isPremium = false
             expirationDate = nil
             activeProductId = nil
+            SharedDefaults.isPremiumCached = false
         }
     }
 
@@ -204,6 +205,7 @@ final class StoreManager {
         isPremium = isActive
         expirationDate = transaction.expirationDate
         activeProductId = isActive ? transaction.productID : nil
+        SharedDefaults.isPremiumCached = isActive
     }
 }
 
@@ -223,6 +225,7 @@ extension StoreManager {
     #if DEBUG
     func debugSetPremium(_ active: Bool) {
         isPremium = active
+        SharedDefaults.isPremiumCached = active
         if active {
             activeProductId = Self.monthlyID
             expirationDate = Calendar.current.date(byAdding: .month, value: 1, to: .now)

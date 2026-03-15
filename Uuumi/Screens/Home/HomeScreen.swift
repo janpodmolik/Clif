@@ -423,7 +423,7 @@ struct HomeScreen: View {
                             onComplete: {
                                 evolutionAnimator.complete()
                                 petManager.savePet()
-                                coinsAnimator.showReward(CoinRewards.freeEvolution)
+                                coinsAnimator.showReward(CoinRewards.forEvolution(isPremium: SharedDefaults.isPremiumCached))
                                 ScheduledNotificationManager.refresh(
                                     isEvolutionAvailable: pet.isEvolutionAvailable,
                                     hasPet: true,
