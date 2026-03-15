@@ -94,6 +94,10 @@ enum WindPreset: String, Codable, CaseIterable {
         }
     }
 
+    var detailDescription: String {
+        "~\(Int(minutesToBlowAway)) min to blow away · ~\(Int(minutesToRecover)) min to recover"
+    }
+
     var themeColor: Color {
         switch self {
         case .gentle: .green

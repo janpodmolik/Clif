@@ -6,6 +6,7 @@ enum ProfileDestination: Hashable {
     case essenceCatalog
     case notificationSettings
     case shieldSettings
+    case dailyPresetSettings
     case lockButtonSettings
     case feedback
 }
@@ -76,6 +77,15 @@ struct ProfileScreen: View {
 
                     NavigationLink(value: ProfileDestination.shieldSettings) {
                         Label("Shield", systemImage: "shield.fill")
+                    }
+
+                    NavigationLink(value: ProfileDestination.dailyPresetSettings) {
+                        HStack {
+                            Label("Daily Preset", systemImage: "arrow.triangle.2.circlepath")
+                            Spacer()
+                            Text((WindPreset(rawValue: limitSettings.defaultWindPresetRaw) ?? .balanced).displayName)
+                                .foregroundStyle(.secondary)
+                        }
                     }
 
                     NavigationLink(value: ProfileDestination.lockButtonSettings) {
@@ -194,6 +204,8 @@ struct ProfileScreen: View {
                     NotificationSettingsScreen()
                 case .shieldSettings:
                     ShieldSettingsScreen()
+                case .dailyPresetSettings:
+                    DailyPresetSettingsScreen()
                 case .lockButtonSettings:
                     LockButtonSettingsScreen()
                 case .feedback:

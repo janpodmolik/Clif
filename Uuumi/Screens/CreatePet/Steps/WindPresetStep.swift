@@ -2,6 +2,7 @@ import SwiftUI
 
 struct WindPresetStep: View {
     @Environment(CreatePetCoordinator.self) private var coordinator
+    @State private var useEveryDay = !SharedDefaults.limitSettings.dayStartShieldEnabled
 
     var body: some View {
         VStack(spacing: 8) {
@@ -29,15 +30,46 @@ struct WindPresetStep: View {
             .padding(.horizontal)
             .padding(.top, 20)
 
+            dailyShieldToggle
+                .padding(.horizontal)
+                .padding(.top, 8)
+
             Spacer()
         }
         .padding(.top)
+    }
+
+    // MARK: - Daily Shield Toggle
+
+    private var dailyShieldToggle: some View {
+        VStack(spacing: 8) {
+            Toggle(isOn: $useEveryDay) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Use this preset every day")
+                        .font(.subheadline.weight(.medium))
+
+                    Text(useEveryDay
+                         ? "The selected preset will be used automatically every day."
+                         : "You'll pick a preset each morning before apps unlock.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            }
+            .tint(.blue)
+            .padding(12)
+            .glassBackground(cornerRadius: 12)
+            .onChange(of: useEveryDay) { _, newValue in
+                var settings = SharedDefaults.limitSettings
+                settings.dayStartShieldEnabled = !newValue
+                SharedDefaults.limitSettings = settings
+            }
+        }
     }
 }
 
 // MARK: - Wind Preset Card
 
-private struct WindPresetCard: View {
+struct WindPresetCard: View {
     let preset: WindPreset
     let isSelected: Bool
     let onTap: () -> Void
@@ -57,22 +89,12 @@ private struct WindPresetCard: View {
                         .font(.headline)
                         .foregroundStyle(.primary)
 
-                    Text(preset.description)
+                    Text(preset.detailDescription)
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
 
                 Spacer()
-
-                VStack(alignment: .trailing, spacing: 2) {
-                    Text("\(Int(preset.minutesToBlowAway)) min")
-                        .font(.subheadline.weight(.semibold))
-                        .foregroundStyle(preset.themeColor)
-
-                    Text("to blow away")
-                        .font(.caption2)
-                        .foregroundStyle(.tertiary)
-                }
 
                 Image(systemName: "checkmark.circle.fill")
                     .foregroundStyle(preset.themeColor)

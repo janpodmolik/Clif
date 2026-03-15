@@ -54,7 +54,7 @@ final class CreatePetCoordinator {
     // MARK: - Collected Data
 
     var selectedApps = FamilyActivitySelection()
-    var preset: WindPreset = .balanced
+    var preset: WindPreset = WindPreset(rawValue: SharedDefaults.limitSettings.defaultWindPresetRaw) ?? .balanced
     var petName: String = ""
     var petPurpose: String = ""
     var saveAsMyApps: Bool = false
@@ -206,6 +206,11 @@ final class CreatePetCoordinator {
             return
         }
 
+        // Persist preset as default for future use
+        var settings = SharedDefaults.limitSettings
+        settings.defaultWindPresetRaw = preset.rawValue
+        SharedDefaults.limitSettings = settings
+
         // Persist selection for pre-populating the picker on edit
         SharedDefaults.saveFamilyActivitySelection(selectedApps)
 
@@ -228,7 +233,7 @@ final class CreatePetCoordinator {
     private func resetWizardState() {
         currentStep = .appSelection
         selectedApps = FamilyActivitySelection()
-        preset = .balanced
+        preset = WindPreset(rawValue: SharedDefaults.limitSettings.defaultWindPresetRaw) ?? .balanced
         petName = ""
         petPurpose = ""
         saveAsMyApps = false

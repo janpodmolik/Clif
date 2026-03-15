@@ -2,55 +2,9 @@ import SwiftUI
 
 struct ShieldSettingsScreen: View {
     @State private var limitSettings = SharedDefaults.limitSettings
-    @State private var showPresetInfo = false
-
-    private var defaultPresetBinding: Binding<WindPreset> {
-        Binding(
-            get: { WindPreset(rawValue: limitSettings.defaultWindPresetRaw) ?? .balanced },
-            set: { limitSettings.defaultWindPresetRaw = $0.rawValue }
-        )
-    }
 
     var body: some View {
         Form {
-            // MARK: - Denní shield
-
-            Section {
-                Toggle("Denní shield", isOn: $limitSettings.dayStartShieldEnabled)
-                    .tint(.blue)
-
-                if !limitSettings.dayStartShieldEnabled {
-                    Picker(selection: defaultPresetBinding) {
-                        ForEach(WindPreset.allCases, id: \.self) { preset in
-                            Text(preset.displayName).tag(preset)
-                        }
-                    } label: {
-                        Text("Výchozí preset")
-                    }
-                }
-            } header: {
-                HStack {
-                    Text("Denní shield")
-                    Spacer()
-                    Button {
-                        showPresetInfo = true
-                    } label: {
-                        Image(systemName: "info.circle")
-                            .font(.body)
-                            .foregroundStyle(.secondary)
-                            .frame(width: 44, height: 44)
-                            .contentShape(Rectangle())
-                    }
-                    .buttonStyle(.plain)
-                }
-            } footer: {
-                if limitSettings.dayStartShieldEnabled {
-                    Text("Každé ráno se zobrazí výběr presetu. Aplikace zůstanou zamčené, dokud nevybereš.")
-                } else {
-                    Text("Automaticky se použije výchozí preset. Aplikace nebudou ráno zamčené.")
-                }
-            }
-
             // MARK: - Safety Shield
 
             Section {
@@ -99,11 +53,6 @@ struct ShieldSettingsScreen: View {
         .navigationBarTitleDisplayMode(.inline)
         .onChange(of: limitSettings) { _, newValue in
             SharedDefaults.limitSettings = newValue
-        }
-        .sheet(isPresented: $showPresetInfo) {
-            WindPresetComparisonSheet(
-                currentPreset: WindPreset(rawValue: limitSettings.defaultWindPresetRaw) ?? .balanced
-            )
         }
     }
 }
