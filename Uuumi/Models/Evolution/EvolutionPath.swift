@@ -148,12 +148,12 @@ extension EvolutionPath {
     )
 }
 
-// MARK: - Mossy Evolution Path
+// MARK: - Moss Evolution Path
 
 extension EvolutionPath {
     static let moss = EvolutionPath(
         id: "moss",
-        displayName: "Mossy",
+        displayName: "Moss",
         phases: [
             EvolutionPhase(phaseNumber: 1, evolutionId: "moss", displayScale: 0.85, idleConfig: .default),
             EvolutionPhase(phaseNumber: 2, evolutionId: "moss", displayScale: 0.95, idleConfig: .default),
