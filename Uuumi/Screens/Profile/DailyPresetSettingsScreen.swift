@@ -61,7 +61,7 @@ struct DailyPresetSettingsScreen: View {
                 } footer: {
                     Text("Today's preset is locked once selected and can't be changed.")
                 }
-                .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
+                .listRowInsets(EdgeInsets(top: 4, leading: 0, bottom: 4, trailing: 0))
                 .listRowBackground(Color.clear)
                 .listRowSeparator(.hidden)
             }
@@ -80,7 +80,7 @@ struct DailyPresetSettingsScreen: View {
                             }
                         }
                     )
-                    .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
+                    .listRowInsets(EdgeInsets(top: 4, leading: 0, bottom: 4, trailing: 0))
                     .listRowBackground(Color.clear)
                     .listRowSeparator(.hidden)
                 }
@@ -108,7 +108,7 @@ struct DailyPresetSettingsScreen: View {
                 .tint(.blue)
                 .padding(16)
                 .glassBackground(cornerRadius: 20)
-                .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
+                .listRowInsets(EdgeInsets(top: 4, leading: 0, bottom: 4, trailing: 0))
                 .listRowBackground(Color.clear)
                 .listRowSeparator(.hidden)
             }
