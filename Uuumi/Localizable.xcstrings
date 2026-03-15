@@ -743,6 +743,9 @@
     "Early termination will cause loss of pet" : {
 
     },
+    "Earn more coins with Premium" : {
+
+    },
     "Edit" : {
 
     },
@@ -1118,6 +1121,9 @@
     "Name your pet" : {
 
     },
+    "Need %lld more coins" : {
+
+    },
     "Next evolution in %lld days" : {
 
     },
@@ -1338,6 +1344,9 @@
 
     },
     "Presets" : {
+
+    },
+    "Price" : {
 
     },
     "Privacy" : {
@@ -1845,6 +1854,9 @@
     "Unlock Evolution Now" : {
 
     },
+    "Unlock for %lld" : {
+
+    },
     "Unlock in 1 min" : {
 
     },
@@ -2026,6 +2038,9 @@
 
     },
     "You'll pick a preset each morning before apps unlock." : {
+
+    },
+    "Your Balance" : {
 
     },
     "Your committed break has ended! Break was successful." : {

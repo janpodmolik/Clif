@@ -38,6 +38,13 @@ final class EssenceCatalogManager {
         save()
     }
 
+    func purchaseEssence(_ essence: Essence) -> PurchaseResult {
+        guard !isUnlocked(essence) else { return .alreadyUnlocked }
+        guard SharedDefaults.spendCoins(essence.price) else { return .insufficientBalance }
+        unlock(essence)
+        return .success
+    }
+
     /// Restores unlocked essences from cloud backup.
     func restoreUnlocked(_ essences: Set<Essence>) {
         unlockedEssences = essences
@@ -64,6 +71,16 @@ final class EssenceCatalogManager {
     private func save() {
         let rawValues = unlockedEssences.map(\.rawValue)
         UserDefaults.standard.set(rawValues, forKey: Self.storageKey)
+    }
+}
+
+// MARK: - PurchaseResult
+
+extension EssenceCatalogManager {
+    enum PurchaseResult {
+        case success
+        case insufficientBalance
+        case alreadyUnlocked
     }
 }
 

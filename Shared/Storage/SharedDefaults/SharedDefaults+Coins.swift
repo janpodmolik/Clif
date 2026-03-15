@@ -15,4 +15,11 @@ extension SharedDefaults {
         guard amount > 0 else { return }
         coinsBalance += amount
     }
+
+    @discardableResult
+    static func spendCoins(_ amount: Int) -> Bool {
+        guard amount > 0, coinsBalance >= amount else { return false }
+        coinsBalance -= amount
+        return true
+    }
 }

@@ -6,6 +6,7 @@ struct EssenceCatalogScreen: View {
     @Environment(PetManager.self) private var petManager
 
     @State private var selectedEssenceRecord: EssenceRecord?
+    @State private var essenceToUnlock: Essence?
 
     private let columns = [
         GridItem(.flexible(), spacing: 12),
@@ -29,6 +30,9 @@ struct EssenceCatalogScreen: View {
                 record: record,
                 summaries: archivedPetManager.summaries
             )
+        }
+        .sheet(item: $essenceToUnlock) { essence in
+            EssenceUnlockSheet(essence: essence)
         }
     }
 
@@ -55,13 +59,16 @@ struct EssenceCatalogScreen: View {
                     essenceRecord: record
                 )
                 .onTapGesture {
-                    guard entry.isUnlocked else { return }
-                    selectedEssenceRecord = record ?? EssenceRecord(
-                        id: entry.essence.rawValue,
-                        essence: entry.essence,
-                        bestPhase: nil,
-                        petCount: 0
-                    )
+                    if entry.isUnlocked {
+                        selectedEssenceRecord = record ?? EssenceRecord(
+                            id: entry.essence.rawValue,
+                            essence: entry.essence,
+                            bestPhase: nil,
+                            petCount: 0
+                        )
+                    } else {
+                        essenceToUnlock = entry.essence
+                    }
                 }
             }
         }

@@ -125,7 +125,7 @@ struct EvolutionHistory: Equatable {
         self.essence = essence
         self.essenceRawValue = essence.rawValue
         lastProgressDate = Date()
-        SharedDefaults.addCoins(CoinRewards.evolution)
+        SharedDefaults.addCoins(CoinRewards.freeEvolution)
         scheduleNextUnlockDate()
     }
 
@@ -137,7 +137,7 @@ struct EvolutionHistory: Equatable {
         )
         events.append(event)
         lastProgressDate = Date()
-        SharedDefaults.addCoins(CoinRewards.evolution)
+        SharedDefaults.addCoins(CoinRewards.freeEvolution)
         scheduleNextUnlockDate(forPhase: phase)
     }
 

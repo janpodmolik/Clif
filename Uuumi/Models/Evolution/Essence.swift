@@ -4,7 +4,9 @@ import UniformTypeIdentifiers
 
 /// Essence determines which evolution path a pet follows.
 /// This is a pure identifier - all evolution logic lives in EvolutionPath.
-enum Essence: String, Codable, CaseIterable, Transferable {
+enum Essence: String, Codable, CaseIterable, Identifiable, Transferable {
+    var id: String { rawValue }
+
     static var transferRepresentation: some TransferRepresentation {
         CodableRepresentation(contentType: .essence)
     }
@@ -21,6 +23,21 @@ enum Essence: String, Codable, CaseIterable, Transferable {
 
     /// Essences unlocked by default for all users.
     static let defaultUnlocked: Set<Essence> = [.plant]
+
+    /// Price in Ucoins to unlock this essence.
+    var price: Int {
+        switch self {
+        case .plant: return 0
+        case .troll: return 200
+        case .orc: return 200
+        case .clicker: return 200
+        case .lion: return 200
+        case .stitches: return 200
+        case .racoon: return 200
+        case .moss: return 200
+        case .shroom: return 200
+        }
+    }
 
     /// Asset path for essence icon: "evolutions/plant/essence"
     var assetName: String {

@@ -89,9 +89,18 @@ struct EssenceCatalogGridItem: View {
         RoundedRectangle(cornerRadius: 16)
             .fill(.ultraThinMaterial.opacity(0.3))
             .overlay {
-                Image(systemName: "lock.fill")
-                    .font(.title3)
-                    .foregroundStyle(.secondary)
+                VStack(spacing: 4) {
+                    Image(systemName: "lock.fill")
+                        .font(.title3)
+                    HStack(spacing: 2) {
+                        Image(systemName: "u.circle.fill")
+                            .font(.caption2)
+                            .foregroundStyle(Color("PremiumGold"))
+                        Text("\(entry.essence.price)")
+                            .font(.caption2.weight(.medium))
+                    }
+                }
+                .foregroundStyle(.secondary)
             }
     }
 }
