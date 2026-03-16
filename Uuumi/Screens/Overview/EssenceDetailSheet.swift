@@ -25,7 +25,7 @@ struct EssenceDetailSheet: View {
     /// Mock pet for showcase evolution carousel.
     private var showcasePet: ArchivedPet {
         .mock(
-            phase: record.bestPhase ?? 1,
+            phase: record.bestPhase ?? 0,
             essence: record.essence,
             archiveReason: .completed,
             totalDays: 14

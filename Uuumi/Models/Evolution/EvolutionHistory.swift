@@ -41,10 +41,10 @@ struct EvolutionHistory: Equatable {
         essenceRawValue == nil
     }
 
-    /// Current phase: 0 for blob, 1+ for evolved pets
+    /// Current phase: 0 for blob or essence with no evolution, 1+ for evolved pets
     var currentPhase: Int {
         guard !isBlob else { return 0 }
-        return events.last?.toPhase ?? 1
+        return events.last?.toPhase ?? 0
     }
 
     var maxPhase: Int {
@@ -124,6 +124,8 @@ struct EvolutionHistory: Equatable {
         guard isBlob else { return }
         self.essence = essence
         self.essenceRawValue = essence.rawValue
+        let event = EvolutionEvent(fromPhase: 0, toPhase: 1, date: Date())
+        events.append(event)
         lastProgressDate = Date()
         SharedDefaults.addCoins(CoinRewards.forEvolution(isPremium: SharedDefaults.isPremiumCached))
         scheduleNextUnlockDate()
@@ -252,8 +254,8 @@ extension EvolutionHistory {
         let createdAt = calendar.date(byAdding: .day, value: -totalDays, to: Date()) ?? Date()
 
         var events: [EvolutionEvent] = []
-        if essence != nil, phase > 1 {
-            for p in 2...phase {
+        if essence != nil, phase >= 1 {
+            for p in 1...phase {
                 let offset = p - totalDays
                 let date = calendar.date(byAdding: .day, value: offset, to: Date()) ?? Date()
                 events.append(EvolutionEvent(fromPhase: p - 1, toPhase: p, date: date))
