@@ -54,8 +54,10 @@ struct SearchSheet: View {
             }
 
             // Essence filter
-            if let essence = pet.essence, !filter.essenceFilter.contains(essence) {
-                return false
+            if filter.essenceFilter != Set(Essence.allCases) {
+                guard let essence = pet.essence, filter.essenceFilter.contains(essence) else {
+                    return false
+                }
             }
 
             // Duration filter
