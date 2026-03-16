@@ -40,23 +40,43 @@ final class StoreManager {
     static let monthlyID = "com.janpodmolik.Uuumi.premium.monthly"
     static let yearlyID = "com.janpodmolik.Uuumi.premium.yearly"
 
-    private static let productIDs: Set<String> = [monthlyID, yearlyID]
+    static let coinsSmallID = "com.janpodmolik.Uuumi.coins.small"
+    static let coinsMediumID = "com.janpodmolik.Uuumi.coins.medium"
+    static let coinsLargeID = "com.janpodmolik.Uuumi.coins.large"
+
+    private static let subscriptionIDs: Set<String> = [monthlyID, yearlyID]
+    private static let coinPackIDs: Set<String> = [coinsSmallID, coinsMediumID, coinsLargeID]
+    private static let allProductIDs: Set<String> = subscriptionIDs.union(coinPackIDs)
+
+    static let coinPackAmounts: [String: Int] = [
+        coinsSmallID: 100,
+        coinsMediumID: 400,
+        coinsLargeID: 1000,
+    ]
 
     // MARK: - State
 
-    private(set) var products: [Product] = []
+    private(set) var subscriptionProducts: [Product] = []
+    private(set) var coinPackProducts: [Product] = []
     private(set) var isPremium = false
     private(set) var expirationDate: Date?
     private(set) var activeProductId: String?
     private(set) var purchaseState: PurchaseState = .idle
+    private(set) var purchasingProductId: String?
     private(set) var error: StoreError?
 
     private var transactionListener: Task<Void, Never>?
 
     // MARK: - Convenience
 
-    var monthlyProduct: Product? { products.first { $0.id == Self.monthlyID } }
-    var yearlyProduct: Product? { products.first { $0.id == Self.yearlyID } }
+    var monthlyProduct: Product? { subscriptionProducts.first { $0.id == Self.monthlyID } }
+    var yearlyProduct: Product? { subscriptionProducts.first { $0.id == Self.yearlyID } }
+
+    var products: [Product] { subscriptionProducts }
+
+    func coinAmount(for product: Product) -> Int {
+        Self.coinPackAmounts[product.id] ?? 0
+    }
 
     // MARK: - Init
 
@@ -74,10 +94,15 @@ final class StoreManager {
     // MARK: - Load Products
 
     func loadProducts() async {
-        guard products.isEmpty else { return }
+        guard subscriptionProducts.isEmpty, coinPackProducts.isEmpty else { return }
         do {
-            let storeProducts = try await Product.products(for: Self.productIDs)
-            products = storeProducts.sorted { $0.price < $1.price }
+            let storeProducts = try await Product.products(for: Self.allProductIDs)
+            subscriptionProducts = storeProducts
+                .filter { Self.subscriptionIDs.contains($0.id) }
+                .sorted { $0.price < $1.price }
+            coinPackProducts = storeProducts
+                .filter { Self.coinPackIDs.contains($0.id) }
+                .sorted { $0.price < $1.price }
         } catch {
             #if DEBUG
             print("StoreManager: Failed to load products — \(error)")
@@ -89,6 +114,7 @@ final class StoreManager {
 
     func purchase(_ product: Product) async {
         purchaseState = .purchasing
+        purchasingProductId = product.id
 
         do {
             let result = try await product.purchase()
@@ -96,25 +122,38 @@ final class StoreManager {
             switch result {
             case .success(let verification):
                 let transaction = try checkVerification(verification)
-                await updatePremiumStatus(from: transaction)
+
+                if Self.coinPackIDs.contains(transaction.productID) {
+                    let amount = Self.coinPackAmounts[transaction.productID] ?? 0
+                    SharedDefaults.addCoins(amount)
+                } else {
+                    await updatePremiumStatus(from: transaction)
+                }
+
                 await transaction.finish()
                 purchaseState = .purchased
+                purchasingProductId = nil
 
             case .userCancelled:
                 purchaseState = .idle
+                purchasingProductId = nil
 
             case .pending:
                 purchaseState = .idle
+                purchasingProductId = nil
                 self.error = .purchasePending
 
             @unknown default:
                 purchaseState = .idle
+                purchasingProductId = nil
             }
         } catch let storeError as StoreError {
             purchaseState = .failed
+            purchasingProductId = nil
             self.error = storeError
         } catch {
             purchaseState = .failed
+            purchasingProductId = nil
             self.error = .unknown(error)
         }
     }
@@ -163,7 +202,7 @@ final class StoreManager {
         for await result in Transaction.currentEntitlements {
             guard case .verified(let transaction) = result else { continue }
 
-            if Self.productIDs.contains(transaction.productID) {
+            if Self.subscriptionIDs.contains(transaction.productID) {
                 await updatePremiumStatus(from: transaction)
                 foundActive = true
             }
@@ -183,7 +222,14 @@ final class StoreManager {
         Task {
             for await result in Transaction.updates {
                 guard case .verified(let transaction) = result else { continue }
-                await updatePremiumStatus(from: transaction)
+
+                if Self.coinPackIDs.contains(transaction.productID) {
+                    let amount = Self.coinPackAmounts[transaction.productID] ?? 0
+                    SharedDefaults.addCoins(amount)
+                } else {
+                    await updatePremiumStatus(from: transaction)
+                }
+
                 await transaction.finish()
             }
         }
@@ -236,10 +282,16 @@ extension StoreManager {
     }
 
     func forceLoadProducts() async {
-        products = []
+        subscriptionProducts = []
+        coinPackProducts = []
         do {
-            let storeProducts = try await Product.products(for: Self.productIDs)
-            products = storeProducts.sorted { $0.price < $1.price }
+            let storeProducts = try await Product.products(for: Self.allProductIDs)
+            subscriptionProducts = storeProducts
+                .filter { Self.subscriptionIDs.contains($0.id) }
+                .sorted { $0.price < $1.price }
+            coinPackProducts = storeProducts
+                .filter { Self.coinPackIDs.contains($0.id) }
+                .sorted { $0.price < $1.price }
         } catch {
             print("StoreManager: Force load failed — \(error)")
         }

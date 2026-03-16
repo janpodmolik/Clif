@@ -21,6 +21,7 @@ struct ProfileScreen: View {
     @AppStorage(DefaultsKeys.selectedNightTheme) private var nightTheme: NightTheme = .deepNight
     @State private var limitSettings = SharedDefaults.limitSettings
     @State private var showPremiumSheet = false
+    @State private var showCoinShopSheet = false
     @State private var showAuthSheet = false
     @State private var showAccountSheet = false
     @State private var showMyAppsSheet = false
@@ -167,7 +168,7 @@ struct ProfileScreen: View {
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
-                        showPremiumSheet = true
+                        showCoinShopSheet = true
                     } label: {
                         HStack(spacing: 6) {
                             Image(systemName: "u.circle.fill")
@@ -184,6 +185,9 @@ struct ProfileScreen: View {
             }
             .sheet(isPresented: $showPremiumSheet) {
                 PremiumSheet()
+            }
+            .sheet(isPresented: $showCoinShopSheet) {
+                CoinShopSheet()
             }
             .sheet(isPresented: $showMyAppsSheet, onDismiss: {
                 myAppsSelection = SharedDefaults.loadMyAppsSelection()

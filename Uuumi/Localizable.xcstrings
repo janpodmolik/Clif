@@ -98,6 +98,9 @@
         }
       }
     },
+    "%lld Coins" : {
+
+    },
     "%lld days" : {
 
     },
@@ -105,6 +108,9 @@
 
     },
     "%lld evolution phases" : {
+
+    },
+    "%lld evolutions" : {
 
     },
     "%lld min" : {
@@ -147,16 +153,6 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "%1$lld/%2$lld"
-          }
-        }
-      }
-    },
-    "%lld/%lld evolutions" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$lld/%2$lld evolutions"
           }
         }
       }
@@ -274,6 +270,9 @@
 
     },
     "2.0" : {
+
+    },
+    "2× evolution rewards + break coins" : {
 
     },
     "100%" : {
@@ -442,6 +441,12 @@
     "Bend: %.1f" : {
 
     },
+    "Best per-coin value" : {
+
+    },
+    "Best Value" : {
+
+    },
     "Blob" : {
 
     },
@@ -564,6 +569,9 @@
 
     },
     "Clear Sky" : {
+
+    },
+    "coins" : {
 
     },
     "Common" : {
@@ -743,6 +751,9 @@
     "Early termination will cause loss of pet" : {
 
     },
+    "Earn coins faster with Premium" : {
+
+    },
     "Earn more coins with Premium" : {
 
     },
@@ -873,6 +884,9 @@
 
     },
     "Fully evolved" : {
+
+    },
+    "Get Coins" : {
 
     },
     "Get Premium" : {
@@ -1391,6 +1405,9 @@
     "Purpose" : {
 
     },
+    "Quick boost for your collection" : {
+
+    },
     "Rare" : {
 
     },
@@ -1635,6 +1652,9 @@
     "Somewhere, a tiny island floats in the sky..." : {
 
     },
+    "Spend %lld coins to unlock this essence?" : {
+
+    },
     "Stable" : {
 
     },
@@ -1851,6 +1871,9 @@
     "Unlimited break" : {
 
     },
+    "Unlock" : {
+
+    },
     "Unlock Evolution Now" : {
 
     },
@@ -1858,6 +1881,9 @@
 
     },
     "Unlock in 1 min" : {
+
+    },
+    "Unlock multiple essences" : {
 
     },
     "Unlock new evolution paths for your pets." : {

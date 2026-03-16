@@ -30,6 +30,7 @@ final class AnalyticsManager {
         case breakStarted(breakType: String)
         case blowAway(essenceType: String, evolutionPhase: Int, totalDays: Int)
         case premiumPurchaseTapped(plan: String)
+        case coinPackPurchaseTapped(pack: String)
         case authCompleted(method: String)
         case feedbackSubmitted
 
@@ -52,6 +53,7 @@ final class AnalyticsManager {
             case .breakStarted: "action.breakStarted"
             case .blowAway: "action.blowAway"
             case .premiumPurchaseTapped: "action.premiumPurchaseTapped"
+            case .coinPackPurchaseTapped: "action.coinPackPurchaseTapped"
             case .authCompleted: "action.authCompleted"
             case .feedbackSubmitted: "action.feedbackSubmitted"
             case .configSnapshot: "config.snapshot"
@@ -78,6 +80,8 @@ final class AnalyticsManager {
                 ["essenceType": essenceType, "evolutionPhase": "\(evolutionPhase)", "totalDays": "\(totalDays)"]
             case .premiumPurchaseTapped(let plan):
                 ["plan": plan]
+            case .coinPackPurchaseTapped(let pack):
+                ["pack": pack]
             case .authCompleted(let method):
                 ["method": method]
             case .feedbackSubmitted:

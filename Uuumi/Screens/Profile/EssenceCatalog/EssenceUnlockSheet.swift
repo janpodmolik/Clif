@@ -9,6 +9,7 @@ struct EssenceUnlockSheet: View {
     @Environment(\.dismiss) private var dismiss
 
     @State private var showPremiumSheet = false
+    @State private var showCoinShopSheet = false
     @State private var showConfirmation = false
 
     private var path: EvolutionPath { .path(for: essence) }
@@ -36,6 +37,9 @@ struct EssenceUnlockSheet: View {
         .presentationDragIndicator(.visible)
         .sheet(isPresented: $showPremiumSheet) {
             PremiumSheet()
+        }
+        .sheet(isPresented: $showCoinShopSheet) {
+            CoinShopSheet()
         }
     }
 
@@ -152,17 +156,28 @@ struct EssenceUnlockSheet: View {
         }
     }
 
-    // MARK: - Premium Hint
+    // MARK: - Hints
 
     @ViewBuilder
     private var premiumHint: some View {
-        if !storeManager.isPremium {
-            Button {
-                showPremiumSheet = true
-            } label: {
-                Text("Earn more coins with Premium")
-                    .font(.caption)
-                    .foregroundStyle(.primary)
+        VStack(spacing: 8) {
+            if !canAfford {
+                Button {
+                    showCoinShopSheet = true
+                } label: {
+                    Text("Get Coins")
+                        .font(.caption.weight(.medium))
+                        .foregroundStyle(.primary)
+                }
+            }
+            if !storeManager.isPremium {
+                Button {
+                    showPremiumSheet = true
+                } label: {
+                    Text("Earn more coins with Premium")
+                        .font(.caption)
+                        .foregroundStyle(.primary)
+                }
             }
         }
     }
