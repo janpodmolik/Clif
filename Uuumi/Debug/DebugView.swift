@@ -7,6 +7,7 @@ struct DebugView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(PetManager.self) private var petManager
     @Environment(StoreManager.self) private var storeManager
+    @Environment(EssenceCatalogManager.self) private var catalogManager
     @StateObject private var manager = ScreenTimeManager.shared
     @State private var isPickerPresented = false
     @State private var extensionLog = ""
@@ -26,6 +27,7 @@ struct DebugView: View {
                 VStack(spacing: 12) {
                     petEvolutionSection
                     premiumSection
+                    coinsAndEssencesSection
 
                     if !manager.isAuthorized {
                         authorizationSection
@@ -216,6 +218,53 @@ struct DebugView: View {
                     Task { await storeManager.forceLoadProducts() }
                 }
                 .tint(.purple)
+            }
+            .buttonStyle(.bordered)
+            .controlSize(.small)
+        }
+    }
+
+    // MARK: - Coins & Essences
+
+    @State private var debugCoinBalance = SharedDefaults.coinsBalance
+
+    private var coinsAndEssencesSection: some View {
+        sectionCard("Coins & Essences", icon: "u.circle.fill", tint: Color("PremiumGold")) {
+            VStack(alignment: .leading, spacing: 3) {
+                debugRow("Coins", "\(debugCoinBalance)")
+                debugRow("Unlocked essences", "\(catalogManager.allUnlocked.count)/\(Essence.allCases.count)")
+            }
+
+            Divider()
+
+            FlowLayout(spacing: 8) {
+                Button("+100 Coins") {
+                    SharedDefaults.addCoins(100)
+                    debugCoinBalance = SharedDefaults.coinsBalance
+                }
+                .tint(.green)
+
+                Button("+1000 Coins") {
+                    SharedDefaults.addCoins(1000)
+                    debugCoinBalance = SharedDefaults.coinsBalance
+                }
+                .tint(.green)
+
+                Button("Reset Coins") {
+                    SharedDefaults.coinsBalance = 0
+                    debugCoinBalance = 0
+                }
+                .tint(.red)
+
+                Button("Lock All Essences") {
+                    catalogManager.clearOnSignOut()
+                }
+                .tint(.red)
+
+                Button("Unlock All Essences") {
+                    Essence.allCases.forEach { catalogManager.unlock($0) }
+                }
+                .tint(.blue)
             }
             .buttonStyle(.bordered)
             .controlSize(.small)
@@ -967,6 +1016,7 @@ private struct FlowLayout: Layout {
     DebugView()
         .environment(PetManager.mock())
         .environment(StoreManager.mock())
+        .environment(EssenceCatalogManager.mock())
 }
 
 // MARK: - Debug Overlay

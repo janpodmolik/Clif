@@ -207,6 +207,12 @@
     "+1 Day (bump age)" : {
 
     },
+    "+100 Coins" : {
+
+    },
+    "+1000 Coins" : {
+
+    },
     "< Prev" : {
 
     },
@@ -1060,6 +1066,9 @@
     "Loads your saved app and category selection. You can manage your saved selection in Profile." : {
 
     },
+    "Lock All Essences" : {
+
+    },
     "Lock Button" : {
 
     },
@@ -1451,6 +1460,9 @@
 
     },
     "Reset" : {
+
+    },
+    "Reset Coins" : {
 
     },
     "Reset Onboarding" : {
@@ -1872,6 +1884,9 @@
 
     },
     "Unlock" : {
+
+    },
+    "Unlock All Essences" : {
 
     },
     "Unlock Evolution Now" : {
