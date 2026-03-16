@@ -10,17 +10,21 @@ struct EssenceCatalogGridItem: View {
     var body: some View {
         VStack(spacing: 10) {
             essenceIcon
-            pathInfo
             evolutionCount
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 16)
         .padding(.horizontal, 12)
+        .contentShape(RoundedRectangle(cornerRadius: 16))
         .background { cardBackground }
         .overlay {
             if !entry.isUnlocked {
                 lockOverlay
             }
+        }
+        .overlay(alignment: .topTrailing) {
+            cornerBadge
+                .padding(8)
         }
     }
 
@@ -31,34 +35,13 @@ struct EssenceCatalogGridItem: View {
             .resizable()
             .scaledToFit()
             .frame(width: 64, height: 64)
-    }
-
-    private var pathInfo: some View {
-        VStack(spacing: 2) {
-            Text(path.displayName)
-                .font(.subheadline.weight(.semibold))
-                .foregroundStyle(entry.isUnlocked ? .primary : .secondary)
-
-            Text(entry.essence.rarity.displayName)
-                .font(.caption2)
-                .foregroundStyle(entry.essence.rarity.color)
-
-            if let record = essenceRecord, record.petCount > 0 {
-                Text(record.petCount == 1 ? "1 pet" : "\(record.petCount) pets")
-                    .font(.caption2)
-                    .foregroundStyle(.secondary)
-            }
-        }
+            .opacity(entry.isUnlocked ? 1.0 : 0.5)
     }
 
     private var evolutionCount: some View {
-        let maxPhases = path.maxPhases
-        let reached = essenceRecord?.bestPhase ?? 0
-
-        return Text("\(reached)/\(maxPhases) evolutions")
+        Text("\(path.maxPhases) evolutions")
             .font(.caption2)
-            .foregroundStyle(reached > 0 ? AnyShapeStyle(color) : AnyShapeStyle(.tertiary))
-            .opacity(entry.isUnlocked ? 1.0 : 0.5)
+            .foregroundStyle(entry.isUnlocked ? AnyShapeStyle(color) : AnyShapeStyle(.tertiary))
     }
 
     // MARK: - Background
@@ -86,22 +69,37 @@ struct EssenceCatalogGridItem: View {
     // MARK: - Lock Overlay
 
     private var lockOverlay: some View {
-        RoundedRectangle(cornerRadius: 16)
-            .fill(.ultraThinMaterial.opacity(0.3))
-            .overlay {
-                VStack(spacing: 4) {
-                    Image(systemName: "lock.fill")
-                        .font(.title3)
-                    HStack(spacing: 2) {
-                        Image(systemName: "u.circle.fill")
-                            .font(.caption2)
-                            .foregroundStyle(Color("PremiumGold"))
-                        Text("\(entry.essence.price)")
-                            .font(.caption2.weight(.medium))
-                    }
-                }
-                .foregroundStyle(.secondary)
+        Image(systemName: "lock.fill")
+            .font(.system(size: 40))
+            .foregroundStyle(.secondary.opacity(0.5))
+            .allowsHitTesting(false)
+    }
+
+    // MARK: - Corner Badge
+
+    @ViewBuilder
+    private var cornerBadge: some View {
+        if entry.isUnlocked {
+            let reached = essenceRecord?.bestPhase ?? 0
+            Text("\(reached)/\(path.maxPhases)")
+                .font(.caption2.weight(.medium))
+                .foregroundStyle(reached > 0 ? AnyShapeStyle(color) : AnyShapeStyle(.tertiary))
+                .padding(.horizontal, 8)
+                .padding(.vertical, 4)
+                .background(.ultraThinMaterial, in: Capsule())
+        } else {
+            HStack(spacing: 3) {
+                Image(systemName: "u.circle.fill")
+                    .font(.system(size: 9))
+                    .foregroundStyle(Color("PremiumGold"))
+                Text("\(entry.essence.price)")
+                    .font(.caption2.weight(.medium))
             }
+            .foregroundStyle(.secondary)
+            .padding(.horizontal, 8)
+            .padding(.vertical, 4)
+            .background(.ultraThinMaterial, in: Capsule())
+        }
     }
 }
 
