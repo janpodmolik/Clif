@@ -37,6 +37,9 @@ final class Pet: Identifiable, PetPresentable, PetEvolvable {
         if case .untilZeroWind = SharedDefaults.committedBreakMode {
             let fallRate = SharedDefaults.monitoredFallRate
             duration = fallRate > 0 ? SharedDefaults.monitoredWindPoints / fallRate : nil
+        } else if case .untilEndOfDay = SharedDefaults.committedBreakMode,
+                  let midnight = Calendar.current.nextDate(after: activatedAt, matching: DateComponents(hour: 0, minute: 0), matchingPolicy: .nextTime) {
+            duration = midnight.timeIntervalSince(activatedAt)
         } else {
             duration = SharedDefaults.committedBreakMode?.durationSeconds
         }

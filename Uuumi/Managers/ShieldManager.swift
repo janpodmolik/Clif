@@ -223,8 +223,10 @@ final class ShieldManager {
         // Cancel any scheduled break end notification
         BreakNotification.cancelScheduledCommittedBreakEnd()
 
-        // Award coins for successful committed breaks (premium only)
-        if success, SharedDefaults.activeBreakType == .committed, SharedDefaults.isPremiumCached {
+        // Award coins for successful committed breaks
+        // Premium check is at break activation (committed break is a premium feature),
+        // not here — if user started the break with premium, they deserve the reward.
+        if success, SharedDefaults.activeBreakType == .committed {
             let coinMinutes: Int
             if let seconds = SharedDefaults.committedBreakMode?.durationSeconds {
                 coinMinutes = Int(seconds / 60)
