@@ -11,6 +11,7 @@ struct EssenceUnlockSheet: View {
     @State private var showPremiumSheet = false
     @State private var showCoinShopSheet = false
     @State private var showConfirmation = false
+    @State private var showUnlockCelebration = false
 
     private var path: EvolutionPath { .path(for: essence) }
     private var balance: Int { SharedDefaults.coinsBalance }
@@ -51,6 +52,14 @@ struct EssenceUnlockSheet: View {
                 .resizable()
                 .scaledToFit()
                 .frame(width: 64, height: 64)
+                .scaleEffect(showUnlockCelebration ? 1.2 : 1.0)
+                .overlay {
+                    EssenceUnlockParticleView(
+                        isActive: showUnlockCelebration,
+                        color: Color("PremiumGold")
+                    )
+                    .frame(width: 350, height: 350)
+                }
 
             Text(essence.catalogDescription)
                 .font(.subheadline)
@@ -149,7 +158,15 @@ struct EssenceUnlockSheet: View {
                     Task {
                         await syncManager.syncUserData(essenceCatalogManager: catalogManager)
                     }
-                    dismiss()
+                    HapticType.notificationSuccess.trigger()
+                    SoundManager.shared.play(.essenceUnlock)
+                    withAnimation(.spring(duration: 0.4, bounce: 0.5)) {
+                        showUnlockCelebration = true
+                    }
+                    Task {
+                        try? await Task.sleep(for: .seconds(1.0))
+                        dismiss()
+                    }
                 }
             }
             Button("Cancel", role: .cancel) {}

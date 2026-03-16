@@ -18,8 +18,14 @@ final class SoundManager {
         case evolveBurst = "evolve_burst"
         case archiveAscend = "archive_ascend"
         case archiveWoosh = "archive_woosh"
+        case essenceUnlock = "essence_unlock"
 
-        var fileExtension: String { "m4a" }
+        var fileExtension: String {
+            switch self {
+            case .essenceUnlock: return "mp3"
+            default: return "m4a"
+            }
+        }
     }
 
     func play(_ effect: SoundEffect) {
