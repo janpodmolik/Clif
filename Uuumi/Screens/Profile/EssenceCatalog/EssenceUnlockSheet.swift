@@ -47,10 +47,6 @@ struct EssenceUnlockSheet: View {
                 .scaledToFit()
                 .frame(width: 64, height: 64)
 
-            Text(essence.rarity.displayName)
-                .font(.caption2.weight(.medium))
-                .foregroundStyle(essence.rarity.color)
-
             Text(essence.catalogDescription)
                 .font(.subheadline)
                 .foregroundStyle(.secondary)

@@ -64,10 +64,6 @@ struct EssenceDetailSheet: View {
                 .scaledToFit()
                 .frame(width: 64, height: 64)
 
-            Text(record.essence.rarity.displayName)
-                .font(.caption2.weight(.medium))
-                .foregroundStyle(record.essence.rarity.color)
-
             Text(record.essence.catalogDescription)
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
