@@ -9,6 +9,9 @@ struct EssenceCatalogGridItem: View {
 
     var body: some View {
         VStack(spacing: 10) {
+            Text(path.displayName)
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(entry.isUnlocked ? .primary : .secondary)
             essenceIcon
             evolutionCount
         }
