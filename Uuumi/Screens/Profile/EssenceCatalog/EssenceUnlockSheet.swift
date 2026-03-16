@@ -9,6 +9,7 @@ struct EssenceUnlockSheet: View {
     @Environment(\.dismiss) private var dismiss
 
     @State private var showPremiumSheet = false
+    @State private var showConfirmation = false
 
     private var path: EvolutionPath { .path(for: essence) }
     private var balance: Int { SharedDefaults.coinsBalance }
@@ -97,7 +98,7 @@ struct EssenceUnlockSheet: View {
                 Text("\(balance)")
             }
             .font(.headline)
-            .foregroundStyle(canAfford ? Color.primary : Color.red)
+            .foregroundStyle(Color.primary)
             Text(String(localized: "Your Balance"))
                 .font(.caption2)
                 .foregroundStyle(.secondary)
@@ -115,13 +116,7 @@ struct EssenceUnlockSheet: View {
 
     private var unlockButton: some View {
         Button {
-            let result = catalogManager.purchaseEssence(essence)
-            if result == .success {
-                Task {
-                    await syncManager.syncUserData(essenceCatalogManager: catalogManager)
-                }
-                dismiss()
-            }
+            showConfirmation = true
         } label: {
             HStack {
                 Image(systemName: canAfford ? "lock.open.fill" : "lock.fill")
@@ -139,6 +134,22 @@ struct EssenceUnlockSheet: View {
         .tint(canAfford ? .green : .gray)
         .disabled(!canAfford)
         .padding(.horizontal, 20)
+        .confirmationDialog(
+            "Spend \(essence.price) coins to unlock this essence?",
+            isPresented: $showConfirmation,
+            titleVisibility: .visible
+        ) {
+            Button("Unlock") {
+                let result = catalogManager.purchaseEssence(essence)
+                if result == .success {
+                    Task {
+                        await syncManager.syncUserData(essenceCatalogManager: catalogManager)
+                    }
+                    dismiss()
+                }
+            }
+            Button("Cancel", role: .cancel) {}
+        }
     }
 
     // MARK: - Premium Hint
@@ -151,7 +162,7 @@ struct EssenceUnlockSheet: View {
             } label: {
                 Text("Earn more coins with Premium")
                     .font(.caption)
-                    .foregroundStyle(.blue)
+                    .foregroundStyle(.primary)
             }
         }
     }
