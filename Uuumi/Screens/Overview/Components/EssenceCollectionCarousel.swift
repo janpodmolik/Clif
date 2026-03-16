@@ -18,7 +18,9 @@ struct EssenceCollectionCarousel: View {
     var onTap: ((EssenceRecord) -> Void)?
 
     @State private var scrollTarget: Int? = 0
+    @State private var selectedIndex: Int = 0
 
+    private let cardWidth: CGFloat = 280
     private let cardHeight: CGFloat = 260
 
     var body: some View {
@@ -59,48 +61,63 @@ struct EssenceCollectionCarousel: View {
     // MARK: - Carousel
 
     private var carousel: some View {
-        ScrollView(.horizontal) {
-            HStack(spacing: 0) {
-                ForEach(Array(records.enumerated()), id: \.element.id) { index, record in
-                    EssenceCard(record: record, height: cardHeight)
-                        .contentShape(Rectangle())
-                        .onTapGesture { onTap?(record) }
-                        .containerRelativeFrame(.horizontal)
-                        .frame(height: cardHeight)
-                        .scrollTransition(.interactive, axis: .horizontal) { content, phase in
-                            content
-                                .rotation3DEffect(
-                                    .degrees(phase.value * -32),
-                                    axis: (x: 0, y: 1, z: 0),
-                                    perspective: 0.7
-                                )
-                                .scaleEffect(1 - abs(phase.value) * 0.18)
-                                .opacity(1 - abs(phase.value) * 0.35)
-                                .offset(y: abs(phase.value) * 18)
-                        }
-                        .id(index)
+        GeometryReader { proxy in
+            let horizontalInset = max(0, (proxy.size.width - cardWidth) / 2)
+            ScrollView(.horizontal) {
+                HStack(spacing: 0) {
+                    ForEach(Array(records.enumerated()), id: \.element.id) { index, record in
+                        EssenceCard(record: record, height: cardHeight)
+                            .contentShape(Rectangle())
+                            .onTapGesture { onTap?(record) }
+                            .frame(width: cardWidth, height: cardHeight)
+                            .scrollTransition(.interactive, axis: .horizontal) { content, phase in
+                                content
+                                    .rotation3DEffect(
+                                        .degrees(phase.value * -32),
+                                        axis: (x: 0, y: 1, z: 0),
+                                        perspective: 0.7
+                                    )
+                                    .scaleEffect(1 - abs(phase.value) * 0.18)
+                                    .opacity(1 - abs(phase.value) * 0.35)
+                                    .offset(y: abs(phase.value) * 18)
+                            }
+                            .shadow(
+                                color: .black.opacity(0.12),
+                                radius: 12,
+                                x: 0,
+                                y: 10
+                            )
+                            .id(index)
+                    }
                 }
+                .scrollTargetLayout()
             }
-            .scrollTargetLayout()
+            .scrollIndicators(.hidden)
+            .scrollTargetBehavior(.viewAligned)
+            .scrollPosition(id: $scrollTarget, anchor: .center)
+            .defaultScrollAnchor(.center)
+            .scrollClipDisabled()
+            .contentMargins(.horizontal, horizontalInset, for: .scrollContent)
+            .frame(height: cardHeight + 24)
         }
-        .scrollIndicators(.hidden)
-        .scrollTargetBehavior(.viewAligned)
-        .scrollPosition(id: $scrollTarget, anchor: .center)
-        .defaultScrollAnchor(.center)
-        .scrollClipDisabled()
-        .frame(height: cardHeight)
+        .frame(height: cardHeight + 24)
+        .onChange(of: scrollTarget) { _, newValue in
+            if let newValue {
+                selectedIndex = newValue
+            }
+        }
     }
 
     // MARK: - Page Dots
 
     private var pageDots: some View {
         HStack(spacing: 8) {
-            ForEach(Array(records.enumerated()), id: \.element.id) { index, record in
+            ForEach(Array(records.enumerated()), id: \.element.id) { index, _ in
                 Circle()
-                    .fill(dotColor(for: record, at: index))
+                    .fill(selectedIndex == index ? Color.green : Color.green.opacity(0.35))
                     .frame(width: 8, height: 8)
-                    .scaleEffect((scrollTarget ?? 0) == index ? 1.5 : 1.0)
-                    .animation(.spring(response: 0.3), value: scrollTarget)
+                    .scaleEffect(selectedIndex == index ? 1.5 : 1.0)
+                    .animation(.spring(response: 0.3), value: selectedIndex)
                     .onTapGesture {
                         withAnimation {
                             scrollTarget = index
@@ -109,11 +126,6 @@ struct EssenceCollectionCarousel: View {
             }
         }
         .frame(maxWidth: .infinity)
-    }
-
-    private func dotColor(for record: EssenceRecord, at index: Int) -> Color {
-        let isSelected = (scrollTarget ?? 0) == index
-        return isSelected ? Color.green : Color.green.opacity(0.35)
     }
 }
 
