@@ -48,15 +48,15 @@ enum Essence: String, Codable, CaseIterable, Identifiable, Transferable {
 
     var catalogDescription: String {
         switch self {
-        case .plant: return String(localized: "A path of growth and calm. Your pet evolves as a plant.")
-        case .troll: return String(localized: "A path of strength and courage. Your pet evolves as a troll.")
-        case .orc: return String(localized: "A path of wildness and fury. Your pet evolves as an orc.")
-        case .clicker: return String(localized: "A path of speed and reflexes. Your pet evolves as a clicker.")
-        case .lion: return String(localized: "A path of courage and majesty. Your pet evolves as a lion.")
-        case .stitches: return String(localized: "A path of creativity and transformation. Your pet evolves as stitches.")
-        case .racoon: return String(localized: "A path of cunning and resourcefulness. Your pet evolves as a racoon.")
-        case .moss: return String(localized: "A path of nature and harmony. Your pet evolves as moss.")
-        case .shroom: return String(localized: "A path of mystery and spores. Your pet evolves as a shroom.")
+        case .plant: return String(localized: "A path of growth and calm. Your Uuumi evolves as a plant.")
+        case .troll: return String(localized: "A path of strength and courage. Your Uuumi evolves as a troll.")
+        case .orc: return String(localized: "A path of wildness and fury. Your Uuumi evolves as an orc.")
+        case .clicker: return String(localized: "A path of speed and reflexes. Your Uuumi evolves as a clicker.")
+        case .lion: return String(localized: "A path of courage and majesty. Your Uuumi evolves as a lion.")
+        case .stitches: return String(localized: "A path of creativity and transformation. Your Uuumi evolves as stitches.")
+        case .racoon: return String(localized: "A path of cunning and resourcefulness. Your Uuumi evolves as a racoon.")
+        case .moss: return String(localized: "A path of nature and harmony. Your Uuumi evolves as moss.")
+        case .shroom: return String(localized: "A path of mystery and spores. Your Uuumi evolves as a shroom.")
         }
     }
 

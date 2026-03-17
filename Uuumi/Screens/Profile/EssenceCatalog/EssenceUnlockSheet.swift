@@ -24,8 +24,11 @@ struct EssenceUnlockSheet: View {
                 VStack(spacing: 24) {
                     header
                     priceSection
-                    unlockButton
-                    premiumHint
+                    if canAfford {
+                        unlockButton
+                    } else {
+                        notEnoughCoinsView
+                    }
                 }
                 .padding(.bottom, 40)
             }
@@ -125,76 +128,80 @@ struct EssenceUnlockSheet: View {
             .frame(width: 1, height: 28)
     }
 
-    // MARK: - Unlock Button
+    // MARK: - Can Afford
 
     private var unlockButton: some View {
-        Button {
-            showConfirmation = true
-        } label: {
-            HStack {
-                Image(systemName: canAfford ? "lock.open.fill" : "lock.fill")
-                if canAfford {
-                    Text("Unlock for \(essence.price)")
-                } else {
-                    Text("Need \(coinsNeeded) more coins")
-                }
+        VStack(spacing: 12) {
+            Text("You can unlock this now")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+
+            Button {
+                showConfirmation = true
+            } label: {
+                Text("Unlock \(path.displayName)")
+                    .font(.headline)
+                    .foregroundStyle(.white)
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .background(.green, in: RoundedRectangle(cornerRadius: DeviceMetrics.concentricCornerRadius(inset: 26)))
             }
-            .font(.subheadline.weight(.medium))
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 12)
-        }
-        .buttonStyle(.borderedProminent)
-        .tint(canAfford ? .green : .gray)
-        .disabled(!canAfford)
-        .padding(.horizontal, 20)
-        .confirmationDialog(
-            "Spend \(essence.price) coins to unlock this essence?",
-            isPresented: $showConfirmation,
-            titleVisibility: .visible
-        ) {
-            Button("Unlock") {
-                let result = catalogManager.purchaseEssence(essence)
-                if result == .success {
-                    Task {
-                        await syncManager.syncUserData(essenceCatalogManager: catalogManager)
-                    }
-                    HapticType.notificationSuccess.trigger()
-                    SoundManager.shared.play(.essenceUnlock)
-                    withAnimation(.spring(duration: 0.4, bounce: 0.5)) {
-                        showUnlockCelebration = true
-                    }
-                    Task {
-                        try? await Task.sleep(for: .seconds(1.0))
-                        dismiss()
+            .padding(.horizontal, 20)
+            .confirmationDialog(
+                "Spend \(essence.price) coins to unlock this essence?",
+                isPresented: $showConfirmation,
+                titleVisibility: .visible
+            ) {
+                Button("Confirm") {
+                    let result = catalogManager.purchaseEssence(essence)
+                    if result == .success {
+                        Task {
+                            await syncManager.syncUserData(essenceCatalogManager: catalogManager)
+                        }
+                        HapticType.notificationSuccess.trigger()
+                        SoundManager.shared.play(.essenceUnlock)
+                        withAnimation(.spring(duration: 0.4, bounce: 0.5)) {
+                            showUnlockCelebration = true
+                        }
+                        Task {
+                            try? await Task.sleep(for: .seconds(1.0))
+                            dismiss()
+                        }
                     }
                 }
+                Button("Cancel", role: .cancel) {}
             }
-            Button("Cancel", role: .cancel) {}
+
+            if !storeManager.isPremium {
+                PremiumButton("Earn coins faster with Premium", style: .inline) { showPremiumSheet = true }
+                    .padding(.top, 8)
+            }
         }
     }
 
-    // MARK: - Hints
+    // MARK: - Can't Afford
 
-    @ViewBuilder
-    private var premiumHint: some View {
-        VStack(spacing: 8) {
-            if !canAfford {
-                Button {
-                    showCoinShopSheet = true
-                } label: {
-                    Text("Get Coins")
-                        .font(.caption.weight(.medium))
-                        .foregroundStyle(.primary)
-                }
+    private var notEnoughCoinsView: some View {
+        VStack(spacing: 12) {
+            Text("You need \(coinsNeeded) more coins")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+
+            Button {
+                showCoinShopSheet = true
+            } label: {
+                Text("Get More Coins")
+                    .font(.headline)
+                    .foregroundStyle(.primary)
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .background(Color(.secondarySystemFill), in: RoundedRectangle(cornerRadius: DeviceMetrics.concentricCornerRadius(inset: 26)))
             }
+            .padding(.horizontal, 20)
+
             if !storeManager.isPremium {
-                Button {
-                    showPremiumSheet = true
-                } label: {
-                    Text("Earn more coins with Premium")
-                        .font(.caption)
-                        .foregroundStyle(.primary)
-                }
+                PremiumButton("Earn coins faster with Premium", style: .inline) { showPremiumSheet = true }
+                    .padding(.top, 8)
             }
         }
     }

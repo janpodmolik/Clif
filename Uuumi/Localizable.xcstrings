@@ -299,31 +299,31 @@
     "A password reset link has been sent to %@." : {
 
     },
-    "A path of courage and majesty. Your pet evolves as a lion." : {
+    "A path of courage and majesty. Your Uuumi evolves as a lion." : {
 
     },
-    "A path of creativity and transformation. Your pet evolves as stitches." : {
+    "A path of creativity and transformation. Your Uuumi evolves as stitches." : {
 
     },
-    "A path of cunning and resourcefulness. Your pet evolves as a racoon." : {
+    "A path of cunning and resourcefulness. Your Uuumi evolves as a racoon." : {
 
     },
-    "A path of growth and calm. Your pet evolves as a plant." : {
+    "A path of growth and calm. Your Uuumi evolves as a plant." : {
 
     },
-    "A path of mystery and spores. Your pet evolves as a shroom." : {
+    "A path of mystery and spores. Your Uuumi evolves as a shroom." : {
 
     },
-    "A path of nature and harmony. Your pet evolves as moss." : {
+    "A path of nature and harmony. Your Uuumi evolves as moss." : {
 
     },
-    "A path of speed and reflexes. Your pet evolves as a clicker." : {
+    "A path of speed and reflexes. Your Uuumi evolves as a clicker." : {
 
     },
-    "A path of strength and courage. Your pet evolves as a troll." : {
+    "A path of strength and courage. Your Uuumi evolves as a troll." : {
 
     },
-    "A path of wildness and fury. Your pet evolves as an orc." : {
+    "A path of wildness and fury. Your Uuumi evolves as an orc." : {
 
     },
     "A peaceful place, untouched by the chaos below." : {
@@ -772,9 +772,6 @@
     "Earn coins faster with Premium" : {
 
     },
-    "Earn more coins with Premium" : {
-
-    },
     "Edit" : {
 
     },
@@ -911,6 +908,9 @@
 
     },
     "Get Coins" : {
+
+    },
+    "Get More Coins" : {
 
     },
     "Get Premium" : {
@@ -1166,9 +1166,6 @@
 
     },
     "Name your pet" : {
-
-    },
-    "Need %lld more coins" : {
 
     },
     "Next evolution in %lld days" : {
@@ -1922,16 +1919,13 @@
     "Unlimited break" : {
 
     },
-    "Unlock" : {
+    "Unlock %@" : {
 
     },
     "Unlock All Essences" : {
 
     },
     "Unlock Evolution Now" : {
-
-    },
-    "Unlock for %lld" : {
 
     },
     "Unlock in 1 min" : {
@@ -2102,6 +2096,9 @@
     "You can enable notifications in app settings anytime." : {
 
     },
+    "You can unlock this now" : {
+
+    },
     "You can't always be here." : {
 
     },
@@ -2112,6 +2109,9 @@
 
     },
     "You just proved you can do it." : {
+
+    },
+    "You need %lld more coins" : {
 
     },
     "You'll choose a preset each morning before apps unlock." : {
