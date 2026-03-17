@@ -224,15 +224,12 @@ struct PetDetailScreen: View {
                 .font(.title2)
                 .foregroundStyle(.secondary)
 
-            Text("Trend")
-                .font(.headline)
-
-            Text("See how your screen time changes over time.")
-                .font(.caption)
+            Text("See how your habits evolve over time.")
+                .font(.callout)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
 
-            PremiumButton(style: .inline) { showPremiumSheet = true }
+            PremiumButton("Unlock Trend", style: .inline) { showPremiumSheet = true }
                 .padding(.top, 4)
         }
         .frame(maxWidth: .infinity)

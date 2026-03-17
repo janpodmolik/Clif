@@ -82,21 +82,28 @@ struct DayByDayUsageCard: View {
                     .pickerStyle(.segmented)
                     .frame(width: 120)
                 } else {
-                    Button {
-                        showPremiumSheet = true
-                    } label: {
-                        HStack(spacing: 4) {
-                            Image(systemName: "lock.fill")
-                                .font(.caption2)
-                            Text("Premium")
-                                .font(.caption2.weight(.medium))
+                    HStack(spacing: 0) {
+                        Text("7 days")
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 7)
+                            .background(Color(.secondarySystemFill), in: RoundedRectangle(cornerRadius: 6))
+
+                        Button {
+                            showPremiumSheet = true
+                        } label: {
+                            HStack(spacing: 4) {
+                                Image(systemName: "lock.fill")
+                                    .font(.system(size: 9))
+                                Text("All")
+                            }
+                            .foregroundStyle(Color("PremiumGold"))
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 7)
                         }
-                        .foregroundStyle(Color("PremiumGold"))
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 4)
-                        .background(Color("PremiumGold").opacity(0.15), in: Capsule())
                     }
-                    .buttonStyle(.plain)
+                    .font(.caption.weight(.medium))
+                    .fixedSize()
+                    .background(Color(.quaternarySystemFill), in: RoundedRectangle(cornerRadius: 7))
                 }
             } else {
                 Text("\(stats.days.count) days")

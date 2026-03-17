@@ -287,6 +287,9 @@
     "2× evolution rewards + break coins" : {
 
     },
+    "7 days" : {
+
+    },
     "100%" : {
 
     },
@@ -351,9 +354,6 @@
 
     },
     "Activity throughout the day" : {
-
-    },
-    "Activity Timeline" : {
 
     },
     "Add the apps you want to track in the limit settings." : {
@@ -1147,6 +1147,9 @@
     "Monthly" : {
 
     },
+    "More" : {
+
+    },
     "More coins. More features. More Uuumi." : {
 
     },
@@ -1595,10 +1598,10 @@
     "Search pets..." : {
 
     },
-    "See exactly when you used your phone throughout the day." : {
+    "See exactly when you used your phone." : {
 
     },
-    "See how your screen time changes over time." : {
+    "See how your habits evolve over time." : {
 
     },
     "Select all" : {

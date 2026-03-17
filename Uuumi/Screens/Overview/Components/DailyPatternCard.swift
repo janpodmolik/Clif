@@ -138,26 +138,29 @@ struct DailyPatternCard: View {
                 .background(.secondary.opacity(0.1), in: Capsule())
             }
         } else if options.count > 1 {
-            premiumBadge
-        }
-    }
+            HStack(spacing: 0) {
+                Text("7 days")
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 7)
+                    .background(Color(.secondarySystemFill), in: RoundedRectangle(cornerRadius: 6))
 
-    private var premiumBadge: some View {
-        Button {
-            showPremiumSheet = true
-        } label: {
-            HStack(spacing: 4) {
-                Image(systemName: "lock.fill")
-                    .font(.caption2)
-                Text("Premium")
-                    .font(.caption2.weight(.medium))
+                Button {
+                    showPremiumSheet = true
+                } label: {
+                    HStack(spacing: 4) {
+                        Image(systemName: "lock.fill")
+                            .font(.system(size: 9))
+                        Text("More")
+                    }
+                    .foregroundStyle(Color("PremiumGold"))
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 7)
+                }
             }
-            .foregroundStyle(Color("PremiumGold"))
-            .padding(.horizontal, 8)
-            .padding(.vertical, 4)
-            .background(Color("PremiumGold").opacity(0.15), in: Capsule())
+            .font(.caption.weight(.medium))
+            .fixedSize()
+            .background(Color(.quaternarySystemFill), in: RoundedRectangle(cornerRadius: 7))
         }
-        .buttonStyle(.plain)
     }
 
     // MARK: - Summary

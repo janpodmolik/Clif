@@ -176,15 +176,12 @@ struct DayDetailSheet: View {
                 .font(.title2)
                 .foregroundStyle(.secondary)
 
-            Text("Activity Timeline")
-                .font(.headline)
-
-            Text("See exactly when you used your phone throughout the day.")
-                .font(.caption)
+            Text("See exactly when you used your phone.")
+                .font(.callout)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
 
-            PremiumButton(style: .inline) { showPremiumSheet = true }
+            PremiumButton("Unlock Timeline", style: .inline) { showPremiumSheet = true }
                 .padding(.top, 4)
         }
         .frame(maxWidth: .infinity)
