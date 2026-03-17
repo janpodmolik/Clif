@@ -10,8 +10,10 @@ struct DayByDayUsageCard: View {
     let petId: UUID
     let limitMinutes: Int
 
+    @Environment(StoreManager.self) private var storeManager
     @State private var viewMode: UsageViewMode = .week
     @State private var selectedDay: DailyUsageStat?
+    @State private var showPremiumSheet = false
 
     private var displayedStats: FullUsageStats {
         switch viewMode {
@@ -47,6 +49,14 @@ struct DayByDayUsageCard: View {
         }
         .padding(.vertical)
         .glassCard()
+        .onAppear {
+            if !storeManager.isPremium {
+                viewMode = .week
+            }
+        }
+        .sheet(isPresented: $showPremiumSheet) {
+            PremiumSheet()
+        }
         .sheet(item: $selectedDay) { day in
             DayDetailSheet(day: day, petId: petId, limitMinutes: limitMinutes, hourlyBreakdown: nil)
         }
@@ -63,13 +73,31 @@ struct DayByDayUsageCard: View {
             Spacer()
 
             if stats.days.count > 7 {
-                Picker("", selection: $viewMode) {
-                    ForEach(UsageViewMode.allCases, id: \.self) { mode in
-                        Text(mode.rawValue).tag(mode)
+                if storeManager.isPremium {
+                    Picker("", selection: $viewMode) {
+                        ForEach(UsageViewMode.allCases, id: \.self) { mode in
+                            Text(mode.rawValue).tag(mode)
+                        }
                     }
+                    .pickerStyle(.segmented)
+                    .frame(width: 120)
+                } else {
+                    Button {
+                        showPremiumSheet = true
+                    } label: {
+                        HStack(spacing: 4) {
+                            Image(systemName: "lock.fill")
+                                .font(.caption2)
+                            Text("Premium")
+                                .font(.caption2.weight(.medium))
+                        }
+                        .foregroundStyle(Color("PremiumGold"))
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
+                        .background(Color("PremiumGold").opacity(0.15), in: Capsule())
+                    }
+                    .buttonStyle(.plain)
                 }
-                .pickerStyle(.segmented)
-                .frame(width: 120)
             } else {
                 Text("\(stats.days.count) days")
                     .font(.caption)
@@ -110,15 +138,18 @@ struct DayByDayUsageCard: View {
 #Preview("Short history (no toggle)") {
     DayByDayUsageCard(stats: FullUsageStats.mock(days: 5), petId: UUID(), limitMinutes: 60)
         .padding()
+        .environment(StoreManager.mock())
 }
 
 #Preview("Week+ history (with toggle)") {
     DayByDayUsageCard(stats: FullUsageStats.mock(days: 14), petId: UUID(), limitMinutes: 60)
         .padding()
+        .environment(StoreManager.mock())
 }
 
 #Preview("Long history") {
     DayByDayUsageCard(stats: FullUsageStats.mock(days: 30), petId: UUID(), limitMinutes: 60)
         .padding()
+        .environment(StoreManager.mock())
 }
 #endif

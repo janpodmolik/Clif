@@ -69,6 +69,13 @@ enum DayTheme: String, CaseIterable, Codable, Identifiable {
         }
     }
 
+    var isPremium: Bool {
+        switch self {
+        case .morningHaze: false
+        case .clearSky: true
+        }
+    }
+
     var gradient: [Color] {
         switch self {
         case .morningHaze:
@@ -99,6 +106,13 @@ enum NightTheme: String, CaseIterable, Codable, Identifiable {
         switch self {
         case .deepNight: String(localized: "Deep Night")
         case .twilight: String(localized: "Twilight")
+        }
+    }
+
+    var isPremium: Bool {
+        switch self {
+        case .deepNight: false
+        case .twilight: true
         }
     }
 

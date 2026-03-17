@@ -270,5 +270,6 @@ struct OverviewScreen: View {
     OverviewScreen(hourlyAggregate: .mock())
         .environment(PetManager.mock())
         .environment(ArchivedPetManager.mock())
+        .environment(StoreManager.mock())
 }
 #endif

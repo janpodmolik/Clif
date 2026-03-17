@@ -13,7 +13,9 @@ struct PetDetailScreen: View {
     @Environment(PetManager.self) private var petManager
     @Environment(ArchivedPetManager.self) private var archivedPetManager
     @Environment(AnalyticsManager.self) private var analytics
+    @Environment(StoreManager.self) private var storeManager
     @State private var showLimitedApps = false
+    @State private var showPremiumSheet = false
     @State private var showDeleteConfirmation = false
     @State private var showArchiveConfirmation = false
     @State private var showWindNotCalmAlert = false
@@ -93,7 +95,11 @@ struct PetDetailScreen: View {
                     }
 
                     if pet.totalDays > 1 {
-                        TrendMiniChart(stats: pet.fullStats)
+                        if storeManager.isPremium {
+                            TrendMiniChart(stats: pet.fullStats)
+                        } else {
+                            trendLockedCard
+                        }
                     }
 
                     if !pet.isBlown {
@@ -127,12 +133,8 @@ struct PetDetailScreen: View {
                                     showWindNotCalmAlert = true
                                     return
                                 }
-                                if pet.isBlob {
-                                    onAction(.progress)
-                                    dismiss()
-                                } else {
-                                    pet.evolve()
-                                }
+                                onAction(.progress)
+                                dismiss()
                             case .blowAway: onAction(.blowAway)
                             case .replay:
                                 onAction(.replay)
@@ -208,7 +210,34 @@ struct PetDetailScreen: View {
                 )
             }
             .dismissButton()
+            .sheet(isPresented: $showPremiumSheet) {
+                PremiumSheet()
+            }
         }
+    }
+
+    // MARK: - Premium Locked
+
+    private var trendLockedCard: some View {
+        VStack(spacing: 12) {
+            Image(systemName: "lock.fill")
+                .font(.title2)
+                .foregroundStyle(.secondary)
+
+            Text("Trend")
+                .font(.headline)
+
+            Text("See how your screen time changes over time.")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+
+            PremiumButton(style: .inline) { showPremiumSheet = true }
+                .padding(.top, 4)
+        }
+        .frame(maxWidth: .infinity)
+        .padding()
+        .glassCard()
     }
 }
 
@@ -220,6 +249,7 @@ struct PetDetailScreen: View {
         }
         .environment(PetManager.mock())
         .environment(ArchivedPetManager.mock())
+        .environment(StoreManager.mock())
 }
 
 #Preview("With Active Break") {
@@ -229,6 +259,7 @@ struct PetDetailScreen: View {
         }
         .environment(PetManager.mock())
         .environment(ArchivedPetManager.mock())
+        .environment(StoreManager.mock())
 }
 
 #Preview("Blob - Ready for Essence") {
@@ -238,6 +269,7 @@ struct PetDetailScreen: View {
         }
         .environment(PetManager.mock())
         .environment(ArchivedPetManager.mock())
+        .environment(StoreManager.mock())
 }
 
 #Preview("Overview Actions") {
@@ -247,5 +279,6 @@ struct PetDetailScreen: View {
         }
         .environment(PetManager.mock())
         .environment(ArchivedPetManager.mock())
+        .environment(StoreManager.mock())
 }
 #endif

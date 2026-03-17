@@ -46,7 +46,10 @@
 |-------|------|---------|
 | Evoluce peta (1×/den) | 5 coinů | 10 coinů |
 | Committed break (1 coin/15 min, cap 10/break) | — | dostupné |
-| **Celkem/týden** | **~35** | **~140-210** |
+| Streak bonus (7denní streak) | 15 coinů | 30 coinů |
+| **Celkem/týden** | **~50** | **~170-240** |
+
+> **Streak bonus (post-MVP):** Odměna za 7denní streak splněných limitů. Motivuje denní návrat a zrychluje free progress bez narušení ekonomiky. Free uživatel získá max +15 coinů/týden navíc, Premium 2× (30). Zkrátí free grind na esenci z ~30 dní na ~21 dní.
 
 ### Utrácení coinů
 
@@ -57,10 +60,10 @@
 
 ### Čas na 1 esenci
 
-| Uživatel | Čas |
-|----------|-----|
-| Free | ~4.3 týdne |
-| Premium | ~5-7 dní |
+| Uživatel | Čas | Se streak bonusem (post-MVP) |
+|----------|-----|------------------------------|
+| Free | ~4.3 týdne | ~3 týdny |
+| Premium | ~5-7 dní | ~4-5 dní |
 
 ---
 

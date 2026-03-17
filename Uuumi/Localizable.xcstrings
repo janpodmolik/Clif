@@ -53,6 +53,9 @@
     "%@ is back!" : {
 
     },
+    "%@ is ready to evolve!" : {
+
+    },
     "%@ is ready." : {
 
     },
@@ -278,6 +281,9 @@
     "2.0" : {
 
     },
+    "2×" : {
+
+    },
     "2× evolution rewards + break coins" : {
 
     },
@@ -345,6 +351,9 @@
 
     },
     "Activity throughout the day" : {
+
+    },
+    "Activity Timeline" : {
 
     },
     "Add the apps you want to track in the limit settings." : {
@@ -757,6 +766,9 @@
     "Early termination will cause loss of pet" : {
 
     },
+    "Earn coins every 15 minutes" : {
+
+    },
     "Earn coins faster with Premium" : {
 
     },
@@ -847,6 +859,9 @@
     "evolutions" : {
 
     },
+    "Evolve anyway" : {
+
+    },
     "Evolve Now" : {
 
     },
@@ -875,6 +890,9 @@
 
     },
     "Forgot Password?" : {
+
+    },
+    "Free" : {
 
     },
     "Frequency: %.0f" : {
@@ -1129,6 +1147,9 @@
     "Monthly" : {
 
     },
+    "More coins. More features. More Uuumi." : {
+
+    },
     "Morning Haze" : {
 
     },
@@ -1180,7 +1201,10 @@
     "No Saved Selection" : {
 
     },
-    "No time limit, no penalty" : {
+    "No second chances." : {
+
+    },
+    "No time limit, no penalty, no reward" : {
 
     },
     "No tracked apps" : {
@@ -1423,7 +1447,13 @@
     "Ready for Essence" : {
 
     },
+    "Ready to commit?" : {
+
+    },
     "Ready to evolve!" : {
+
+    },
+    "Real rewards. Real consequences." : {
 
     },
     "Reauthorize" : {
@@ -1563,6 +1593,12 @@
 
     },
     "Search pets..." : {
+
+    },
+    "See exactly when you used your phone throughout the day." : {
+
+    },
+    "See how your screen time changes over time." : {
 
     },
     "Select all" : {

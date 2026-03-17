@@ -7,8 +7,10 @@ struct DayDetailSheet: View {
     let hourlyBreakdown: DailyHourlyBreakdown?
 
     @Environment(\.dismiss) private var dismiss
+    @Environment(StoreManager.self) private var storeManager
     @State private var snapshots: [SnapshotEvent] = []
     @State private var restoredBreakdown: DailyHourlyBreakdown?
+    @State private var showPremiumSheet = false
 
     private let dateFormatter: DateFormatter = {
         let f = DateFormatter()
@@ -31,7 +33,11 @@ struct DayDetailSheet: View {
             }
 
                 windTimelineSection
-                    .frame(maxHeight: .infinity)
+                    .frame(maxHeight: storeManager.isPremium ? .infinity : nil)
+
+                if !storeManager.isPremium {
+                    Spacer()
+                }
             }
             .padding()
             .navigationTitle(dateFormatter.string(from: day.date))
@@ -41,8 +47,11 @@ struct DayDetailSheet: View {
                 loadSnapshots()
             }
         }
-        .presentationDetents([.large])
+        .presentationDetents(storeManager.isPremium ? [.large] : [.medium, .large])
         .presentationDragIndicator(.visible)
+        .sheet(isPresented: $showPremiumSheet) {
+            PremiumSheet()
+        }
     }
 
     private var breakCount: Int {
@@ -144,17 +153,43 @@ struct DayDetailSheet: View {
 
     @ViewBuilder
     private var windTimelineSection: some View {
-        if !snapshots.isEmpty {
-            WindTimelineChart(snapshots: snapshots, limitMinutes: limitMinutes)
-                .padding()
-                .glassCard()
-        } else if let breakdown = hourlyBreakdown ?? restoredBreakdown {
-            DayHourlyChart(breakdown: breakdown)
-                .padding()
-                .glassCard()
+        if storeManager.isPremium {
+            if !snapshots.isEmpty {
+                WindTimelineChart(snapshots: snapshots, limitMinutes: limitMinutes)
+                    .padding()
+                    .glassCard()
+            } else if let breakdown = hourlyBreakdown ?? restoredBreakdown {
+                DayHourlyChart(breakdown: breakdown)
+                    .padding()
+                    .glassCard()
+            } else {
+                emptyWindState
+            }
         } else {
-            emptyWindState
+            timelineLockedCard
         }
+    }
+
+    private var timelineLockedCard: some View {
+        VStack(spacing: 12) {
+            Image(systemName: "lock.fill")
+                .font(.title2)
+                .foregroundStyle(.secondary)
+
+            Text("Activity Timeline")
+                .font(.headline)
+
+            Text("See exactly when you used your phone throughout the day.")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+
+            PremiumButton(style: .inline) { showPremiumSheet = true }
+                .padding(.top, 4)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 32)
+        .glassCard()
     }
 
     private var emptyWindState: some View {
@@ -214,6 +249,7 @@ struct DayDetailSheet: View {
         limitMinutes: 60,
         hourlyBreakdown: nil
     )
+    .environment(StoreManager.mock())
 }
 
 #Preview("Day Detail - Over Limit") {
@@ -223,6 +259,7 @@ struct DayDetailSheet: View {
         limitMinutes: 60,
         hourlyBreakdown: nil
     )
+    .environment(StoreManager.mock())
 }
 
 #Preview("Day Detail - Hourly Fallback") {
@@ -240,6 +277,7 @@ struct DayDetailSheet: View {
             ]
         )
     )
+    .environment(StoreManager.mock())
 }
 
 #Preview("Day Detail - Empty") {

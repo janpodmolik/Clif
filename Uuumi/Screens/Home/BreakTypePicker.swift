@@ -3,6 +3,7 @@ import SwiftUI
 struct BreakTypePicker: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(PetManager.self) private var petManager
+    @Environment(StoreManager.self) private var storeManager
 
     var onSelectFree: () -> Void
     var onConfirmCommitted: (CommittedBreakMode) -> Void
@@ -11,6 +12,7 @@ struct BreakTypePicker: View {
     @State private var selectedMinutes: Int
     @State private var pickerMode: PickerMode = .slider
     @State private var showConfirmation = false
+    @State private var showPremiumSheet = false
     @State private var didAppear = false
 
     private enum PickerMode: Equatable {
@@ -19,10 +21,11 @@ struct BreakTypePicker: View {
         case untilEndOfDay
     }
 
+    private static let breakPickerOpenCountKey = "breakPickerOpenCount"
+
     init(onSelectFree: @escaping () -> Void, onConfirmCommitted: @escaping (CommittedBreakMode) -> Void) {
         self.onSelectFree = onSelectFree
         self.onConfirmCommitted = onConfirmCommitted
-        // Initialize from persisted preferences
         _selection = State(initialValue: SharedDefaults.preferredBreakType)
         _selectedMinutes = State(initialValue: SharedDefaults.preferredCommittedMinutes)
     }
@@ -57,13 +60,21 @@ struct BreakTypePicker: View {
 
             if selection == .free {
                 freeContent
-            } else {
+            } else if storeManager.isPremium {
                 committedContent
+            } else {
+                committedUpsellContent
             }
 
             Spacer()
 
-            confirmButton
+            if selection == .free || storeManager.isPremium {
+                confirmButton
+            } else {
+                PremiumButton("Unlock Committed Break") { showPremiumSheet = true }
+                    .padding(.horizontal)
+                    .padding(.bottom, 24)
+            }
         }
         .presentationDetents([.medium])
         .confirmationDialog(
@@ -80,6 +91,15 @@ struct BreakTypePicker: View {
             Text("Ending this break early will cause immediate loss of your pet.")
         }
         .task {
+            // Auto-switch to committed tab every 3rd open for free users
+            if !storeManager.isPremium {
+                let count = UserDefaults.standard.integer(forKey: Self.breakPickerOpenCountKey) + 1
+                UserDefaults.standard.set(count, forKey: Self.breakPickerOpenCountKey)
+                if count % 3 == 0 {
+                    selection = .committed
+                }
+            }
+
             // Wait for sheet presentation animation to complete (~0.35s)
             // before enabling interaction to prevent race condition
             try? await Task.sleep(for: .milliseconds(400))
@@ -153,11 +173,42 @@ struct BreakTypePicker: View {
                 Text("Unlimited break")
                     .font(.title3.weight(.semibold))
 
-                Text("No time limit, no penalty")
+                Text("No time limit, no penalty, no reward")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
             }
             .padding(.top, 24)
+        }
+    }
+
+    // MARK: - Committed Upsell (Free Users)
+
+    private var committedUpsellContent: some View {
+        VStack(spacing: 16) {
+            Image(systemName: "flame.fill")
+                .font(.system(size: 44))
+                .foregroundStyle(Color("PremiumGold"))
+
+            Text("Ready to commit?")
+                .font(.title3.weight(.semibold))
+
+            Text("Real rewards. Real consequences.")
+                .font(.callout)
+                .foregroundStyle(.secondary)
+
+            HStack(spacing: 6) {
+                Image(systemName: "u.circle.fill")
+                    .foregroundStyle(Color("PremiumGold"))
+                Text("Earn coins every 15 minutes")
+            }
+            .font(.callout.weight(.medium))
+
+            Text("No second chances.")
+                .font(.caption)
+                .foregroundStyle(.tertiary)
+        }
+        .sheet(isPresented: $showPremiumSheet) {
+            PremiumSheet()
         }
     }
 
@@ -446,4 +497,5 @@ private struct SnappingSlider: View {
         onConfirmCommitted: { mode in print("Committed: \(mode)") }
     )
     .environment(PetManager.mock())
+    .environment(StoreManager.mock())
 }

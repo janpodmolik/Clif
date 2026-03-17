@@ -5,8 +5,10 @@ struct DailyPatternCard: View {
     let aggregate: HourlyAggregate
     @Binding var daysLimit: Int?
 
+    @Environment(StoreManager.self) private var storeManager
     @State private var selectedHour: Int?
     @State private var showInfo = false
+    @State private var showPremiumSheet = false
 
     private var averages: [Double] { aggregate.hourlyAverages }
     private var peakHour: Int? { aggregate.peakHour }
@@ -26,6 +28,14 @@ struct DailyPatternCard: View {
         .padding(18)
         .glassCard()
         .onChange(of: daysLimit) { selectedHour = nil }
+        .onAppear {
+            if !storeManager.isPremium {
+                daysLimit = 7
+            }
+        }
+        .sheet(isPresented: $showPremiumSheet) {
+            PremiumSheet()
+        }
         .alert("Daily pattern", isPresented: $showInfo) {
             Button("OK", role: .cancel) {}
         } message: {
@@ -113,19 +123,41 @@ struct DailyPatternCard: View {
     @ViewBuilder
     private var daysMenu: some View {
         let options = availableOptions
-        if options.count > 1 {
-            Picker("Period", selection: selectedOption) {
-                ForEach(options, id: \.self) { option in
-                    Text(option.label).tag(option)
+        if storeManager.isPremium {
+            if options.count > 1 {
+                Picker("Period", selection: selectedOption) {
+                    ForEach(options, id: \.self) { option in
+                        Text(option.label).tag(option)
+                    }
                 }
+                .pickerStyle(.menu)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .padding(.horizontal, 4)
+                .padding(.vertical, 2)
+                .background(.secondary.opacity(0.1), in: Capsule())
             }
-            .pickerStyle(.menu)
-            .font(.caption)
-            .foregroundStyle(.secondary)
-            .padding(.horizontal, 4)
-            .padding(.vertical, 2)
-            .background(.secondary.opacity(0.1), in: Capsule())
+        } else if options.count > 1 {
+            premiumBadge
         }
+    }
+
+    private var premiumBadge: some View {
+        Button {
+            showPremiumSheet = true
+        } label: {
+            HStack(spacing: 4) {
+                Image(systemName: "lock.fill")
+                    .font(.caption2)
+                Text("Premium")
+                    .font(.caption2.weight(.medium))
+            }
+            .foregroundStyle(Color("PremiumGold"))
+            .padding(.horizontal, 8)
+            .padding(.vertical, 4)
+            .background(Color("PremiumGold").opacity(0.15), in: Capsule())
+        }
+        .buttonStyle(.plain)
     }
 
     // MARK: - Summary
@@ -287,10 +319,12 @@ struct DailyPatternCard: View {
 #Preview("With data") {
     DailyPatternCard(aggregate: .mock(), daysLimit: .constant(14))
         .padding()
+        .environment(StoreManager.mock())
 }
 
 #Preview("Minimum data") {
     DailyPatternCard(aggregate: .mock(days: 2), daysLimit: .constant(nil))
         .padding()
+        .environment(StoreManager.mock())
 }
 #endif

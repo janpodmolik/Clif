@@ -13,6 +13,7 @@ struct HomeScreen: View {
     @Environment(SyncManager.self) private var syncManager
     @Environment(CoinsRewardAnimator.self) private var coinsAnimator
     @Environment(AnalyticsManager.self) private var analytics
+    @Environment(StoreManager.self) private var storeManager
     @Environment(\.fullScreenHeight) private var fullScreenHeight
 
     @State private var windRhythm = WindRhythm()
@@ -25,7 +26,8 @@ struct HomeScreen: View {
     @State private var showSuccessArchivePrompt = false
     @State private var showWindNotCalmAlert = false
     @State private var showAuthorizationAlert = false
-    @State private var pendingEssencePicker = false
+    @State private var showEvolutionUpsell = false
+    @State private var pendingEvolveAction: (() -> Void)?
     @State private var petFrame: CGRect = .zero
     @State private var dropZoneFrame: CGRect = .zero
     @State private var evolutionAnimator = EvolutionTransitionAnimator()
@@ -203,10 +205,6 @@ struct HomeScreen: View {
                     triggerAscension(petId: petId)
                 }
             }
-            if pendingEssencePicker, let pet = currentPet {
-                pendingEssencePicker = false
-                handleEvolve(pet)
-            }
         }) {
             if let pet = currentPet {
                 PetDetailScreen(pet: pet) { action in
@@ -218,8 +216,12 @@ struct HomeScreen: View {
                         ascensionAnimator.pendingArchive = true
                         showPetDetail = false
                     case .progress:
-                        pendingEssencePicker = true
                         showPetDetail = false
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                            if let pet = currentPet {
+                                handleEvolve(pet)
+                            }
+                        }
                     case .replay:
                         showPetDetail = false
                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
@@ -296,6 +298,12 @@ struct HomeScreen: View {
                         petManager.handleAppReselectionExhausted(action: .delete)
                     }
                 }
+            }
+        }
+        .sheet(isPresented: $showEvolutionUpsell) {
+            EvolutionUpsellSheet(petName: currentPet?.name ?? "Your Uuumi") {
+                pendingEvolveAction?()
+                pendingEvolveAction = nil
             }
         }
         .windNotCalmSheet(isPresented: $showWindNotCalmAlert)
@@ -605,12 +613,24 @@ struct HomeScreen: View {
     private func handleEvolve(_ pet: Pet) {
         if pet.isBlob {
             essenceCoordinator.show(petDropFrame: essenceDropFrame) { essence in
-                analytics.send(.essenceApplied(essenceType: essence.rawValue, evolutionPhase: pet.currentPhase))
-                evolutionAnimator.triggerEssenceApplication(pet: pet, essence: essence)
+                let evolveAction = {
+                    analytics.send(.essenceApplied(essenceType: essence.rawValue, evolutionPhase: pet.currentPhase))
+                    evolutionAnimator.triggerEssenceApplication(pet: pet, essence: essence)
+                }
+                // Essence application — upsell handled in essence drop dialog
+                evolveAction()
             }
         } else {
-            analytics.send(.petEvolved(essenceType: pet.evolutionTypeName, fromPhase: pet.currentPhase, toPhase: pet.currentPhase + 1))
-            evolutionAnimator.trigger(pet: pet)
+            let evolveAction = {
+                analytics.send(.petEvolved(essenceType: pet.evolutionTypeName, fromPhase: pet.currentPhase, toPhase: pet.currentPhase + 1))
+                evolutionAnimator.trigger(pet: pet)
+            }
+            if storeManager.isPremium {
+                evolveAction()
+            } else {
+                pendingEvolveAction = evolveAction
+                showEvolutionUpsell = true
+            }
         }
     }
 
@@ -651,4 +671,5 @@ private struct HomeCardBackgroundModifier: ViewModifier {
         .environment(EssencePickerCoordinator())
         .environment(CreatePetCoordinator())
         .environment(CoinsRewardAnimator())
+        .environment(StoreManager.mock())
 }

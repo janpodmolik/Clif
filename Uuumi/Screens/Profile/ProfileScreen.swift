@@ -109,14 +109,16 @@ struct ProfileScreen: View {
                             themes: DayTheme.allCases,
                             selected: $dayTheme,
                             label: \.label,
-                            gradient: \.gradient
+                            gradient: \.gradient,
+                            isPremium: \.isPremium
                         )
                     case .dark:
                         ThemePicker(
                             themes: NightTheme.allCases,
                             selected: $nightTheme,
                             label: \.label,
-                            gradient: \.gradient
+                            gradient: \.gradient,
+                            isPremium: \.isPremium
                         )
                     }
 
@@ -337,11 +339,16 @@ private struct ThemePicker<T: Hashable & Identifiable>: View {
     @Binding var selected: T
     let label: KeyPath<T, String>
     let gradient: KeyPath<T, [Color]>
+    let isPremium: KeyPath<T, Bool>
+
+    @Environment(StoreManager.self) private var storeManager
+    @State private var showPremiumSheet = false
 
     var body: some View {
         HStack(spacing: 12) {
             ForEach(themes) { theme in
                 let isSelected = theme.id == selected.id
+                let isLocked = theme[keyPath: isPremium] && !storeManager.isPremium
                 VStack(spacing: 6) {
                     RoundedRectangle(cornerRadius: 10)
                         .fill(
@@ -352,6 +359,14 @@ private struct ThemePicker<T: Hashable & Identifiable>: View {
                             )
                         )
                         .frame(height: 60)
+                        .opacity(isLocked ? 0.5 : 1.0)
+                        .overlay {
+                            if isLocked {
+                                Image(systemName: "lock.fill")
+                                    .font(.body)
+                                    .foregroundStyle(.white)
+                            }
+                        }
                         .overlay(
                             RoundedRectangle(cornerRadius: 10)
                                 .strokeBorder(isSelected ? Color.accentColor : .clear, lineWidth: 2.5)
@@ -362,13 +377,20 @@ private struct ThemePicker<T: Hashable & Identifiable>: View {
                         .foregroundStyle(isSelected ? .primary : .secondary)
                 }
                 .onTapGesture {
-                    withAnimation(.easeInOut(duration: 0.2)) {
-                        selected = theme
+                    if isLocked {
+                        showPremiumSheet = true
+                    } else {
+                        withAnimation(.easeInOut(duration: 0.2)) {
+                            selected = theme
+                        }
                     }
                 }
             }
         }
         .padding(.vertical, 4)
+        .sheet(isPresented: $showPremiumSheet) {
+            PremiumSheet()
+        }
     }
 }
 
