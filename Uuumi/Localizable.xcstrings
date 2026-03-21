@@ -374,6 +374,12 @@
     "Already have an account? Sign In" : {
 
     },
+    "Always uses the dark theme." : {
+
+    },
+    "Always uses the light theme." : {
+
+    },
     "Always visible" : {
 
     },
@@ -673,6 +679,9 @@
     "Dark" : {
 
     },
+    "Dark Theme" : {
+
+    },
     "Day Start Shield" : {
 
     },
@@ -752,6 +761,9 @@
 
     },
     "Duration: %.2fs" : {
+
+    },
+    "Dynamic Sky" : {
 
     },
     "e.g. Fern" : {
@@ -880,6 +892,9 @@
     "Feedback" : {
 
     },
+    "Female" : {
+
+    },
     "Filter: %@" : {
 
     },
@@ -905,6 +920,9 @@
 
     },
     "Fully evolved" : {
+
+    },
+    "Gender" : {
 
     },
     "Get Coins" : {
@@ -947,6 +965,9 @@
 
     },
     "Help" : {
+
+    },
+    "Helps us decide which pet evolutions and assets to create next." : {
 
     },
     "Hey, it's getting windy... but at least it won't be hot!" : {
@@ -1054,6 +1075,9 @@
     "Light" : {
 
     },
+    "Light Theme" : {
+
+    },
     "Light wind" : {
 
     },
@@ -1102,6 +1126,9 @@
     "Low (green)" : {
 
     },
+    "Male" : {
+
+    },
     "Manage Subscription" : {
 
     },
@@ -1142,6 +1169,9 @@
 
     },
     "Mock Sheet" : {
+
+    },
+    "Mode" : {
 
     },
     "Monthly" : {
@@ -1376,6 +1406,9 @@
 
     },
     "Pre-selected when the daily picker appears, or used automatically if daily selection is off." : {
+
+    },
+    "Prefer not to say" : {
 
     },
     "Premium" : {
@@ -1697,6 +1730,9 @@
     "Smazat peta" : {
 
     },
+    "Smooth sky gradient that transitions continuously throughout the day." : {
+
+    },
     "Somewhere, a tiny island floats in the sky..." : {
 
     },
@@ -1758,6 +1794,9 @@
 
     },
     "Sway: %.1f" : {
+
+    },
+    "Switches between light and dark theme based on time of day." : {
 
     },
     "Sync" : {
@@ -2016,6 +2055,9 @@
 
     },
     "Wind burst active..." : {
+
+    },
+    "Wind Coin Bug" : {
 
     },
     "Wind Decrease" : {
