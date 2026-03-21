@@ -7,8 +7,10 @@ struct CoinRewardTag: View {
 
     var body: some View {
         HStack(spacing: 6) {
-            Image(systemName: "u.circle.fill")
-                .font(.title3)
+            Image("coin")
+                .resizable()
+                .scaledToFit()
+                .frame(width: 22, height: 22)
             Text("+\(amount)")
                 .font(.system(size: 16, weight: .bold))
         }

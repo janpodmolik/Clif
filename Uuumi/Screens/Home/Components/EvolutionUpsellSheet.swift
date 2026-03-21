@@ -95,8 +95,10 @@ struct EvolutionUpsellSheet: View {
     private func coinColumn(amount: Int, label: String, highlighted: Bool) -> some View {
         VStack(spacing: 4) {
             HStack(spacing: 4) {
-                Image(systemName: "u.circle.fill")
-                    .foregroundStyle(Color("PremiumGold"))
+                Image("coin")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 18, height: 18)
                 Text("+\(amount)")
             }
             .font(highlighted ? .title2.weight(.bold) : .title3.weight(.bold))

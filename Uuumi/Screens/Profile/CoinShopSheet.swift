@@ -42,9 +42,10 @@ struct CoinShopSheet: View {
 
     private var header: some View {
         VStack(spacing: 12) {
-            Image(systemName: "u.circle.fill")
-                .font(.system(size: 48))
-                .foregroundStyle(Color("PremiumGold"))
+            Image("coin")
+                .resizable()
+                .scaledToFit()
+                .frame(width: 48, height: 48)
 
             HStack(spacing: 4) {
                 Text("\(coinBalance)")

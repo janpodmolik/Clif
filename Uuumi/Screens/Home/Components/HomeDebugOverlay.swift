@@ -61,7 +61,7 @@ struct HomeDebugOverlay: View {
         Button {
             coinsAnimator.showReward(5)
         } label: {
-            debugCapsule("u.circle.fill", "+5")
+            debugCapsule("dollarsign.circle.fill", "+5")
         }
     }
 

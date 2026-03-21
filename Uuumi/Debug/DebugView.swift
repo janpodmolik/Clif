@@ -229,7 +229,7 @@ struct DebugView: View {
     @State private var debugCoinBalance = SharedDefaults.coinsBalance
 
     private var coinsAndEssencesSection: some View {
-        sectionCard("Coins & Essences", icon: "u.circle.fill", tint: Color("PremiumGold")) {
+        sectionCard("Coins & Essences", icon: "dollarsign.circle.fill", tint: Color("PremiumGold")) {
             VStack(alignment: .leading, spacing: 3) {
                 debugRow("Coins", "\(debugCoinBalance)")
                 debugRow("Unlocked essences", "\(catalogManager.allUnlocked.count)/\(Essence.allCases.count)")

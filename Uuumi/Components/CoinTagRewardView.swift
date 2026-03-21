@@ -38,8 +38,10 @@ struct CoinTagRewardView: View {
 
     private var tagContent: some View {
         HStack(spacing: 6) {
-            Image(systemName: "u.circle.fill")
-                .font(.title2)
+            Image("coin")
+                .resizable()
+                .scaledToFit()
+                .frame(width: 26, height: 26)
             Text("+\(animator.amount)")
                 .font(.system(size: 18, weight: .heavy))
         }

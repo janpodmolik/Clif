@@ -79,8 +79,7 @@ struct EssenceUnlockSheet: View {
         HStack(spacing: 0) {
             priceItem(
                 value: "\(essence.price)",
-                label: String(localized: "Price"),
-                icon: "u.circle.fill"
+                label: String(localized: "Price")
             )
             priceDivider
             balanceItem
@@ -91,11 +90,13 @@ struct EssenceUnlockSheet: View {
         .padding(.horizontal, 20)
     }
 
-    private func priceItem(value: String, label: String, icon: String) -> some View {
+    private func priceItem(value: String, label: String) -> some View {
         VStack(spacing: 4) {
             HStack(spacing: 4) {
-                Image(systemName: icon)
-                    .foregroundStyle(Color("PremiumGold"))
+                Image("coin")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 18, height: 18)
                 Text(value)
             }
             .font(.headline)
@@ -109,8 +110,10 @@ struct EssenceUnlockSheet: View {
     private var balanceItem: some View {
         VStack(spacing: 4) {
             HStack(spacing: 4) {
-                Image(systemName: "u.circle.fill")
-                    .foregroundStyle(Color("PremiumGold"))
+                Image("coin")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 18, height: 18)
                 Text("\(balance)")
             }
             .font(.headline)

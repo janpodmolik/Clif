@@ -152,8 +152,10 @@ struct ProfileScreen: View {
                         showCoinShopSheet = true
                     } label: {
                         HStack(spacing: 6) {
-                            Image(systemName: "u.circle.fill")
-                                .foregroundStyle(Color("PremiumGold"))
+                            Image("coin")
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 18, height: 18)
                             Text("\(SharedDefaults.coinsBalance)")
                                 .fontWeight(.semibold)
                         }

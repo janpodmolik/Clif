@@ -197,8 +197,10 @@ struct BreakTypePicker: View {
                 .foregroundStyle(.secondary)
 
             HStack(spacing: 6) {
-                Image(systemName: "u.circle.fill")
-                    .foregroundStyle(Color("PremiumGold"))
+                Image("coin")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 18, height: 18)
                 Text("Earn coins every 15 minutes")
             }
             .font(.callout.weight(.medium))
@@ -239,7 +241,10 @@ struct BreakTypePicker: View {
 
             if coins > 0 {
                 HStack(spacing: 4) {
-                    Image(systemName: "u.circle.fill")
+                    Image("coin")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 16, height: 16)
                     Text("+\(coins)")
                 }
                 .font(.system(size: 16, weight: .semibold))

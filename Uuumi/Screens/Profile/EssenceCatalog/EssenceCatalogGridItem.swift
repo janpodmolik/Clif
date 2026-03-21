@@ -92,9 +92,10 @@ struct EssenceCatalogGridItem: View {
                 .background(.ultraThinMaterial, in: Capsule())
         } else {
             HStack(spacing: 3) {
-                Image(systemName: "u.circle.fill")
-                    .font(.system(size: 9))
-                    .foregroundStyle(Color("PremiumGold"))
+                Image("coin")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 12, height: 12)
                 Text("\(entry.essence.price)")
                     .font(.caption2.weight(.medium))
             }
