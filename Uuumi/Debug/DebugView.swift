@@ -593,6 +593,11 @@ struct DebugView: View {
                     simulateZombieCommittedBreak()
                 }
                 .tint(.red)
+
+                Button("Wind Coin Bug") {
+                    simulateUntilZeroWindCoinBug()
+                }
+                .tint(.cyan)
             }
             .buttonStyle(.bordered)
             .controlSize(.small)
@@ -676,6 +681,41 @@ struct DebugView: View {
 
         let coinsAwarded = SharedDefaults.coinsBalance - coinsBefore
         log("Coins awarded: \(coinsAwarded) (expected: 1, bug would show: 36)")
+    }
+
+    /// Simulates an untilZeroWind committed break that started 1 hour ago with wind that
+    /// would reach zero in ~6 minutes. Verifies coins are based on actual wind-to-zero time
+    /// (0 coins for 6 min), not wall-clock elapsed time (4 coins for 60 min).
+    private func simulateUntilZeroWindCoinBug() {
+        func log(_ message: String) {
+            ExtensionLogger.log(message, prefix: "[DebugWindCoin]")
+            print(message)
+        }
+
+        let oneHourAgo = Date().addingTimeInterval(-3600)
+        let windAtStart: Double = 30
+        let fallRatePerSecond: Double = 5.0 / 60.0 // balanced preset: 5 pts/min
+
+        // Wind reaches zero in: 30 / (5/60) = 360 seconds = 6 minutes → 0 coins
+        let expectedMinutes = Int(windAtStart / fallRatePerSecond / 60) // 6
+        let expectedCoins = CoinRewards.forBreak(minutes: expectedMinutes) // 0
+
+        SharedDefaults.shieldActivatedAt = oneHourAgo
+        SharedDefaults.breakStartedAt = oneHourAgo
+        SharedDefaults.activeBreakType = .committed
+        SharedDefaults.committedBreakMode = .untilZeroWind
+        SharedDefaults.monitoredWindPoints = windAtStart
+        SharedDefaults.monitoredFallRate = fallRatePerSecond
+        SharedDefaults.synchronize()
+
+        let coinsBefore = SharedDefaults.coinsBalance
+
+        // This calls checkBreakCompletion() → turnOff(success: true) since effectiveWind <= 0
+        ShieldManager.shared.resumeBreakMonitoringIfNeeded()
+
+        let coinsAwarded = SharedDefaults.coinsBalance - coinsBefore
+        let passed = coinsAwarded == expectedCoins
+        log("Break duration: \(expectedMinutes) min, coins: \(coinsAwarded) (expected: \(expectedCoins), bug would show: 4) — \(passed ? "PASS ✅" : "FAIL ❌")")
     }
 
     /// Simulates what the extension does when wind reaches 100%:

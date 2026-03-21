@@ -226,16 +226,14 @@ final class ShieldManager {
         // Award coins for successful committed breaks
         // Premium check is at break activation (committed break is a premium feature),
         // not here — if user started the break with premium, they deserve the reward.
-        if success, SharedDefaults.activeBreakType == .committed {
-            let coinMinutes: Int
-            if let seconds = SharedDefaults.committedBreakMode?.durationSeconds {
-                coinMinutes = Int(seconds / 60)
-            } else if let startedAt = SharedDefaults.shieldActivatedAt {
-                // Open-ended modes (untilZeroWind, untilEndOfDay): use actual elapsed time, capped at 24h
-                coinMinutes = min(Int(Date().timeIntervalSince(startedAt) / 60), 24 * 60)
-            } else {
-                coinMinutes = 0
-            }
+        if success, SharedDefaults.activeBreakType == .committed,
+           let mode = SharedDefaults.committedBreakMode,
+           let startedAt = SharedDefaults.shieldActivatedAt {
+            let coinMinutes = mode.coinMinutes(
+                startedAt: startedAt,
+                windPoints: SharedDefaults.monitoredWindPoints,
+                fallRate: SharedDefaults.monitoredFallRate
+            )
             let coins = CoinRewards.forBreak(minutes: coinMinutes)
             if coins > 0 {
                 SharedDefaults.addCoins(coins)
