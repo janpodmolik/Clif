@@ -64,6 +64,12 @@ enum DarwinNotifications {
     static let safetyShieldActivated = "com.janpodmolik.Uuumi.SafetyShieldActivated"
 }
 
+enum Gender: String, CaseIterable {
+    case notSpecified = "not_specified"
+    case male = "male"
+    case female = "female"
+}
+
 /// UserDefaults keys
 enum DefaultsKeys {
     static let lastMonitorUpdate = "lastMonitorUpdate"
@@ -169,4 +175,8 @@ enum DefaultsKeys {
     static let selectedNightTheme = "selectedNightTheme"
     static let lockButtonSide = "lockButtonSide"
     static let lockButtonSize = "lockButtonSize"
+
+    // MARK: - Demographics
+
+    static let gender = "gender"
 }

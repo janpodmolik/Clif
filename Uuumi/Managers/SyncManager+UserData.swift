@@ -83,6 +83,10 @@ extension SyncManager {
 
                 SharedDefaults.limitSettings = payload.limitSettings
 
+                if let gender = payload.gender {
+                    UserDefaults.standard.set(gender, forKey: DefaultsKeys.gender)
+                }
+
                 #if DEBUG
                 print("[SyncManager] User data restored — coins: \(payload.coinsBalance), essences: \(restoredEssences.count)")
                 #endif
