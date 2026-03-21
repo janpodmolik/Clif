@@ -171,6 +171,7 @@ enum DefaultsKeys {
     // MARK: - Appearance Preferences
 
     static let appearanceMode = "appearanceMode"
+    static let useDynamicSky = "useDynamicSky"
     static let selectedDayTheme = "selectedDayTheme"
     static let selectedNightTheme = "selectedNightTheme"
     static let lockButtonSide = "lockButtonSide"

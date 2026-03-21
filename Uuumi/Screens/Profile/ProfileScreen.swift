@@ -8,6 +8,7 @@ enum ProfileDestination: Hashable {
     case shieldSettings
     case dailyPresetSettings
     case lockButtonSettings
+    case appearanceSettings
     case feedback
 }
 
@@ -17,8 +18,6 @@ struct ProfileScreen: View {
     @Environment(StoreManager.self) private var storeManager
     @Environment(SyncManager.self) private var syncManager
     @AppStorage(DefaultsKeys.appearanceMode) private var appearanceMode: AppearanceMode = .automatic
-    @AppStorage(DefaultsKeys.selectedDayTheme) private var dayTheme: DayTheme = .morningHaze
-    @AppStorage(DefaultsKeys.selectedNightTheme) private var nightTheme: NightTheme = .deepNight
     @State private var limitSettings = SharedDefaults.limitSettings
     @State private var showPremiumSheet = false
     @State private var showCoinShopSheet = false
@@ -93,33 +92,13 @@ struct ProfileScreen: View {
                         }
                     }
 
-                    Picker(selection: $appearanceMode) {
-                        ForEach(AppearanceMode.allCases, id: \.self) { mode in
-                            Label(mode.label, systemImage: mode.icon).tag(mode)
+                    NavigationLink(value: ProfileDestination.appearanceSettings) {
+                        HStack {
+                            Label("Appearance", systemImage: "paintbrush.fill")
+                            Spacer()
+                            Text(appearanceMode.label)
+                                .foregroundStyle(.secondary)
                         }
-                    } label: {
-                        Label("Appearance", systemImage: "paintbrush.fill")
-                    }
-
-                    switch appearanceMode {
-                    case .automatic:
-                        EmptyView()
-                    case .light:
-                        ThemePicker(
-                            themes: DayTheme.allCases,
-                            selected: $dayTheme,
-                            label: \.label,
-                            gradient: \.gradient,
-                            isPremium: \.isPremium
-                        )
-                    case .dark:
-                        ThemePicker(
-                            themes: NightTheme.allCases,
-                            selected: $nightTheme,
-                            label: \.label,
-                            gradient: \.gradient,
-                            isPremium: \.isPremium
-                        )
                     }
 
                 }
@@ -214,6 +193,8 @@ struct ProfileScreen: View {
                     DailyPresetSettingsScreen()
                 case .lockButtonSettings:
                     LockButtonSettingsScreen()
+                case .appearanceSettings:
+                    AppearanceSettingsScreen()
                 case .feedback:
                     FeedbackScreen(showSuccess: $showFeedbackSuccess)
                 }
@@ -330,68 +311,6 @@ struct ProfileScreen: View {
         return "\(version) (\(build))"
     }
 
-}
-
-// MARK: - Theme Picker
-
-private struct ThemePicker<T: Hashable & Identifiable>: View {
-    let themes: [T]
-    @Binding var selected: T
-    let label: KeyPath<T, String>
-    let gradient: KeyPath<T, [Color]>
-    let isPremium: KeyPath<T, Bool>
-
-    @Environment(StoreManager.self) private var storeManager
-    @State private var showPremiumSheet = false
-
-    var body: some View {
-        HStack(spacing: 12) {
-            ForEach(themes) { theme in
-                let isSelected = theme.id == selected.id
-                let isLocked = theme[keyPath: isPremium] && !storeManager.isPremium
-                VStack(spacing: 6) {
-                    RoundedRectangle(cornerRadius: 10)
-                        .fill(
-                            LinearGradient(
-                                colors: theme[keyPath: gradient],
-                                startPoint: .top,
-                                endPoint: .bottom
-                            )
-                        )
-                        .frame(height: 60)
-                        .opacity(isLocked ? 0.5 : 1.0)
-                        .overlay {
-                            if isLocked {
-                                Image(systemName: "lock.fill")
-                                    .font(.body)
-                                    .foregroundStyle(.white)
-                            }
-                        }
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 10)
-                                .strokeBorder(isSelected ? Color.accentColor : .clear, lineWidth: 2.5)
-                        )
-
-                    Text(theme[keyPath: label])
-                        .font(.caption)
-                        .foregroundStyle(isSelected ? .primary : .secondary)
-                }
-                .onTapGesture {
-                    if isLocked {
-                        showPremiumSheet = true
-                    } else {
-                        withAnimation(.easeInOut(duration: 0.2)) {
-                            selected = theme
-                        }
-                    }
-                }
-            }
-        }
-        .padding(.vertical, 4)
-        .sheet(isPresented: $showPremiumSheet) {
-            PremiumSheet()
-        }
-    }
 }
 
 #Preview {

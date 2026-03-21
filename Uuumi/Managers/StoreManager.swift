@@ -81,6 +81,9 @@ final class StoreManager {
     // MARK: - Init
 
     init() {
+        // Bootstrap from cache so wasPremium is accurate on relaunch
+        isPremium = SharedDefaults.isPremiumCached
+
         transactionListener = listenForTransactions()
 
         Task {
@@ -209,10 +212,9 @@ final class StoreManager {
         }
 
         if !foundActive {
-            isPremium = false
+            setPremiumActive(false)
             expirationDate = nil
             activeProductId = nil
-            SharedDefaults.isPremiumCached = false
         }
     }
 
@@ -248,10 +250,42 @@ final class StoreManager {
         let isActive = transaction.revocationDate == nil
             && (transaction.expirationDate ?? .distantFuture) > Date()
 
-        isPremium = isActive
+        setPremiumActive(isActive)
         expirationDate = transaction.expirationDate
         activeProductId = isActive ? transaction.productID : nil
-        SharedDefaults.isPremiumCached = isActive
+    }
+
+    /// Updates premium status and resets appearance settings on downgrade.
+    private func setPremiumActive(_ active: Bool) {
+        let wasPremium = isPremium
+        isPremium = active
+        SharedDefaults.isPremiumCached = active
+
+        if wasPremium && !active {
+            resetPremiumAppearanceSettings()
+        }
+    }
+
+    /// Resets premium appearance settings back to free defaults when subscription expires.
+    private func resetPremiumAppearanceSettings() {
+        let defaults = UserDefaults.standard
+
+        // Reset dynamic sky toggle
+        defaults.set(false, forKey: DefaultsKeys.useDynamicSky)
+
+        // Reset premium day theme → free default
+        if let storedTheme = defaults.string(forKey: DefaultsKeys.selectedDayTheme),
+           let theme = DayTheme(rawValue: storedTheme),
+           theme.isPremium {
+            defaults.set(DayTheme.morningHaze.rawValue, forKey: DefaultsKeys.selectedDayTheme)
+        }
+
+        // Reset premium night theme → free default
+        if let storedTheme = defaults.string(forKey: DefaultsKeys.selectedNightTheme),
+           let theme = NightTheme(rawValue: storedTheme),
+           theme.isPremium {
+            defaults.set(NightTheme.deepNight.rawValue, forKey: DefaultsKeys.selectedNightTheme)
+        }
     }
 }
 
@@ -270,8 +304,7 @@ extension StoreManager {
 
     #if DEBUG
     func debugSetPremium(_ active: Bool) {
-        isPremium = active
-        SharedDefaults.isPremiumCached = active
+        setPremiumActive(active)
         if active {
             activeProductId = Self.monthlyID
             expirationDate = Calendar.current.date(byAdding: .month, value: 1, to: .now)

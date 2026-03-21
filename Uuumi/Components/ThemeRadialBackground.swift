@@ -2,13 +2,29 @@ import SwiftUI
 
 struct ThemeRadialBackground: View {
     @AppStorage(DefaultsKeys.appearanceMode) private var appearanceMode: AppearanceMode = .automatic
+    @AppStorage(DefaultsKeys.useDynamicSky) private var useDynamicSky = false
     @AppStorage(DefaultsKeys.selectedDayTheme) private var dayTheme: DayTheme = .morningHaze
     @AppStorage(DefaultsKeys.selectedNightTheme) private var nightTheme: NightTheme = .deepNight
     @Environment(\.colorScheme) private var colorScheme
 
-    var body: some View {
-        let themeColor = resolvedThemeColor
+    private var usesDynamicGradient: Bool {
+        appearanceMode == .automatic && useDynamicSky
+    }
 
+    var body: some View {
+        if usesDynamicGradient {
+            TimelineView(.periodic(from: .now, by: 60)) { _ in
+                gradientContent(
+                    themeColor: SkyGradient.layer2Stops.interpolated(amount: SkyGradient.timeOfDay())
+                )
+            }
+        } else {
+            gradientContent(themeColor: staticThemeColor)
+        }
+    }
+
+    @ViewBuilder
+    private func gradientContent(themeColor: Color) -> some View {
         GeometryReader { geometry in
             ZStack {
                 if colorScheme == .dark {
@@ -32,7 +48,7 @@ struct ThemeRadialBackground: View {
         .ignoresSafeArea()
     }
 
-    private var resolvedThemeColor: Color {
+    private var staticThemeColor: Color {
         switch appearanceMode {
         case .dark:
             nightTheme.gradient.last ?? .purple

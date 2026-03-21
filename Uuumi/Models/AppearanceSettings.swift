@@ -1,7 +1,9 @@
 import SwiftUI
 
-enum AppearanceMode: String, CaseIterable, Codable {
+enum AppearanceMode: String, CaseIterable, Codable, Identifiable {
     case automatic, light, dark
+
+    var id: String { rawValue }
 
     var label: String {
         switch self {
