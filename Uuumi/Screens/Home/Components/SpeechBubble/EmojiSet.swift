@@ -7,17 +7,17 @@ enum EmojiSet {
 
     /// Calm/happy emojis for none/low wind
     static let calmEmojis: [String] = [
-        "☀️", "🌸", "🌻", "✨", "💚", "🌿", "🍀", "🌈", "💫", "🦋"
+        "♥️", "👋", "😁", "😊", "✌️", "😍", "🤩",
     ]
 
     /// Moderate emojis for medium wind
     static let moderateEmojis: [String] = [
-        "🍃", "💨", "🌬️", "🌀", "💭", "⭐", "🌤️"
+        "😐", "😶", "🤔", "🥺", "😬", "🙃", "😅", "🫤", "🥲",
     ]
 
     /// Intense emojis for high wind
     static let intenseEmojis: [String] = [
-        "🌪️", "💨", "🌧️", "😰", "🍂", "🌊", "⛈️"
+        "😰", "😨", "😵‍💫", "😣", "😭", "🫣", "😕", "😡", "🫨",
     ]
 
     // MARK: - Selection Logic
