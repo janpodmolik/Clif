@@ -5,7 +5,7 @@ final class SoundManager {
 
     private var players: [SoundEffect: AVAudioPlayer] = [:]
 
-    private let volume: Float = 0.5
+    private let volume: Float = 0.15
 
     private init() {
         configureAudioSession()
