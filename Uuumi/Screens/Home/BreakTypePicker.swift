@@ -218,8 +218,6 @@ struct BreakTypePicker: View {
 
     private var committedContent: some View {
         VStack(spacing: 16) {
-            durationInfoLabel
-
             selectionInfo
 
             durationSlider
@@ -233,22 +231,26 @@ struct BreakTypePicker: View {
         let label = minutes == 0 ? "20s" : "\(minutes) min"
         let coins = CoinRewards.forBreak(minutes: minutes)
 
-        return VStack(spacing: 4) {
+        return VStack(spacing: 6) {
             Text(label)
                 .font(.system(size: 48, weight: .bold, design: .rounded))
                 .foregroundStyle(BreakType.committed.color)
                 .contentTransition(.numericText())
 
             if coins > 0 {
-                HStack(spacing: 4) {
+                HStack(spacing: 6) {
                     Image("coin")
                         .resizable()
                         .scaledToFit()
-                        .frame(width: 16, height: 16)
+                        .frame(width: 20, height: 20)
+                        .shadow(color: .black.opacity(0.3), radius: 2, y: 1)
                     Text("+\(coins)")
+                        .font(.system(size: 16, weight: .bold))
                 }
-                .font(.system(size: 16, weight: .semibold))
-                .foregroundStyle(.orange)
+                .foregroundStyle(.white)
+                .padding(.horizontal, 12)
+                .padding(.vertical, 6)
+                .background(Color("PremiumGold"), in: Capsule())
             }
         }
     }
@@ -267,16 +269,6 @@ struct BreakTypePicker: View {
             )
             .padding(.horizontal)
         }
-    }
-
-    private var durationInfoLabel: some View {
-        let minutes = displayMinutes
-        let reduction = calculateWindReduction(minutes: minutes)
-        let resultWind = Int(max(currentWind - reduction, 0))
-
-        return Text("→ \(resultWind)% wind")
-            .font(.subheadline)
-            .foregroundStyle(.secondary)
     }
 
     // MARK: - Special Mode Buttons
@@ -383,10 +375,6 @@ struct BreakTypePicker: View {
     }
 
     // MARK: - Calculations
-
-    private func calculateWindReduction(minutes: Int) -> Double {
-        Double(minutes) * preset.fallRate
-    }
 
     private func calculateMinutesToMidnight() -> Int {
         let calendar = Calendar.current

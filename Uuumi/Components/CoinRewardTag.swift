@@ -11,6 +11,7 @@ struct CoinRewardTag: View {
                 .resizable()
                 .scaledToFit()
                 .frame(width: 22, height: 22)
+                .shadow(color: .black.opacity(0.3), radius: 2, y: 1)
             Text("+\(amount)")
                 .font(.system(size: 16, weight: .bold))
         }
