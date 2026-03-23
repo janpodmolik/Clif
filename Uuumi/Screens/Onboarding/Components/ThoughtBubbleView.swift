@@ -95,10 +95,11 @@ struct ThoughtBubbleView: View {
                 .shadow(color: .black.opacity(0.1), radius: 6, x: 0, y: 3)
 
             // Plant phase 3 evolution preview
-            Image("evolutions/plant/3/body")
-                .resizable()
-                .scaledToFit()
-                .padding(20)
+            PetImage(
+                bodyAssetName: "evolutions/plant/3/body",
+                eyesAssetName: "evolutions/plant/3/eyes/neutral"
+            )
+            .padding(20)
         }
         .frame(width: cloudSize, height: cloudSize)
         .opacity(showCloud ? 1 : 0)
