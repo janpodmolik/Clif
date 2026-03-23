@@ -66,7 +66,6 @@ struct OnboardingView: View {
                 #endif
             }
         }
-        .gesture(swipeBackGesture, including: currentScreen == .screenTimeData || currentScreen == .windSlider || currentScreen == .lockDemo ? .subviews : .all)
     }
 
     // MARK: - Island Layer
@@ -232,33 +231,10 @@ struct OnboardingView: View {
 
     private var progressIndicator: some View {
         VStack {
-            HStack {
-                Button {
-                    HapticType.impactLight.trigger()
-                    goBack()
-                } label: {
-                    Image(systemName: "chevron.left")
-                        .font(.body.weight(.semibold))
-                        .foregroundStyle(.secondary)
-                        .contentShape(Circle())
-                }
-                .buttonStyle(.plain)
-                .opacity(currentScreen.previous != nil ? 1 : 0)
-                .disabled(currentScreen.previous == nil)
-
-                Spacer()
-
-                StepIndicator(
-                    currentStep: currentScreen.rawValue,
-                    totalSteps: OnboardingScreen.totalCount
-                )
-
-                Spacer()
-
-                Color.clear
-                    .frame(width: 20, height: 20)
-            }
-            .padding(.horizontal, 20)
+            StepIndicator(
+                currentStep: currentScreen.rawValue,
+                totalSteps: OnboardingScreen.totalCount
+            )
             .padding(.top, 12)
 
             Spacer()
@@ -284,52 +260,7 @@ struct OnboardingView: View {
         .animation(.easeInOut(duration: 0.3), value: currentScreen)
     }
 
-    // MARK: - Gestures
-
-    private var swipeBackGesture: some Gesture {
-        DragGesture(minimumDistance: 30, coordinateSpace: .local)
-            .onEnded { value in
-                if value.translation.width > 50, abs(value.translation.height) < abs(value.translation.width) {
-                    HapticType.impactLight.trigger()
-                    goBack()
-                }
-            }
-    }
-
     // MARK: - Navigation
-
-    private func goBack() {
-        guard let previous = currentScreen.previous else { return }
-        visitedScreens.insert(currentScreen)
-
-        // Reset shared state that the target screen doesn't expect
-        switch previous {
-        case .island:
-            showBlob = false
-            windProgress = 0
-            eyesOverride = nil
-            speechBubbleConfig = nil
-            speechBubbleVisible = false
-        case .meetPet:
-            windProgress = 0
-            eyesOverride = nil
-        default:
-            if let wind = previous.initialWindProgress {
-                windProgress = wind
-                eyesOverride = WindLevel.from(progress: wind).eyes
-            }
-        }
-
-        // Reset blow away state when navigating back
-        blowAwayOffsetX = 0
-        blowAwayRotation = 0
-        windDirection = 1.0
-        windBurstActive = false
-
-        withAnimation(.easeInOut(duration: 0.3)) {
-            currentScreen = previous
-        }
-    }
 
     private func advanceScreen() {
         if currentScreen.isLast {
@@ -353,7 +284,10 @@ struct OnboardingView: View {
 
             HStack(spacing: 8) {
                 Button("< Prev") {
-                    goBack()
+                    if let previous = currentScreen.previous {
+                        visitedScreens.insert(currentScreen)
+                        withAnimation { currentScreen = previous }
+                    }
                 }
                 .disabled(currentScreen.previous == nil)
 
