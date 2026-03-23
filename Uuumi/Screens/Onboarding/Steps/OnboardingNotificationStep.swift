@@ -134,7 +134,7 @@ struct OnboardingNotificationStep: View {
     @ViewBuilder
     private var bottomArea: some View {
         if showButton {
-            VStack(spacing: 12) {
+            VStack(spacing: 16) {
                 if permissionDenied {
                     Text("You can enable notifications in app settings anytime.")
                         .font(AppFont.quicksand(.caption, weight: .medium))

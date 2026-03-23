@@ -16,6 +16,9 @@ enum AppConstants {
 
     // MARK: - Timing
 
+    /// Cooldown between notification permission re-prompts (7 days)
+    static let notificationPromptCooldown: TimeInterval = 7 * 24 * 60 * 60
+
     /// Debounce delay for selection saves (in nanoseconds) - 300ms
     static let selectionDebounceNanoseconds: UInt64 = 300_000_000
 
@@ -176,6 +179,10 @@ enum DefaultsKeys {
     static let selectedNightTheme = "selectedNightTheme"
     static let lockButtonSide = "lockButtonSide"
     static let lockButtonSize = "lockButtonSize"
+
+    // MARK: - Notification Re-prompt
+
+    static let lastNotificationPromptDate = "lastNotificationPromptDate"
 
     // MARK: - Demographics
 

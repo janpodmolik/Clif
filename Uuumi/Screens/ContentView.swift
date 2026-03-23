@@ -54,6 +54,7 @@ struct ContentView: View {
     private var shieldState: ShieldState { ShieldState.shared }
 
     @State private var showTesterView = false
+    @State private var showNotificationRequest = false
 
     #if DEBUG
     @State private var showPetDebug = false
@@ -139,6 +140,10 @@ struct ContentView: View {
             activeTab = .profile
             navigationPaths[.profile] = NavigationPath([ProfileDestination.essenceCatalog])
         }
+        .onReceive(NotificationCenter.default.publisher(for: .navigateToNotificationSettings)) { _ in
+            activeTab = .profile
+            navigationPaths[.profile] = NavigationPath([ProfileDestination.notificationSettings])
+        }
         #if DEBUG
         .onReceive(NotificationCenter.default.publisher(for: .showMockSheet)) { _ in
             showMockSheet = true
@@ -163,6 +168,7 @@ struct ContentView: View {
             if newPhase == .active {
                 ShieldState.shared.refresh()
                 checkDayResetAndShowPicker()
+                checkNotificationPrompt()
             }
         }
         .onChange(of: shieldState.lastEarnedCoins) { _, coins in
@@ -219,6 +225,9 @@ struct ContentView: View {
                 )
             }
         }
+        .sheet(isPresented: $showNotificationRequest) {
+            NotificationRequestSheet()
+        }
         .onAppear {
             checkDayResetAndShowPicker()
         }
@@ -266,6 +275,35 @@ struct ContentView: View {
 
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
             router.showPresetPicker = true
+        }
+    }
+
+    // MARK: - Notification Re-prompt
+
+    private func checkNotificationPrompt() {
+        // Don't show if another sheet is presenting
+        guard syncManager.pendingWelcomeBack == nil,
+              syncManager.pendingConflict == nil,
+              !router.showPresetPicker,
+              router.showDailySummary == nil,
+              !showNotificationRequest else {
+            return
+        }
+
+        // Check cooldown (once per week)
+        if let lastPrompt = UserDefaults.standard.object(forKey: DefaultsKeys.lastNotificationPromptDate) as? Date,
+           Date().timeIntervalSince(lastPrompt) < AppConstants.notificationPromptCooldown {
+            return
+        }
+
+        Task {
+            let settings = await UNUserNotificationCenter.current().notificationSettings()
+            guard settings.authorizationStatus != .authorized else { return }
+
+            // Delay to avoid conflicts with other sheets that may appear on foreground
+            try await Task.sleep(for: .seconds(1))
+            showNotificationRequest = true
+            UserDefaults.standard.set(Date(), forKey: DefaultsKeys.lastNotificationPromptDate)
         }
     }
 

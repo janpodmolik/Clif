@@ -12,7 +12,7 @@ struct NotificationSettingsScreen: View {
     }
 
     private var disabled: Bool {
-        !limitSettings.notifications.masterEnabled
+        !systemNotificationsEnabled || !limitSettings.notifications.masterEnabled
     }
 
     var body: some View {
@@ -47,6 +47,8 @@ struct NotificationSettingsScreen: View {
             Section {
                 Toggle("Notifications", isOn: notifications.masterEnabled)
                     .tint(.blue)
+                    .disabled(!systemNotificationsEnabled)
+                    .opacity(!systemNotificationsEnabled ? 0.4 : 1.0)
             }
 
             // MARK: - Wind Alerts
@@ -140,6 +142,9 @@ struct NotificationSettingsScreen: View {
         }
         .navigationTitle("Notifications")
         .navigationBarTitleDisplayMode(.inline)
+        .onAppear {
+            limitSettings = SharedDefaults.limitSettings
+        }
         .task { await checkNotificationStatus() }
         .onChange(of: scenePhase) {
             if scenePhase == .active {

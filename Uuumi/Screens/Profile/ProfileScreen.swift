@@ -1,6 +1,7 @@
 import FamilyControls
 import Supabase
 import SwiftUI
+import UserNotifications
 
 enum ProfileDestination: Hashable {
     case essenceCatalog
@@ -18,7 +19,9 @@ struct ProfileScreen: View {
     @Environment(StoreManager.self) private var storeManager
     @Environment(SyncManager.self) private var syncManager
     @AppStorage(DefaultsKeys.appearanceMode) private var appearanceMode: AppearanceMode = .automatic
+    @Environment(\.scenePhase) private var scenePhase
     @State private var limitSettings = SharedDefaults.limitSettings
+    @State private var systemNotificationsEnabled = true
     @State private var showPremiumSheet = false
     @State private var showCoinShopSheet = false
     @State private var showAuthSheet = false
@@ -66,14 +69,7 @@ struct ProfileScreen: View {
 
                 // MARK: - Přizpůsobit
                 Section(header: Text("Customize")) {
-                    NavigationLink(value: ProfileDestination.notificationSettings) {
-                        HStack {
-                            Label("Notifications", systemImage: "bell.fill")
-                            Spacer()
-                            Text(limitSettings.notifications.masterEnabled ? "On" : "Off")
-                                .foregroundStyle(.secondary)
-                        }
-                    }
+                    notificationRow
 
                     NavigationLink(value: ProfileDestination.shieldSettings) {
                         Label("Shield", systemImage: "shield.fill")
@@ -202,7 +198,21 @@ struct ProfileScreen: View {
                 }
             }
             .onAppear {
+                limitSettings = SharedDefaults.limitSettings
                 myAppsSelection = SharedDefaults.loadMyAppsSelection()
+            }
+            .task {
+                let settings = await UNUserNotificationCenter.current().notificationSettings()
+                systemNotificationsEnabled = settings.authorizationStatus == .authorized
+            }
+            .onChange(of: scenePhase) {
+                if scenePhase == .active {
+                    limitSettings = SharedDefaults.limitSettings
+                    Task {
+                        let settings = await UNUserNotificationCenter.current().notificationSettings()
+                        systemNotificationsEnabled = settings.authorizationStatus == .authorized
+                    }
+                }
             }
             .onChange(of: limitSettings) { _, newValue in
                 SharedDefaults.limitSettings = newValue
@@ -221,6 +231,21 @@ struct ProfileScreen: View {
     }
 
     // MARK: - Profile Row
+
+    private var notificationRow: some View {
+        let isOn = systemNotificationsEnabled && limitSettings.notifications.masterEnabled
+        let icon = systemNotificationsEnabled ? "bell.fill" : "bell.slash.fill"
+
+        return NavigationLink(value: ProfileDestination.notificationSettings) {
+            HStack {
+                Label("Notifications", systemImage: icon)
+                Spacer()
+                Text(isOn ? "On" : "Off")
+                    .foregroundStyle(systemNotificationsEnabled ? AnyShapeStyle(.secondary) : AnyShapeStyle(.orange))
+            }
+            .opacity(systemNotificationsEnabled ? 1.0 : 0.6)
+        }
+    }
 
     @ViewBuilder
     private var profileRow: some View {

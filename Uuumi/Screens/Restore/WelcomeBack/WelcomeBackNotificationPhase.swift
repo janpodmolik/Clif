@@ -26,7 +26,7 @@ struct WelcomeBackNotificationPhase: View {
 
             Spacer()
 
-            VStack(spacing: 12) {
+            VStack(spacing: 16) {
                 if permissionDenied {
                     Text("You can enable notifications anytime in Settings.")
                         .font(.footnote)

@@ -667,6 +667,9 @@
     "Customize" : {
 
     },
+    "Customize notifications" : {
+
+    },
     "Daily pattern" : {
 
     },
@@ -791,6 +794,9 @@
 
     },
     "Email" : {
+
+    },
+    "Enable notifications" : {
 
     },
     "Enable them in Settings to receive notifications." : {
@@ -929,6 +935,9 @@
 
     },
     "Get More Coins" : {
+
+    },
+    "Get notified when your Uuumi is in danger or ready to evolve." : {
 
     },
     "Get Premium" : {
@@ -1252,13 +1261,22 @@
     "Normal" : {
 
     },
+    "Not now" : {
+
+    },
     "Not yet selected" : {
+
+    },
+    "Notification Request" : {
 
     },
     "Notifications" : {
 
     },
     "Notifications are disabled in system settings" : {
+
+    },
+    "Notifications are now enabled." : {
 
     },
     "now" : {
@@ -2175,6 +2193,9 @@
 
     },
     "You'll pick a preset each morning before apps unlock." : {
+
+    },
+    "You're all set!" : {
 
     },
     "Your Balance" : {

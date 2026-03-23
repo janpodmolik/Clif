@@ -11,6 +11,7 @@ struct DebugView: View {
     @StateObject private var manager = ScreenTimeManager.shared
     @State private var isPickerPresented = false
     @State private var extensionLog = ""
+    @State private var showNotificationRequest = false
 
     @AppStorage(DefaultsKeys.monitoringLimitSeconds, store: UserDefaults(suiteName: AppConstants.appGroupIdentifier))
     private var monitoringLimitSeconds = AppConstants.defaultMonitoringLimitMinutes * 60
@@ -65,6 +66,9 @@ struct DebugView: View {
                 isPresented: $isPickerPresented,
                 selection: $manager.activitySelection
             )
+            .sheet(isPresented: $showNotificationRequest) {
+                NotificationRequestSheet()
+            }
         }
     }
 
@@ -822,6 +826,8 @@ struct DebugView: View {
                     .tint(.purple)
                 Button("Shield") { openDeepLink("uuumi://shield") }
                     .tint(.red)
+                Button("Notification Request") { showNotificationRequest = true }
+                    .tint(.indigo)
                 if let petId = petManager.currentPet?.id {
                     Button("Select Pet") { openDeepLink("uuumi://pet/\(petId)") }
                         .tint(.mint)
