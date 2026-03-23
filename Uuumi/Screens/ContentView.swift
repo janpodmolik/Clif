@@ -249,6 +249,9 @@ struct ContentView: View {
     // MARK: - Daily Reset & Preset Picker
 
     private func checkDayResetAndShowPicker() {
+        // End any break that started before today (extension's midnight reset may not have fired)
+        ShieldManager.shared.endStaleBreakIfNeeded()
+
         if SharedDefaults.isNewDay {
             SharedDefaults.performDailyResetIfNeeded()
             ShieldManager.shared.activateStoreFromStoredTokens()

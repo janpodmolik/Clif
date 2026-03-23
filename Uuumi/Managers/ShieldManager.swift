@@ -261,9 +261,48 @@ final class ShieldManager {
 
     // MARK: - Break Completion Monitoring
 
+    /// Ends any active break that started before today.
+    /// Handles the case where the extension's midnight reset didn't fire
+    /// (or the day reset already ran but the break wasn't cleaned up).
+    func endStaleBreakIfNeeded() {
+        let breakType = SharedDefaults.activeBreakType
+        let breakStarted = SharedDefaults.breakStartedAt
+
+        // A break is stale if:
+        // 1. It started before today (normal case), OR
+        // 2. Day start shield is active while a break is also active — the break
+        //    is from yesterday but breakStartedAt may have been wiped by ShieldAction
+        let isStale: Bool = if let breakStarted {
+            !Calendar.current.isDateInToday(breakStarted)
+        } else {
+            breakType != nil && SharedDefaults.isDayStartShieldActive
+        }
+
+        guard isStale else { return }
+
+        let midnight = Calendar.current.startOfDay(for: Date())
+        if let result = SharedDefaults.endBreakAtMidnight(cutoff: midnight) {
+            let coins = SnapshotLogging.processMidnightBreak(result)
+            #if DEBUG
+            print("[ShieldManager] Stale break cleanup: type=\(result.breakType), minutes=\(result.actualMinutes), coins=\(coins)")
+            #endif
+        } else if breakType != nil {
+            // breakStartedAt was wiped by ShieldAction — just reset the flags
+            SharedDefaults.resetShieldFlags()
+            #if DEBUG
+            print("[ShieldManager] Stale break cleanup: flags reset (no breakStartedAt)")
+            #endif
+        }
+        stopBreakCompletionMonitoring()
+        deactivateStore()
+        ShieldState.shared.refresh()
+    }
+
     /// Restores break monitoring after app returns to foreground.
     /// Ends expired breaks, processes pending coin rewards, then resumes timer if needed.
     func resumeBreakMonitoringIfNeeded() {
+        endStaleBreakIfNeeded()
+
         // End expired breaks first (may persist new pending coins via turnOff)
         if SharedDefaults.isShieldActive, SharedDefaults.activeBreakType != nil {
             checkBreakCompletion()

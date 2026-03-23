@@ -589,6 +589,11 @@ struct DebugView: View {
                 }
                 .tint(.pink)
 
+                Button("Stale Break") {
+                    simulateStaleOvernightBreak()
+                }
+                .tint(.brown)
+
                 Button("Zombie Break") {
                     simulateZombieCommittedBreak()
                 }
@@ -647,6 +652,27 @@ struct DebugView: View {
         SharedDefaults.synchronize()
 
         print("[DebugTools] Simulated overnight break state — backgrounding and foregrounding should trigger daily preset picker")
+    }
+
+    /// Simulates the bug: free break started last night, extension's midnight reset never fired.
+    /// After tapping, background+foreground the app — the fix should end the break and show preset picker.
+    private func simulateStaleOvernightBreak() {
+        let yesterday = Calendar.current.date(byAdding: .day, value: -1, to: Calendar.current.startOfDay(for: Date()))!
+
+        SharedDefaults.lastDayResetDate = yesterday
+        SharedDefaults.windPresetLockedForToday = true
+        SharedDefaults.windPresetLockedDate = yesterday
+        SharedDefaults.isDayStartShieldActive = false
+
+        // Leave the free break active (this is the bug state)
+        SharedDefaults.shieldActivatedAt = yesterday.addingTimeInterval(22 * 3600)
+        SharedDefaults.breakStartedAt = yesterday.addingTimeInterval(22 * 3600)
+        SharedDefaults.activeBreakType = .free
+
+        SharedDefaults.synchronize()
+        ShieldState.shared.refresh()
+
+        print("[DebugTools] Simulated stale overnight free break — background+foreground to test fix")
     }
 
     /// Simulates a committed break that started 9 hours ago but never completed,
