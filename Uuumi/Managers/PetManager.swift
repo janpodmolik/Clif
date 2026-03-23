@@ -70,9 +70,6 @@ final class PetManager {
         pet = newPet
         saveActivePet()
 
-        // Lock preset for today and start monitoring (prevents Daily Preset picker from re-appearing)
-        ScreenTimeManager.shared.applyDailyPreset(preset, for: newPet)
-
         Task { await AppDelegate.requestNotificationPermission() }
         ScheduledNotificationManager.refresh(
             isEvolutionAvailable: false,

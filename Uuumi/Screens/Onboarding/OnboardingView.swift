@@ -1,6 +1,8 @@
 import SwiftUI
 
 struct OnboardingView: View {
+    @Environment(PetManager.self) private var petManager
+
     @AppStorage(DefaultsKeys.hasCompletedOnboarding)
     private var hasCompletedOnboarding = false
 
@@ -264,6 +266,10 @@ struct OnboardingView: View {
 
     private func advanceScreen() {
         if currentScreen.isLast {
+            // Start monitoring only after the entire onboarding is complete
+            if let pet = petManager.currentPet {
+                ScreenTimeManager.shared.applyDailyPreset(pet.preset, for: pet)
+            }
             hasCompletedOnboarding = true
             return
         }
