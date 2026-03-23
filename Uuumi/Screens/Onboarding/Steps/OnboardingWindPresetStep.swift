@@ -216,7 +216,7 @@ private struct PresetCard: View {
                     Text(onboardingDescription)
                         .font(.caption)
                         .foregroundStyle(.secondary)
-                        .lineLimit(2)
+                        .lineLimit(2, reservesSpace: true)
                 }
 
                 Spacer()
