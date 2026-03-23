@@ -99,7 +99,23 @@ final class AuthManager {
                 switch event {
                 case .initialSession:
                     if let session {
-                        self.authState = .authenticated(session.user)
+                        // Validate the cached session against the server.
+                        // Catches the edge case where the account was deleted
+                        // but the JWT is still in the Keychain.
+                        do {
+                            let validatedUser = try await client.auth.user()
+                            self.authState = .authenticated(validatedUser)
+                        } catch is Auth.AuthError {
+                            // Server explicitly rejected — user deleted or session invalid.
+                            if self.authState != .anonymous {
+                                try? await client.auth.signOut()
+                                self.authState = .anonymous
+                            }
+                        } catch {
+                            // Network error (offline, timeout, server down).
+                            // Trust cached session — validate next launch.
+                            self.authState = .authenticated(session.user)
+                        }
                     } else {
                         self.authState = .anonymous
                     }
