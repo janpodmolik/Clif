@@ -33,6 +33,7 @@ enum OnboardingScreen: Int, CaseIterable, Identifiable {
     case notifications = 10
     case namePet = 11
     case review = 12
+    case login = 13
 
     var id: Int { rawValue }
 
@@ -40,7 +41,7 @@ enum OnboardingScreen: Int, CaseIterable, Identifiable {
         switch self {
         case .island, .meetPet, .wind, .screenTimeData, .appSelection: .story
         case .windSlider, .lockDemo: .demo
-        case .essence, .evolution, .notifications, .windPreset, .namePet, .review: .setup
+        case .essence, .evolution, .notifications, .windPreset, .namePet, .review, .login: .setup
         }
     }
 
@@ -59,6 +60,7 @@ enum OnboardingScreen: Int, CaseIterable, Identifiable {
         case .windPreset: "Wind Preset"
         case .namePet: "Name Your Pet"
         case .review: "Review"
+        case .login: "Login"
         }
     }
 
@@ -77,10 +79,11 @@ enum OnboardingScreen: Int, CaseIterable, Identifiable {
         case .windPreset: "Gentle / Balanced / Intense cards"
         case .namePet: "Text field for pet name"
         case .review: "Optional App Store review prompt"
+        case .login: "Sign in to save progress"
         }
     }
 
-    var isLast: Bool { self == .review }
+    var isLast: Bool { self == .login }
 
     /// The wind progress value this screen expects on entry.
     /// Used by `goBack()` and step `onAppear` to set consistent initial state.
@@ -89,7 +92,7 @@ enum OnboardingScreen: Int, CaseIterable, Identifiable {
         case .wind, .screenTimeData: 0.15
         case .windSlider: 0.1
         case .lockDemo: 1.0
-        case .windPreset, .essence, .evolution, .notifications, .namePet, .review: 0
+        case .windPreset, .essence, .evolution, .notifications, .namePet, .review, .login: 0
         default: nil
         }
     }

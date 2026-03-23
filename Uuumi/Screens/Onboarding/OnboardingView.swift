@@ -216,6 +216,13 @@ struct OnboardingView: View {
                 reactionTrigger: $petReactionTrigger
             )
 
+        case .login:
+            OnboardingLoginStep(
+                skipAnimation: visitedScreens.contains(.login),
+                onContinue: advanceScreen,
+                eyesOverride: $eyesOverride
+            )
+
         default:
             nonStoryLayout
         }
@@ -262,7 +269,7 @@ struct OnboardingView: View {
 
     /// Screens that have dedicated step views (not placeholders).
     private static let implementedScreens: Set<OnboardingScreen> = [
-        .island, .meetPet, .wind, .screenTimeData, .appSelection, .windSlider, .lockDemo, .windPreset, .essence, .evolution, .notifications, .namePet, .review,
+        .island, .meetPet, .wind, .screenTimeData, .appSelection, .windSlider, .lockDemo, .windPreset, .essence, .evolution, .notifications, .namePet, .review, .login,
     ]
 
     private var nonStoryLayout: some View {
