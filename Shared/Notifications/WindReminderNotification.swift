@@ -1,7 +1,7 @@
 import Foundation
 import UserNotifications
 
-/// Wind reminder notification — sent 30 minutes after wind stays high (≥50%) with no active break.
+/// Wind reminder notification — sent 5 minutes after wind is active (>0%) with no active break.
 /// Reminds the user to start a break so wind can decrease.
 enum WindReminderNotification {
 
@@ -9,11 +9,8 @@ enum WindReminderNotification {
     #if DEBUG
     static let delay: TimeInterval = 30 // 30s for testing
     #else
-    static let delay: TimeInterval = 30 * 60
+    static let delay: TimeInterval = 5 * 60
     #endif
-
-    /// Wind percentage at which reminder gets scheduled.
-    static let windThreshold: Double = 50
 
     /// Fixed identifier — scheduling always replaces previous pending reminder.
     private static let identifier = "wind_reminder_scheduled"
@@ -26,7 +23,7 @@ enum WindReminderNotification {
 
     // MARK: - Scheduling
 
-    /// Schedules reminder notification 30 minutes from now.
+    /// Schedules reminder notification 5 minutes from now.
     /// Uses a fixed identifier, so calling this again replaces any existing pending reminder.
     static func schedule(logHandler: ((String) -> Void)? = nil) {
         logHandler?("[Notification] Scheduling wind reminder in \(Int(delay))s")

@@ -83,7 +83,7 @@ struct NotificationSettingsScreen: View {
             Section {
                 SettingsRow(
                     title: "High Wind Reminder",
-                    description: "After 30 minutes of high wind without a break.",
+                    description: "After 5 minutes of wind without a break.",
                     isOn: notifications.windReminder,
                     disabled: disabled
                 )
