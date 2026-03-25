@@ -1742,6 +1742,9 @@
     "Simulate +interval" : {
 
     },
+    "Simulate intervalDidEnd" : {
+
+    },
     "Since %@" : {
 
     },

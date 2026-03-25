@@ -7,6 +7,10 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
     ) -> Bool {
         UNUserNotificationCenter.current().delegate = self
+
+        MidnightShieldTask.register()
+        MidnightShieldTask.schedule()
+
         return true
     }
 

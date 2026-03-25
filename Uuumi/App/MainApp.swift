@@ -199,6 +199,7 @@ struct MainApp: App {
 
         case .background:
             wasInBackground = true
+            MidnightShieldTask.schedule()
 
             // Stop periodic sync timer
             periodicSyncTimer?.cancel()

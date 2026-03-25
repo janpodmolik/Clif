@@ -12,6 +12,14 @@
 	</array>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>fetch</string>
+	</array>
+	<key>BGTaskSchedulerPermittedIdentifiers</key>
+	<array>
+		<string>com.janpodmolik.Uuumi.midnightShield</string>
+	</array>
 	<key>NSFamilyControlsUsageDescription</key>
 	<string>Uuumi needs access to Screen Time to monitor your selected apps and help you stay within your daily limits.</string>
 	<key>CFBundleURLTypes</key>

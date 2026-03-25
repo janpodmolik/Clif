@@ -81,6 +81,27 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
         return true
     }
 
+    override func intervalDidEnd(for activity: DeviceActivityName) {
+        super.intervalDidEnd(for: activity)
+
+        ExtensionLogger.log("[Extension] intervalDidEnd")
+
+        // End any active break at the day boundary
+        handleMidnightBreakReset()
+
+        // Pre-activate shield so apps are blocked through midnight.
+        // ManagedSettingsStore persists across process termination.
+        // Full daily reset (wind, preset) happens in intervalDidStart or app foreground.
+        let settings = SharedDefaults.limitSettings
+        if settings.dayStartShieldEnabled {
+            SharedDefaults.isDayStartShieldActive = true
+            SharedDefaults.synchronize()
+            if activateShieldFromTokens() {
+                ExtensionLogger.log("[Extension] intervalDidEnd pre-midnight shield activated")
+            }
+        }
+    }
+
     override func eventDidReachThreshold(_ event: DeviceActivityEvent.Name, activity: DeviceActivityName) {
         super.eventDidReachThreshold(event, activity: activity)
 

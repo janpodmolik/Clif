@@ -588,6 +588,11 @@ struct DebugView: View {
                 }
                 .tint(.orange)
 
+                Button("Simulate intervalDidEnd") {
+                    simulateIntervalDidEnd()
+                }
+                .tint(.mint)
+
                 Button("Overnight Break") {
                     simulateOvernightBreak()
                 }
@@ -635,6 +640,38 @@ struct DebugView: View {
         ShieldManager.shared.resumeBreakMonitoringIfNeeded()
 
         log("Midnight reset: type=\(result.breakType), minutes=\(result.actualMinutes), coins=\(coins)")
+    }
+
+    /// Simulates what the DeviceActivityMonitor extension does in intervalDidEnd (23:59).
+    /// Ends any active break, sets isDayStartShieldActive, and activates shield from stored tokens.
+    private func simulateIntervalDidEnd() {
+        func log(_ message: String) {
+            ExtensionLogger.log(message, prefix: "[DebugIntervalEnd]")
+            print(message)
+        }
+
+        // End any active break (same as extension's handleMidnightBreakReset)
+        if let result = SharedDefaults.endBreakAtMidnight(cutoff: Date()) {
+            let coins = SnapshotLogging.processMidnightBreak(result)
+            ShieldManager.shared.clear()
+            log("Break ended: type=\(result.breakType), minutes=\(result.actualMinutes), coins=\(coins)")
+        } else {
+            log("No active break")
+        }
+
+        // Pre-activate shield (same as extension's intervalDidEnd)
+        let settings = SharedDefaults.limitSettings
+        if settings.dayStartShieldEnabled {
+            SharedDefaults.isDayStartShieldActive = true
+            SharedDefaults.synchronize()
+            if ShieldManager.shared.activateStoreFromStoredTokens() {
+                log("Day start shield activated (simulating intervalDidEnd)")
+            } else {
+                log("No tokens to activate")
+            }
+        } else {
+            log("dayStartShieldEnabled=false, skipping shield")
+        }
     }
 
     /// Simulates opening the app after an overnight committed break.
