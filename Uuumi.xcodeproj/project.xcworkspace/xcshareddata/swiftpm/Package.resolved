@@ -1,6 +1,15 @@
 {
-  "originHash" : "ccc727310637079b7355ccf59e7d153c26677020c1a43e177b78cc9df7963c0f",
+  "originHash" : "292645c900c53bdf62d7cbed62132067f1a4abab8288f4a8a21a115b9ef3508d",
   "pins" : [
+    {
+      "identity" : "statsig-kit",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/statsig-io/statsig-kit.git",
+      "state" : {
+        "revision" : "bd8e0fad1b6b8c0dea7ee577486c7615043bb0b0",
+        "version" : "1.62.1"
+      }
+    },
     {
       "identity" : "supabase-swift",
       "kind" : "remoteSourceControl",

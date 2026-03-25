@@ -55,7 +55,7 @@ struct DayByDayUsageCard: View {
             }
         }
         .sheet(isPresented: $showPremiumSheet) {
-            PremiumSheet()
+            PremiumSheet(source: "day_by_day_stats")
         }
         .sheet(item: $selectedDay) { day in
             DayDetailSheet(day: day, petId: petId, limitMinutes: limitMinutes, hourlyBreakdown: nil)

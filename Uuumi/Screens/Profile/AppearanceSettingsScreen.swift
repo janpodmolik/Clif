@@ -64,7 +64,7 @@ struct AppearanceSettingsScreen: View {
         .navigationTitle("Appearance")
         .navigationBarTitleDisplayMode(.inline)
         .sheet(isPresented: $showPremiumSheet) {
-            PremiumSheet()
+            PremiumSheet(source: "appearance_theme")
         }
     }
 
@@ -158,7 +158,7 @@ struct ThemePicker<T: Hashable & Identifiable>: View {
         }
         .padding(.vertical, 4)
         .sheet(isPresented: $showPremiumSheet) {
-            PremiumSheet()
+            PremiumSheet(source: "appearance_sky")
         }
     }
 }

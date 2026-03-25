@@ -23,6 +23,7 @@ struct MainApp: App {
     @State private var analyticsManager = AnalyticsManager()
     @State private var deepLinkRouter = DeepLinkRouter()
     @State private var periodicSyncTimer: AnyCancellable?
+    @State private var wasInBackground = false
 
     init() {
         #if DEBUG
@@ -31,7 +32,6 @@ struct MainApp: App {
         // Eagerly initialize ShieldManager so its Darwin notification observer
         // is registered before any extension threshold can fire.
         _ = ShieldManager.shared
-        analyticsManager.initialize()
     }
 
     var body: some Scene {
@@ -54,11 +54,12 @@ struct MainApp: App {
                 }
                 .task {
                     await storeManager.checkCurrentEntitlements()
-                    analyticsManager.configure(
+                    await analyticsManager.start(userId: authManager.currentUser?.id)
+                    await analyticsManager.updateUser(
                         userId: authManager.currentUser?.id,
                         premiumPlan: storeManager.activeProductId
                     )
-                    analyticsManager.sendConfigSnapshot()
+                    analyticsManager.send(.appOpened)
                 }
                 .onChange(of: authManager.authState) { oldState, newState in
                     #if DEBUG
@@ -75,10 +76,12 @@ struct MainApp: App {
     private func handleAuthStateChange(from oldState: AuthManager.AuthState, to newState: AuthManager.AuthState) {
         switch newState {
         case .authenticated:
-            analyticsManager.configure(
-                userId: authManager.currentUser?.id,
-                premiumPlan: storeManager.activeProductId
-            )
+            Task {
+                await analyticsManager.updateUser(
+                    userId: authManager.currentUser?.id,
+                    premiumPlan: storeManager.activeProductId
+                )
+            }
             if petManager.hasPet {
                 // Local pet exists — check if cloud also has one (potential conflict)
                 // Only upload local settings if no conflict (conflict resolution handles sync)
@@ -133,6 +136,11 @@ struct MainApp: App {
     private func handleScenePhaseChange(_ phase: ScenePhase) {
         switch phase {
         case .active:
+            if wasInBackground {
+                analyticsManager.send(.appOpened)
+                wasInBackground = false
+            }
+
             // Refresh shield state (may have been activated by extension at 100%)
             ShieldState.shared.refresh()
 
@@ -190,6 +198,8 @@ struct MainApp: App {
             #endif
 
         case .background:
+            wasInBackground = true
+
             // Stop periodic sync timer
             periodicSyncTimer?.cancel()
             periodicSyncTimer = nil

@@ -163,10 +163,10 @@ struct ProfileScreen: View {
                 }
             }
             .sheet(isPresented: $showPremiumSheet) {
-                PremiumSheet()
+                PremiumSheet(source: "profile")
             }
             .sheet(isPresented: $showCoinShopSheet) {
-                CoinShopSheet()
+                CoinShopSheet(source: "profile")
             }
             .sheet(isPresented: $showMyAppsSheet, onDismiss: {
                 myAppsSelection = SharedDefaults.loadMyAppsSelection()

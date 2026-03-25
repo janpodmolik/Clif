@@ -2,6 +2,7 @@ import SwiftUI
 
 struct OnboardingView: View {
     @Environment(PetManager.self) private var petManager
+    @Environment(AnalyticsManager.self) private var analytics
 
     @AppStorage(DefaultsKeys.hasCompletedOnboarding)
     private var hasCompletedOnboarding = false
@@ -270,6 +271,7 @@ struct OnboardingView: View {
             if let pet = petManager.currentPet {
                 ScreenTimeManager.shared.applyDailyPreset(pet.preset, for: pet)
             }
+            analytics.send(.onboardingCompleted)
             hasCompletedOnboarding = true
             return
         }

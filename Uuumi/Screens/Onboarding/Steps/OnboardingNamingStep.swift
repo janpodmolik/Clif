@@ -7,6 +7,7 @@ struct OnboardingNamingStep: View {
     @Binding var eyesOverride: String?
 
     @Environment(PetManager.self) private var petManager
+    @Environment(AnalyticsManager.self) private var analytics
 
     // MARK: - Narrative State
 
@@ -216,6 +217,9 @@ struct OnboardingNamingStep: View {
             preset: preset,
             limitedSources: limitedSources
         )
+
+        analytics.send(.petCreated(source: "onboarding"))
+        analytics.send(.presetSelected(preset: preset.rawValue, context: .onboarding))
 
         onContinue()
     }

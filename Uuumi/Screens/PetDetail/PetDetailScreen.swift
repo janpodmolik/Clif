@@ -165,6 +165,7 @@ struct PetDetailScreen: View {
                     onEdit: showOverviewActions ? nil : { selection in
                         let newSources = LimitedSource.from(selection)
                         petManager.updateLimitedSources(newSources, selection: selection)
+                        analytics.send(.limitedAppsChanged(appCount: newSources.count))
                     },
                     onEndFreeBreak: showOverviewActions ? nil : {
                         ShieldManager.shared.turnOff(success: true)
@@ -200,18 +201,18 @@ struct PetDetailScreen: View {
             .sheet(isPresented: $showBreakTypePicker) {
                 BreakTypePicker(
                     onSelectFree: {
-                        analytics.sendBreakStarted(breakType: "free")
+                        analytics.sendBreakStarted(type: "free")
                         ShieldManager.shared.turnOn(breakType: .free, committedMode: nil)
                     },
                     onConfirmCommitted: { mode in
-                        analytics.sendBreakStarted(breakType: "committed")
+                        analytics.sendBreakStarted(type: "committed", duration: mode.durationSeconds.map { Int($0 / 60) })
                         ShieldManager.shared.turnOn(breakType: .committed, committedMode: mode)
                     }
                 )
             }
             .dismissButton()
             .sheet(isPresented: $showPremiumSheet) {
-                PremiumSheet()
+                PremiumSheet(source: "pet_detail_trend")
             }
         }
     }

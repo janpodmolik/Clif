@@ -32,11 +32,11 @@ struct HomeFloatingLockButton: View {
         .sheet(isPresented: $showBreakTypePicker) {
             BreakTypePicker(
                 onSelectFree: {
-                    analytics.sendBreakStarted(breakType: "free")
+                    analytics.sendBreakStarted(type: "free")
                     ShieldManager.shared.turnOn(breakType: .free, committedMode: nil)
                 },
                 onConfirmCommitted: { mode in
-                    analytics.sendBreakStarted(breakType: "committed")
+                    analytics.sendBreakStarted(type: "committed", duration: mode.durationSeconds.map { Int($0 / 60) })
                     ShieldManager.shared.turnOn(breakType: .committed, committedMode: mode)
                 }
             )
@@ -103,7 +103,6 @@ struct HomeFloatingLockButton: View {
             UIImpactFeedbackGenerator(style: .light).impactOccurred()
             stopPulsing()
             if shieldState.isActive {
-                analytics.send(.shieldToggled(enabled: false))
                 handleShieldUnlock(
                     shieldState: shieldState,
                     showCommittedConfirmation: $showCommittedUnlock,

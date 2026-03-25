@@ -40,10 +40,10 @@ struct EssenceUnlockSheet: View {
         .presentationDetents([.medium])
         .presentationDragIndicator(.visible)
         .sheet(isPresented: $showPremiumSheet) {
-            PremiumSheet()
+            PremiumSheet(source: "essence_unlock")
         }
         .sheet(isPresented: $showCoinShopSheet) {
-            CoinShopSheet()
+            CoinShopSheet(source: "essence_unlock")
         }
     }
 

@@ -34,7 +34,7 @@ struct DailyPatternCard: View {
             }
         }
         .sheet(isPresented: $showPremiumSheet) {
-            PremiumSheet()
+            PremiumSheet(source: "daily_pattern")
         }
         .alert("Daily pattern", isPresented: $showInfo) {
             Button("OK", role: .cancel) {}

@@ -219,8 +219,8 @@ final class CreatePetCoordinator {
             SharedDefaults.saveMyAppsSelection(selectedApps)
         }
 
-        analyticsManager.send(.petCreated(essenceType: "blob"))
-        analyticsManager.send(.presetSelected(presetName: preset.rawValue, context: .creation))
+        analyticsManager.send(.petCreated(source: "creation"))
+        analyticsManager.send(.presetSelected(preset: preset.rawValue, context: .creation))
 
         onComplete?(pet)
         dismiss()

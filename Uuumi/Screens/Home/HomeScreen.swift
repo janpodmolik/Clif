@@ -369,7 +369,7 @@ struct HomeScreen: View {
             if newValue == true && oldValue != true, let screenWidth = currentScreenWidth {
                 blowAwayAnimator.trigger(screenWidth: screenWidth)
                 if let pet = currentPet {
-                    analytics.send(.blowAway(essenceType: pet.evolutionTypeName, evolutionPhase: pet.currentPhase, totalDays: pet.totalDays))
+                    analytics.send(.blowAway(essence: pet.evolutionTypeName, phase: pet.currentPhase, days: pet.totalDays))
                 }
             }
         }
@@ -588,7 +588,7 @@ struct HomeScreen: View {
 
         if let pet = currentPet {
             let reason = pet.isFullyEvolved ? "completed" : "manual"
-            analytics.send(.petArchived(essenceType: pet.evolutionTypeName, evolutionPhase: pet.currentPhase, totalDays: pet.totalDays, reason: reason))
+            analytics.send(.petArchived(essence: pet.evolutionTypeName, phase: pet.currentPhase, days: pet.totalDays, reason: reason))
         }
 
         let screenHeight = fullScreenHeight > 0 ? fullScreenHeight : 800
@@ -614,7 +614,7 @@ struct HomeScreen: View {
         if pet.isBlob {
             essenceCoordinator.show(petDropFrame: essenceDropFrame) { essence in
                 let evolveAction = {
-                    analytics.send(.essenceApplied(essenceType: essence.rawValue, evolutionPhase: pet.currentPhase))
+                    analytics.send(.essenceApplied(essence: essence.rawValue))
                     evolutionAnimator.triggerEssenceApplication(pet: pet, essence: essence)
                 }
                 // Essence application — upsell handled in essence drop dialog
@@ -622,7 +622,7 @@ struct HomeScreen: View {
             }
         } else {
             let evolveAction = {
-                analytics.send(.petEvolved(essenceType: pet.evolutionTypeName, fromPhase: pet.currentPhase, toPhase: pet.currentPhase + 1))
+                analytics.send(.petEvolved(essence: pet.evolutionTypeName, phase: pet.currentPhase + 1))
                 evolutionAnimator.trigger(pet: pet)
             }
             if storeManager.isPremium {

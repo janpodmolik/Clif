@@ -2,6 +2,8 @@ import SwiftUI
 import StoreKit
 
 struct PremiumSheet: View {
+    var source: String = "profile"
+
     @Environment(StoreManager.self) private var storeManager
     @Environment(AnalyticsManager.self) private var analytics
     @Environment(\.dismiss) private var dismiss
@@ -31,6 +33,7 @@ struct PremiumSheet: View {
             .navigationBarTitleDisplayMode(.inline)
             .dismissButton()
             .task {
+                analytics.send(.paywallShown(source: source, type: "premium"))
                 await storeManager.loadProducts()
                 // Pre-select yearly as best value
                 if selectedProduct == nil {
@@ -179,9 +182,17 @@ struct PremiumSheet: View {
     private var purchaseButton: some View {
         Button {
             guard let product = selectedProduct else { return }
-            let plan = product.id == StoreManager.yearlyID ? "yearly" : "monthly"
-            analytics.send(.premiumPurchaseTapped(plan: plan))
-            Task { await storeManager.purchase(product) }
+            Task {
+                await storeManager.purchase(product)
+                switch storeManager.purchaseState {
+                case .purchased:
+                    analytics.send(.purchaseCompleted(product: product.id, source: source, revenue: product.displayPrice))
+                case .failed:
+                    analytics.send(.purchaseFailed(product: product.id, source: source, reason: storeManager.error?.localizedDescription ?? "unknown"))
+                default:
+                    break
+                }
+            }
         } label: {
             Group {
                 if storeManager.purchaseState == .purchasing {

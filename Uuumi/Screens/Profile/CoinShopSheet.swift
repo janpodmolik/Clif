@@ -2,6 +2,8 @@ import StoreKit
 import SwiftUI
 
 struct CoinShopSheet: View {
+    var source: String = "profile"
+
     @Environment(StoreManager.self) private var storeManager
     @Environment(AnalyticsManager.self) private var analytics
     @Environment(\.dismiss) private var dismiss
@@ -23,6 +25,7 @@ struct CoinShopSheet: View {
             .navigationBarTitleDisplayMode(.inline)
             .dismissButton()
             .task {
+                analytics.send(.paywallShown(source: source, type: "coins"))
                 await storeManager.loadProducts()
             }
             .onChange(of: storeManager.purchaseState) { _, newState in
@@ -76,8 +79,17 @@ struct CoinShopSheet: View {
         let isAnyPurchasing = storeManager.purchaseState == .purchasing
 
         return Button {
-            analytics.send(.coinPackPurchaseTapped(pack: product.id))
-            Task { await storeManager.purchase(product) }
+            Task {
+                await storeManager.purchase(product)
+                switch storeManager.purchaseState {
+                case .purchased:
+                    analytics.send(.purchaseCompleted(product: product.id, source: source, revenue: product.displayPrice))
+                case .failed:
+                    analytics.send(.purchaseFailed(product: product.id, source: source, reason: storeManager.error?.localizedDescription ?? "unknown"))
+                default:
+                    break
+                }
+            }
         } label: {
             HStack {
                 VStack(alignment: .leading, spacing: 4) {

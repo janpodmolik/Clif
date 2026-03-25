@@ -50,7 +50,7 @@ struct DayDetailSheet: View {
         .presentationDetents(storeManager.isPremium ? [.large] : [.medium, .large])
         .presentationDragIndicator(.visible)
         .sheet(isPresented: $showPremiumSheet) {
-            PremiumSheet()
+            PremiumSheet(source: "day_detail_timeline")
         }
     }
 
