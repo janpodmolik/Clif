@@ -7,27 +7,10 @@ import UIKit
 // Make sure that your class name matches the NSExtensionPrincipalClass in your Info.plist.
 class ShieldConfigurationExtension: ShieldConfigurationDataSource {
 
-    /// Static initializer to log when extension loads
-    override init() {
-        super.init()
-        logToFile("ShieldConfigurationExtension INIT")
-    }
-
-    private func logToFile(_ message: String) {
-        ExtensionLogger.log(message, prefix: "[ShieldConfig]")
-    }
-
     private func getShieldConfiguration() -> ShieldConfiguration {
-        logToFile("getShieldConfiguration() called")
-        // Check if this is Day Start Shield (first use of the day, before preset selected)
-        logToFile("isDayStartShieldActive=\(SharedDefaults.isDayStartShieldActive)")
         if SharedDefaults.isDayStartShieldActive {
-            logToFile("Returning DAY START shield config")
             return getDayStartShieldConfiguration()
         }
-
-        // Regular shield during usage
-        logToFile("Returning USAGE shield config")
         return getUsageShieldConfiguration()
     }
 
@@ -62,7 +45,6 @@ class ShieldConfigurationExtension: ShieldConfigurationDataSource {
             subtitleText = "You can safely end your break in Uuumi."
         }
 
-        logToFile("getUsageShieldConfiguration() title: \(titleText), breakType: \(String(describing: breakType))")
         return ShieldConfiguration(
             backgroundBlurStyle: .prominent,
             backgroundColor: .systemBlue,
@@ -76,22 +58,18 @@ class ShieldConfigurationExtension: ShieldConfigurationDataSource {
     }
 
     override func configuration(shielding application: Application) -> ShieldConfiguration {
-        logToFile("configuration(shielding application:) called")
-        return getShieldConfiguration()
+        getShieldConfiguration()
     }
 
     override func configuration(shielding application: Application, in category: ActivityCategory) -> ShieldConfiguration {
-        logToFile("configuration(shielding application:in category:) called")
-        return getShieldConfiguration()
+        getShieldConfiguration()
     }
 
     override func configuration(shielding webDomain: WebDomain) -> ShieldConfiguration {
-        logToFile("configuration(shielding webDomain:) called")
-        return getShieldConfiguration()
+        getShieldConfiguration()
     }
 
     override func configuration(shielding webDomain: WebDomain, in category: ActivityCategory) -> ShieldConfiguration {
-        logToFile("configuration(shielding webDomain:in category:) called")
-        return getShieldConfiguration()
+        getShieldConfiguration()
     }
 }

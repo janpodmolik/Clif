@@ -1,18 +1,13 @@
 import Foundation
 import ManagedSettings
-import os.log
 
 /// Shield Action Extension - handles button taps on the shield.
-/// Based on: https://pedroesli.com/2023-11-13-screen-time-api/
 ///
 /// IMPORTANT: Unlock is handled by redirecting user to main app via deep link.
 /// The main app then handles wind decrease calculation and monitoring restart.
 /// This is necessary because DeviceActivity thresholds are cumulative and cannot
 /// be reset from extension - only from main app with full DeviceActivityCenter access.
 class ShieldActionExtension: ShieldActionDelegate {
-
-    let store = ManagedSettingsStore()
-    let logger = Logger(subsystem: "com.janpodmolik.Uuumi.ShieldAction", category: "ShieldAction")
 
     // MARK: - Open Containing App
 
@@ -62,14 +57,14 @@ class ShieldActionExtension: ShieldActionDelegate {
     private func lockPresetForToday() {
         SharedDefaults.windPresetLockedForToday = true
         SharedDefaults.windPresetLockedDate = Date()
-        logger.info("Wind preset locked for today")
+        logToFile("Wind preset locked for today")
     }
 
     // MARK: - Break Handling
 
     /// Checks if user is currently on a break and logs breakFailed if violated.
+    /// Resets all shield flags since the break is effectively over.
     private func handlePotentialBreakViolation() {
-        // If there's an active break, opening a shielded app means break was violated
         guard let breakStartedAt = SharedDefaults.breakStartedAt,
               let petId = SharedDefaults.monitoredPetId else {
             return
@@ -85,9 +80,9 @@ class ShieldActionExtension: ShieldActionDelegate {
         )
 
         SnapshotStore.shared.appendSync(event)
-        SharedDefaults.breakStartedAt = nil
+        SharedDefaults.resetShieldFlags()
 
-        logger.info("Break violated after \(actualMinutes) minutes - logged breakEnded(success: false)")
+        logToFile("Break violated after \(actualMinutes) minutes - flags reset")
     }
 
     // MARK: - Unlock Handling
@@ -144,9 +139,10 @@ class ShieldActionExtension: ShieldActionDelegate {
     }
 
     override func handle(action: ShieldAction, for webDomain: WebDomainToken, completionHandler: @escaping (ShieldActionResponse) -> Void) {
-        logger.info("handle(action:for webDomain:) called")
+        logToFile("handle(action:for WEB DOMAIN) - action=\(action == .primaryButtonPressed ? "primary" : "secondary")")
 
         if isDayStartShield {
+            logToFile("Handled as Day Start Shield -> .defer")
             completionHandler(.defer)
             openContainingApp()
             return
@@ -154,11 +150,10 @@ class ShieldActionExtension: ShieldActionDelegate {
 
         switch action {
         case .primaryButtonPressed:
-            logger.info("Primary button (Close App) pressed")
             completionHandler(.close)
 
         case .secondaryButtonPressed:
-            logger.info("Secondary button (Unlock) pressed for web domain")
+            logToFile("Unlock pressed - redirecting to app")
             prepareUnlock()
             completionHandler(.defer)
             openContainingApp()
@@ -169,9 +164,10 @@ class ShieldActionExtension: ShieldActionDelegate {
     }
 
     override func handle(action: ShieldAction, for category: ActivityCategoryToken, completionHandler: @escaping (ShieldActionResponse) -> Void) {
-        logger.info("handle(action:for category:) called")
+        logToFile("handle(action:for CATEGORY) - action=\(action == .primaryButtonPressed ? "primary" : "secondary")")
 
         if isDayStartShield {
+            logToFile("Handled as Day Start Shield -> .defer")
             completionHandler(.defer)
             openContainingApp()
             return
@@ -179,11 +175,10 @@ class ShieldActionExtension: ShieldActionDelegate {
 
         switch action {
         case .primaryButtonPressed:
-            logger.info("Primary button (Close App) pressed")
             completionHandler(.close)
 
         case .secondaryButtonPressed:
-            logger.info("Secondary button (Unlock) pressed for category")
+            logToFile("Unlock pressed - redirecting to app")
             prepareUnlock()
             completionHandler(.defer)
             openContainingApp()

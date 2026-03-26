@@ -33,11 +33,13 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
             let didReset = SharedDefaults.performDailyResetIfNeeded()
             ExtensionLogger.log("[Extension] Daily reset performed: \(didReset)")
 
-            // Also activate shield on blocked apps
-            if activateShieldFromTokens() {
-                ExtensionLogger.log("[Extension] Day start shield activated")
-            } else {
-                ExtensionLogger.log("[Extension] Failed to load tokens for day start shield")
+            // Also activate shield on blocked apps (only if day start shield was actually set)
+            if SharedDefaults.isDayStartShieldActive {
+                if activateShieldFromTokens() {
+                    ExtensionLogger.log("[Extension] Day start shield activated")
+                } else {
+                    ExtensionLogger.log("[Extension] Failed to load tokens for day start shield")
+                }
             }
         } else {
             // Same day - this is monitoring restart (e.g., after app update, reboot)
@@ -54,7 +56,25 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
             } else {
                 ExtensionLogger.log("[Extension] Monitoring restart - no baseline update needed")
             }
+
+            // Safety invariant: if user already selected a preset today,
+            // ensure day start shield is fully cleared (flag + ManagedSettingsStore).
+            // This handles the case where intervalDidEnd re-applied shield tokens
+            // but the flag was stale (user already picked a preset).
+            if SharedDefaults.todaySelectedPreset != nil && SharedDefaults.isDayStartShieldActive {
+                SharedDefaults.isDayStartShieldActive = false
+                SharedDefaults.synchronize()
+                clearShieldStore()
+                ExtensionLogger.log("[Extension] Cleared stale day start shield - preset already selected")
+            }
         }
+    }
+
+    /// Removes all shields from ManagedSettingsStore.
+    private func clearShieldStore() {
+        store.shield.applications = nil
+        store.shield.applicationCategories = nil
+        store.shield.webDomains = nil
     }
 
     /// Loads stored tokens and applies them to ManagedSettingsStore.
@@ -92,13 +112,22 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
         // Pre-activate shield so apps are blocked through midnight.
         // ManagedSettingsStore persists across process termination.
         // Full daily reset (wind, preset) happens in intervalDidStart or app foreground.
+        //
+        // IMPORTANT: Only activate near midnight (hour >= 23).
+        // intervalDidEnd also fires on monitoring restarts (e.g., after applyDailyPreset
+        // calls startMonitoring). Without this guard, every restart re-activates the shield,
+        // making it impossible for users to dismiss the day start shield.
         let settings = SharedDefaults.limitSettings
-        if settings.dayStartShieldEnabled {
+        let hour = Calendar.current.component(.hour, from: Date())
+        let hasPreset = SharedDefaults.todaySelectedPreset != nil
+        if settings.dayStartShieldEnabled && hour >= 23 && !hasPreset {
             SharedDefaults.isDayStartShieldActive = true
             SharedDefaults.synchronize()
             if activateShieldFromTokens() {
                 ExtensionLogger.log("[Extension] intervalDidEnd pre-midnight shield activated")
             }
+        } else {
+            ExtensionLogger.log("[Extension] intervalDidEnd skipped shield - hour=\(hour), hasPreset=\(hasPreset)")
         }
     }
 
@@ -106,8 +135,6 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
         super.eventDidReachThreshold(event, activity: activity)
 
         autoreleasepool {
-            ExtensionLogger.log("[Extension] eventDidReachThreshold: \(event.rawValue)")
-
             guard let currentSeconds = parseSecondsFromEvent(event) else { return }
 
             // Guard against out-of-order threshold bursts: only process if this threshold
@@ -126,8 +153,6 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
                 lastProcessedSeconds: lastProcessed
             )
 
-            ExtensionLogger.log("[Extension] current=\(adjustedSeconds)s")
-
             SharedDefaults.monitoredLastThresholdSeconds = adjustedSeconds
             SharedDefaults.lastThresholdTimestamp = Date()
 
@@ -144,16 +169,13 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
         let midnight = Calendar.current.startOfDay(for: Date())
 
         guard let result = SharedDefaults.endBreakAtMidnight(cutoff: midnight) else {
-            ExtensionLogger.log("[Extension] No active break at midnight")
             return
         }
 
         let coins = SnapshotLogging.processMidnightBreak(result)
 
         // Deactivate ManagedSettingsStore (extension-specific, not in shared logic)
-        store.shield.applications = nil
-        store.shield.applicationCategories = nil
-        store.shield.webDomains = nil
+        clearShieldStore()
 
         ExtensionLogger.log("[Extension] Midnight break reset: type=\(result.breakType), actualMinutes=\(result.actualMinutes), coins=\(coins)")
     }
@@ -258,7 +280,6 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
                 eventType: .usageThreshold(cumulativeSeconds: trueCumulative)
             )
             SnapshotStore.shared.append(event)
-            ExtensionLogger.log("[Snapshot] usageThreshold: \(trueCumulative)s")
         }
     }
 
