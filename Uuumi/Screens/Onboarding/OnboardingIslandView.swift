@@ -136,7 +136,7 @@ struct OnboardingIslandView: View {
             value: isTapHintPulsing
         )
         .onAppear { isTapHintPulsing = true }
-        .allowsHitTesting(false)
+        .onTapGesture { handleTap() }
     }
 
     private var petImageView: some View {
