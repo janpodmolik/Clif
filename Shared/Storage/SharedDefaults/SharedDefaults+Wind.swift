@@ -125,6 +125,13 @@ extension SharedDefaults {
         }
     }
 
+    /// Whether wind reminder notification has already been sent this wind session.
+    /// Prevents repeated reminders while wind stays above 0. Resets when wind drops to 0 or on new day.
+    static var windReminderSent: Bool {
+        get { defaults?.bool(forKey: DefaultsKeys.windReminderSent) ?? false }
+        set { defaults?.set(newValue, forKey: DefaultsKeys.windReminderSent) }
+    }
+
     // MARK: - Wind Helpers
 
     /// Resets all wind-related values for a new monitoring session.
@@ -136,6 +143,7 @@ extension SharedDefaults {
         lastKnownWindLevel = 0
         lastThresholdTimestamp = nil
         windPresetLockedForToday = false
+        windReminderSent = false
         synchronize()
     }
 

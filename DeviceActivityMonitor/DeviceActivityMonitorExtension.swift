@@ -311,10 +311,13 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
         guard settings.notifications.shouldSendWindReminder() else { return }
 
         if newWind > 0 {
+            guard !SharedDefaults.windReminderSent else { return }
+            SharedDefaults.windReminderSent = true
             WindReminderNotification.schedule { message in
                 ExtensionLogger.log(message)
             }
         } else {
+            SharedDefaults.windReminderSent = false
             WindReminderNotification.cancel { message in
                 ExtensionLogger.log(message)
             }

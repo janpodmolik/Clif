@@ -183,7 +183,7 @@ private struct PresetCard: View {
         case .gentle:
             return "20 minutes of scrolling before the wind maxes out. For those just starting out."
         case .balanced:
-            return "12 minutes. A fair fight. Most players start here."
+            return "12 minutes. A fair fight. Most users start here."
         case .intense:
             return "8 minutes. Full power. Only for the brave."
         }

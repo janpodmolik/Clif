@@ -120,6 +120,7 @@ enum DefaultsKeys {
     static let currentBreakType = "currentBreakType"
     static let committedBreakMode = "committedBreakMode"
     static let windZeroNotified = "windZeroNotified"
+    static let windReminderSent = "windReminderSent"
 
     // MARK: - Shield Unlock Redirect
 
