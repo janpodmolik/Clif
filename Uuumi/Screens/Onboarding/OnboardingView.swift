@@ -269,7 +269,7 @@ struct OnboardingView: View {
         if currentScreen.isLast {
             // Start monitoring only after the entire onboarding is complete
             if let pet = petManager.currentPet {
-                ScreenTimeManager.shared.applyDailyPreset(pet.preset, for: pet)
+                ScreenTimeManager.shared.applyPreset(pet.preset, for: pet)
             }
             analytics.send(.onboardingCompleted)
             hasCompletedOnboarding = true

@@ -219,6 +219,9 @@ final class CreatePetCoordinator {
             SharedDefaults.saveMyAppsSelection(selectedApps)
         }
 
+        // Apply preset to start monitoring and persist tokens for ShieldManager
+        ScreenTimeManager.shared.applyPreset(preset, for: pet)
+
         analyticsManager.send(.petCreated(source: "creation"))
         analyticsManager.send(.presetSelected(preset: preset.rawValue, context: .creation))
 

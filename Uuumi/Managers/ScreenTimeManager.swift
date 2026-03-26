@@ -79,11 +79,11 @@ final class ScreenTimeManager: ObservableObject {
     /// - Saves preset selection to SharedDefaults
     /// - Clears any existing shields
     /// - Restarts monitoring with new preset parameters
-    func applyDailyPreset(_ preset: WindPreset, for pet: Pet) {
+    func applyPreset(_ preset: WindPreset, for pet: Pet) {
         // If preset is already locked for today, skip — re-applying would zero the baseline
         guard !SharedDefaults.windPresetLockedForToday else {
             #if DEBUG
-            print("[ScreenTimeManager] applyDailyPreset: preset already locked for today, skipping")
+            print("[ScreenTimeManager] applyPreset: preset already locked for today, skipping")
             #endif
             return
         }

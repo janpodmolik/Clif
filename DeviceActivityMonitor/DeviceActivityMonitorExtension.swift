@@ -114,7 +114,7 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
         // Full daily reset (wind, preset) happens in intervalDidStart or app foreground.
         //
         // IMPORTANT: Only activate near midnight (hour >= 23).
-        // intervalDidEnd also fires on monitoring restarts (e.g., after applyDailyPreset
+        // intervalDidEnd also fires on monitoring restarts (e.g., after applyPreset
         // calls startMonitoring). Without this guard, every restart re-activates the shield,
         // making it impossible for users to dismiss the day start shield.
         let settings = SharedDefaults.limitSettings
