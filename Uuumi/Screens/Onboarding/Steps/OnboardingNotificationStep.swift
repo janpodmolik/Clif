@@ -70,7 +70,7 @@ struct OnboardingNotificationStep: View {
             if skipAnimation {
                 Text("You can't always be here.")
                 Text("But Uuumi can reach you when it matters.")
-                    .font(AppFont.quicksand(.subheadline, weight: .medium))
+                    .font(AppFont.quicksand(.callout, weight: .semiBold))
                     .foregroundStyle(.secondary)
             } else {
                 let skipped = narrativeBeat >= 1
@@ -97,7 +97,7 @@ struct OnboardingNotificationStep: View {
                         showNotifications()
                     }
                 )
-                .font(AppFont.quicksand(.subheadline, weight: .medium))
+                .font(AppFont.quicksand(.callout, weight: .semiBold))
                 .foregroundStyle(.secondary)
                 .opacity(showSecondLine ? 1 : 0)
             }
@@ -137,8 +137,8 @@ struct OnboardingNotificationStep: View {
             VStack(spacing: 16) {
                 if permissionDenied {
                     Text("You can enable notifications in app settings anytime.")
-                        .font(AppFont.quicksand(.caption, weight: .medium))
-                        .foregroundStyle(.secondary)
+                        .font(AppFont.quicksand(.footnote, weight: .medium))
+                        .foregroundStyle(.primary.opacity(0.7))
                         .multilineTextAlignment(.center)
                         .transition(.opacity)
                     goToSettingsButton
@@ -240,7 +240,7 @@ struct OnboardingNotificationStep: View {
             // Show speech bubble on pet synchronized with first notification
             speechBubbleConfig = SpeechBubbleConfig(
                 position: .right,
-                emojis: ["😰"],
+                emojis: ["🥺"],
                 windLevel: .none,
                 displayDuration: 4.0
             )
@@ -272,7 +272,7 @@ struct OnboardingNotificationStep: View {
         }
         speechBubbleConfig = SpeechBubbleConfig(
             position: .right,
-            emojis: ["😰"],
+            emojis: ["🥺"],
             windLevel: .none,
             displayDuration: 3.0
         )

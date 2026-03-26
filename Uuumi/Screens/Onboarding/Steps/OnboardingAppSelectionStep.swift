@@ -77,7 +77,7 @@ struct OnboardingAppSelectionStep: View {
                 .foregroundStyle(.primary)
 
             Text("Only from the apps that pull you in.")
-                .font(AppFont.quicksand(.subheadline, weight: .medium))
+                .font(AppFont.quicksand(.callout, weight: .semiBold))
                 .foregroundStyle(.secondary)
         }
         .multilineTextAlignment(.center)
@@ -132,8 +132,8 @@ struct OnboardingAppSelectionStep: View {
         } icon: {
             Image(systemName: "arrow.triangle.2.circlepath")
         }
-        .font(AppFont.quicksand(.caption, weight: .medium))
-        .foregroundStyle(.secondary)
+        .font(AppFont.quicksand(.footnote, weight: .medium))
+        .foregroundStyle(.primary.opacity(0.7))
     }
 
     // MARK: - Continue

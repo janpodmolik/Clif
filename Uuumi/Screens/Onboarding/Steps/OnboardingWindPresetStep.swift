@@ -64,7 +64,7 @@ struct OnboardingWindPresetStep: View {
             if skipAnimation {
                 Text("How strict should the wind be?")
                 Text("Pick what feels realistic. You'll choose again tomorrow.")
-                    .font(AppFont.quicksand(.subheadline, weight: .medium))
+                    .font(AppFont.quicksand(.callout, weight: .semiBold))
                     .foregroundStyle(.secondary)
             } else {
                 let skipped = narrativeBeat >= 1
@@ -96,7 +96,7 @@ struct OnboardingWindPresetStep: View {
                         }
                     }
                 )
-                .font(AppFont.quicksand(.subheadline, weight: .medium))
+                .font(AppFont.quicksand(.callout, weight: .semiBold))
                 .foregroundStyle(.secondary)
                 .opacity(showSecondLine ? 1 : 0)
             }
@@ -133,8 +133,8 @@ struct OnboardingWindPresetStep: View {
         } icon: {
             Image(systemName: "arrow.triangle.2.circlepath")
         }
-        .font(AppFont.quicksand(.caption, weight: .medium))
-        .foregroundStyle(.secondary)
+        .font(AppFont.quicksand(.footnote, weight: .medium))
+        .foregroundStyle(.primary.opacity(0.7))
     }
 
     // MARK: - Continue

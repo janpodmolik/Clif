@@ -84,7 +84,7 @@ struct OnboardingLoginStep: View {
                             }
                         }
                     )
-                    .font(AppFont.quicksand(.subheadline, weight: .medium))
+                    .font(AppFont.quicksand(.callout, weight: .semiBold))
                     .foregroundStyle(.secondary)
                 }
 
@@ -101,14 +101,14 @@ struct OnboardingLoginStep: View {
 
     private var subtitle: some View {
         Text("Sign in to save your progress, coins, and streaks. Restore everything if you switch devices or reinstall.")
-            .font(AppFont.quicksand(.subheadline, weight: .medium))
+            .font(AppFont.quicksand(.callout, weight: .semiBold))
             .foregroundStyle(.secondary)
     }
 
     private var privacyNote: some View {
         Text("We only store your progress, nothing else.")
             .font(AppFont.quicksand(.caption, weight: .medium))
-            .foregroundStyle(.tertiary)
+            .foregroundStyle(.secondary)
             .padding(.top, 4)
     }
 

@@ -61,7 +61,7 @@ struct OnboardingDataStep: View {
                 .foregroundStyle(.primary)
 
             Text("Your screen time speaks for itself.")
-                .font(AppFont.quicksand(.subheadline, weight: .medium))
+                .font(AppFont.quicksand(.callout, weight: .semiBold))
                 .foregroundStyle(.secondary)
         }
         .multilineTextAlignment(.center)

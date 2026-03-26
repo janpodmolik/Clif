@@ -328,5 +328,6 @@ struct OnboardingView: View {
 #Preview {
     OnboardingView()
         .environment(PetManager())
+        .environment(AnalyticsManager())
 }
 #endif

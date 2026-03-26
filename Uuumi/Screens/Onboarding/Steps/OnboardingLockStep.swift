@@ -233,7 +233,7 @@ struct OnboardingLockStep: View {
         VStack(spacing: 8) {
             Text(windLabel)
                 .font(AppFont.quicksand(.body, weight: .medium))
-                .foregroundStyle(.secondary)
+                .foregroundStyle(.primary.opacity(0.7))
                 .contentTransition(.numericText())
                 .animation(.easeInOut(duration: 0.2), value: windLevel)
 

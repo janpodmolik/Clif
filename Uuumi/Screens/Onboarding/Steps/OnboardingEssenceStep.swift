@@ -95,7 +95,7 @@ struct OnboardingEssenceStep: View {
             if skipAnimation {
                 Text("After your first day, you can give your Uuumi an essence.")
                 Text("Let's practice it now.")
-                    .font(AppFont.quicksand(.subheadline, weight: .medium))
+                    .font(AppFont.quicksand(.callout, weight: .semiBold))
                     .foregroundStyle(.secondary)
             } else {
                 let skipped = narrativeBeat >= 1
@@ -128,7 +128,7 @@ struct OnboardingEssenceStep: View {
                         }
                     }
                 )
-                .font(AppFont.quicksand(.subheadline, weight: .medium))
+                .font(AppFont.quicksand(.callout, weight: .semiBold))
                 .foregroundStyle(.secondary)
                 .opacity(showSecondLine ? 1 : 0)
             }
@@ -152,14 +152,42 @@ struct OnboardingEssenceStep: View {
 
     // MARK: - Staging Area
 
-    private var stagingArea: some View {
-        VStack(spacing: 12) {
-            Text("Drag essence to Uuumi")
-                .font(AppFont.quicksand(.caption, weight: .medium))
-                .foregroundStyle(.secondary)
+    @State private var arrowBounce = false
 
+    private var stagingArea: some View {
+        VStack(spacing: 0) {
+            dragArrows
             essenceCard
+                .padding(.top, 20)
+            Text("Drag essence to Uuumi")
+                .font(AppFont.quicksand(.body, weight: .semiBold))
+                .foregroundStyle(.primary)
+                .padding(.top, 12)
         }
+    }
+
+    private var dragArrows: some View {
+        VStack(spacing: 6) {
+            Image(systemName: "chevron.up")
+                .font(.system(size: 14, weight: .semibold))
+                .foregroundStyle(.primary.opacity(0.25))
+                .offset(y: arrowBounce ? -3 : 3)
+
+            Image(systemName: "chevron.up")
+                .font(.system(size: 18, weight: .semibold))
+                .foregroundStyle(.primary.opacity(0.4))
+                .offset(y: arrowBounce ? -3 : 3)
+
+            Image(systemName: "chevron.up")
+                .font(.system(size: 22, weight: .semibold))
+                .foregroundStyle(.primary.opacity(0.6))
+                .offset(y: arrowBounce ? -3 : 3)
+        }
+        .animation(
+            .easeInOut(duration: 0.8).repeatForever(autoreverses: true),
+            value: arrowBounce
+        )
+        .onAppear { arrowBounce = true }
     }
 
     private var essenceCard: some View {
@@ -221,6 +249,7 @@ struct OnboardingEssenceStep: View {
         HapticType.notificationSuccess.trigger()
         hasDropped = true
         showDropZone = false
+        eyesOverride = "happy"
 
         // Trigger bounce reaction on pet
         reactionTrigger = UUID()
@@ -236,7 +265,7 @@ struct OnboardingEssenceStep: View {
 
     private func handleAppear() {
         windProgress = 0
-        eyesOverride = "happy"
+        eyesOverride = hasDropped ? "happy" : "neutral"
 
         if skipAnimation {
             showSecondLine = true

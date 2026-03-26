@@ -69,7 +69,7 @@ struct OnboardingNamingStep: View {
             if skipAnimation {
                 Text("Every Uuumi deserves a name.")
                 Text("What will you call yours?")
-                    .font(AppFont.quicksand(.subheadline, weight: .medium))
+                    .font(AppFont.quicksand(.callout, weight: .semiBold))
                     .foregroundStyle(.secondary)
             } else {
                 let skipped = narrativeBeat >= 1
@@ -96,7 +96,7 @@ struct OnboardingNamingStep: View {
                         revealInput()
                     }
                 )
-                .font(AppFont.quicksand(.subheadline, weight: .medium))
+                .font(AppFont.quicksand(.callout, weight: .semiBold))
                 .foregroundStyle(.secondary)
                 .opacity(showSecondLine ? 1 : 0)
             }
@@ -131,7 +131,7 @@ struct OnboardingNamingStep: View {
 
                     Text("(optional)")
                         .font(AppFont.quicksand(.caption, weight: .medium))
-                        .foregroundStyle(.tertiary)
+                        .foregroundStyle(.secondary)
                 }
                 .padding(.leading, 4)
 

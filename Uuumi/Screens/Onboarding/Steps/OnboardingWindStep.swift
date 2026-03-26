@@ -167,8 +167,8 @@ struct OnboardingWindStep: View {
             }
 
             Text("Your data stays on your device. Always.")
-                .font(AppFont.quicksand(.caption, weight: .medium))
-                .foregroundStyle(.secondary)
+                .font(AppFont.quicksand(.footnote, weight: .medium))
+                .foregroundStyle(.primary.opacity(0.7))
 
             Button {
                 HapticType.impactMedium.trigger()
