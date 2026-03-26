@@ -614,7 +614,7 @@ struct HomeScreen: View {
         if pet.isBlob {
             essenceCoordinator.show(petDropFrame: essenceDropFrame) { essence in
                 let evolveAction = {
-                    analytics.send(.essenceApplied(essence: essence.rawValue))
+                    analytics.send(.essenceApplied(essence: essence.name))
                     evolutionAnimator.triggerEssenceApplication(pet: pet, essence: essence)
                 }
                 // Essence application — upsell handled in essence drop dialog

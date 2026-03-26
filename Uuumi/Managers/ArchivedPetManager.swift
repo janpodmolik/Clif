@@ -118,7 +118,7 @@ final class ArchivedPetManager {
             let bestPhase = [archivedBest, activePetPhase].compactMap { $0 }.max()
 
             return EssenceRecord(
-                id: essence.rawValue,
+                id: essence.name,
                 essence: essence,
                 bestPhase: bestPhase,
                 petCount: petCount

@@ -1,10 +1,10 @@
 import Foundation
 
 /// Codable DTO for EvolutionHistory persistence.
-/// Uses `String?` for essence to gracefully handle unknown/removed essence values.
+/// Uses `Int?` for essence ID to gracefully handle unknown/removed essence values.
 struct EvolutionHistoryDTO: Codable, Equatable {
     let createdAt: Date
-    let essence: String?
+    let essence: Int?
     let events: [EvolutionEvent]
     let blownAt: Date?
     let lastProgressDate: Date?
@@ -12,7 +12,7 @@ struct EvolutionHistoryDTO: Codable, Equatable {
 
     init(
         createdAt: Date,
-        essence: String?,
+        essence: Int?,
         events: [EvolutionEvent],
         blownAt: Date?,
         lastProgressDate: Date?,

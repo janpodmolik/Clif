@@ -60,7 +60,7 @@ struct TesterView: View {
         Section {
             LabeledContent("Phase", value: "\(pet.currentPhase) / \(pet.evolutionHistory.maxPhase)")
             LabeledContent("Days alive", value: "\(pet.daysSinceCreation)")
-            LabeledContent("Essence", value: pet.essence?.rawValue ?? "none (blob)")
+            LabeledContent("Essence", value: pet.essence?.name ?? "none (blob)")
 
             if pet.evolutionHistory.hasProgressedToday {
                 LabeledContent("Progressed today", value: "Yes")

@@ -1,9 +1,9 @@
 import SwiftUI
 
 /// Card shown in EvolutionCarousel when the pet has an essence the app doesn't recognize.
-/// Displays the unknown-essence asset with the raw essence name and evolution count.
+/// Displays the unknown-essence asset with the essence ID and evolution count.
 struct UnknownEssenceCard: View {
-    let essenceRawValue: String
+    let essenceId: Int
     let evolutionCount: Int
     let currentPhase: Int
 
@@ -29,8 +29,7 @@ struct UnknownEssenceCard: View {
     }
 
     private var displayName: String {
-        let capitalized = essenceRawValue.prefix(1).uppercased() + essenceRawValue.dropFirst()
-        return "\(capitalized) Path"
+        "Essence #\(essenceId)"
     }
 
     @ViewBuilder
@@ -70,14 +69,14 @@ struct UnknownEssenceCard: View {
 #Preview {
     VStack(spacing: 20) {
         UnknownEssenceCard(
-            essenceRawValue: "owl",
+            essenceId: 42,
             evolutionCount: 2,
             currentPhase: 3
         )
         .frame(width: 230, height: 240)
 
         UnknownEssenceCard(
-            essenceRawValue: "crystal",
+            essenceId: 99,
             evolutionCount: 0,
             currentPhase: 1
         )

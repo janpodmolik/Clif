@@ -18,11 +18,10 @@ struct EssenceInfoCard: View {
                 name: EvolutionPath.path(for: essence).displayName,
                 color: .green
             )
-        } else if evolutionHistory.hasUnknownEssence, let rawValue = evolutionHistory.essenceRawValue {
-            let capitalized = rawValue.prefix(1).uppercased() + rawValue.dropFirst()
+        } else if evolutionHistory.hasUnknownEssence, let essenceId = evolutionHistory.essenceRawValue {
             cardContent(
                 iconName: "unknown-essence",
-                name: "\(capitalized) Path",
+                name: "Essence #\(essenceId)",
                 color: .orange
             )
         } else {

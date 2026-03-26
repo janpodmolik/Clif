@@ -36,7 +36,7 @@ struct EvolutionScaleDebugView: View {
         if isBlobSelected {
             return "blob"
         } else {
-            return "\(selectedEssence.rawValue)-\(selectedPhase)"
+            return "\(selectedEssence.name)-\(selectedPhase)"
         }
     }
 
@@ -44,7 +44,7 @@ struct EvolutionScaleDebugView: View {
         if isBlobSelected {
             return "blob"
         } else {
-            return "\(selectedEssence.rawValue)-\(selectedPhase)"
+            return "\(selectedEssence.name)-\(selectedPhase)"
         }
     }
 
@@ -104,7 +104,7 @@ struct EvolutionScaleDebugView: View {
         for essence in Essence.allCases {
             let path = EvolutionPath.path(for: essence)
             for phase in 1...path.maxPhases {
-                let key = "\(essence.rawValue)-\(phase)"
+                let key = "\(essence.name)-\(phase)"
                 if scales[key] == nil {
                     scales[key] = path.phase(at: phase)?.displayScale ?? 1.0
                 }
@@ -394,7 +394,7 @@ struct EvolutionScaleDebugView: View {
             lines.append("// \(path.displayName) EvolutionPhase displayScale values:")
 
             for phase in 1...path.maxPhases {
-                let key = "\(essence.rawValue)-\(phase)"
+                let key = "\(essence.name)-\(phase)"
                 let scale = scales[key] ?? path.phase(at: phase)?.displayScale ?? 1.0
                 lines.append("// Phase \(phase): \(String(format: "%.2f", scale))")
             }

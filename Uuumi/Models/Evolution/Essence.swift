@@ -4,22 +4,45 @@ import UniformTypeIdentifiers
 
 /// Essence determines which evolution path a pet follows.
 /// This is a pure identifier - all evolution logic lives in EvolutionPath.
-enum Essence: String, Codable, CaseIterable, Identifiable, Transferable {
-    var id: String { rawValue }
+/// Raw values are stable numeric IDs for database storage. Display names live in `name`.
+enum Essence: Int, Codable, CaseIterable, Identifiable, Transferable {
+    var id: Int { rawValue }
 
     static var transferRepresentation: some TransferRepresentation {
         CodableRepresentation(contentType: .essence)
     }
 
-    case plant
-    case troll
-    case orc
-    case clicker
-    case lion
-    case stitches
-    case racoon
-    case moss
-    case shroom
+    // Nature (100–199)
+    case plant = 100
+    case moss = 101
+    case shroom = 102
+
+    // Fantasy creatures (200–299)
+    case troll = 200
+    case orc = 201
+
+    // Animals (300–399)
+    case lion = 300
+    case racoon = 301
+
+    // Crafted / Special (400–499)
+    case clicker = 400
+    case stitches = 401
+
+    /// Client-side name used for asset paths and display. Decoupled from the numeric ID.
+    var name: String {
+        switch self {
+        case .plant: "plant"
+        case .troll: "troll"
+        case .orc: "orc"
+        case .clicker: "clicker"
+        case .lion: "lion"
+        case .stitches: "stitches"
+        case .racoon: "racoon"
+        case .moss: "moss"
+        case .shroom: "shroom"
+        }
+    }
 
     /// Essences unlocked by default for all users.
     static let defaultUnlocked: Set<Essence> = [.plant]
@@ -41,7 +64,7 @@ enum Essence: String, Codable, CaseIterable, Identifiable, Transferable {
 
     /// Asset path for essence icon: "evolutions/plant/essence"
     var assetName: String {
-        "evolutions/\(rawValue)/essence"
+        "evolutions/\(name)/essence"
     }
 
     // MARK: - Catalog Metadata

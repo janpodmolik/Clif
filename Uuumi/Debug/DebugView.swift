@@ -101,7 +101,7 @@ struct DebugView: View {
                 VStack(alignment: .leading, spacing: 4) {
                     debugRow("Phase", "\(pet.currentPhase) / \(pet.evolutionHistory.maxPhase)")
                     debugRow("Days alive", "\(pet.daysSinceCreation)")
-                    debugRow("Essence", pet.essence?.rawValue ?? "none")
+                    debugRow("Essence", pet.essence?.name ?? "none")
                     debugRow("Created", pet.evolutionHistory.createdAt.formatted(date: .abbreviated, time: .shortened))
 
                     debugRow("Progressed today", pet.evolutionHistory.hasProgressedToday ? "Yes" : "No")

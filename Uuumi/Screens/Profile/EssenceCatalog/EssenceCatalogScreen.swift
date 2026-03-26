@@ -61,7 +61,7 @@ struct EssenceCatalogScreen: View {
                 .onTapGesture {
                     if entry.isUnlocked {
                         selectedEssenceRecord = record ?? EssenceRecord(
-                            id: entry.essence.rawValue,
+                            id: entry.essence.name,
                             essence: entry.essence,
                             bestPhase: nil,
                             petCount: 0

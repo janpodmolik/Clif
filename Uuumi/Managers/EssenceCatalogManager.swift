@@ -62,7 +62,7 @@ final class EssenceCatalogManager {
     private static let storageKey = "unlockedEssences"
 
     private static func loadUnlocked() -> Set<Essence> {
-        guard let rawValues = UserDefaults.standard.stringArray(forKey: storageKey) else {
+        guard let rawValues = UserDefaults.standard.array(forKey: storageKey) as? [Int] else {
             return []
         }
         return Set(rawValues.compactMap { Essence(rawValue: $0) })
@@ -91,7 +91,7 @@ extension EssenceCatalogManager {
         let essence: Essence
         let isUnlocked: Bool
 
-        var id: String { essence.rawValue }
+        var id: Int { essence.rawValue }
         var evolutionPath: EvolutionPath { .path(for: essence) }
     }
 }

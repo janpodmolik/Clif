@@ -37,7 +37,7 @@ struct UserDataDTO: Codable {
 /// The JSONB content of the `data` column.
 struct UserDataPayload: Codable {
     var coinsBalance: Int
-    var unlockedEssences: [String]
+    var unlockedEssences: [Int]
     var limitSettings: LimitSettings
     var gender: String?
 }

@@ -25,10 +25,10 @@ struct EvolutionHistory: Equatable {
     private(set) var lastProgressDate: Date?
     private(set) var nextEvolutionUnlockDate: Date?
 
-    /// Raw essence value preserved for round-trip safety.
-    /// When essence is known, equals `essence.rawValue`.
-    /// When essence is unknown (removed/future), holds the original string.
-    private(set) var essenceRawValue: String?
+    /// Raw essence ID preserved for round-trip safety.
+    /// When essence is known, equals `essence.rawValue` (numeric ID).
+    /// When essence is unknown (removed/future), holds the original ID.
+    private(set) var essenceRawValue: Int?
 
     /// True if pet has an essence we don't recognize (removed or future).
     var hasUnknownEssence: Bool {
@@ -108,11 +108,11 @@ struct EvolutionHistory: Equatable {
         self.lastProgressDate = dto.lastProgressDate
         self.nextEvolutionUnlockDate = dto.nextEvolutionUnlockDate
 
-        if let rawEssence = dto.essence {
-            self.essence = Essence(rawValue: rawEssence)
+        if let essenceId = dto.essence {
+            self.essence = Essence(rawValue: essenceId)
             if self.essence == nil {
                 #if DEBUG
-                print("[EvolutionHistory] Unknown essence '\(rawEssence)' — pet will display in last known phase but cannot evolve")
+                print("[EvolutionHistory] Unknown essence ID \(essenceId) — pet will display in last known phase but cannot evolve")
                 #endif
             }
         } else {
@@ -215,7 +215,7 @@ extension EvolutionHistory {
     /// Sets essence to an unrecognized value for testing unknown essence UI.
     mutating func debugSetUnknownEssence() {
         essence = nil
-        essenceRawValue = "mystery"
+        essenceRawValue = 999
         if events.isEmpty {
             events.append(EvolutionEvent(fromPhase: 1, toPhase: 2, date: Date()))
         }

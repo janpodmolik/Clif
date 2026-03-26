@@ -135,9 +135,9 @@ struct EvolutionCarousel<Pet: PetEvolvable>: View {
         if isBlob {
             // Blob-only card (no essence yet)
             BlobOnlyCard(isBlownAway: isBlownAway, canUseEssence: canUseEssence, showStatusBadge: showBlobStatusBadge)
-        } else if hasUnknownEssence, let rawValue = pet.evolutionHistory.essenceRawValue {
+        } else if hasUnknownEssence, let essenceId = pet.evolutionHistory.essenceRawValue {
             UnknownEssenceCard(
-                essenceRawValue: rawValue,
+                essenceId: essenceId,
                 evolutionCount: pet.evolutionHistory.events.count,
                 currentPhase: currentPhase
             )
