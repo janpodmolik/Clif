@@ -31,14 +31,15 @@ struct DailyPresetPicker: View {
                 // Preset options
                 VStack(spacing: 12) {
                     ForEach(WindPreset.allCases, id: \.self) { preset in
-                        PresetOptionRow(
+                        WindPresetCard(
                             preset: preset,
-                            isSelected: selectedPreset == preset
-                        ) {
-                            withAnimation(.snappy) {
-                                selectedPreset = preset
+                            isSelected: selectedPreset == preset,
+                            onTap: {
+                                withAnimation(.snappy) {
+                                    selectedPreset = preset
+                                }
                             }
-                        }
+                        )
                     }
                 }
                 .padding(.horizontal)
@@ -75,8 +76,14 @@ struct DailyPresetPicker: View {
     private var dontAskAgainToggle: some View {
         VStack(spacing: 4) {
             Toggle(isOn: $dontAskAgain) {
-                Text("Use this preset every day")
-                    .font(.subheadline)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Skip daily selection")
+                        .font(.subheadline)
+
+                    Text("The default preset applies automatically each morning.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
             }
             .tint(.blue)
 
@@ -104,57 +111,6 @@ struct DailyPresetPicker: View {
         analytics.send(.presetSelected(preset: selectedPreset.rawValue, context: .daily))
         dismiss()
     }
-}
-
-private struct PresetOptionRow: View {
-    let preset: WindPreset
-    let isSelected: Bool
-    let onTap: () -> Void
-
-    var body: some View {
-        Button(action: onTap) {
-            HStack(spacing: 16) {
-                Image(systemName: preset.iconName)
-                    .font(.title2)
-                    .foregroundStyle(preset.themeColor)
-                    .frame(width: 32)
-
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(preset.displayName)
-                        .font(.headline)
-                        .foregroundStyle(.primary)
-
-                    Text("~\(Int(preset.minutesToBlowAway)) min to blow away")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-
-                    Text("~\(Int(preset.minutesToRecover)) min to recover")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
-
-                Spacer()
-
-                if isSelected {
-                    Image(systemName: "checkmark.circle.fill")
-                        .font(.title2)
-                        .foregroundStyle(preset.themeColor)
-                }
-            }
-            .padding()
-            .background(
-                RoundedRectangle(cornerRadius: 12)
-                    .fill(isSelected ? preset.themeColor.opacity(0.1) : Color(.secondarySystemBackground))
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: 12)
-                    .stroke(isSelected ? preset.themeColor : .clear, lineWidth: 2)
-            )
-        }
-        .buttonStyle(.plain)
-    }
-
-
 }
 
 #Preview {

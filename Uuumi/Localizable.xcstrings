@@ -1754,6 +1754,9 @@
     "Skip >" : {
 
     },
+    "Skip daily selection" : {
+
+    },
     "Smazat peta" : {
 
     },
@@ -1865,16 +1868,13 @@
     "The chart shows average screen time in blocked apps throughout the day. Data is averaged over %lld days. Tap a bar to see details for a specific hour." : {
 
     },
-    "The default preset will be used automatically each morning." : {
+    "The default preset applies automatically each morning." : {
 
     },
     "The more you scroll, the stronger it gets." : {
 
     },
     "The saved selection will be deleted." : {
-
-    },
-    "The selected preset will be used automatically every day." : {
 
     },
     "The wind comes from your screen time." : {
@@ -2025,9 +2025,6 @@
 
     },
     "Use my apps" : {
-
-    },
-    "Use this preset every day" : {
 
     },
     "User" : {
@@ -2183,10 +2180,7 @@
     "You need %lld more coins" : {
 
     },
-    "You'll choose a preset each morning before apps unlock." : {
-
-    },
-    "You'll pick a preset each morning before apps unlock." : {
+    "You'll choose a preset each morning before using your apps." : {
 
     },
     "You're all set!" : {

@@ -45,12 +45,12 @@ struct WindPresetStep: View {
         VStack(spacing: 8) {
             Toggle(isOn: $useEveryDay) {
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("Use this preset every day")
+                    Text("Skip daily selection")
                         .font(.subheadline.weight(.medium))
 
                     Text(useEveryDay
-                         ? "The selected preset will be used automatically every day."
-                         : "You'll pick a preset each morning before apps unlock.")
+                         ? "The default preset applies automatically each morning."
+                         : "You'll choose a preset each morning before using your apps.")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }

@@ -25,7 +25,7 @@ struct DailyPresetSettingsScreen: View {
             // MARK: - Today
 
             if petManager.currentPet != nil {
-                Section {
+                Section("Today") {
                     if let preset = todayPreset {
                         HStack(spacing: 12) {
                             Image(systemName: preset.iconName)
@@ -46,41 +46,54 @@ struct DailyPresetSettingsScreen: View {
                                     .foregroundStyle(.secondary)
                             }
                         }
-                        .padding(16)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .glassBackground(cornerRadius: 20)
+                        .padding(.vertical, 4)
                     } else {
                         Label("Not yet selected", systemImage: "questionmark.circle")
                             .foregroundStyle(.secondary)
-                            .padding(16)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .glassBackground(cornerRadius: 20)
                     }
-                } header: {
-                    Text("Today")
                 }
-                .listRowInsets(EdgeInsets(top: 4, leading: 0, bottom: 4, trailing: 0))
-                .listRowBackground(Color.clear)
-                .listRowSeparator(.hidden)
             }
 
             // MARK: - Default Preset
 
             Section {
                 ForEach(WindPreset.allCases, id: \.self) { preset in
-                    WindPresetCard(
-                        preset: preset,
-                        isSelected: preset == defaultPreset,
-                        onTap: {
-                            HapticType.impactLight.trigger()
-                            withAnimation(.snappy) {
-                                limitSettings.defaultWindPresetRaw = preset.rawValue
+                    Button {
+                        HapticType.impactLight.trigger()
+                        withAnimation(.snappy) {
+                            limitSettings.defaultWindPresetRaw = preset.rawValue
+                        }
+                    } label: {
+                        HStack(spacing: 12) {
+                            Image(systemName: preset.iconName)
+                                .font(.title3)
+                                .foregroundStyle(preset.themeColor)
+                                .frame(width: 28, height: 28)
+
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(preset.displayName)
+                                    .font(.headline)
+                                    .foregroundStyle(.primary)
+
+                                Text("~\(Int(preset.minutesToBlowAway)) min to blow away")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+
+                                Text("~\(Int(preset.minutesToRecover)) min to recover")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+
+                            Spacer()
+
+                            if preset == defaultPreset {
+                                Image(systemName: "checkmark")
+                                    .foregroundStyle(preset.themeColor)
+                                    .fontWeight(.semibold)
                             }
                         }
-                    )
-                    .listRowInsets(EdgeInsets(top: 4, leading: 0, bottom: 4, trailing: 0))
-                    .listRowBackground(Color.clear)
-                    .listRowSeparator(.hidden)
+                        .padding(.vertical, 4)
+                    }
                 }
             } header: {
                 Text("Default preset")
@@ -93,22 +106,17 @@ struct DailyPresetSettingsScreen: View {
             Section {
                 Toggle(isOn: useEveryDayBinding) {
                     VStack(alignment: .leading, spacing: 2) {
-                        Text("Use this preset every day")
+                        Text("Skip daily selection")
                             .font(.body)
 
                         Text(limitSettings.dayStartShieldEnabled
-                             ? "You'll choose a preset each morning before apps unlock."
-                             : "The default preset will be used automatically each morning.")
+                             ? "You'll choose a preset each morning before using your apps."
+                             : "The default preset applies automatically each morning.")
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }
                 }
                 .tint(.blue)
-                .padding(16)
-                .glassBackground(cornerRadius: 20)
-                .listRowInsets(EdgeInsets(top: 4, leading: 0, bottom: 4, trailing: 0))
-                .listRowBackground(Color.clear)
-                .listRowSeparator(.hidden)
             }
         }
         .navigationTitle("Daily Preset")
