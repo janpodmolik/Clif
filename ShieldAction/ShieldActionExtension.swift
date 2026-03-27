@@ -60,35 +60,11 @@ class ShieldActionExtension: ShieldActionDelegate {
         logToFile("Wind preset locked for today")
     }
 
-    // MARK: - Break Handling
-
-    /// Checks if user is currently on a break and logs breakFailed if violated.
-    /// Resets all shield flags since the break is effectively over.
-    private func handlePotentialBreakViolation() {
-        guard let breakStartedAt = SharedDefaults.breakStartedAt,
-              let petId = SharedDefaults.monitoredPetId else {
-            return
-        }
-
-        let actualMinutes = Int(round(Date().timeIntervalSince(breakStartedAt) / 60))
-        let windPoints = SharedDefaults.monitoredWindPoints
-
-        let event = SnapshotEvent(
-            petId: petId,
-            windPoints: windPoints,
-            eventType: .breakEnded(actualMinutes: actualMinutes, success: false)
-        )
-
-        SnapshotStore.shared.appendSync(event)
-        SharedDefaults.resetShieldFlags()
-
-        logToFile("Break violated after \(actualMinutes) minutes - flags reset")
-    }
-
     // MARK: - Unlock Handling
 
-    /// Prepares unlock state (locks preset, checks break violation).
+    /// Prepares unlock state (locks preset, signals main app).
     /// Does NOT open the app — caller should call completionHandler first, then openContainingApp.
+    /// Break handling is left to the main app when user taps the lock button.
     private func prepareUnlock() {
         logToFile("prepareUnlock() - preparing state")
         logToFile("Current state: wind=\(SharedDefaults.monitoredWindPoints), isShieldActive=\(SharedDefaults.isShieldActive)")
@@ -97,9 +73,6 @@ class ShieldActionExtension: ShieldActionDelegate {
         if !SharedDefaults.windPresetLockedForToday {
             lockPresetForToday()
         }
-
-        // Check if this violates an active break
-        handlePotentialBreakViolation()
 
         // Signal main app to highlight the unlock button
         SharedDefaults.pendingShieldUnlock = true
