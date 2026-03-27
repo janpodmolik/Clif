@@ -572,9 +572,15 @@ struct DebugView: View {
                 .tint(.red)
 
                 Button("Day Start Shield") {
-                    SharedDefaults.resetForNewDay(dayStartShieldEnabled: true)
+                    // Clear any active break first (e.g. safety shield)
+                    SharedDefaults.resetShieldFlags()
+                    ShieldManager.shared.clear()
+
+                    SharedDefaults.lastDayResetDate = Calendar.current.date(byAdding: .day, value: -1, to: Date())
+                    SharedDefaults.todaySelectedPreset = nil
+                    SharedDefaults.isDayStartShieldActive = true
                     ShieldManager.shared.activateStoreFromStoredTokens()
-                    openDeepLink(DeepLinks.presetPicker)
+                    ShieldState.shared.refresh()
                 }
                 .tint(.orange)
 
@@ -583,25 +589,15 @@ struct DebugView: View {
                 }
                 .tint(.purple)
 
-                Button("Midnight Reset") {
-                    simulateMidnightReset()
+                Button("Expire Break") {
+                    simulateExpireBreak()
                 }
                 .tint(.orange)
-
-                Button("Simulate intervalDidEnd") {
-                    simulateIntervalDidEnd()
-                }
-                .tint(.mint)
 
                 Button("Overnight Break") {
                     simulateOvernightBreak()
                 }
                 .tint(.pink)
-
-                Button("Stale Break") {
-                    simulateStaleOvernightBreak()
-                }
-                .tint(.brown)
 
                 Button("Zombie Break") {
                     simulateZombieCommittedBreak()
@@ -618,73 +614,39 @@ struct DebugView: View {
         }
     }
 
-    /// Simulates what the extension does at midnight: ends any active break.
-    /// Start a break first (committed or free), then tap this to simulate midnight.
-    private func simulateMidnightReset() {
+    /// Simulates expiring any active break (as if it expired naturally).
+    private func simulateExpireBreak() {
         func log(_ message: String) {
-            ExtensionLogger.log(message, prefix: "[DebugMidnight]")
+            ExtensionLogger.log(message, prefix: "[DebugExpire]")
             print(message)
         }
 
-        guard let result = SharedDefaults.endBreakAtMidnight(cutoff: Date()) else {
+        guard SharedDefaults.activeBreakType != nil else {
             log("No active break — start a break first")
             return
         }
 
-        let coins = SnapshotLogging.processMidnightBreak(result)
+        let coinsBefore = SharedDefaults.coinsBalance
+        ShieldManager.shared.endExpiredBreakIfNeeded()
 
-        // Deactivate ManagedSettingsStore (in-app equivalent of what extension does)
-        ShieldManager.shared.clear()
+        // If endExpiredBreakIfNeeded didn't expire it (not yet expired), force it
+        if SharedDefaults.activeBreakType != nil {
+            ShieldManager.shared.turnOff(success: true)
+            log("Force-ended active break")
+        }
 
-        // Simulate what the main app does on foreground return
         ShieldManager.shared.resumeBreakMonitoringIfNeeded()
-
-        log("Midnight reset: type=\(result.breakType), minutes=\(result.actualMinutes), coins=\(coins)")
-    }
-
-    /// Simulates what the DeviceActivityMonitor extension does in intervalDidEnd (23:59).
-    /// Ends any active break, sets isDayStartShieldActive, and activates shield from stored tokens.
-    private func simulateIntervalDidEnd() {
-        func log(_ message: String) {
-            ExtensionLogger.log(message, prefix: "[DebugIntervalEnd]")
-            print(message)
-        }
-
-        // End any active break (same as extension's handleMidnightBreakReset)
-        if let result = SharedDefaults.endBreakAtMidnight(cutoff: Date()) {
-            let coins = SnapshotLogging.processMidnightBreak(result)
-            ShieldManager.shared.clear()
-            log("Break ended: type=\(result.breakType), minutes=\(result.actualMinutes), coins=\(coins)")
-        } else {
-            log("No active break")
-        }
-
-        // Pre-activate shield (same as extension's intervalDidEnd)
-        let settings = SharedDefaults.limitSettings
-        if settings.dayStartShieldEnabled {
-            SharedDefaults.isDayStartShieldActive = true
-            SharedDefaults.synchronize()
-            if ShieldManager.shared.activateStoreFromStoredTokens() {
-                log("Day start shield activated (simulating intervalDidEnd)")
-            } else {
-                log("No tokens to activate")
-            }
-        } else {
-            log("dayStartShieldEnabled=false, skipping shield")
-        }
+        let coinsAwarded = SharedDefaults.coinsBalance - coinsBefore
+        log("Break expired. Coins awarded: \(coinsAwarded)")
     }
 
     /// Simulates opening the app after an overnight committed break.
-    /// Sets day state to "yesterday" so the next scenePhase .active triggers the daily preset picker.
-    /// Steps: sets lastDayResetDate to yesterday, locks preset for yesterday, clears break flags.
+    /// Sets day state to "yesterday" so the next foreground triggers the daily preset picker.
     private func simulateOvernightBreak() {
         let yesterday = Calendar.current.date(byAdding: .day, value: -1, to: Calendar.current.startOfDay(for: Date()))!
 
-        // Simulate state as if daily reset happened yesterday and preset was selected
         SharedDefaults.lastDayResetDate = yesterday
-        SharedDefaults.windPresetLockedForToday = true
-        SharedDefaults.windPresetLockedDate = yesterday
-        SharedDefaults.isDayStartShieldActive = false
+        SharedDefaults.todaySelectedPreset = nil
 
         // Clear any active break (as if committed break ended overnight)
         SharedDefaults.resetShieldFlags()
@@ -695,29 +657,8 @@ struct DebugView: View {
         print("[DebugTools] Simulated overnight break state — backgrounding and foregrounding should trigger daily preset picker")
     }
 
-    /// Simulates the bug: free break started last night, extension's midnight reset never fired.
-    /// After tapping, background+foreground the app — the fix should end the break and show preset picker.
-    private func simulateStaleOvernightBreak() {
-        let yesterday = Calendar.current.date(byAdding: .day, value: -1, to: Calendar.current.startOfDay(for: Date()))!
-
-        SharedDefaults.lastDayResetDate = yesterday
-        SharedDefaults.windPresetLockedForToday = true
-        SharedDefaults.windPresetLockedDate = yesterday
-        SharedDefaults.isDayStartShieldActive = false
-
-        // Leave the free break active (this is the bug state)
-        SharedDefaults.shieldActivatedAt = yesterday.addingTimeInterval(22 * 3600)
-        SharedDefaults.breakStartedAt = yesterday.addingTimeInterval(22 * 3600)
-        SharedDefaults.activeBreakType = .free
-
-        SharedDefaults.synchronize()
-        ShieldState.shared.refresh()
-
-        print("[DebugTools] Simulated stale overnight free break — background+foreground to test fix")
-    }
-
-    /// Simulates a committed break that started 9 hours ago but never completed,
-    /// then runs midnight reset. Verifies that coins are capped to planned duration (1, not 36).
+    /// Simulates a committed break that started 9 hours ago but never completed.
+    /// Tests that endExpiredBreakIfNeeded awards coins capped to planned duration.
     private func simulateZombieCommittedBreak() {
         func log(_ message: String) {
             ExtensionLogger.log(message, prefix: "[DebugZombie]")
@@ -734,20 +675,11 @@ struct DebugView: View {
 
         let coinsBefore = SharedDefaults.coinsBalance
 
-        // Use Date() as cutoff (simulates "midnight just happened" — in reality the extension
-        // calls this at 00:00 when the break started yesterday, so cutoff > breakStartedAt)
-        if let result = SharedDefaults.endBreakAtMidnight(cutoff: Date()) {
-            let coins = SnapshotLogging.processMidnightBreak(result)
-            log("Midnight reset: type=\(result.breakType), minutes=\(result.actualMinutes), coins=\(coins)")
-        } else {
-            log("Midnight reset: no active break found")
-        }
-
-        ShieldManager.shared.clear()
+        ShieldManager.shared.endExpiredBreakIfNeeded()
         ShieldManager.shared.resumeBreakMonitoringIfNeeded()
 
         let coinsAwarded = SharedDefaults.coinsBalance - coinsBefore
-        log("Coins awarded: \(coinsAwarded) (expected: 1, bug would show: 36)")
+        log("Coins awarded: \(coinsAwarded) (expected: 1 for 15-minute break)")
     }
 
     /// Simulates an untilZeroWind committed break that started 1 hour ago with wind that

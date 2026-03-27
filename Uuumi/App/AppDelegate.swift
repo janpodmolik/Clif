@@ -8,9 +8,6 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
     ) -> Bool {
         UNUserNotificationCenter.current().delegate = self
 
-        MidnightShieldTask.register()
-        MidnightShieldTask.schedule()
-
         return true
     }
 

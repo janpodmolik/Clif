@@ -198,7 +198,7 @@ struct ContentView: View {
                 }
             }
         }
-        .sheet(isPresented: Bindable(router).showPresetPicker, onDismiss: {
+        .fullScreenCover(isPresented: Bindable(router).showPresetPicker, onDismiss: {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
                 router.drainPendingAction()
             }
@@ -258,23 +258,23 @@ struct ContentView: View {
     // MARK: - Daily Reset & Preset Picker
 
     private func checkDayResetAndShowPicker() {
-        // End any break that started before today (extension's midnight reset may not have fired)
-        ShieldManager.shared.endStaleBreakIfNeeded()
-
-        if SharedDefaults.isNewDay {
-            SharedDefaults.performDailyResetIfNeeded()
-            ShieldManager.shared.activateStoreFromStoredTokens()
-        }
+        // End any break that expired while the app was closed
+        ShieldManager.shared.endExpiredBreakIfNeeded()
 
         guard petManager.hasPet,
-              !SharedDefaults.isShieldActive,
-              SharedDefaults.isDayStartShieldActive,
-              !SharedDefaults.windPresetLockedForToday else {
+              SharedDefaults.isNewDay,
+              !SharedDefaults.isShieldActive else {
             return
         }
 
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+        let settings = SharedDefaults.limitSettings
+        if settings.dayStartShieldEnabled {
+            // Show preset picker — applyPreset will set lastDayResetDate + todaySelectedPreset
             router.showPresetPicker = true
+        } else if let pet = petManager.currentPet {
+            // Auto-apply default preset
+            let preset = WindPreset(rawValue: settings.defaultWindPresetRaw) ?? .balanced
+            ScreenTimeManager.shared.applyPreset(preset, for: pet)
         }
     }
 

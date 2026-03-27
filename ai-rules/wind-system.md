@@ -77,12 +77,13 @@ wind = (cumulativeSeconds - totalBreakReduction) / limitSeconds * 100
 
 ## Lifecycle
 
-1. **Day start (midnight):** Reset wind to 0, activate Day Start Shield
-2. **Preset selection:** User picks difficulty → stores rates in SharedDefaults → starts monitoring
-3. **App usage:** Thresholds fire → extension calculates wind increase → checks notifications/shield activation
-4. **Shield activation:** When wind crosses `shieldActivationLevel` → blocks apps via ManagedSettingsStore
-5. **Unlock:** Deep link from ShieldAction → ScreenTimeManager.processUnlock() → applies wind decrease
-6. **Blow away:** At 100% wind when unlocking OR committed break violation
+1. **Day start (first app open):** User opens Uuumi on a new day → preset picker shown → wind resets to 0
+2. **Day Start Shield (reactive):** If user opens a blocked app before Uuumi, extension detects new day on first threshold → activates shield → redirects to preset picker
+3. **Preset selection:** User picks difficulty → stores rates in SharedDefaults → starts monitoring
+4. **App usage:** Thresholds fire → extension calculates wind increase → checks notifications/shield activation
+5. **Shield activation:** When wind crosses `shieldActivationLevel` → blocks apps via ManagedSettingsStore
+6. **Unlock:** Deep link from ShieldAction → ScreenTimeManager.processUnlock() → applies wind decrease
+7. **Blow away:** At 100% wind when unlocking OR committed break violation
 
 ## Break System (Break Reduction)
 

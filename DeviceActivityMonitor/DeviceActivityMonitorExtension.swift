@@ -12,62 +12,27 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
 
     override func intervalDidStart(for activity: DeviceActivityName) {
         super.intervalDidStart(for: activity)
-
         ExtensionLogger.log("[Extension] intervalDidStart")
+        saveBaselineAndResetThreshold()
+    }
 
-        // Check if this is a new calendar day
-        let isNewDay = SharedDefaults.isNewDay
-        ExtensionLogger.log("[Extension] isNewDay=\(isNewDay), lastResetDate=\(String(describing: SharedDefaults.lastDayResetDate))")
+    // MARK: - Baseline Accounting
 
-        if isNewDay {
-            ExtensionLogger.log("[Extension] NEW DAY - performing daily reset")
-
-            WindReminderNotification.cancel { message in
-                ExtensionLogger.log(message)
-            }
-
-            // End any active break at midnight BEFORE resetting day state
-            handleMidnightBreakReset()
-
-            // Reset wind and activate day start shield
-            let didReset = SharedDefaults.performDailyResetIfNeeded()
-            ExtensionLogger.log("[Extension] Daily reset performed: \(didReset)")
-
-            // Also activate shield on blocked apps (only if day start shield was actually set)
-            if SharedDefaults.isDayStartShieldActive {
-                if activateShieldFromTokens() {
-                    ExtensionLogger.log("[Extension] Day start shield activated")
-                } else {
-                    ExtensionLogger.log("[Extension] Failed to load tokens for day start shield")
-                }
-            }
-        } else {
-            // Same day - this is monitoring restart (e.g., after app update, reboot)
-            // Preserve cumulative baseline so we don't lose tracked time
-            let existingThreshold = SharedDefaults.monitoredLastThresholdSeconds
-
-            if existingThreshold > 0 {
-                let oldBaseline = SharedDefaults.cumulativeBaseline
-                let newBaseline = oldBaseline + existingThreshold
-                SharedDefaults.cumulativeBaseline = newBaseline
-                SharedDefaults.monitoredLastThresholdSeconds = 0
-
-                ExtensionLogger.log("[Extension] Monitoring restart - baseline updated: \(oldBaseline) + \(existingThreshold) = \(newBaseline)")
-            } else {
-                ExtensionLogger.log("[Extension] Monitoring restart - no baseline update needed")
-            }
-
-            // Safety invariant: if user already selected a preset today,
-            // ensure day start shield is fully cleared (flag + ManagedSettingsStore).
-            // This handles the case where intervalDidEnd re-applied shield tokens
-            // but the flag was stale (user already picked a preset).
-            if SharedDefaults.todaySelectedPreset != nil && SharedDefaults.isDayStartShieldActive {
-                SharedDefaults.isDayStartShieldActive = false
-                SharedDefaults.synchronize()
-                clearShieldStore()
-                ExtensionLogger.log("[Extension] Cleared stale day start shield - preset already selected")
-            }
+    /// Saves current threshold into cumulative baseline and resets threshold counter.
+    /// Called on interval boundaries (start/end) to preserve tracked time across monitoring restarts.
+    private func saveBaselineAndResetThreshold() {
+        let existingThreshold = SharedDefaults.monitoredLastThresholdSeconds
+        guard existingThreshold > 0 else {
+            ExtensionLogger.log("[Extension] Baseline - no update needed")
+            return
         }
+
+        let oldBaseline = SharedDefaults.cumulativeBaseline
+        let newBaseline = oldBaseline + existingThreshold
+        SharedDefaults.cumulativeBaseline = newBaseline
+        SharedDefaults.monitoredLastThresholdSeconds = 0
+
+        ExtensionLogger.log("[Extension] Baseline updated: \(oldBaseline) + \(existingThreshold) = \(newBaseline)")
     }
 
     /// Removes all shields from ManagedSettingsStore.
@@ -103,32 +68,8 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
 
     override func intervalDidEnd(for activity: DeviceActivityName) {
         super.intervalDidEnd(for: activity)
-
         ExtensionLogger.log("[Extension] intervalDidEnd")
-
-        // End any active break at the day boundary
-        handleMidnightBreakReset()
-
-        // Pre-activate shield so apps are blocked through midnight.
-        // ManagedSettingsStore persists across process termination.
-        // Full daily reset (wind, preset) happens in intervalDidStart or app foreground.
-        //
-        // IMPORTANT: Only activate near midnight (hour >= 23).
-        // intervalDidEnd also fires on monitoring restarts (e.g., after applyPreset
-        // calls startMonitoring). Without this guard, every restart re-activates the shield,
-        // making it impossible for users to dismiss the day start shield.
-        let settings = SharedDefaults.limitSettings
-        let hour = Calendar.current.component(.hour, from: Date())
-        let hasPreset = SharedDefaults.todaySelectedPreset != nil
-        if settings.dayStartShieldEnabled && hour >= 23 && !hasPreset {
-            SharedDefaults.isDayStartShieldActive = true
-            SharedDefaults.synchronize()
-            if activateShieldFromTokens() {
-                ExtensionLogger.log("[Extension] intervalDidEnd pre-midnight shield activated")
-            }
-        } else {
-            ExtensionLogger.log("[Extension] intervalDidEnd skipped shield - hour=\(hour), hasPreset=\(hasPreset)")
-        }
+        saveBaselineAndResetThreshold()
     }
 
     override func eventDidReachThreshold(_ event: DeviceActivityEvent.Name, activity: DeviceActivityName) {
@@ -156,28 +97,27 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
             SharedDefaults.monitoredLastThresholdSeconds = adjustedSeconds
             SharedDefaults.lastThresholdTimestamp = Date()
 
+            // New day detected: activate Day Start Shield reactively on first threshold
+            if SharedDefaults.isNewDay
+                && SharedDefaults.todaySelectedPreset == nil
+                && !SharedDefaults.isShieldActive
+                && !SharedDefaults.isDayStartShieldActive {
+                let settings = SharedDefaults.limitSettings
+                if settings.dayStartShieldEnabled {
+                    activateShieldFromTokens()
+                    SharedDefaults.isDayStartShieldActive = true
+                    SharedDefaults.synchronize()
+                    ExtensionLogger.log("[Extension] New day - preset shield activated on first threshold")
+                } else {
+                    ExtensionLogger.log("[Extension] New day - skipping shield (auto-apply mode)")
+                }
+                return
+            }
+
             guard shouldProcessThreshold() else { return }
 
             processThresholdEvent(currentSeconds: adjustedSeconds)
         }
-    }
-
-    // MARK: - Midnight Break Reset
-
-    /// Ends any active break at midnight using shared logic, then deactivates ManagedSettingsStore.
-    private func handleMidnightBreakReset() {
-        let midnight = Calendar.current.startOfDay(for: Date())
-
-        guard let result = SharedDefaults.endBreakAtMidnight(cutoff: midnight) else {
-            return
-        }
-
-        let coins = SnapshotLogging.processMidnightBreak(result)
-
-        // Deactivate ManagedSettingsStore (extension-specific, not in shared logic)
-        clearShieldStore()
-
-        ExtensionLogger.log("[Extension] Midnight break reset: type=\(result.breakType), actualMinutes=\(result.actualMinutes), coins=\(coins)")
     }
 
     // MARK: - Threshold Processing

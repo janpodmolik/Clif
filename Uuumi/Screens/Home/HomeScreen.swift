@@ -337,6 +337,9 @@ struct HomeScreen: View {
             refreshTick += 1
             configureRefreshTimer()
         }
+        .onReceive(NotificationCenter.default.publisher(for: .windDidReset)) { _ in
+            refreshTick += 1
+        }
         .onDisappear {
             windRhythm.stop()
             refreshTimer?.invalidate()

@@ -103,8 +103,6 @@ enum DefaultsKeys {
 
     static let limitSettings = "limitSettings"
     static let isDayStartShieldActive = "isDayStartShieldActive"
-    static let windPresetLockedForToday = "windPresetLockedForToday"
-    static let windPresetLockedDate = "windPresetLockedDate"
     static let todaySelectedPreset = "todaySelectedPreset"
     static let lastKnownWindLevel = "lastKnownWindLevel"
     static let isShieldActive = "isShieldActive"

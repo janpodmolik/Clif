@@ -43,6 +43,7 @@ extension Notification.Name {
     static let navigateHome = Notification.Name("navigateHome")
     static let showBreakTypePicker = Notification.Name("showBreakTypePicker")
     static let navigateToNotificationSettings = Notification.Name("navigateToNotificationSettings")
+    static let windDidReset = Notification.Name("windDidReset")
     #if DEBUG
     static let showMockSheet = Notification.Name("showMockSheet")
     #endif

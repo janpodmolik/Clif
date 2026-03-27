@@ -87,59 +87,11 @@ extension SharedDefaults {
 
     // MARK: - Pending Coin Rewards
 
-    /// Coins awarded while the app was not visible (background break end, midnight reset, etc.).
+    /// Coins awarded while the app was not visible (background break end, etc.).
     /// Main app reads this on foreground to show reward animation, then clears it.
     static var pendingCoinsAwarded: Int {
         get { defaults?.integer(forKey: DefaultsKeys.pendingCoinsAwarded) ?? 0 }
         set { defaults?.set(newValue, forKey: DefaultsKeys.pendingCoinsAwarded) }
-    }
-
-    /// Result of ending a break at midnight (or simulated midnight in debug).
-    struct MidnightBreakResult {
-        let breakType: BreakType
-        let actualMinutes: Int
-        let windPoints: Double
-        let petId: UUID?
-        let cutoff: Date
-    }
-
-    /// Ends any active break at a given cutoff time and resets shield flags.
-    /// Returns computed result if a break was active, nil otherwise.
-    ///
-    /// Callers are responsible for:
-    /// - Logging `breakEnded` snapshot event
-    /// - Awarding coins for committed breaks
-    /// - Deactivating ManagedSettingsStore
-    ///
-    /// - Parameter cutoff: The logical end time. For real midnight, use `Calendar.current.startOfDay(for: Date())`.
-    ///   For debug simulation, use `Date()`.
-    static func endBreakAtMidnight(cutoff: Date) -> MidnightBreakResult? {
-        guard let breakType = activeBreakType,
-              let breakStartedAt = breakStartedAt else {
-            return nil
-        }
-
-        let elapsed = cutoff.timeIntervalSince(breakStartedAt)
-        var actualMinutes = Int(round(max(0, elapsed) / 60))
-
-        // Cap to planned duration for timed committed breaks (prevents inflated coins when break survives overnight)
-        if let durationSeconds = committedBreakMode?.durationSeconds {
-            actualMinutes = min(actualMinutes, Int(durationSeconds / 60))
-        }
-
-        let windPoints = monitoredWindPoints
-        let petId = monitoredPetId
-
-        resetShieldFlags()
-        synchronize()
-
-        return MidnightBreakResult(
-            breakType: breakType,
-            actualMinutes: actualMinutes,
-            windPoints: windPoints,
-            petId: petId,
-            cutoff: cutoff
-        )
     }
 
     // MARK: - Shield Unlock Redirect

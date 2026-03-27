@@ -58,8 +58,6 @@ struct DailyPresetSettingsScreen: View {
                     }
                 } header: {
                     Text("Today")
-                } footer: {
-                    Text("Today's preset is locked once selected and can't be changed.")
                 }
                 .listRowInsets(EdgeInsets(top: 4, leading: 0, bottom: 4, trailing: 0))
                 .listRowBackground(Color.clear)

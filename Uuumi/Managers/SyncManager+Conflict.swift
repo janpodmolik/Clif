@@ -192,10 +192,9 @@ extension SyncManager {
             storeHourlyPerDay(cloudDTO.hourlyPerDay, petId: petId)
         }
 
-        // Lock preset for today
-        SharedDefaults.windPresetLockedForToday = true
-        SharedDefaults.windPresetLockedDate = Date()
-        SharedDefaults.isDayStartShieldActive = false
+        // Mark today's preset as selected
+        SharedDefaults.todaySelectedPreset = cloudDTO.preset
+        SharedDefaults.lastDayResetDate = Calendar.current.startOfDay(for: Date())
 
         #if DEBUG
         print("[SyncManager] Cloud pet restored after conflict: \(cloudDTO.name)")

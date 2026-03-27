@@ -53,26 +53,14 @@ class ShieldActionExtension: ShieldActionDelegate {
         SharedDefaults.isDayStartShieldActive
     }
 
-    /// Locks the wind preset for today (prevents changes).
-    private func lockPresetForToday() {
-        SharedDefaults.windPresetLockedForToday = true
-        SharedDefaults.windPresetLockedDate = Date()
-        logToFile("Wind preset locked for today")
-    }
-
     // MARK: - Unlock Handling
 
-    /// Prepares unlock state (locks preset, signals main app).
+    /// Prepares unlock state and signals main app.
     /// Does NOT open the app — caller should call completionHandler first, then openContainingApp.
     /// Break handling is left to the main app when user taps the lock button.
     private func prepareUnlock() {
         logToFile("prepareUnlock() - preparing state")
         logToFile("Current state: wind=\(SharedDefaults.monitoredWindPoints), isShieldActive=\(SharedDefaults.isShieldActive)")
-
-        // Lock preset on first unlock of the day
-        if !SharedDefaults.windPresetLockedForToday {
-            lockPresetForToday()
-        }
 
         // Signal main app to highlight the unlock button
         SharedDefaults.pendingShieldUnlock = true

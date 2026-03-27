@@ -38,11 +38,9 @@ extension SyncManager {
                     storeHourlyPerDay(cloudPet.hourlyPerDay, petId: petId)
                 }
 
-                // Lock preset for today — restored pet already has a preset,
-                // prevent DailyPresetPicker from showing (which would reset wind)
-                SharedDefaults.windPresetLockedForToday = true
-                SharedDefaults.windPresetLockedDate = Date()
-                SharedDefaults.isDayStartShieldActive = false
+                // Mark today's preset as selected — restored pet already has one
+                SharedDefaults.todaySelectedPreset = cloudPet.preset
+                SharedDefaults.lastDayResetDate = Calendar.current.startOfDay(for: Date())
 
                 #if DEBUG
                 print("[SyncManager] Active pet restored: \(cloudPet.name)")

@@ -80,22 +80,11 @@ final class ScreenTimeManager: ObservableObject {
     /// - Clears any existing shields
     /// - Restarts monitoring with new preset parameters
     func applyPreset(_ preset: WindPreset, for pet: Pet) {
-        // If preset is already locked for today, skip — re-applying would zero the baseline
-        guard !SharedDefaults.windPresetLockedForToday else {
-            #if DEBUG
-            print("[ScreenTimeManager] applyPreset: preset already locked for today, skipping")
-            #endif
-            return
-        }
-
-        // Reset wind state first (also clears preset lock)
-        SharedDefaults.resetWindState()
+        // Reset all day state (wind, baseline, break reduction, day start shield)
+        SharedDefaults.resetForNewDay()
 
         // Save selected preset
         SharedDefaults.todaySelectedPreset = preset.rawValue
-        SharedDefaults.windPresetLockedForToday = true
-        SharedDefaults.windPresetLockedDate = Date()
-        SharedDefaults.lastDayResetDate = Calendar.current.startOfDay(for: Date())
 
         // Log preset selection to snapshot analytics
         SnapshotLogging.logPresetSelected(
@@ -104,9 +93,11 @@ final class ScreenTimeManager: ObservableObject {
             preset: preset
         )
 
-        // Clear shields and deactivate day start shield (user selected preset)
+        // Clear any active shields
         clearShield()
-        SharedDefaults.isDayStartShieldActive = false
+
+        // Notify UI to refresh wind immediately (SharedDefaults changes aren't @Observable)
+        NotificationCenter.default.post(name: .windDidReset, object: nil)
 
         // Calculate monitoring parameters from preset
         let limitSeconds = Int(preset.minutesToBlowAway * 60)

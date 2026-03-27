@@ -892,6 +892,9 @@
     "exp: %.1f" : {
 
     },
+    "Expire Break" : {
+
+    },
     "Fast Wind Preset" : {
 
     },
@@ -1163,9 +1166,6 @@
 
     },
     "Meet Uuumi." : {
-
-    },
-    "Midnight Reset" : {
 
     },
     "Mild" : {
@@ -1742,9 +1742,6 @@
     "Simulate +interval" : {
 
     },
-    "Simulate intervalDidEnd" : {
-
-    },
     "Since %@" : {
 
     },
@@ -1773,9 +1770,6 @@
 
     },
     "Stage" : {
-
-    },
-    "Stale Break" : {
 
     },
     "Start" : {
@@ -1929,9 +1923,6 @@
 
     },
     "Today" : {
-
-    },
-    "Today's preset is locked once selected and can't be changed." : {
 
     },
     "Today's settings" : {
