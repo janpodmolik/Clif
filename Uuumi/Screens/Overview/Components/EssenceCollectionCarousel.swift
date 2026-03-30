@@ -33,7 +33,9 @@ struct EssenceCollectionCarousel: View {
                 emptyState
             } else {
                 carousel
-                pageDots
+                if records.count > 1 {
+                    pageDots
+                }
             }
         }
     }
@@ -61,6 +63,31 @@ struct EssenceCollectionCarousel: View {
     // MARK: - Carousel
 
     private var carousel: some View {
+        Group {
+            if records.count == 1, let record = records.first {
+                singleCard(record)
+            } else {
+                multiCardCarousel
+            }
+        }
+    }
+
+    private func singleCard(_ record: EssenceRecord) -> some View {
+        EssenceCard(record: record, height: cardHeight)
+            .contentShape(Rectangle())
+            .onTapGesture { onTap?(record) }
+            .frame(width: cardWidth, height: cardHeight)
+            .shadow(
+                color: .black.opacity(0.12),
+                radius: 12,
+                x: 0,
+                y: 10
+            )
+            .frame(maxWidth: .infinity)
+            .frame(height: cardHeight + 24)
+    }
+
+    private var multiCardCarousel: some View {
         GeometryReader { proxy in
             let horizontalInset = max(0, (proxy.size.width - cardWidth) / 2)
             ScrollView(.horizontal) {
