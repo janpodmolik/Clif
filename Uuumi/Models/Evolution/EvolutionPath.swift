@@ -79,10 +79,10 @@ extension EvolutionPath {
         displayName: "Orc",
         phases: [
             EvolutionPhase(phaseNumber: 1, evolutionId: "orc", displayScale: 0.85, idleConfig: .default),
-            EvolutionPhase(phaseNumber: 2, evolutionId: "orc", displayScale: 0.90, idleConfig: .default),
-            EvolutionPhase(phaseNumber: 3, evolutionId: "orc", displayScale: 1.00, idleConfig: .default),
+            EvolutionPhase(phaseNumber: 2, evolutionId: "orc", displayScale: 0.87, idleConfig: .default),
+            EvolutionPhase(phaseNumber: 3, evolutionId: "orc", displayScale: 0.98, idleConfig: .default),
             EvolutionPhase(phaseNumber: 4, evolutionId: "orc", displayScale: 1.00, idleConfig: .default),
-            EvolutionPhase(phaseNumber: 5, evolutionId: "orc", displayScale: 1.10, idleConfig: .default),
+            EvolutionPhase(phaseNumber: 5, evolutionId: "orc", displayScale: 1.00, idleConfig: .default),
         ]
     )
 }
@@ -94,10 +94,10 @@ extension EvolutionPath {
         id: "clicker",
         displayName: "Clicker",
         phases: [
-            EvolutionPhase(phaseNumber: 1, evolutionId: "clicker", displayScale: 0.85, idleConfig: .default),
-            EvolutionPhase(phaseNumber: 2, evolutionId: "clicker", displayScale: 0.95, idleConfig: .default),
-            EvolutionPhase(phaseNumber: 3, evolutionId: "clicker", displayScale: 1.05, idleConfig: .default),
-            EvolutionPhase(phaseNumber: 4, evolutionId: "clicker", displayScale: 1.15, idleConfig: .default),
+            EvolutionPhase(phaseNumber: 1, evolutionId: "clicker", displayScale: 1.00, idleConfig: .default),
+            EvolutionPhase(phaseNumber: 2, evolutionId: "clicker", displayScale: 1.04, idleConfig: .default),
+            EvolutionPhase(phaseNumber: 3, evolutionId: "clicker", displayScale: 1.11, idleConfig: .default),
+            EvolutionPhase(phaseNumber: 4, evolutionId: "clicker", displayScale: 1.14, idleConfig: .default),
         ]
     )
 }
@@ -109,11 +109,11 @@ extension EvolutionPath {
         id: "lion",
         displayName: "Lion",
         phases: [
-            EvolutionPhase(phaseNumber: 1, evolutionId: "lion", displayScale: 0.85, idleConfig: .default),
+            EvolutionPhase(phaseNumber: 1, evolutionId: "lion", displayScale: 0.88, idleConfig: .default),
             EvolutionPhase(phaseNumber: 2, evolutionId: "lion", displayScale: 0.95, idleConfig: .default),
-            EvolutionPhase(phaseNumber: 3, evolutionId: "lion", displayScale: 1.05, idleConfig: .default),
-            EvolutionPhase(phaseNumber: 4, evolutionId: "lion", displayScale: 1.15, idleConfig: .default),
-            EvolutionPhase(phaseNumber: 5, evolutionId: "lion", displayScale: 1.25, idleConfig: .default),
+            EvolutionPhase(phaseNumber: 3, evolutionId: "lion", displayScale: 1.00, idleConfig: .default),
+            EvolutionPhase(phaseNumber: 4, evolutionId: "lion", displayScale: 1.05, idleConfig: .default),
+            EvolutionPhase(phaseNumber: 5, evolutionId: "lion", displayScale: 1.12, idleConfig: .default),
         ]
     )
 }
@@ -126,9 +126,9 @@ extension EvolutionPath {
         displayName: "Stitches",
         phases: [
             EvolutionPhase(phaseNumber: 1, evolutionId: "stitches", displayScale: 0.85, idleConfig: .default),
-            EvolutionPhase(phaseNumber: 2, evolutionId: "stitches", displayScale: 0.95, idleConfig: .default),
-            EvolutionPhase(phaseNumber: 3, evolutionId: "stitches", displayScale: 1.05, idleConfig: .default),
-            EvolutionPhase(phaseNumber: 4, evolutionId: "stitches", displayScale: 1.15, idleConfig: .default),
+            EvolutionPhase(phaseNumber: 2, evolutionId: "stitches", displayScale: 0.90, idleConfig: .default),
+            EvolutionPhase(phaseNumber: 3, evolutionId: "stitches", displayScale: 0.92, idleConfig: .default),
+            EvolutionPhase(phaseNumber: 4, evolutionId: "stitches", displayScale: 0.97, idleConfig: .default),
         ]
     )
 }
@@ -141,9 +141,9 @@ extension EvolutionPath {
         displayName: "Racoon",
         phases: [
             EvolutionPhase(phaseNumber: 1, evolutionId: "racoon", displayScale: 0.85, idleConfig: .default),
-            EvolutionPhase(phaseNumber: 2, evolutionId: "racoon", displayScale: 0.95, idleConfig: .default),
-            EvolutionPhase(phaseNumber: 3, evolutionId: "racoon", displayScale: 1.05, idleConfig: .default),
-            EvolutionPhase(phaseNumber: 4, evolutionId: "racoon", displayScale: 1.15, idleConfig: .default),
+            EvolutionPhase(phaseNumber: 2, evolutionId: "racoon", displayScale: 0.87, idleConfig: .default),
+            EvolutionPhase(phaseNumber: 3, evolutionId: "racoon", displayScale: 0.93, idleConfig: .default),
+            EvolutionPhase(phaseNumber: 4, evolutionId: "racoon", displayScale: 0.99, idleConfig: .default),
         ]
     )
 }
@@ -155,10 +155,10 @@ extension EvolutionPath {
         id: "moss",
         displayName: "Moss",
         phases: [
-            EvolutionPhase(phaseNumber: 1, evolutionId: "moss", displayScale: 0.85, idleConfig: .default),
-            EvolutionPhase(phaseNumber: 2, evolutionId: "moss", displayScale: 0.95, idleConfig: .default),
-            EvolutionPhase(phaseNumber: 3, evolutionId: "moss", displayScale: 1.05, idleConfig: .default),
-            EvolutionPhase(phaseNumber: 4, evolutionId: "moss", displayScale: 1.15, idleConfig: .default),
+            EvolutionPhase(phaseNumber: 1, evolutionId: "moss", displayScale: 0.90, idleConfig: .default),
+            EvolutionPhase(phaseNumber: 2, evolutionId: "moss", displayScale: 0.96, idleConfig: .default),
+            EvolutionPhase(phaseNumber: 3, evolutionId: "moss", displayScale: 1.00, idleConfig: .default),
+            EvolutionPhase(phaseNumber: 4, evolutionId: "moss", displayScale: 1.05, idleConfig: .default),
         ]
     )
 }
@@ -170,10 +170,10 @@ extension EvolutionPath {
         id: "shroom",
         displayName: "Shroom",
         phases: [
-            EvolutionPhase(phaseNumber: 1, evolutionId: "shroom", displayScale: 0.85, idleConfig: .default),
-            EvolutionPhase(phaseNumber: 2, evolutionId: "shroom", displayScale: 0.95, idleConfig: .default),
+            EvolutionPhase(phaseNumber: 1, evolutionId: "shroom", displayScale: 1.00, idleConfig: .default),
+            EvolutionPhase(phaseNumber: 2, evolutionId: "shroom", displayScale: 1.05, idleConfig: .default),
             EvolutionPhase(phaseNumber: 3, evolutionId: "shroom", displayScale: 1.05, idleConfig: .default),
-            EvolutionPhase(phaseNumber: 4, evolutionId: "shroom", displayScale: 1.15, idleConfig: .default),
+            EvolutionPhase(phaseNumber: 4, evolutionId: "shroom", displayScale: 1.10, idleConfig: .default),
         ]
     )
 }
