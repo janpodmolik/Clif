@@ -3,8 +3,13 @@ import SwiftUI
 /// Essence picker with catalog and staging area.
 struct EssencePicker: View {
     @Environment(EssencePickerCoordinator.self) private var coordinator
+    @Environment(EssenceCatalogManager.self) private var catalogManager
+    @Environment(ArchivedPetManager.self) private var archivedPetManager
+    @Environment(PetManager.self) private var petManager
 
     @State private var selectedEssence: Essence?
+    @State private var essenceToUnlock: Essence?
+    @State private var selectedEssenceRecord: EssenceRecord?
     @State private var hapticController = DragHapticController()
 
     private enum Layout {
@@ -16,21 +21,40 @@ struct EssencePicker: View {
         selectedEssence.map { EvolutionPath.path(for: $0) }
     }
 
+    private var isSelectedLocked: Bool {
+        guard let essence = selectedEssence else { return false }
+        return !catalogManager.isUnlocked(essence)
+    }
+
+    private var sortedEssences: [Essence] {
+        Essence.allCases.sorted { a, b in
+            let aUnlocked = catalogManager.isUnlocked(a)
+            let bUnlocked = catalogManager.isUnlocked(b)
+            if aUnlocked != bUnlocked { return aUnlocked }
+            return false
+        }
+    }
+
     var body: some View {
         VStack(spacing: Layout.sectionSpacing) {
             topSection
 
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: Layout.catalogSpacing) {
-                    ForEach(Essence.allCases, id: \.self) { essence in
+                    ForEach(sortedEssences, id: \.self) { essence in
                         EssenceCatalogCard(
                             essence: essence,
-                            isSelected: essence == selectedEssence
+                            isSelected: essence == selectedEssence,
+                            isLocked: !catalogManager.isUnlocked(essence)
                         ) {
-                            withAnimation(.easeInOut(duration: 0.2)) {
-                                selectedEssence = essence
+                            if essence == selectedEssence {
+                                showEssenceSheet(essence)
+                            } else {
+                                withAnimation(.easeInOut(duration: 0.2)) {
+                                    selectedEssence = essence
+                                }
+                                coordinator.hasSelectedEssence = true
                             }
-                            coordinator.hasSelectedEssence = true
                         }
                     }
                 }
@@ -41,36 +65,79 @@ struct EssencePicker: View {
         .onDisappear {
             hapticController.stop()
         }
+        .sheet(item: $essenceToUnlock) { essence in
+            EssenceUnlockSheet(essence: essence)
+        }
+        .sheet(item: $selectedEssenceRecord) { record in
+            EssenceDetailSheet(
+                record: record,
+                summaries: archivedPetManager.summaries
+            )
+        }
     }
 
-    @ViewBuilder
     private var topSection: some View {
         VStack(spacing: 16) {
             HStack(spacing: 16) {
                 // Info section
-                VStack(alignment: .leading, spacing: 4) {
+                VStack(alignment: .leading, spacing: 8) {
                     if let path = selectedPath {
-                        Text(path.displayName)
-                            .font(.headline)
+                        HStack(spacing: 0) {
+                            Text(path.displayName)
+                                .font(.headline)
+                            Text(" · ")
+                                .font(.headline)
+                                .foregroundStyle(.tertiary)
+                            Text("Drag to your pet")
+                                .font(.headline)
+                                .foregroundStyle(.secondary)
+                        }
                     } else {
                         Text("Select an essence")
                             .font(.headline)
                             .foregroundStyle(.secondary)
                     }
 
-                    Text("Drag to your pet")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                    if selectedEssence != nil {
+                        Button {
+                            if let essence = selectedEssence { showEssenceSheet(essence) }
+                        } label: {
+                            if isSelectedLocked {
+                                HStack(spacing: 5) {
+                                    Image(systemName: "lock.fill")
+                                        .font(.system(size: 12))
+                                    Text("Unlock")
+                                }
+                                .font(.subheadline.weight(.semibold))
+                                .foregroundStyle(.white)
+                                .padding(.horizontal, 14)
+                                .padding(.vertical, 8)
+                                .background(.green, in: Capsule())
+                            } else {
+                                Text("Details")
+                                    .font(.subheadline.weight(.semibold))
+                                    .foregroundStyle(.green)
+                                    .padding(.horizontal, 14)
+                                    .padding(.vertical, 8)
+                                    .background(.green.opacity(0.12), in: Capsule())
+                            }
+                        }
+                    } else {
+                        Text("Drag to your pet")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
                 }
 
                 Spacer()
 
-                // Staging area - instant drag
-                EssenceStagingCard(essence: selectedEssence, isDragging: coordinator.dragState.isDragging)
+                // Staging area
+                EssenceStagingCard(essence: selectedEssence, isLocked: isSelectedLocked, isDragging: coordinator.dragState.isDragging)
                     .gesture(
                         DragGesture(minimumDistance: 0, coordinateSpace: .global)
                             .onChanged { value in
                                 guard selectedEssence != nil else { return }
+                                guard !isSelectedLocked else { return }
                                 if !coordinator.dragState.isDragging {
                                     startDragging()
                                 }
@@ -88,7 +155,24 @@ struct EssencePicker: View {
             Divider()
                 .padding(.horizontal)
         }
+        .padding(.top, 4)
         .contentShape(Rectangle())
+    }
+
+    private func showEssenceSheet(_ essence: Essence) {
+        if catalogManager.isUnlocked(essence) {
+            let record = archivedPetManager
+                .essenceRecords(currentPet: petManager.currentPet)
+                .first { $0.essence == essence }
+            selectedEssenceRecord = record ?? EssenceRecord(
+                id: essence.name,
+                essence: essence,
+                bestPhase: nil,
+                petCount: 0
+            )
+        } else {
+            essenceToUnlock = essence
+        }
     }
 
     private func startDragging() {
@@ -142,6 +226,7 @@ private enum CardStyle {
 
 private struct EssenceStagingCard: View {
     let essence: Essence?
+    var isLocked: Bool = false
     var isDragging: Bool = false
 
     var body: some View {
@@ -163,6 +248,14 @@ private struct EssenceStagingCard: View {
                             .resizable()
                             .scaledToFit()
                             .frame(width: CardStyle.imageSize, height: CardStyle.imageSize)
+                            .opacity(isLocked ? 0.35 : 1.0)
+                            .overlay {
+                                if isLocked {
+                                    Image(systemName: "lock.fill")
+                                        .font(.system(size: 24))
+                                        .foregroundStyle(.secondary.opacity(0.7))
+                                }
+                            }
                     } else {
                         Image(systemName: "sparkles")
                             .font(.title)
@@ -183,6 +276,7 @@ private struct EssenceStagingCard: View {
 private struct EssenceCatalogCard: View {
     let essence: Essence
     let isSelected: Bool
+    let isLocked: Bool
     let onTap: () -> Void
 
     private var path: EvolutionPath {
@@ -194,6 +288,15 @@ private struct EssenceCatalogCard: View {
             .resizable()
             .scaledToFit()
             .frame(width: CardStyle.imageSize, height: CardStyle.imageSize)
+            .opacity(isLocked ? 0.35 : 1.0)
+            .overlay {
+                if isLocked {
+                    Image(systemName: "lock.fill")
+                        .font(.system(size: 28))
+                        .foregroundStyle(.secondary.opacity(0.7))
+                        .allowsHitTesting(false)
+                }
+            }
             .padding(CardStyle.padding)
             .background(cardBackground)
             .onTapGesture {
@@ -254,8 +357,19 @@ struct EssenceDragPreview: View {
 }
 
 #if DEBUG
-#Preview {
+#Preview("Default (only plant unlocked)") {
     EssencePicker()
         .environment(EssencePickerCoordinator())
+        .environment(EssenceCatalogManager.mock())
+        .environment(ArchivedPetManager.mock())
+        .environment(PetManager.mock())
+}
+
+#Preview("All unlocked") {
+    EssencePicker()
+        .environment(EssencePickerCoordinator())
+        .environment(EssenceCatalogManager.mock(allUnlocked: true))
+        .environment(ArchivedPetManager.mock())
+        .environment(PetManager.mock())
 }
 #endif

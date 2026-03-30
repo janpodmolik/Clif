@@ -27,7 +27,9 @@ struct HomeScreen: View {
     @State private var showWindNotCalmAlert = false
     @State private var showAuthorizationAlert = false
     @State private var showEvolutionUpsell = false
+    @State private var showEssenceUpsell = false
     @State private var pendingEvolveAction: (() -> Void)?
+    @State private var pendingEssenceAction: (() -> Void)?
     @State private var petFrame: CGRect = .zero
     @State private var dropZoneFrame: CGRect = .zero
     @State private var evolutionAnimator = EvolutionTransitionAnimator()
@@ -304,6 +306,12 @@ struct HomeScreen: View {
             EvolutionUpsellSheet(petName: currentPet?.name ?? "Your Uuumi") {
                 pendingEvolveAction?()
                 pendingEvolveAction = nil
+            }
+        }
+        .sheet(isPresented: $showEssenceUpsell) {
+            EssenceApplicationUpsellSheet(petName: currentPet?.name ?? "Your Uuumi") {
+                pendingEssenceAction?()
+                pendingEssenceAction = nil
             }
         }
         .windNotCalmSheet(isPresented: $showWindNotCalmAlert)
@@ -620,8 +628,12 @@ struct HomeScreen: View {
                     analytics.send(.essenceApplied(essence: essence.name))
                     evolutionAnimator.triggerEssenceApplication(pet: pet, essence: essence)
                 }
-                // Essence application — upsell handled in essence drop dialog
-                evolveAction()
+                if storeManager.isPremium {
+                    evolveAction()
+                } else {
+                    pendingEssenceAction = evolveAction
+                    showEssenceUpsell = true
+                }
             }
         } else {
             let evolveAction = {
