@@ -345,6 +345,13 @@ struct HomeScreen: View {
             refreshTick += 1
             configureRefreshTimer()
         }
+        .onReceive(NotificationCenter.default.publisher(for: UIApplication.didEnterBackgroundNotification)) { _ in
+            // Dismiss upsell sheets to prevent stale state (wind may change in background)
+            showEvolutionUpsell = false
+            showEssenceUpsell = false
+            pendingEvolveAction = nil
+            pendingEssenceAction = nil
+        }
         .onReceive(NotificationCenter.default.publisher(for: .windDidReset)) { _ in
             refreshTick += 1
         }
