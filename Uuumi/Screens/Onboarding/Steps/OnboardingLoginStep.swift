@@ -127,7 +127,7 @@ struct OnboardingLoginStep: View {
                 } label: {
                     Text("Maybe later")
                         .font(.subheadline)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(.primary.opacity(0.6))
                 }
                 .buttonStyle(.plain)
                 .padding(.top, 4)

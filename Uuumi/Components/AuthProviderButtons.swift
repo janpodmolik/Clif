@@ -125,7 +125,7 @@ struct AuthProviderButtons: View {
         Text("Terms of Service")
             .underline())
         .font(.caption)
-        .foregroundStyle(.secondary)
+        .foregroundStyle(.primary.opacity(0.6))
         .multilineTextAlignment(.center)
         .padding(.horizontal, 24)
     }
