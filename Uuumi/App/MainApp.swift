@@ -47,6 +47,7 @@ struct MainApp: App {
                 .environment(analyticsManager)
                 .environment(deepLinkRouter)
                 .onAppear {
+                    ShieldManager.shared.analyticsManager = analyticsManager
                     petManager.syncManager = syncManager
                     #if DEBUG
                     print("🟢 ContentView appeared, authState=\(authManager.authState), hasPet=\(petManager.hasPet)")

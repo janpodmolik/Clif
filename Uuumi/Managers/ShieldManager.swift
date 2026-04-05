@@ -37,6 +37,8 @@ final class ShieldState {
 final class ShieldManager {
     static let shared = ShieldManager()
 
+    var analyticsManager: AnalyticsManager?
+
     private let store = ManagedSettingsStore()
     private var breakCompletionTimer: Timer?
 
@@ -460,7 +462,8 @@ final class ShieldManager {
     /// Called when shield is turned off (break ends).
     private func logBreakEnded(success: Bool) {
         guard let petId = SharedDefaults.monitoredPetId,
-              let activatedAt = SharedDefaults.shieldActivatedAt else { return }
+              let activatedAt = SharedDefaults.shieldActivatedAt,
+              let breakType = SharedDefaults.activeBreakType else { return }
 
         let actualMinutes = Int(round(Date().timeIntervalSince(activatedAt) / 60))
 
@@ -470,6 +473,8 @@ final class ShieldManager {
             actualMinutes: actualMinutes,
             success: success
         )
+
+        analyticsManager?.send(.breakEnded(type: breakType.rawValue, durationMinutes: actualMinutes, success: success))
     }
 
     // MARK: - Unlock Processing

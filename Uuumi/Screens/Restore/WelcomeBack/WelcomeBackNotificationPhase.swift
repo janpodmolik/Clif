@@ -8,6 +8,7 @@ struct WelcomeBackNotificationPhase: View {
     @State private var isRequesting = false
 
     @Environment(\.scenePhase) private var scenePhase
+    @Environment(AnalyticsManager.self) private var analytics
 
     var body: some View {
         VStack(spacing: 24) {
@@ -92,6 +93,8 @@ struct WelcomeBackNotificationPhase: View {
     private func requestPermission() async {
         isRequesting = true
         await AppDelegate.requestNotificationPermission()
+        let settings = await UNUserNotificationCenter.current().notificationSettings()
+        analytics.send(.notificationPermissionResponded(granted: settings.authorizationStatus == .authorized))
         permissionRequested = true
         isRequesting = false
         checkPermission()

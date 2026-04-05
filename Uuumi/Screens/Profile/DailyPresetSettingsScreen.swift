@@ -2,6 +2,7 @@ import SwiftUI
 
 struct DailyPresetSettingsScreen: View {
     @Environment(PetManager.self) private var petManager
+    @Environment(AnalyticsManager.self) private var analytics
     @State private var limitSettings = SharedDefaults.limitSettings
 
     private var todayPreset: WindPreset? {
@@ -121,8 +122,15 @@ struct DailyPresetSettingsScreen: View {
         }
         .navigationTitle("Daily Preset")
         .navigationBarTitleDisplayMode(.inline)
-        .onChange(of: limitSettings) { _, newValue in
+        .onChange(of: limitSettings) { oldValue, newValue in
             SharedDefaults.limitSettings = newValue
+
+            if oldValue.defaultWindPresetRaw != newValue.defaultWindPresetRaw {
+                analytics.send(.configChanged(key: "default_preset", value: newValue.defaultWindPresetRaw))
+            }
+            if oldValue.dayStartShieldEnabled != newValue.dayStartShieldEnabled {
+                analytics.send(.configChanged(key: "day_start_shield", value: "\(newValue.dayStartShieldEnabled)"))
+            }
         }
     }
 }

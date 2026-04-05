@@ -3,6 +3,7 @@ import UserNotifications
 
 struct NotificationSettingsScreen: View {
     @Environment(PetManager.self) private var petManager
+    @Environment(AnalyticsManager.self) private var analytics
     @Environment(\.scenePhase) private var scenePhase
     @State private var limitSettings = SharedDefaults.limitSettings
     @State private var systemNotificationsEnabled = true
@@ -151,8 +152,12 @@ struct NotificationSettingsScreen: View {
                 Task { await checkNotificationStatus() }
             }
         }
-        .onChange(of: limitSettings) { _, newValue in
+        .onChange(of: limitSettings) { oldValue, newValue in
             SharedDefaults.limitSettings = newValue
+
+            if oldValue.notifications.masterEnabled != newValue.notifications.masterEnabled {
+                analytics.send(.configChanged(key: "notifications_master", value: "\(newValue.notifications.masterEnabled)"))
+            }
 
             ScheduledNotificationManager.refresh(
                 isEvolutionAvailable: petManager.currentPet?.isEvolutionAvailable ?? false,

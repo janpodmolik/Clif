@@ -3,6 +3,7 @@ import SwiftUI
 struct NotificationRequestSheet: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.scenePhase) private var scenePhase
+    @Environment(AnalyticsManager.self) private var analytics
 
     @State private var permissionRequested = false
     @State private var permissionDenied = false
@@ -120,6 +121,8 @@ struct NotificationRequestSheet: View {
     private func requestPermission() async {
         isRequesting = true
         await AppDelegate.requestNotificationPermission()
+        let settings = await UNUserNotificationCenter.current().notificationSettings()
+        analytics.send(.notificationPermissionResponded(granted: settings.authorizationStatus == .authorized))
         permissionRequested = true
         await checkPermission()
         isRequesting = false

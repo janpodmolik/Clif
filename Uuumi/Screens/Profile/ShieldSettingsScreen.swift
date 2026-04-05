@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct ShieldSettingsScreen: View {
+    @Environment(AnalyticsManager.self) private var analytics
     @State private var limitSettings = SharedDefaults.limitSettings
 
     var body: some View {
@@ -51,8 +52,18 @@ struct ShieldSettingsScreen: View {
         }
         .navigationTitle("Shield")
         .navigationBarTitleDisplayMode(.inline)
-        .onChange(of: limitSettings) { _, newValue in
+        .onChange(of: limitSettings) { oldValue, newValue in
             SharedDefaults.limitSettings = newValue
+
+            if oldValue.safetyShieldActivationThreshold != newValue.safetyShieldActivationThreshold {
+                analytics.send(.configChanged(key: "safety_shield_activation", value: "\(newValue.safetyShieldActivationThreshold)"))
+            }
+            if oldValue.safetyUnlockThreshold != newValue.safetyUnlockThreshold {
+                analytics.send(.configChanged(key: "safety_unlock_threshold", value: "\(newValue.safetyUnlockThreshold)"))
+            }
+            if oldValue.autoLockAfterCommittedBreak != newValue.autoLockAfterCommittedBreak {
+                analytics.send(.configChanged(key: "auto_lock_after_committed", value: "\(newValue.autoLockAfterCommittedBreak)"))
+            }
         }
     }
 }

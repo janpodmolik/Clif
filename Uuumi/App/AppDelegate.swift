@@ -62,17 +62,20 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
         }
     }
 
-    static func requestNotificationPermission() async {
+    @discardableResult
+    static func requestNotificationPermission() async -> Bool {
         do {
             let granted = try await UNUserNotificationCenter.current()
                 .requestAuthorization(options: [.alert, .sound, .badge])
             #if DEBUG
             print("[AppDelegate] Notification permission \(granted ? "granted" : "denied")")
             #endif
+            return granted
         } catch {
             #if DEBUG
             print("[AppDelegate] Permission error: \(error.localizedDescription)")
             #endif
+            return false
         }
     }
 }

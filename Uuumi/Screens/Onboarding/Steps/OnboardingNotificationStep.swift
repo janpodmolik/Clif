@@ -1,6 +1,8 @@
 import SwiftUI
 
 struct OnboardingNotificationStep: View {
+    @Environment(AnalyticsManager.self) private var analytics
+
     let skipAnimation: Bool
     var onContinue: () -> Void
     @Binding var eyesOverride: String?
@@ -303,6 +305,7 @@ struct OnboardingNotificationStep: View {
 
             let settings = await UNUserNotificationCenter.current().notificationSettings()
             let granted = settings.authorizationStatus == .authorized
+            analytics.send(.notificationPermissionResponded(granted: granted))
 
             if granted {
                 onContinue()
