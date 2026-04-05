@@ -14,6 +14,33 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
         super.intervalDidStart(for: activity)
         ExtensionLogger.log("[Extension] intervalDidStart")
         saveBaselineAndResetThreshold()
+        activateDayStartShieldIfNeeded()
+    }
+
+    /// Activates Day Start Shield reactively when a new day is detected.
+    /// Called from intervalDidStart (midnight) and eventDidReachThreshold (first usage).
+    private func activateDayStartShieldIfNeeded() {
+        SharedDefaults.synchronize()
+
+        guard SharedDefaults.isNewDay,
+              !SharedDefaults.isShieldActive,
+              !SharedDefaults.isDayStartShieldActive else {
+            return
+        }
+
+        let settings = SharedDefaults.limitSettings
+        if settings.dayStartShieldEnabled {
+            let activated = activateShieldFromTokens()
+            if activated {
+                SharedDefaults.isDayStartShieldActive = true
+                SharedDefaults.synchronize()
+                ExtensionLogger.log("[Extension] New day - preset shield activated")
+            } else {
+                ExtensionLogger.log("[Extension] New day - FAILED to activate shield (no tokens)")
+            }
+        } else {
+            ExtensionLogger.log("[Extension] New day - auto-apply mode, skipping shield")
+        }
     }
 
     // MARK: - Baseline Accounting
@@ -76,6 +103,12 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
         super.eventDidReachThreshold(event, activity: activity)
 
         autoreleasepool {
+            // Sentinel threshold — only activates Day Start Shield, no wind processing
+            if event.rawValue == EventNames.dayStartSentinel {
+                activateDayStartShieldIfNeeded()
+                return
+            }
+
             guard let currentSeconds = parseSecondsFromEvent(event) else { return }
 
             // Guard against out-of-order threshold bursts: only process if this threshold
@@ -97,22 +130,7 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
             SharedDefaults.monitoredLastThresholdSeconds = adjustedSeconds
             SharedDefaults.lastThresholdTimestamp = Date()
 
-            // New day detected: activate Day Start Shield reactively on first threshold
-            if SharedDefaults.isNewDay
-                && SharedDefaults.todaySelectedPreset == nil
-                && !SharedDefaults.isShieldActive
-                && !SharedDefaults.isDayStartShieldActive {
-                let settings = SharedDefaults.limitSettings
-                if settings.dayStartShieldEnabled {
-                    activateShieldFromTokens()
-                    SharedDefaults.isDayStartShieldActive = true
-                    SharedDefaults.synchronize()
-                    ExtensionLogger.log("[Extension] New day - preset shield activated on first threshold")
-                } else {
-                    ExtensionLogger.log("[Extension] New day - skipping shield (auto-apply mode)")
-                }
-                return
-            }
+            activateDayStartShieldIfNeeded()
 
             guard shouldProcessThreshold() else { return }
 

@@ -337,11 +337,11 @@ enum MonitoringEventBuilder {
     ) -> [DeviceActivityEvent.Name: DeviceActivityEvent] {
         var events: [DeviceActivityEvent.Name: DeviceActivityEvent] = [:]
 
-        let maxThresholds = AppConstants.maxThresholds
+        let maxWindThresholds = AppConstants.maxThresholds - AppConstants.reservedThresholds
         let minInterval = AppConstants.minimumThresholdSeconds
 
         // Calculate interval to spread thresholds evenly across full range
-        let intervalSeconds = max(limitSeconds / maxThresholds, minInterval)
+        let intervalSeconds = max(limitSeconds / maxWindThresholds, minInterval)
 
         #if DEBUG
         print("[MonitoringEventBuilder] buildEvents:")
@@ -353,7 +353,7 @@ enum MonitoringEventBuilder {
         // iOS ignores already-passed thresholds automatically
         var currentSeconds = intervalSeconds
 
-        while events.count < maxThresholds {
+        while events.count < maxWindThresholds {
             let eventName = DeviceActivityEvent.Name("second_\(currentSeconds)")
             let minutes = currentSeconds / 60
             let seconds = currentSeconds % 60
@@ -368,8 +368,17 @@ enum MonitoringEventBuilder {
             currentSeconds += intervalSeconds
         }
 
+        // Sentinel threshold at 6s for immediate Day Start Shield activation
+        let sentinelName = DeviceActivityEvent.Name(EventNames.dayStartSentinel)
+        events[sentinelName] = DeviceActivityEvent(
+            applications: appTokens,
+            categories: catTokens,
+            webDomains: webTokens,
+            threshold: DateComponents(second: AppConstants.minimumThresholdSeconds)
+        )
+
         #if DEBUG
-        print("  Created \(events.count) events")
+        print("  Created \(events.count) events (incl. sentinel)")
         if let firstKey = events.keys.min(by: { $0.rawValue < $1.rawValue }) {
             print("  First threshold: \(firstKey.rawValue)")
         }

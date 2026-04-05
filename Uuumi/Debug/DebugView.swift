@@ -584,6 +584,16 @@ struct DebugView: View {
                 }
                 .tint(.orange)
 
+                Button("Simulate New Day") {
+                    SharedDefaults.resetShieldFlags()
+                    ShieldManager.shared.clear()
+
+                    SharedDefaults.lastDayResetDate = Calendar.current.date(byAdding: .day, value: -1, to: Date())
+                    SharedDefaults.isDayStartShieldActive = false
+                    SharedDefaults.synchronize()
+                }
+                .tint(.mint)
+
                 Button("Safety Shield") {
                     simulateSafetyShield()
                 }

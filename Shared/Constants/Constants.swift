@@ -27,6 +27,9 @@ enum AppConstants {
     /// Maximum thresholds per schedule (DeviceActivity API limit is ~20)
     static let maxThresholds = 20
 
+    /// Thresholds reserved for non-wind events (e.g. day-start sentinel)
+    static let reservedThresholds = 1
+
     // MARK: - UI
 
     /// Maximum apps to display initially in activity report
@@ -60,6 +63,7 @@ enum DeepLinks {
 /// Event name patterns for DeviceActivity
 enum EventNames {
     static let secondPrefix = "second_"
+    static let dayStartSentinel = "daystart_sentinel"
 }
 
 /// Darwin notification names for cross-process IPC (extension → main app)
