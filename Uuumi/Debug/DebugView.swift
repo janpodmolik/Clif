@@ -13,18 +13,12 @@ struct DebugView: View {
     @State private var extensionLog = ""
     @State private var showNotificationRequest = false
 
-    @AppStorage(DefaultsKeys.monitoringLimitSeconds, store: UserDefaults(suiteName: AppConstants.appGroupIdentifier))
-    private var monitoringLimitSeconds = AppConstants.defaultMonitoringLimitMinutes * 60
-
-    @State private var limitSliderValue: Double = 1
     @State private var reportFilter: DeviceActivityFilter?
     @State private var reportId = UUID()
-    @State private var refreshTick = 0
 
     var body: some View {
         NavigationStack {
             ScrollView {
-                let _ = refreshTick
                 VStack(spacing: 12) {
                     petEvolutionSection
                     premiumSection
@@ -35,7 +29,6 @@ struct DebugView: View {
                     }
 
                     if manager.isAuthorized {
-                        debugConfigSection
                         progressSection
                         sharedDefaultsSection
                         monitoringSection
@@ -295,115 +288,6 @@ struct DebugView: View {
         }
     }
 
-    // MARK: - Debug Config
-
-    @State private var debugEnabled = DebugConfig.isEnabled
-    @State private var minutesToBlowAway = DebugConfig.minutesToBlowAway
-    @State private var minutesToRecover = DebugConfig.minutesToRecover
-
-    private var debugConfigSection: some View {
-        sectionCard("Debug Config", icon: "wrench.fill", tint: .yellow) {
-            Toggle("Override WindPreset", isOn: $debugEnabled)
-                .font(.subheadline)
-                .onChange(of: debugEnabled) { _, newValue in
-                    DebugConfig.isEnabled = newValue
-                }
-
-            if debugEnabled {
-                VStack(spacing: 8) {
-                    HStack {
-                        Text("Blow Away")
-                        Spacer()
-                        Text("\(Int(minutesToBlowAway)) min")
-                            .monospacedDigit()
-                            .foregroundStyle(.orange)
-                    }
-                    .font(.subheadline)
-
-                    Slider(value: $minutesToBlowAway, in: 1...30, step: 1)
-                        .onChange(of: minutesToBlowAway) { _, newValue in
-                            DebugConfig.minutesToBlowAway = newValue
-                            restartMonitoringIfNeeded()
-                        }
-
-                    HStack {
-                        Text("Recovery")
-                        Spacer()
-                        Text("\(Int(minutesToRecover)) min")
-                            .monospacedDigit()
-                            .foregroundStyle(.green)
-                    }
-                    .font(.subheadline)
-
-                    Slider(value: $minutesToRecover, in: 1...120, step: 1)
-                        .onChange(of: minutesToRecover) { _, newValue in
-                            DebugConfig.minutesToRecover = newValue
-                        }
-
-                    Divider()
-
-                    HStack {
-                        debugRow("Rise Rate", String(format: "%.1f pts/min", DebugConfig.riseRate))
-                        Spacer()
-                        debugRow("Fall Rate", String(format: "%.1f pts/min", DebugConfig.fallRate))
-                    }
-                }
-            } else {
-                Text("Using production WindPreset values")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }
-        }
-    }
-
-    private func restartMonitoringWithLimit(_ limitSeconds: Int) {
-        guard let pet = petManager.currentPet else {
-            print("[DebugConfig] No pet to restart monitoring for")
-            return
-        }
-
-        print("[DebugConfig] Restarting monitoring with limit: \(limitSeconds)s (\(limitSeconds / 60) min)")
-
-        ScreenTimeManager.shared.startMonitoring(
-            petId: pet.id,
-            petName: pet.name,
-            limitSeconds: limitSeconds,
-            limitedSources: pet.limitedSources
-        )
-    }
-
-    /// Restarts monitoring with new DebugConfig values if a pet exists.
-    private func restartMonitoringIfNeeded() {
-        guard let pet = petManager.currentPet else {
-            print("[DebugConfig] No pet to restart monitoring for")
-            return
-        }
-
-        let newLimit = Int(DebugConfig.minutesToBlowAway)
-        let fallRate = DebugConfig.fallRate
-        let limitSeconds = newLimit * 60
-        let fallRatePerSecond = fallRate / 60.0
-
-        SharedDefaults.monitoredFallRate = fallRatePerSecond
-
-        print("[DebugConfig] Restarting monitoring:")
-        print("  - petId: \(pet.id)")
-        print("  - limit: \(limitSeconds)s (\(newLimit) min)")
-        print("  - fallRate: \(fallRatePerSecond) pts/sec")
-        print("  - limitedSources count: \(pet.limitedSources.count)")
-
-        ScreenTimeManager.shared.startMonitoring(
-            petId: pet.id,
-            petName: pet.name,
-            limitSeconds: limitSeconds,
-            limitedSources: pet.limitedSources
-        )
-
-        print("[DebugConfig] After startMonitoring:")
-        print("  - SharedDefaults.monitoredPetId: \(SharedDefaults.monitoredPetId?.uuidString ?? "nil")")
-        print("  - SharedDefaults.monitoringLimitSeconds: \(SharedDefaults.integer(forKey: DefaultsKeys.monitoringLimitSeconds))")
-    }
-
     // MARK: - Progress Display
 
     private var progressSection: some View {
@@ -456,81 +340,13 @@ struct DebugView: View {
                     debugRow("pet.lastThreshold", "\(pet.lastThresholdSeconds)s")
                 }
             }
-
-            Divider()
-
-            HStack(spacing: 8) {
-                Button("Check Blow Away") {
-                    petManager.currentPet?.checkBlowAwayState()
-                }
-                .tint(.purple)
-
-                Button("Simulate +interval") {
-                    simulateThreshold()
-                }
-                .tint(.orange)
-            }
-            .buttonStyle(.bordered)
-            .controlSize(.small)
         }
-    }
-
-    /// Simulates what the extension does when a threshold is reached
-    private func simulateThreshold() {
-        let limitSeconds = SharedDefaults.integer(forKey: DefaultsKeys.monitoringLimitSeconds)
-        let maxThresholds = AppConstants.maxThresholds
-        let minInterval = AppConstants.minimumThresholdSeconds
-        let intervalSeconds = max(limitSeconds / maxThresholds, minInterval)
-
-        let lastSeconds = SharedDefaults.monitoredLastThresholdSeconds
-        let newSeconds = lastSeconds + intervalSeconds
-        let riseRatePerSecond = SharedDefaults.monitoredRiseRate
-        var windPoints = SharedDefaults.monitoredWindPoints
-
-        windPoints += Double(intervalSeconds) * riseRatePerSecond
-
-        SharedDefaults.monitoredWindPoints = windPoints
-        SharedDefaults.monitoredLastThresholdSeconds = newSeconds
-
-        print("[SimulateThreshold] seconds \(lastSeconds) -> \(newSeconds), wind -> \(windPoints)")
-
-        refreshTick += 1
-        petManager.currentPet?.checkBlowAwayState()
     }
 
     // MARK: - Monitoring Controls (merged: debug tools + limit slider + app selection)
 
     private var monitoringSection: some View {
         sectionCard("Monitoring", icon: "antenna.radiowaves.left.and.right", tint: .orange) {
-            // Limit slider
-            VStack(spacing: 4) {
-                HStack {
-                    Text("Limit")
-                    Spacer()
-                    Text("\(Int(limitSliderValue))m (\(Int(limitSliderValue) * 60)s)")
-                        .monospacedDigit()
-                        .foregroundStyle(.orange)
-                }
-                .font(.subheadline)
-
-                Slider(value: $limitSliderValue, in: 1...30, step: 1) {
-                    Text("Limit")
-                } onEditingChanged: { isEditing in
-                    if !isEditing {
-                        SharedDefaults.resetWindState()
-                        monitoringLimitSeconds = Int(limitSliderValue) * 60
-                        restartMonitoringWithLimit(Int(limitSliderValue) * 60)
-                        refreshReport()
-                    }
-                }
-            }
-            .onAppear {
-                let minutes = monitoringLimitSeconds / 60
-                limitSliderValue = Double(min(max(minutes, 1), 30))
-            }
-
-            Divider()
-
             // App selection
             let appCount = manager.activitySelection.applicationTokens.count
             let catCount = manager.activitySelection.categoryTokens.count
@@ -555,11 +371,6 @@ struct DebugView: View {
 
             // Actions
             FlowLayout(spacing: 8) {
-                Button("Restart Monitor") {
-                    restartMonitoringIfNeeded()
-                }
-                .tint(.blue)
-
                 Button("Clear Shield") {
                     manager.clearShield()
                     SharedDefaults.isDayStartShieldActive = false
@@ -956,8 +767,8 @@ struct DebugView: View {
         let totalSeconds = SharedDefaults.monitoredLastThresholdSeconds
         let minutes = totalSeconds / 60
         let seconds = totalSeconds % 60
-        let limitMinutes = monitoringLimitSeconds / 60
-        return "\(minutes)m \(seconds)s / \(limitMinutes)m"
+        let limitSeconds = SharedDefaults.integer(forKey: DefaultsKeys.monitoringLimitSeconds)
+        return "\(minutes)m \(seconds)s / \(limitSeconds / 60)m"
     }
 
     private func debugRow(_ label: String, _ value: String) -> some View {

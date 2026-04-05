@@ -185,16 +185,6 @@
     "%lldm" : {
 
     },
-    "%lldm (%llds)" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$lldm (%2$llds)"
-          }
-        }
-      }
-    },
     "%lldm limit" : {
 
     },
@@ -569,9 +559,6 @@
 
     },
     "Change tracked apps?" : {
-
-    },
-    "Check Blow Away" : {
 
     },
     "Check out available essences in the catalog" : {
@@ -1342,9 +1329,6 @@
     "Override" : {
 
     },
-    "Override WindPreset" : {
-
-    },
     "Overrides daily preset. Rise: %@ pts/min, Fall: %@ pts/min" : {
       "localizations" : {
         "en" : {
@@ -1534,9 +1518,6 @@
     "Recommended" : {
 
     },
-    "Recovery" : {
-
-    },
     "Recovery: %@ min" : {
 
     },
@@ -1580,9 +1561,6 @@
 
     },
     "Reset Wind to 0%" : {
-
-    },
-    "Restart Monitor" : {
 
     },
     "Restart Onboarding" : {
@@ -1752,9 +1730,6 @@
 
     },
     "Sign-in error (missing nonce)" : {
-
-    },
-    "Simulate +interval" : {
 
     },
     "Simulate New Day" : {
@@ -2049,9 +2024,6 @@
 
     },
     "User" : {
-
-    },
-    "Using production WindPreset values" : {
 
     },
     "Uuumi" : {

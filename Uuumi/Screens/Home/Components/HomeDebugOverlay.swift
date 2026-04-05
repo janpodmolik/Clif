@@ -19,7 +19,6 @@ struct HomeDebugOverlay: View {
                     bumpToggle
                     coinsButton
                     mockPetButton
-                    resetWindButton
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomLeading)
@@ -72,15 +71,6 @@ struct HomeDebugOverlay: View {
             Button("Blob") { petManager.debugReplacePet(phase: 0, essence: nil) }
         } label: {
             debugCapsule("leaf.fill", "Mock")
-        }
-    }
-
-    private var resetWindButton: some View {
-        Button {
-            SharedDefaults.monitoredWindPoints = 0
-            refreshTick += 1
-        } label: {
-            debugCapsule("wind", "Wind 0")
         }
     }
 

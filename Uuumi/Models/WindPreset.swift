@@ -16,11 +16,6 @@ enum WindPreset: String, Codable, CaseIterable {
 
     /// Minutes of blocked app usage to reach blow away (wind 0 → 100).
     var minutesToBlowAway: Double {
-        #if DEBUG
-        if DebugConfig.isEnabled {
-            return DebugConfig.minutesToBlowAway
-        }
-        #endif
         if TesterConfig.isActive {
             return TesterConfig.minutesToBlowAway
         }
@@ -33,11 +28,6 @@ enum WindPreset: String, Codable, CaseIterable {
 
     /// Wind points gained per minute of blocked app usage.
     var riseRate: Double {
-        #if DEBUG
-        if DebugConfig.isEnabled {
-            return DebugConfig.riseRate
-        }
-        #endif
         if TesterConfig.isActive {
             return TesterConfig.riseRate
         }
@@ -48,11 +38,6 @@ enum WindPreset: String, Codable, CaseIterable {
 
     /// Minutes of break to fully recover (wind 100 → 0).
     var minutesToRecover: Double {
-        #if DEBUG
-        if DebugConfig.isEnabled {
-            return DebugConfig.minutesToRecover
-        }
-        #endif
         if TesterConfig.isActive {
             return TesterConfig.minutesToRecover
         }
@@ -65,11 +50,6 @@ enum WindPreset: String, Codable, CaseIterable {
 
     /// Wind points decreased per minute during a break.
     var fallRate: Double {
-        #if DEBUG
-        if DebugConfig.isEnabled {
-            return DebugConfig.fallRate
-        }
-        #endif
         if TesterConfig.isActive {
             return TesterConfig.fallRate
         }

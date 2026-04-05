@@ -251,7 +251,6 @@
 		B4A184CA2F3B27BB00CDA090 /* Exceptions for "Uuumi" folder in "DeviceActivityMonitor" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
-				Debug/DebugConfig.swift,
 				Models/WindPreset.swift,
 				Tester/TesterConfig.swift,
 			);
