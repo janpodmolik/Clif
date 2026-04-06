@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct OnboardingView: View {
+    @Environment(AuthManager.self) private var authManager
     @Environment(PetManager.self) private var petManager
     @Environment(AnalyticsManager.self) private var analytics
 
@@ -268,19 +269,29 @@ struct OnboardingView: View {
 
     private func advanceScreen() {
         if currentScreen.isLast {
-            // Start monitoring only after the entire onboarding is complete
-            if let pet = petManager.currentPet {
-                ScreenTimeManager.shared.applyPreset(pet.preset, for: pet)
-            }
-            analytics.send(.onboardingCompleted)
-            hasCompletedOnboarding = true
+            completeOnboarding()
             return
         }
         guard let next = currentScreen.next else { return }
+
+        // Skip login if already authenticated (e.g. token persisted in Keychain)
+        if next == .login && authManager.isAuthenticated {
+            completeOnboarding()
+            return
+        }
+
         visitedScreens.insert(currentScreen)
         withAnimation(.easeInOut(duration: 0.3)) {
             currentScreen = next
         }
+    }
+
+    private func completeOnboarding() {
+        if let pet = petManager.currentPet {
+            ScreenTimeManager.shared.applyPreset(pet.preset, for: pet)
+        }
+        analytics.send(.onboardingCompleted)
+        hasCompletedOnboarding = true
     }
 
     #if DEBUG
