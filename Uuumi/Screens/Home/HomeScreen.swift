@@ -607,6 +607,12 @@ struct HomeScreen: View {
         if let pet = currentPet {
             let reason = pet.isFullyEvolved ? "completed" : "manual"
             analytics.send(.petArchived(essence: pet.evolutionTypeName, phase: pet.currentPhase, days: pet.totalDays, reason: reason))
+
+            // Pet is not visually on the island — skip ascension animation
+            if pet.isBlownAway {
+                petManager.archive(id: petId, using: archivedPetManager)
+                return
+            }
         }
 
         let screenHeight = fullScreenHeight > 0 ? fullScreenHeight : 800
