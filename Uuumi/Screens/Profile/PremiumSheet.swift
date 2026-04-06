@@ -17,6 +17,11 @@ struct PremiumSheet: View {
 
                     if storeManager.isPremium {
                         activePremiumView
+                    } else if storeManager.isLoadingProducts {
+                        ProgressView()
+                            .padding(.top, 32)
+                    } else if storeManager.productsLoadFailed {
+                        productsUnavailableView
                     } else {
                         featureList
                         planPicker
@@ -101,6 +106,37 @@ struct PremiumSheet: View {
         .padding()
         .frame(maxWidth: .infinity)
         .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
+    }
+
+    // MARK: - Products Unavailable
+
+    private var productsUnavailableView: some View {
+        VStack(spacing: 16) {
+            Image(systemName: "wifi.slash")
+                .font(.system(size: 32))
+                .foregroundStyle(.secondary)
+
+            Text("Unable to load plans")
+                .font(.subheadline.weight(.medium))
+
+            Text("Check your internet connection and try again.")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+
+            Button {
+                Task { await storeManager.retryLoadProducts() }
+            } label: {
+                Text("Try Again")
+                    .font(.subheadline.weight(.medium))
+                    .padding(.horizontal, 24)
+                    .padding(.vertical, 10)
+                    .background(Color("PremiumGold"))
+                    .foregroundStyle(.black)
+                    .clipShape(Capsule())
+            }
+        }
+        .padding(.vertical, 24)
     }
 
     // MARK: - Features

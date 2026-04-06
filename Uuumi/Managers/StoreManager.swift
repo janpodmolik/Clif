@@ -58,6 +58,8 @@ final class StoreManager {
 
     private(set) var subscriptionProducts: [Product] = []
     private(set) var coinPackProducts: [Product] = []
+    private(set) var isLoadingProducts = false
+    private(set) var productsLoadFailed = false
     private(set) var isPremium = false
     private(set) var expirationDate: Date?
     private(set) var activeProductId: String?
@@ -98,6 +100,19 @@ final class StoreManager {
 
     func loadProducts() async {
         guard subscriptionProducts.isEmpty, coinPackProducts.isEmpty else { return }
+        await fetchProducts()
+    }
+
+    func retryLoadProducts() async {
+        await fetchProducts()
+    }
+
+    private func fetchProducts() async {
+        isLoadingProducts = true
+        productsLoadFailed = false
+        subscriptionProducts = []
+        coinPackProducts = []
+
         do {
             let storeProducts = try await Product.products(for: Self.allProductIDs)
             subscriptionProducts = storeProducts
@@ -106,11 +121,15 @@ final class StoreManager {
             coinPackProducts = storeProducts
                 .filter { Self.coinPackIDs.contains($0.id) }
                 .sorted { $0.price < $1.price }
+            productsLoadFailed = subscriptionProducts.isEmpty && coinPackProducts.isEmpty
         } catch {
+            productsLoadFailed = true
             #if DEBUG
             print("StoreManager: Failed to load products — \(error)")
             #endif
         }
+
+        isLoadingProducts = false
     }
 
     // MARK: - Purchase

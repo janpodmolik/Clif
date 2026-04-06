@@ -15,8 +15,16 @@ struct CoinShopSheet: View {
             ScrollView {
                 VStack(spacing: 24) {
                     header
-                    coinPacks
-                    premiumHint
+
+                    if storeManager.isLoadingProducts {
+                        ProgressView()
+                            .padding(.top, 32)
+                    } else if storeManager.productsLoadFailed {
+                        productsUnavailableView
+                    } else {
+                        coinPacks
+                        premiumHint
+                    }
                 }
                 .padding()
             }
@@ -60,6 +68,37 @@ struct CoinShopSheet: View {
             }
         }
         .padding(.top, 8)
+    }
+
+    // MARK: - Products Unavailable
+
+    private var productsUnavailableView: some View {
+        VStack(spacing: 16) {
+            Image(systemName: "wifi.slash")
+                .font(.system(size: 32))
+                .foregroundStyle(.secondary)
+
+            Text("Unable to load coin packs")
+                .font(.subheadline.weight(.medium))
+
+            Text("Check your internet connection and try again.")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+
+            Button {
+                Task { await storeManager.retryLoadProducts() }
+            } label: {
+                Text("Try Again")
+                    .font(.subheadline.weight(.medium))
+                    .padding(.horizontal, 24)
+                    .padding(.vertical, 10)
+                    .background(.tint)
+                    .foregroundStyle(.white)
+                    .clipShape(Capsule())
+            }
+        }
+        .padding(.vertical, 24)
     }
 
     // MARK: - Coin Packs
