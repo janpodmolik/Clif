@@ -187,6 +187,7 @@ struct PremiumSheet: View {
                 switch storeManager.purchaseState {
                 case .purchased:
                     analytics.send(.purchaseCompleted(product: product.id, source: source, revenue: product.displayPrice))
+                    await analytics.updatePremiumPlan(storeManager.activeProductId)
                 case .failed:
                     analytics.send(.purchaseFailed(product: product.id, source: source, reason: storeManager.error?.localizedDescription ?? "unknown"))
                 default:

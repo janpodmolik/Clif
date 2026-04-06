@@ -6,6 +6,7 @@ import Statsig
 final class AnalyticsManager {
 
     private var isStarted = false
+    private var currentUserId: UUID?
     private var pendingEvents: [(Event)] = []
 
     // MARK: - Event Definitions
@@ -13,6 +14,7 @@ final class AnalyticsManager {
     enum Event {
         // Lifecycle
         case appOpened
+        case onboardingStarted
         case onboardingCompleted
 
         // Pet
@@ -51,6 +53,7 @@ final class AnalyticsManager {
         var name: String {
             switch self {
             case .appOpened: "app_opened"
+            case .onboardingStarted: "onboarding_started"
             case .onboardingCompleted: "onboarding_completed"
             case .petCreated: "pet_created"
             case .presetSelected: "preset_selected"
@@ -72,7 +75,7 @@ final class AnalyticsManager {
 
         var metadata: [String: String] {
             switch self {
-            case .appOpened, .onboardingCompleted:
+            case .appOpened, .onboardingStarted, .onboardingCompleted:
                 [:] as [String: String]
             case .petCreated(let source):
                 ["source": source]
@@ -111,13 +114,19 @@ final class AnalyticsManager {
     // MARK: - Start
 
     func start(userId: UUID?) async {
+        currentUserId = userId
         await StatsigConfig.start(userId: userId?.uuidString)
         isStarted = true
         flushPendingEvents()
     }
 
     func updateUser(userId: UUID?, premiumPlan: String?) async {
+        currentUserId = userId
         await StatsigConfig.updateUser(userId: userId?.uuidString, premiumPlan: premiumPlan)
+    }
+
+    func updatePremiumPlan(_ plan: String?) async {
+        await StatsigConfig.updateUser(userId: currentUserId?.uuidString, premiumPlan: plan)
     }
 
     // MARK: - Sending

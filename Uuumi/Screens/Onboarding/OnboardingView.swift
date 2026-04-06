@@ -69,6 +69,7 @@ struct OnboardingView: View {
                 #endif
             }
         }
+        .onAppear { analytics.send(.onboardingStarted) }
     }
 
     // MARK: - Island Layer
