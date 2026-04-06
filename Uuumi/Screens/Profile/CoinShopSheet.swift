@@ -9,6 +9,7 @@ struct CoinShopSheet: View {
     @Environment(\.dismiss) private var dismiss
 
     @State private var coinBalance = SharedDefaults.coinsBalance
+    @State private var selectedProduct: Product?
 
     var body: some View {
         NavigationStack {
@@ -23,7 +24,9 @@ struct CoinShopSheet: View {
                         productsUnavailableView
                     } else {
                         coinPacks
+                        purchaseButton
                         premiumHint
+                        footer
                     }
                 }
                 .padding()
@@ -35,6 +38,9 @@ struct CoinShopSheet: View {
             .task {
                 analytics.send(.paywallShown(source: source, type: "coins"))
                 await storeManager.loadProducts()
+                if selectedProduct == nil {
+                    selectedProduct = storeManager.coinPackProducts.first { $0.id == StoreManager.coinsMediumID }
+                }
             }
             .onChange(of: storeManager.purchaseState) { _, newState in
                 if newState == .purchased {
@@ -53,10 +59,11 @@ struct CoinShopSheet: View {
 
     private var header: some View {
         VStack(spacing: 12) {
-            Image("coin")
+            Image(packImageName(for: selectedProduct))
                 .resizable()
                 .scaledToFit()
-                .frame(width: 48, height: 48)
+                .frame(height: 120)
+                .animation(.easeInOut(duration: 0.2), value: selectedProduct?.id)
 
             HStack(spacing: 4) {
                 Text("\(coinBalance)")
@@ -66,6 +73,9 @@ struct CoinShopSheet: View {
                     .font(.title2)
                     .foregroundStyle(.secondary)
             }
+
+            Text("Power up your collection.")
+                .font(.title2.weight(.bold))
         }
         .padding(.top, 8)
     }
@@ -104,8 +114,8 @@ struct CoinShopSheet: View {
     // MARK: - Coin Packs
 
     private var coinPacks: some View {
-        VStack(spacing: 10) {
-            ForEach(storeManager.coinPackProducts, id: \.id) { product in
+        VStack(spacing: 12) {
+            ForEach(storeManager.coinPackProducts.reversed(), id: \.id) { product in
                 coinPackCard(product)
             }
         }
@@ -114,10 +124,57 @@ struct CoinShopSheet: View {
     private func coinPackCard(_ product: Product) -> some View {
         let amount = storeManager.coinAmount(for: product)
         let isLarge = product.id == StoreManager.coinsLargeID
-        let isThisPurchasing = storeManager.purchasingProductId == product.id
-        let isAnyPurchasing = storeManager.purchaseState == .purchasing
+        let isSelected = selectedProduct?.id == product.id
 
         return Button {
+            withAnimation(.easeInOut(duration: 0.2)) {
+                selectedProduct = product
+            }
+        } label: {
+            HStack {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("\(amount) Coins")
+                        .font(.body.weight(.semibold))
+                    HStack(spacing: 0) {
+                        Text(product.displayPrice)
+                            .foregroundStyle(.primary)
+                        Text(" · \(pricePerCoin(for: product)) per coin")
+                            .foregroundStyle(.secondary)
+                    }
+                    .font(.subheadline)
+                }
+
+                Spacer()
+            }
+            .padding()
+            .background(
+                RoundedRectangle(cornerRadius: 14)
+                    .fill(isSelected ? Color("PremiumGold").opacity(0.08) : Color(.tertiarySystemFill))
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 14)
+                    .strokeBorder(isSelected ? Color("PremiumGold") : Color(.separator).opacity(0.3), lineWidth: isSelected ? 2 : 1)
+            )
+            .overlay(alignment: .top) {
+                if isLarge {
+                    Text("Best Value")
+                        .font(.caption.weight(.bold))
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 5)
+                        .background(Color("PremiumGold"), in: Capsule())
+                        .offset(y: -14)
+                }
+            }
+        }
+        .buttonStyle(.plain)
+    }
+
+    // MARK: - Purchase Button
+
+    private var purchaseButton: some View {
+        Button {
+            guard let product = selectedProduct else { return }
             Task {
                 await storeManager.purchase(product)
                 switch storeManager.purchaseState {
@@ -130,44 +187,24 @@ struct CoinShopSheet: View {
                 }
             }
         } label: {
-            HStack {
-                VStack(alignment: .leading, spacing: 4) {
-                    HStack(spacing: 6) {
-                        Text("\(amount) Coins")
-                            .font(.body.weight(.semibold))
-                        if isLarge {
-                            Text("Best Value")
-                                .font(.caption2.weight(.bold))
-                                .padding(.horizontal, 6)
-                                .padding(.vertical, 2)
-                                .background(Color("PremiumGold").opacity(0.2))
-                                .foregroundStyle(Color("PremiumGold"))
-                                .clipShape(Capsule())
-                        }
-                    }
-                    Text(packDescription(for: product.id))
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
-
-                Spacer()
-
-                if isThisPurchasing {
+            Group {
+                if storeManager.purchaseState == .purchasing {
                     ProgressView()
-                        .controlSize(.small)
+                        .tint(.black)
+                } else if let product = selectedProduct {
+                    Text("Buy \(storeManager.coinAmount(for: product)) Coins")
+                        .font(.title3.weight(.bold))
                 } else {
-                    Text(product.displayPrice)
-                        .font(.body.weight(.semibold))
+                    Text("Select a pack")
+                        .font(.title3.weight(.bold))
                 }
             }
-            .padding()
-            .background(
-                RoundedRectangle(cornerRadius: 12)
-                    .fill(Color(.tertiarySystemFill))
-            )
+            .frame(maxWidth: .infinity, minHeight: 65)
+            .background(Color("PremiumGold"))
+            .foregroundStyle(.black)
+            .clipShape(RoundedRectangle(cornerRadius: 14))
         }
-        .buttonStyle(.plain)
-        .disabled(isAnyPurchasing)
+        .disabled(selectedProduct == nil || storeManager.purchaseState == .purchasing)
     }
 
     // MARK: - Premium Hint
@@ -175,30 +212,49 @@ struct CoinShopSheet: View {
     @ViewBuilder
     private var premiumHint: some View {
         if !storeManager.isPremium {
-            VStack(spacing: 8) {
+            VStack(spacing: 4) {
                 Text("Earn coins faster with Premium")
-                    .font(.caption)
+                    .font(.subheadline.weight(.medium))
                     .foregroundStyle(.secondary)
                 Text("2× evolution rewards + break coins")
-                    .font(.caption2)
+                    .font(.caption)
                     .foregroundStyle(.tertiary)
             }
         }
     }
 
+    // MARK: - Footer
+
+    private var footer: some View {
+        Text("Secured via the App Store")
+            .font(.caption)
+            .foregroundStyle(.secondary)
+    }
+
     // MARK: - Helpers
 
-    private func packDescription(for productId: String) -> String {
-        switch productId {
+    private func packImageName(for product: Product?) -> String {
+        switch product?.id {
         case StoreManager.coinsSmallID:
-            return String(localized: "Quick boost for your collection")
+            return "coin-shop-small-pack"
         case StoreManager.coinsMediumID:
-            return String(localized: "Unlock multiple essences")
+            return "coin-shop-medium-pack"
         case StoreManager.coinsLargeID:
-            return String(localized: "Best per-coin value")
+            return "coin-shop-large-pack"
         default:
-            return ""
+            return "coin-shop-medium-pack"
         }
+    }
+
+    private func pricePerCoin(for product: Product) -> String {
+        let amount = Decimal(storeManager.coinAmount(for: product))
+        guard amount > 0 else { return "" }
+        let perCoin = product.price / amount
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .currency
+        formatter.locale = product.priceFormatStyle.locale
+        formatter.maximumFractionDigits = 3
+        return formatter.string(from: perCoin as NSDecimalNumber) ?? ""
     }
 
     private var hasError: Binding<Bool> {
