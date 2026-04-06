@@ -7,6 +7,12 @@
     " · " : {
 
     },
+    " · %@ per coin" : {
+
+    },
+    " · %@ per week" : {
+
+    },
     " and " : {
 
     },
@@ -110,9 +116,6 @@
     "%lld days" : {
 
     },
-    "%lld days free" : {
-
-    },
     "%lld evolution phases" : {
 
     },
@@ -125,19 +128,10 @@
     "%lld min ago" : {
 
     },
-    "%lld months free" : {
-
-    },
     "%lld pets" : {
 
     },
     "%lld results" : {
-
-    },
-    "%lld weeks free" : {
-
-    },
-    "%lld year free" : {
 
     },
     "%lld:00" : {
@@ -177,6 +171,9 @@
 
     },
     "%lld%%" : {
+
+    },
+    "%lld%% OFF" : {
 
     },
     "%lldd" : {
@@ -269,6 +266,9 @@
 
     },
     "1 pet" : {
+
+    },
+    "1-week" : {
 
     },
     "2.0" : {
@@ -385,6 +385,9 @@
     "Animation Type" : {
 
     },
+    "Annual Plan" : {
+
+    },
     "App changes" : {
 
     },
@@ -456,9 +459,6 @@
 
     },
     "Bend: %.1f" : {
-
-    },
-    "Best per-coin value" : {
 
     },
     "Best Value" : {
@@ -534,6 +534,9 @@
     "Button placement on screen." : {
 
     },
+    "Buy %lld Coins" : {
+
+    },
     "By continuing, you agree to the " : {
 
     },
@@ -562,6 +565,9 @@
 
     },
     "Check out available essences in the catalog" : {
+
+    },
+    "Check your internet connection and try again." : {
 
     },
     "Choose Essence" : {
@@ -915,6 +921,9 @@
     "Free" : {
 
     },
+    "free trial" : {
+
+    },
     "Frequency: %.0f" : {
 
     },
@@ -940,9 +949,6 @@
 
     },
     "Get notified when your Uuumi is in danger or ready to evolve." : {
-
-    },
-    "Get Premium" : {
 
     },
     "Get started with " : {
@@ -1194,6 +1200,9 @@
     "Monthly" : {
 
     },
+    "Monthly Plan" : {
+
+    },
     "More" : {
 
     },
@@ -1230,10 +1239,16 @@
     "No active pet" : {
 
     },
+    "No commitment, cancel anytime" : {
+
+    },
     "No essence yet" : {
 
     },
     "No essences to display" : {
+
+    },
+    "No free" : {
 
     },
     "No history yet" : {
@@ -1428,6 +1443,9 @@
     "Position" : {
 
     },
+    "Power up your collection." : {
+
+    },
     "Pre-selected when the daily picker appears, or used automatically if daily selection is off." : {
 
     },
@@ -1452,7 +1470,7 @@
     "Price" : {
 
     },
-    "Privacy" : {
+    "Privacy & Terms" : {
 
     },
     "Privacy Policy" : {
@@ -1494,9 +1512,6 @@
     "Purpose" : {
 
     },
-    "Quick boost for your collection" : {
-
-    },
     "Rare" : {
 
     },
@@ -1519,6 +1534,9 @@
 
     },
     "Recovery: %@ min" : {
+
+    },
+    "Redeem Code" : {
 
     },
     "Refresh" : {
@@ -1566,7 +1584,7 @@
     "Restart Onboarding" : {
 
     },
-    "Restore Purchases" : {
+    "Restore Purchase" : {
 
     },
     "Review & Drop" : {
@@ -1594,9 +1612,6 @@
 
     },
     "Save" : {
-
-    },
-    "Save %lld %%" : {
 
     },
     "Save as my apps" : {
@@ -1645,10 +1660,16 @@
     "Search pets..." : {
 
     },
+    "Secured via the App Store" : {
+
+    },
     "See exactly when you used your phone." : {
 
     },
     "See how your habits evolve over time." : {
+
+    },
+    "Select a pack" : {
 
     },
     "Select all" : {
@@ -1843,9 +1864,6 @@
     "Tell us what's missing, what could be improved, or what problem you encountered." : {
 
     },
-    "Terms" : {
-
-    },
     "Terms of Service" : {
 
     },
@@ -1945,13 +1963,22 @@
     "Trend" : {
 
     },
+    "trial" : {
+
+    },
     "Trigger %@" : {
 
     },
     "Trigger Evolution" : {
 
     },
+    "Try 7 Days Free" : {
+
+    },
     "Try again" : {
+
+    },
+    "Try Again" : {
 
     },
     "Try changing your search or filters." : {
@@ -1964,6 +1991,12 @@
 
     },
     "Type" : {
+
+    },
+    "Unable to load coin packs" : {
+
+    },
+    "Unable to load plans" : {
 
     },
     "Unknown essence" : {
@@ -1990,16 +2023,13 @@
     "Unlock in 1 min" : {
 
     },
-    "Unlock multiple essences" : {
-
-    },
     "Unlock new evolution paths for your pets." : {
 
     },
     "Unlock Now" : {
 
     },
-    "Unlock the full potential of your pets." : {
+    "Unlock the full journey." : {
 
     },
     "Until 0% wind" : {
@@ -2030,9 +2060,6 @@
 
     },
     "Uuumi can notify you when your pet is in danger or ready to evolve." : {
-
-    },
-    "Uuumi Premium" : {
 
     },
     "Uuumium" : {
