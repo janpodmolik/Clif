@@ -26,15 +26,13 @@ struct PremiumSheet: View {
                         featureList
                         planPicker
                         purchaseButton
-                        restoreButton
+                        footer
                     }
-
-                    legalLinks
                 }
-                .padding()
+                .padding()  
             }
             .background(Color(.systemGroupedBackground))
-            .navigationTitle("Premium")
+            .navigationTitle("Uuumium")
             .navigationBarTitleDisplayMode(.inline)
             .dismissButton()
             .task {
@@ -57,17 +55,13 @@ struct PremiumSheet: View {
 
     private var header: some View {
         VStack(spacing: 12) {
-            Image(systemName: "crown.fill")
-                .font(.system(size: 48))
-                .foregroundStyle(Color("PremiumGold"))
+            Image("premium")
+                .resizable()
+                .scaledToFit()
+                .frame(height: 120)
 
-            Text("Uuumi Premium")
-                .font(.title.weight(.bold))
-
-            Text("Unlock the full potential of your pets.")
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-                .multilineTextAlignment(.center)
+            Text("Unlock the full journey.")
+                .font(.title2.weight(.bold))
         }
         .padding(.top, 8)
     }
@@ -142,11 +136,11 @@ struct PremiumSheet: View {
     // MARK: - Features
 
     private var featureList: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            featureRow(icon: "sparkles", text: "Exclusive Evolutions")
-            featureRow(icon: "paintpalette.fill", text: "Special Themes")
-            featureRow(icon: "chart.bar.fill", text: "Detailed Statistics")
-            featureRow(icon: "infinity", text: "Unlimited Pets")
+        VStack(alignment: .leading, spacing: 16) {
+            featureRow(icon: "arrow.up.forward.circle.fill", title: "Double evolution rewards", subtitle: "Earn 2x coins every time your pet evolves")
+            featureRow(icon: "lock.shield.fill", title: "Committed Breaks", subtitle: "Real rewards, real consequences")
+            featureRow(icon: "sun.horizon.fill", title: "Premium backgrounds", subtitle: "Dynamic Sky, Clear Sky & Twilight themes")
+            featureRow(icon: "chart.line.uptrend.xyaxis", title: "Habit insights", subtitle: "Trends, daily timeline & extended history")
         }
         .padding()
         .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
@@ -155,7 +149,17 @@ struct PremiumSheet: View {
     // MARK: - Plan Picker
 
     private var planPicker: some View {
-        VStack(spacing: 10) {
+        VStack(spacing: 12) {
+            HStack(spacing: 6) {
+                Image(systemName: "checkmark")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(.secondary)
+                Text("No commitment, cancel anytime")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+            }
+            .padding(.bottom, 16)
+
             if let yearly = storeManager.yearlyProduct {
                 planCard(yearly, badge: savingsBadge)
             }
@@ -167,6 +171,7 @@ struct PremiumSheet: View {
 
     private func planCard(_ product: Product, badge: String? = nil) -> some View {
         let isSelected = selectedProduct?.id == product.id
+        let isYearly = product.id == StoreManager.yearlyID
 
         return Button {
             withAnimation(.easeInOut(duration: 0.2)) {
@@ -175,40 +180,48 @@ struct PremiumSheet: View {
         } label: {
             HStack {
                 VStack(alignment: .leading, spacing: 4) {
-                    HStack(spacing: 6) {
-                        Text(planLabel(for: product.id))
-                            .font(.body.weight(.semibold))
-                        if let badge {
-                            Text(badge)
-                                .font(.caption2.weight(.bold))
-                                .padding(.horizontal, 6)
-                                .padding(.vertical, 2)
-                                .background(Color("PremiumGold").opacity(0.2))
-                                .foregroundStyle(Color("PremiumGold"))
-                                .clipShape(Capsule())
-                        }
-                    }
-                    if let intro = introOfferText(for: product) {
-                        Text(intro)
-                            .font(.caption)
+                    Text(isYearly ? String(localized: "Annual Plan") : String(localized: "Monthly Plan"))
+                        .font(.body.weight(.semibold))
+                    HStack(spacing: 0) {
+                        Text(product.displayPrice)
+                            .foregroundStyle(.primary)
+                        Text(" · \(weeklyPrice(for: product)) per week")
                             .foregroundStyle(.secondary)
                     }
+                    .font(.subheadline)
                 }
 
                 Spacer()
 
-                Text(product.displayPrice)
-                    .font(.body.weight(.semibold))
+                VStack(alignment: .trailing, spacing: 2) {
+                    Text(isYearly ? String(localized: "1-week") : String(localized: "No free"))
+                        .font(.caption.weight(isYearly ? .semibold : .regular))
+                        .foregroundStyle(isYearly ? AnyShapeStyle(.primary) : AnyShapeStyle(.tertiary))
+                    Text(isYearly ? String(localized: "free trial") : String(localized: "trial"))
+                        .font(.caption.weight(isYearly ? .semibold : .regular))
+                        .foregroundStyle(isYearly ? AnyShapeStyle(.primary) : AnyShapeStyle(.tertiary))
+                }
             }
             .padding()
             .background(
-                RoundedRectangle(cornerRadius: 12)
-                    .fill(isSelected ? Color("PremiumGold").opacity(0.1) : Color(.tertiarySystemFill))
+                RoundedRectangle(cornerRadius: 14)
+                    .fill(isSelected ? Color("PremiumGold").opacity(0.08) : Color(.tertiarySystemFill))
             )
             .overlay(
-                RoundedRectangle(cornerRadius: 12)
-                    .strokeBorder(isSelected ? Color("PremiumGold") : .clear, lineWidth: 2)
+                RoundedRectangle(cornerRadius: 14)
+                    .strokeBorder(isSelected ? Color("PremiumGold") : Color(.separator).opacity(0.3), lineWidth: isSelected ? 2 : 1)
             )
+            .overlay(alignment: .top) {
+                if let badge {
+                    Text(badge)
+                        .font(.caption.weight(.bold))
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 5)
+                        .background(Color("PremiumGold"), in: Capsule())
+                        .offset(y: -14)
+                }
+            }
         }
         .buttonStyle(.plain)
     }
@@ -236,12 +249,11 @@ struct PremiumSheet: View {
                     ProgressView()
                         .tint(.black)
                 } else {
-                    Text("Get Premium")
-                        .font(.headline)
+                    Text(selectedProduct?.id == StoreManager.yearlyID ? "Try 7 Days Free" : "Continue")
+                        .font(.title3.weight(.bold))
                 }
             }
-            .frame(maxWidth: .infinity)
-            .padding()
+            .frame(maxWidth: .infinity, minHeight: 65)
             .background(Color("PremiumGold"))
             .foregroundStyle(.black)
             .clipShape(RoundedRectangle(cornerRadius: 14))
@@ -249,39 +261,48 @@ struct PremiumSheet: View {
         .disabled(selectedProduct == nil || storeManager.purchaseState == .purchasing)
     }
 
-    // MARK: - Restore
+    // MARK: - Footer
 
-    private var restoreButton: some View {
-        Button {
-            Task { await storeManager.restorePurchases() }
-        } label: {
-            Text("Restore Purchases")
-                .font(.subheadline.weight(.medium))
+    private var footer: some View {
+        VStack(spacing: 24) {
+            Text("Secured via the App Store")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+
+            HStack(spacing: 16) {
+                Button("Restore Purchase") {
+                    Task { await storeManager.restorePurchases() }
+                }
+                Link("Privacy & Terms", destination: URL(string: "https://uuumi.app/terms")!)
+                Button("Redeem Code") {
+                    Task {
+                        guard let scene = UIApplication.shared.connectedScenes
+                            .compactMap({ $0 as? UIWindowScene }).first else { return }
+                        try? await AppStore.presentOfferCodeRedeemSheet(in: scene)
+                    }
+                }
+            }
+            .font(.caption2.weight(.medium))
+            .foregroundStyle(.tertiary)
+            .textCase(.uppercase)
         }
-    }
-
-    // MARK: - Legal
-
-    private var legalLinks: some View {
-        HStack(spacing: 16) {
-            Link("Terms", destination: URL(string: "https://uuumi.app/terms")!)
-            Text("·").foregroundStyle(.secondary)
-            Link("Privacy", destination: URL(string: "https://uuumi.app/privacy")!)
-        }
-        .font(.caption)
-        .foregroundStyle(.secondary)
     }
 
     // MARK: - Helpers
 
-    private func featureRow(icon: String, text: String) -> some View {
+    private func featureRow(icon: String, title: String, subtitle: String) -> some View {
         HStack(spacing: 12) {
             Image(systemName: icon)
                 .font(.title3)
                 .foregroundStyle(Color("PremiumGold"))
                 .frame(width: 28)
-            Text(text)
-                .font(.subheadline)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title)
+                    .font(.subheadline.weight(.medium))
+                Text(subtitle)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
         }
     }
 
@@ -301,23 +322,17 @@ struct PremiumSheet: View {
         guard monthlyPerYear > 0 else { return nil }
         let savings = Int(((monthlyPerYear - yearlyPrice) / monthlyPerYear * 100).rounded())
         guard savings > 0 else { return nil }
-        return String(localized: "Save \(savings) %")
+        return String(localized: "\(savings)% OFF")
     }
 
-    private func introOfferText(for product: Product) -> String? {
-        guard let intro = product.subscription?.introductoryOffer else { return nil }
-        switch intro.period.unit {
-        case .day:
-            return String(localized: "\(intro.period.value) days free")
-        case .week:
-            return String(localized: "\(intro.period.value) weeks free")
-        case .month:
-            return String(localized: "\(intro.period.value) months free")
-        case .year:
-            return String(localized: "\(intro.period.value) year free")
-        @unknown default:
-            return nil
-        }
+    private func weeklyPrice(for product: Product) -> String {
+        let weeks: Decimal = product.id == StoreManager.yearlyID ? 52 : Decimal(3044) / Decimal(700)
+        let perWeek = product.price / weeks
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .currency
+        formatter.locale = product.priceFormatStyle.locale
+        formatter.maximumFractionDigits = 2
+        return formatter.string(from: perWeek as NSDecimalNumber) ?? ""
     }
 
     private var hasError: Binding<Bool> {
@@ -331,4 +346,5 @@ struct PremiumSheet: View {
 #Preview {
     PremiumSheet()
         .environment(StoreManager.mock())
+        .environment(AnalyticsManager())
 }

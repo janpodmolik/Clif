@@ -93,7 +93,6 @@
           "familyShareable" : false,
           "groupNumber" : 1,
           "internalID" : "2873AC12",
-          "introductoryOffer" : null,
           "localizations" : [
             {
               "description" : "",
@@ -108,7 +107,14 @@
           "type" : "RecurringSubscription",
           "winbackOffers" : [
 
-          ]
+          ],
+          "introductoryOffer" : {
+            "displayPrice" : "0",
+            "internalID" : "FREE_TRIAL_YEARLY",
+            "numberOfPeriods" : 1,
+            "paymentMode" : "free",
+            "subscriptionPeriod" : "P1W"
+          }
         },
         {
           "adHocOffers" : [
