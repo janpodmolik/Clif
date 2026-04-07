@@ -41,3 +41,6 @@ crashlytics-build.properties
 # Playgrounds
 timeline.xctimeline
 playground.xcworkspace
+
+# Claude Code local config (contains secrets)
+.claude/mcp.local.json
