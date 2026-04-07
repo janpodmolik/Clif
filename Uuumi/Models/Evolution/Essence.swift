@@ -51,14 +51,14 @@ enum Essence: Int, Codable, CaseIterable, Identifiable, Transferable {
     var price: Int {
         switch self {
         case .plant: return 0
-        case .troll: return 200
-        case .orc: return 200
-        case .clicker: return 200
+        case .troll: return 250
+        case .orc: return 225
+        case .clicker: return 150
         case .lion: return 200
-        case .stitches: return 200
-        case .racoon: return 200
-        case .moss: return 200
-        case .shroom: return 200
+        case .stitches: return 150
+        case .racoon: return 150
+        case .moss: return 150
+        case .shroom: return 150
         }
     }
 
