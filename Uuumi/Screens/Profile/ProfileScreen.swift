@@ -24,6 +24,7 @@ struct ProfileScreen: View {
     @State private var systemNotificationsEnabled = true
     @State private var showPremiumSheet = false
     @State private var showCoinShopSheet = false
+    @State private var coinBalance = SharedDefaults.coinsBalance
     @State private var showAuthSheet = false
     @State private var showAccountSheet = false
     @State private var showMyAppsSheet = false
@@ -152,20 +153,26 @@ struct ProfileScreen: View {
                                 .resizable()
                                 .scaledToFit()
                                 .frame(width: 18, height: 18)
-                            Text("\(SharedDefaults.coinsBalance)")
+                            Text("\(coinBalance)")
                                 .fontWeight(.semibold)
+                                .contentTransition(.numericText())
                         }
                         .font(.body)
                         .padding(.horizontal, 12)
                         .padding(.vertical, 6)
                     }
                     .buttonStyle(.plain)
+                    .sensoryFeedback(.success, trigger: coinBalance)
                 }
             }
             .sheet(isPresented: $showPremiumSheet) {
                 PremiumSheet(source: "profile")
             }
-            .sheet(isPresented: $showCoinShopSheet) {
+            .sheet(isPresented: $showCoinShopSheet, onDismiss: {
+                withAnimation {
+                    coinBalance = SharedDefaults.coinsBalance
+                }
+            }) {
                 CoinShopSheet(source: "profile")
             }
             .sheet(isPresented: $showMyAppsSheet, onDismiss: {
@@ -207,6 +214,7 @@ struct ProfileScreen: View {
             }
             .onChange(of: scenePhase) {
                 if scenePhase == .active {
+                    coinBalance = SharedDefaults.coinsBalance
                     limitSettings = SharedDefaults.limitSettings
                     Task {
                         let settings = await UNUserNotificationCenter.current().notificationSettings()

@@ -45,6 +45,10 @@ struct CoinShopSheet: View {
             .onChange(of: storeManager.purchaseState) { _, newState in
                 if newState == .purchased {
                     coinBalance = SharedDefaults.coinsBalance
+                    Task {
+                        try? await Task.sleep(for: .seconds(0.8))
+                        dismiss()
+                    }
                 }
             }
             .alert("Error", isPresented: hasError, presenting: storeManager.error) { _ in
