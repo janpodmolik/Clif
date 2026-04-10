@@ -179,6 +179,10 @@ final class PetManager {
         if needsAppReselection {
             return
         }
+
+        if SharedDefaults.isShieldActive {
+            ShieldManager.shared.activateStoreFromStoredTokens()
+        }
         restoreMonitoringIfNeeded()
     }
 
