@@ -332,4 +332,5 @@ struct ContentView: View {
         .environment(StoreManager.mock())
         .environment(SyncManager())
         .environment(DeepLinkRouter())
+        .environment(AnalyticsManager())
 }
