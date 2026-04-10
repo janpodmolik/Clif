@@ -242,7 +242,7 @@ struct OnboardingNotificationStep: View {
             // Show speech bubble on pet synchronized with first notification
             speechBubbleConfig = SpeechBubbleConfig(
                 position: .right,
-                emojis: ["🥺"],
+                emoji: "🥺",
                 windLevel: .none,
                 displayDuration: 4.0
             )
@@ -274,7 +274,7 @@ struct OnboardingNotificationStep: View {
         }
         speechBubbleConfig = SpeechBubbleConfig(
             position: .right,
-            emojis: ["🥺"],
+            emoji: "🥺",
             windLevel: .none,
             displayDuration: 3.0
         )

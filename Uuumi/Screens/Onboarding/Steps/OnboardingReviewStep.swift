@@ -132,7 +132,7 @@ struct OnboardingReviewStep: View {
     private func showHeartBubble() {
         speechBubbleConfig = SpeechBubbleConfig(
             position: .right,
-            emojis: ["❤️"],
+            emoji: "❤️",
             windLevel: .none,
             displayDuration: 3.0
         )

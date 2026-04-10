@@ -83,6 +83,8 @@ struct IslandView<TransitionContent: View>: View {
     private let animationCooldown: TimeInterval = 1.0
     private let autoPlayInterval: ClosedRange<Double> = 8...12
 
+    @Environment(\.scenePhase) private var scenePhase
+
     // Landing animation state
     @State private var landingGlowRadius: CGFloat = 0
 
@@ -281,6 +283,14 @@ struct IslandView<TransitionContent: View>: View {
                 .onChange(of: isAscending) { _, newValue in
                     if newValue {
                         speechBubbleState.hide()
+                    }
+                }
+                .onChange(of: scenePhase) { _, newPhase in
+                    if newPhase == .active {
+                        speechBubbleState.startAutoTriggers(windLevel: windLevel)
+                    } else {
+                        speechBubbleState.hide()
+                        speechBubbleState.stopAutoTriggers()
                     }
                 }
                 .onChange(of: reactionAnimator.trigger) { _, _ in

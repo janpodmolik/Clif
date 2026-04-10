@@ -42,7 +42,7 @@ struct SpeechBubbleView: View {
             let textLength = config.customText!.count
             return min(max(CGFloat(textLength * 8 + 30), 60), 200)
         }
-        return config.emojis.count > 1 ? 70 : 50
+        return 50
     }
 
     private var bubbleHeight: CGFloat {
@@ -81,12 +81,8 @@ struct SpeechBubbleView: View {
                         .foregroundStyle(.white)
                         .lineLimit(1)
                 } else {
-                    HStack(spacing: 2) {
-                        ForEach(config.emojis, id: \.self) { emoji in
-                            Text(emoji)
-                                .font(.system(size: 20))
-                        }
-                    }
+                    Text(config.emoji)
+                        .font(.system(size: 20))
                 }
             }
             .offset(x: contentCenteringOffset)
@@ -137,7 +133,7 @@ struct SpeechBubbleView: View {
         SpeechBubbleView(
             config: SpeechBubbleConfig(
                 position: .right,
-                emojis: ["☀️", "🌸"],
+                emoji: "☀️",
                 windLevel: .low,
                 displayDuration: 3.0
             ),
@@ -157,7 +153,7 @@ struct SpeechBubbleView: View {
         SpeechBubbleView(
             config: SpeechBubbleConfig(
                 position: .left,
-                emojis: ["🌪️", "💨"],
+                emoji: "🌪️",
                 windLevel: .high,
                 displayDuration: 3.0
             ),

@@ -143,7 +143,7 @@ struct OnboardingMeetPetStep: View {
         // Show waving hand speech bubble
         speechBubbleConfig = SpeechBubbleConfig(
             position: .right,
-            emojis: ["👋"],
+            emoji: "👋",
             windLevel: .none,
             displayDuration: 2.5
         )

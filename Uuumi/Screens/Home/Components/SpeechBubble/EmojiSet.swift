@@ -31,15 +31,8 @@ enum EmojiSet {
         }
     }
 
-    /// Select 1 or 2 emojis for display in speech bubble.
-    /// - Parameter windLevel: Current wind intensity
-    /// - Returns: Array of 1 or 2 emojis
-    static func selectEmojis(for windLevel: WindLevel) -> [String] {
-        let pool = emojis(for: windLevel)
-
-        // 70% chance of 1 emoji, 30% chance of 2 emojis
-        let count = Double.random(in: 0...1) < 0.3 ? 2 : 1
-
-        return Array(pool.shuffled().prefix(count))
+    /// Select a random emoji for display in speech bubble.
+    static func selectEmoji(for windLevel: WindLevel) -> String {
+        emojis(for: windLevel).randomElement()!
     }
 }

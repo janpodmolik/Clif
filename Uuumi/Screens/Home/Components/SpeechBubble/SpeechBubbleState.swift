@@ -86,13 +86,9 @@ final class SpeechBubbleState {
     // MARK: - Private Methods
 
     private func showBubble(windLevel: WindLevel, forcedPosition: SpeechBubblePosition? = nil, customText: String? = nil) {
-        // Select emojis based on wind level
-        let emojis = EmojiSet.selectEmojis(for: windLevel)
-
-        // Create config
         let config = SpeechBubbleConfig(
             position: forcedPosition ?? .random(),
-            emojis: emojis,
+            emoji: EmojiSet.selectEmoji(for: windLevel),
             customText: customText,
             windLevel: windLevel,
             displayDuration: displayDuration
