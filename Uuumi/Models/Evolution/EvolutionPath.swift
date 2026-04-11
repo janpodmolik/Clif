@@ -31,6 +31,8 @@ extension EvolutionPath {
         case .racoon: return .racoon
         case .moss: return .moss
         case .shroom: return .shroom
+        case .tree: return .tree
+        case .dreamy: return .dreamy
         }
     }
 }
@@ -159,6 +161,38 @@ extension EvolutionPath {
             EvolutionPhase(phaseNumber: 2, evolutionId: "moss", displayScale: 0.96, idleConfig: .default),
             EvolutionPhase(phaseNumber: 3, evolutionId: "moss", displayScale: 1.00, idleConfig: .default),
             EvolutionPhase(phaseNumber: 4, evolutionId: "moss", displayScale: 1.05, idleConfig: .default),
+        ]
+    )
+}
+
+// MARK: - Tree Evolution Path
+
+extension EvolutionPath {
+    static let tree = EvolutionPath(
+        id: "tree",
+        displayName: "Tree",
+        phases: [
+            EvolutionPhase(phaseNumber: 1, evolutionId: "tree", displayScale: 0.95, idleConfig: .default),
+            EvolutionPhase(phaseNumber: 2, evolutionId: "tree", displayScale: 0.95, idleConfig: .default),
+            EvolutionPhase(phaseNumber: 3, evolutionId: "tree", displayScale: 1.08, idleConfig: .default),
+            EvolutionPhase(phaseNumber: 4, evolutionId: "tree", displayScale: 1.16, idleConfig: .default),
+            EvolutionPhase(phaseNumber: 5, evolutionId: "tree", displayScale: 1.55, idleConfig: .default),
+        ]
+    )
+}
+
+// MARK: - Dreamy Evolution Path
+
+extension EvolutionPath {
+    static let dreamy = EvolutionPath(
+        id: "dreamy",
+        displayName: "Dreamy",
+        phases: [
+            EvolutionPhase(phaseNumber: 1, evolutionId: "dreamy", displayScale: 0.80, idleConfig: .default),
+            EvolutionPhase(phaseNumber: 2, evolutionId: "dreamy", displayScale: 0.90, idleConfig: .default),
+            EvolutionPhase(phaseNumber: 3, evolutionId: "dreamy", displayScale: 1.01, idleConfig: .default),
+            EvolutionPhase(phaseNumber: 4, evolutionId: "dreamy", displayScale: 1.10, idleConfig: .default),
+            EvolutionPhase(phaseNumber: 5, evolutionId: "dreamy", displayScale: 1.05, idleConfig: .default),
         ]
     )
 }

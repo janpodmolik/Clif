@@ -16,10 +16,12 @@ enum Essence: Int, Codable, CaseIterable, Identifiable, Transferable {
     case plant = 100
     case moss = 101
     case shroom = 102
+    case tree = 103
 
     // Fantasy creatures (200–299)
     case troll = 200
     case orc = 201
+    case dreamy = 202
 
     // Animals (300–399)
     case lion = 300
@@ -41,6 +43,8 @@ enum Essence: Int, Codable, CaseIterable, Identifiable, Transferable {
         case .racoon: "racoon"
         case .moss: "moss"
         case .shroom: "shroom"
+        case .tree: "tree"
+        case .dreamy: "dreamy"
         }
     }
 
@@ -59,6 +63,8 @@ enum Essence: Int, Codable, CaseIterable, Identifiable, Transferable {
         case .racoon: return 150
         case .moss: return 150
         case .shroom: return 150
+        case .tree: return 200
+        case .dreamy: return 200
         }
     }
 
@@ -80,6 +86,8 @@ enum Essence: Int, Codable, CaseIterable, Identifiable, Transferable {
         case .racoon: return String(localized: "A path of cunning and resourcefulness. Your Uuumi evolves as a racoon.")
         case .moss: return String(localized: "A path of nature and harmony. Your Uuumi evolves as moss.")
         case .shroom: return String(localized: "A path of mystery and spores. Your Uuumi evolves as a shroom.")
+        case .tree: return String(localized: "A path of wisdom and roots. Your Uuumi evolves as a tree.")
+        case .dreamy: return String(localized: "A path of dreams and wonder. Your Uuumi evolves into a dreamy creature.")
         }
     }
 
@@ -94,6 +102,8 @@ enum Essence: Int, Codable, CaseIterable, Identifiable, Transferable {
         case .racoon: return .rare
         case .moss: return .rare
         case .shroom: return .rare
+        case .tree: return .rare
+        case .dreamy: return .rare
         }
     }
 }
