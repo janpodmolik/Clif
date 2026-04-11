@@ -17,8 +17,18 @@ extension SyncManager {
 
         do {
             let dto = PetLocalDTO(from: pet)
-            let hourlyAggregate = SnapshotStore.shared.computeHourlyAggregate()
-            let hourlyPerDay = SnapshotStore.shared.computeDailyHourlyBreakdowns(petId: pet.id)
+            let localBreakdowns = SnapshotStore.shared.computeDailyHourlyBreakdowns(petId: pet.id)
+
+            // Merge local breakdowns with disk cache (which includes cloud history)
+            let diskBreakdowns = DailyHourlyBreakdown.loadAllFromDisk()
+            let hourlyPerDay = Self.mergeBreakdowns(base: diskBreakdowns, overlay: localBreakdowns)
+
+            // Recompute aggregate from merged data (includes cloud history)
+            let hourlyAggregate = HourlyAggregate.fromBreakdowns(hourlyPerDay)
+
+            // Persist merged data locally before uploading (crash-safe ordering)
+            storeHourlyPerDay(hourlyPerDay, petId: pet.id)
+            SharedDefaults.setHourlyAggregate(hourlyAggregate, daysLimit: nil)
 
             let remoteDTO = ActivePetDTO(
                 from: dto,
@@ -66,11 +76,18 @@ extension SyncManager {
         guard let userId = await currentUserId() else { return }
 
         do {
-            let hourlyPerDay = SnapshotStore.shared.computeDailyHourlyBreakdowns(petId: archivedPet.id)
+            let localBreakdowns = SnapshotStore.shared.computeDailyHourlyBreakdowns(petId: archivedPet.id)
+
+            // Merge local breakdowns with disk cache (which includes cloud history)
+            let diskBreakdowns = DailyHourlyBreakdown.loadAllFromDisk()
+            let hourlyPerDay = Self.mergeBreakdowns(base: diskBreakdowns, overlay: localBreakdowns)
+
+            let hourlyAggregate = HourlyAggregate.fromBreakdowns(hourlyPerDay)
 
             let remoteDTO = ArchivedPetDTO(
                 from: archivedPet,
                 userId: userId,
+                hourlyAggregate: hourlyAggregate,
                 hourlyPerDay: hourlyPerDay
             )
 
@@ -124,6 +141,23 @@ extension SyncManager {
         #if DEBUG
         print("[SyncManager] Initial sync completed — \(summaries.count) archived pets uploaded")
         #endif
+    }
+
+    // MARK: - Hourly Per-Day Merge
+
+    /// Merges two sets of breakdowns. Overlay entries win for dates that exist in both.
+    static func mergeBreakdowns(
+        base: [DailyHourlyBreakdown],
+        overlay: [DailyHourlyBreakdown]
+    ) -> [DailyHourlyBreakdown] {
+        var merged: [String: DailyHourlyBreakdown] = [:]
+        for breakdown in base {
+            merged[breakdown.date] = breakdown
+        }
+        for breakdown in overlay {
+            merged[breakdown.date] = breakdown
+        }
+        return merged.values.sorted { $0.date < $1.date }
     }
 
     // MARK: - Delete Active Pet from Cloud

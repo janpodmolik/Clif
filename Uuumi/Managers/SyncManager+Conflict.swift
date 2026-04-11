@@ -13,13 +13,17 @@ extension SyncManager {
         petManager: PetManager,
         archivedPetManager: ArchivedPetManager
     ) async {
+        #if DEBUG
         print("[SyncManager] checkForPetConflict called — isSyncing=\(isSyncing), hasPet=\(petManager.hasPet), pet=\(petManager.currentPet?.name ?? "nil"), pendingConflict=\(pendingConflict != nil), initialSync=\(UserDefaults.standard.bool(forKey: "hasCompletedInitialSync"))")
+        #endif
 
         guard pendingConflict == nil,
               petManager.hasPet,
               let localPet = petManager.currentPet,
               let userId = await currentUserId() else {
+            #if DEBUG
             print("[SyncManager] checkForPetConflict — guard failed, skipping")
+            #endif
             return
         }
 
@@ -44,12 +48,25 @@ extension SyncManager {
                 .execute()
                 .value
 
+            #if DEBUG
             print("[SyncManager] Cloud has \(activePetResponse.count) active pet(s), local pet id=\(localPet.id)")
+            #endif
 
             if let cloudPet = activePetResponse.first.map(migrateIfNeeded) {
                 if cloudPet.id == localPet.id {
                     // Same pet on both sides — no conflict, just sync archived pets
+                    #if DEBUG
                     print("[SyncManager] Same pet on both sides (id=\(cloudPet.id)) — no conflict")
+                    #endif
+
+                    // Restore hourly data from cloud (local snapshots may be empty after reinstall)
+                    if let aggregate = cloudPet.hourlyAggregate {
+                        SharedDefaults.hourlyAggregate = aggregate
+                    }
+                    if !cloudPet.hourlyPerDay.isEmpty {
+                        storeHourlyPerDay(cloudPet.hourlyPerDay, petId: cloudPet.id)
+                    }
+
                     restoreArchivedPetsIfNeeded(archivedResponse, into: archivedPetManager)
                     let cloudArchivedIds = Set(archivedResponse.map(\.id))
                     await uploadLocalArchivedPetsIfNeeded(
@@ -60,17 +77,23 @@ extension SyncManager {
                     lastSyncDate = Date()
                 } else {
                     // Different pet — real conflict, show resolution sheet
+                    #if DEBUG
                     print("[SyncManager] CONFLICT: local=\(localPet.name) (id=\(localPet.id)) vs cloud=\(cloudPet.name) (id=\(cloudPet.id))")
+                    #endif
                     pendingConflict = PetConflictData(
                         localPet: localPet,
                         cloudDTO: cloudPet,
                         cloudArchivedDTOs: archivedResponse
                     )
+                    #if DEBUG
                     print("[SyncManager] pendingConflict set, value is nil: \(pendingConflict == nil)")
+                    #endif
                 }
             } else {
                 // No cloud pet — no conflict, sync local pet up + restore archived
+                #if DEBUG
                 print("[SyncManager] No cloud pet — syncing local pet up")
+                #endif
                 restoreArchivedPetsIfNeeded(archivedResponse, into: archivedPetManager)
                 let cloudArchivedIds = Set(archivedResponse.map(\.id))
                 await uploadLocalArchivedPetsIfNeeded(
