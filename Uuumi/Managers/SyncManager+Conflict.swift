@@ -182,16 +182,6 @@ extension SyncManager {
         let cloudDTO = conflict.cloudDTO
         let restoredPet = petManager.restoreActivePet(from: cloudDTO)
 
-        // Restore hourly aggregate
-        if let aggregate = cloudDTO.hourlyAggregate {
-            SharedDefaults.hourlyAggregate = aggregate
-        }
-
-        // Store hourly per-day breakdowns
-        if !cloudDTO.hourlyPerDay.isEmpty, let petId = restoredPet?.id {
-            storeHourlyPerDay(cloudDTO.hourlyPerDay, petId: petId)
-        }
-
         // Mark today's preset as selected
         SharedDefaults.todaySelectedPreset = cloudDTO.preset
         SharedDefaults.lastDayResetDate = Calendar.current.startOfDay(for: Date())

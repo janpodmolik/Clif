@@ -1,3 +1,4 @@
+import Supabase
 import SwiftUI
 
 struct DayDetailSheet: View {
@@ -207,25 +208,37 @@ struct DayDetailSheet: View {
         let dateString = SnapshotEvent.dateString(from: day.date)
         snapshots = SnapshotStore.shared.load(for: dateString, petId: petId)
 
-        // Load fallback hourly breakdown from cloud restore data (if no snapshots and no breakdown passed in)
+        // Load fallback hourly breakdown from BE (if no snapshots and no breakdown passed in)
         if snapshots.isEmpty, hourlyBreakdown == nil {
-            restoredBreakdown = Self.loadRestoredBreakdown(for: dateString, petId: petId)
+            Task {
+                restoredBreakdown = await Self.fetchBreakdownFromCloud(for: dateString, petId: petId)
+            }
         }
     }
 
-    /// Loads a single day's hourly breakdown from the cloud-restored JSON file.
-    private static func loadRestoredBreakdown(for dateString: String, petId: UUID) -> DailyHourlyBreakdown? {
-        let documentsURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
-        let fileURL = documentsURL
-            .appendingPathComponent("hourly_per_day")
-            .appendingPathComponent("\(petId.uuidString).json")
-
-        guard let data = try? Data(contentsOf: fileURL),
-              let breakdowns = try? JSONDecoder().decode([DailyHourlyBreakdown].self, from: data) else {
-            return nil
+    /// Fetches a single day's hourly breakdown from BE for this pet.
+    private static func fetchBreakdownFromCloud(for dateString: String, petId: UUID) async -> DailyHourlyBreakdown? {
+        struct HourlyRow: Decodable {
+            let hourlyPerDay: [DailyHourlyBreakdown]
+            enum CodingKeys: String, CodingKey {
+                case hourlyPerDay = "hourly_per_day"
+            }
         }
 
-        return breakdowns.first { $0.date == dateString }
+        for table in ["active_pets", "archived_pets"] {
+            guard let rows: [HourlyRow] = try? await SupabaseConfig.client
+                .from(table)
+                .select("hourly_per_day")
+                .eq("id", value: petId.uuidString)
+                .execute()
+                .value,
+                  let breakdowns = rows.first?.hourlyPerDay else { continue }
+
+            if let match = breakdowns.first(where: { $0.date == dateString }) {
+                return match
+            }
+        }
+        return nil
     }
 
     private func formatMinutes(_ minutes: Int) -> String {

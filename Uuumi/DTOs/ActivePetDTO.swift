@@ -15,7 +15,6 @@ struct ActivePetDTO: Codable, Identifiable {
     let breakHistory: [CompletedBreak]
     let windPoints: Double
     let isBlownAway: Bool
-    let hourlyAggregate: HourlyAggregate?
     let hourlyPerDay: [DailyHourlyBreakdown]
     let schemaVersion: Int
     let updatedAt: Date?
@@ -30,7 +29,6 @@ struct ActivePetDTO: Codable, Identifiable {
         case breakHistory = "break_history"
         case windPoints = "wind_points"
         case isBlownAway = "is_blown_away"
-        case hourlyAggregate = "hourly_aggregate"
         case hourlyPerDay = "hourly_per_day"
         case schemaVersion = "schema_version"
         case updatedAt = "updated_at"
@@ -42,7 +40,6 @@ struct ActivePetDTO: Codable, Identifiable {
         userId: UUID,
         windPoints: Double,
         isBlownAway: Bool,
-        hourlyAggregate: HourlyAggregate?,
         hourlyPerDay: [DailyHourlyBreakdown]
     ) {
         self.id = petDTO.id
@@ -57,7 +54,6 @@ struct ActivePetDTO: Codable, Identifiable {
         self.breakHistory = petDTO.breakHistory
         self.windPoints = windPoints
         self.isBlownAway = isBlownAway
-        self.hourlyAggregate = hourlyAggregate
         self.hourlyPerDay = hourlyPerDay
         self.schemaVersion = 1
         self.updatedAt = Date()

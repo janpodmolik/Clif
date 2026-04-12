@@ -64,7 +64,6 @@ struct WelcomeBackSheet: View {
         userId: UUID(),
         windPoints: 20,
         isBlownAway: false,
-        hourlyAggregate: nil,
         hourlyPerDay: []
     )
     WelcomeBackSheet(cloudPet: cloudDTO) { _, _ in }

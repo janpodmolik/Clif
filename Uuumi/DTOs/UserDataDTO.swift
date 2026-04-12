@@ -19,14 +19,19 @@ struct UserDataDTO: Codable {
     /// Note: Only explicitly unlocked essences are synced — default essences
     /// (see `Essence.defaultUnlocked`) are always available via code and don't
     /// need cloud backup. This avoids migration issues if defaults change.
-    static func fromLocal(userId: UUID, essenceCatalogManager: EssenceCatalogManager) -> UserDataDTO {
+    static func fromLocal(
+        userId: UUID,
+        essenceCatalogManager: EssenceCatalogManager,
+        hourlyHistory: [DailyHourlyBreakdown]? = nil
+    ) -> UserDataDTO {
         UserDataDTO(
             userId: userId,
             data: UserDataPayload(
                 coinsBalance: SharedDefaults.coinsBalance,
                 unlockedEssences: essenceCatalogManager.unlockedEssences.map(\.rawValue),
                 limitSettings: SharedDefaults.limitSettings,
-                gender: UserDefaults.standard.string(forKey: DefaultsKeys.gender)
+                gender: UserDefaults.standard.string(forKey: DefaultsKeys.gender),
+                hourlyHistory: hourlyHistory
             ),
             schemaVersion: 1,
             updatedAt: Date()
@@ -40,4 +45,6 @@ struct UserDataPayload: Codable {
     var unlockedEssences: [Int]
     var limitSettings: LimitSettings
     var gender: String?
+    /// Pet-independent daily hourly breakdowns — one entry per day, grows over time.
+    var hourlyHistory: [DailyHourlyBreakdown]?
 }

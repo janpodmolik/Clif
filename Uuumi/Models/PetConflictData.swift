@@ -60,7 +60,6 @@ extension PetConflictData {
             userId: UUID(),
             windPoints: 30,
             isBlownAway: false,
-            hourlyAggregate: nil,
             hourlyPerDay: []
         )
         return PetConflictData(localPet: localPet, cloudDTO: cloudDTO, cloudArchivedDTOs: [])

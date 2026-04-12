@@ -153,6 +153,7 @@ enum DefaultsKeys {
     // MARK: - Hourly Aggregate
 
     static let hourlyAggregate = "hourlyAggregate"
+    static let hourlyHistory = "hourlyHistory"
 
     // MARK: - Authorization
 

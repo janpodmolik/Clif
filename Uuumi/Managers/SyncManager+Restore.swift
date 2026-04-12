@@ -29,16 +29,6 @@ extension SyncManager {
             if let cloudPet = activePetResponse.first.map(migrateIfNeeded) {
                 let restoredPet = petManager.restoreActivePet(from: cloudPet, skipMonitoring: skipMonitoring)
 
-                // Restore hourly aggregate to SharedDefaults (for DailyPatternCard)
-                if let aggregate = cloudPet.hourlyAggregate {
-                    SharedDefaults.hourlyAggregate = aggregate
-                }
-
-                // Store hourly per-day breakdowns locally (for DayDetailSheet fallback)
-                if !cloudPet.hourlyPerDay.isEmpty, let petId = restoredPet?.id {
-                    storeHourlyPerDay(cloudPet.hourlyPerDay, petId: petId)
-                }
-
                 // Mark today's preset as selected — restored pet already has one
                 SharedDefaults.todaySelectedPreset = cloudPet.preset
                 SharedDefaults.lastDayResetDate = Calendar.current.startOfDay(for: Date())
@@ -191,16 +181,13 @@ extension SyncManager {
 
     // MARK: - Helpers
 
-    /// Restores archived pets from cloud DTOs + stores hourly data. Reusable helper.
+    /// Restores archived pets from cloud DTOs. Reusable helper.
     func restoreArchivedPetsIfNeeded(
         _ dtos: [ArchivedPetDTO],
         into archivedPetManager: ArchivedPetManager
     ) {
         guard !dtos.isEmpty else { return }
         archivedPetManager.restoreArchivedPets(from: dtos)
-        for dto in dtos where !dto.hourlyPerDay.isEmpty {
-            storeHourlyPerDay(dto.hourlyPerDay, petId: dto.id)
-        }
     }
 
     /// Uploads local archived pets that don't exist in cloud. Called after cloud→local restore.
@@ -219,17 +206,6 @@ extension SyncManager {
         #if DEBUG
         print("[SyncManager] Uploaded \(localOnly.count) local-only archived pets to cloud")
         #endif
-    }
-
-    /// Stores hourly per-day breakdowns to a local JSON file for DayDetailSheet fallback.
-    func storeHourlyPerDay(_ breakdowns: [DailyHourlyBreakdown], petId: UUID) {
-        let documentsURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
-        let directoryURL = documentsURL.appendingPathComponent("hourly_per_day")
-        try? FileManager.default.createDirectory(at: directoryURL, withIntermediateDirectories: true)
-
-        let fileURL = directoryURL.appendingPathComponent("\(petId.uuidString).json")
-        guard let data = try? JSONEncoder().encode(breakdowns) else { return }
-        try? data.write(to: fileURL)
     }
 
     // MARK: - Welcome Back Helpers

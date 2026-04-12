@@ -17,7 +17,6 @@ extension SyncManager {
 
         do {
             let dto = PetLocalDTO(from: pet)
-            let hourlyAggregate = SnapshotStore.shared.computeHourlyAggregate()
             let hourlyPerDay = SnapshotStore.shared.computeDailyHourlyBreakdowns(petId: pet.id)
 
             let remoteDTO = ActivePetDTO(
@@ -25,7 +24,6 @@ extension SyncManager {
                 userId: userId,
                 windPoints: pet.windPoints,
                 isBlownAway: pet.isBlownAway,
-                hourlyAggregate: hourlyAggregate,
                 hourlyPerDay: hourlyPerDay
             )
 

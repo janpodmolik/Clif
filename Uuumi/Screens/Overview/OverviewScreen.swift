@@ -12,6 +12,7 @@ struct OverviewScreen: View {
     @State private var historyViewMode: HistoryViewMode = .list
     @State private var refreshTick: Int = 0
     @State private var hourlyAggregate: HourlyAggregate?
+    @State private var totalDayCount: Int = 0
     @State private var daysLimit: Int?
 
     init(hourlyAggregate: HourlyAggregate? = nil) {
@@ -58,6 +59,7 @@ struct OverviewScreen: View {
         .background(ThemeRadialBackground())
         .task {
             archivedPetManager.loadSummariesIfNeeded()
+            loadTotalDayCount()
             await loadHourlyAggregate()
         }
         .fullScreenCover(item: $selectedActivePet) { pet in
@@ -79,11 +81,19 @@ struct OverviewScreen: View {
                 summaries: archivedPetManager.summaries
             )
         }
+        .onChange(of: petManager.currentPet?.id) {
+            hourlyAggregate = nil
+            totalDayCount = 0
+            loadTotalDayCount()
+            Task { await loadHourlyAggregate() }
+        }
         .onReceive(Timer.publish(every: 1.0, on: .main, in: .common).autoconnect()) { _ in
             refreshTick += 1
         }
         .onReceive(NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)) { _ in
             refreshTick += 1
+            loadTotalDayCount()
+            Task { await loadHourlyAggregate(force: true) }
         }
     }
 
@@ -142,7 +152,7 @@ struct OverviewScreen: View {
     @ViewBuilder
     private var dailyPatternSection: some View {
         if let aggregate = hourlyAggregate, aggregate.dayCount >= 1 {
-            DailyPatternCard(aggregate: aggregate, daysLimit: $daysLimit)
+            DailyPatternCard(aggregate: aggregate, totalDayCount: totalDayCount, daysLimit: $daysLimit)
                 .padding(.horizontal, 20)
                 .onChange(of: daysLimit) {
                     Task { await loadHourlyAggregate(force: true) }
@@ -223,6 +233,17 @@ struct OverviewScreen: View {
 
     // MARK: - Hourly Aggregate
 
+    private func loadTotalDayCount() {
+        let history = SharedDefaults.hourlyHistory
+        if !history.isEmpty {
+            totalDayCount = history.count
+            return
+        }
+        if let allTime = SharedDefaults.hourlyAggregate(daysLimit: nil) {
+            totalDayCount = allTime.dayCount
+        }
+    }
+
     private func loadHourlyAggregate(force: Bool = false) async {
         // Skip if already set (e.g. from init for previews) unless forced
         if !force && hourlyAggregate != nil { return }
@@ -237,15 +258,23 @@ struct OverviewScreen: View {
         let store = SnapshotStore.shared
         let limit = daysLimit
         let computed = await Task.detached(priority: .userInitiated) {
-            let fromSnapshots = store.computeHourlyAggregate(daysLimit: limit)
-            // If snapshots are available, use them (always freshest)
-            if fromSnapshots.dayCount > 0 { return fromSnapshots }
-            // Fallback: recompute from cloud-restored per-day breakdowns on disk
-            let breakdowns = DailyHourlyBreakdown.loadAllFromDisk()
-            guard !breakdowns.isEmpty else { return fromSnapshots }
-            return HourlyAggregate.fromBreakdowns(breakdowns, daysLimit: limit)
+            // Combine local snapshots (today) with synced history (past days)
+            let history = SharedDefaults.hourlyHistory
+            let todayBreakdown = store.computeTodayBreakdown()
+
+            // Merge: history as base, today's snapshot as overlay (freshest)
+            var byDate: [String: DailyHourlyBreakdown] = [:]
+            for entry in history { byDate[entry.date] = entry }
+            if let today = todayBreakdown { byDate[today.date] = today }
+
+            let allDays = Array(byDate.values)
+            guard !allDays.isEmpty else { return HourlyAggregate.empty }
+            return HourlyAggregate.fromBreakdowns(allDays, daysLimit: limit)
         }.value
 
+        #if DEBUG
+        print("[Overview] result: dayCount=\(computed.dayCount), avg=\(Int(computed.totalDailyAverage))m")
+        #endif
         SharedDefaults.setHourlyAggregate(computed, daysLimit: limit)
         hourlyAggregate = computed
     }

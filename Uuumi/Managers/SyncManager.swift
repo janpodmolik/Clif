@@ -87,16 +87,12 @@ final class SyncManager {
         SharedDefaults.coinsBalance = 0
         SharedDefaults.limitSettings = .default
 
-        // Snapshot data & hourly aggregate cache
+        // Snapshot data & hourly caches
         SnapshotStore.shared.clearAll()
         for limit in SharedDefaults.supportedDaysLimits {
             SharedDefaults.setHourlyAggregate(nil, daysLimit: limit)
         }
-
-        // Cloud-restored hourly breakdown files
-        let hourlyPerDayURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
-            .appendingPathComponent("hourly_per_day")
-        try? FileManager.default.removeItem(at: hourlyPerDayURL)
+        SharedDefaults.hourlyHistory = []
 
         // Sync state
         UserDefaults.standard.removeObject(forKey: DefaultsKeys.lastUserDataSync)

@@ -3,6 +3,7 @@ import SwiftUI
 
 struct DailyPatternCard: View {
     let aggregate: HourlyAggregate
+    let totalDayCount: Int
     @Binding var daysLimit: Int?
 
     @Environment(StoreManager.self) private var storeManager
@@ -110,7 +111,7 @@ struct DailyPatternCard: View {
     }
 
     private var availableOptions: [DaysOption] {
-        DaysOption.allCases.filter { $0.minDays <= aggregate.dayCount }
+        DaysOption.allCases.filter { $0.minDays <= totalDayCount }
     }
 
     private var selectedOption: Binding<DaysOption> {
@@ -320,13 +321,13 @@ struct DailyPatternCard: View {
 
 #if DEBUG
 #Preview("With data") {
-    DailyPatternCard(aggregate: .mock(), daysLimit: .constant(14))
+    DailyPatternCard(aggregate: .mock(), totalDayCount: 14, daysLimit: .constant(14))
         .padding()
         .environment(StoreManager.mock())
 }
 
 #Preview("Minimum data") {
-    DailyPatternCard(aggregate: .mock(days: 2), daysLimit: .constant(nil))
+    DailyPatternCard(aggregate: .mock(days: 2), totalDayCount: 2, daysLimit: .constant(nil))
         .padding()
         .environment(StoreManager.mock())
 }

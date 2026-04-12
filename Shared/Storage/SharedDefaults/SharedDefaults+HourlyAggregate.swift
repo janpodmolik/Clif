@@ -43,6 +43,20 @@ extension SharedDefaults {
         return cached != todayString
     }
 
+    // MARK: - Hourly History (raw Data — decoded by main target as [DailyHourlyBreakdown])
+
+    /// Raw JSON data for hourly history. Use typed accessors in the main target.
+    static var hourlyHistoryData: Data? {
+        get { defaults?.data(forKey: DefaultsKeys.hourlyHistory) }
+        set {
+            if let newValue {
+                defaults?.set(newValue, forKey: DefaultsKeys.hourlyHistory)
+            } else {
+                defaults?.removeObject(forKey: DefaultsKeys.hourlyHistory)
+            }
+        }
+    }
+
     // MARK: - Private
 
     private static func cacheKey(daysLimit: Int?) -> String {

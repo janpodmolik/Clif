@@ -145,7 +145,7 @@ struct WelcomeBackDecisionPhase: View {
         WelcomeBackDecisionPhase(
             cloudPet: ActivePetDTO(
                 from: PetLocalDTO(from: Pet.mock(name: "Kořen", phase: 2, essence: .plant, totalDays: 7)),
-                userId: UUID(), windPoints: 20, isBlownAway: false, hourlyAggregate: nil, hourlyPerDay: []
+                userId: UUID(), windPoints: 20, isBlownAway: false, hourlyPerDay: []
             ),
             isResolving: false,
             onContinue: {}, onArchive: {}, onDelete: {}

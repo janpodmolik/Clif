@@ -16,7 +16,6 @@ struct ArchivedPetDTO: Codable {
     let evolutionHistory: EvolutionHistoryDTO
     let dailyStats: [DailyUsageStat]
     let breakHistory: [CompletedBreak]
-    let hourlyAggregate: HourlyAggregate?
     let hourlyPerDay: [DailyHourlyBreakdown]
     let schemaVersion: Int
 
@@ -31,7 +30,6 @@ struct ArchivedPetDTO: Codable {
         case evolutionHistory = "evolution_history"
         case dailyStats = "daily_stats"
         case breakHistory = "break_history"
-        case hourlyAggregate = "hourly_aggregate"
         case hourlyPerDay = "hourly_per_day"
         case schemaVersion = "schema_version"
     }
@@ -40,7 +38,6 @@ struct ArchivedPetDTO: Codable {
     init(
         from archivedPet: ArchivedPet,
         userId: UUID,
-        hourlyAggregate: HourlyAggregate? = nil,
         hourlyPerDay: [DailyHourlyBreakdown] = []
     ) {
         self.id = archivedPet.id
@@ -56,7 +53,6 @@ struct ArchivedPetDTO: Codable {
         self.evolutionHistory = EvolutionHistoryDTO(from: archivedPet.evolutionHistory)
         self.dailyStats = archivedPet.dailyStats
         self.breakHistory = archivedPet.breakHistory
-        self.hourlyAggregate = hourlyAggregate
         self.hourlyPerDay = hourlyPerDay
         self.schemaVersion = 1
     }

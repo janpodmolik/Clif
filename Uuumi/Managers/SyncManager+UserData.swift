@@ -12,9 +12,16 @@ extension SyncManager {
         guard let userId = await currentUserId() else { return }
 
         do {
+            // Update today's hourly breakdown from local snapshots
+            if let today = SnapshotStore.shared.computeTodayBreakdown() {
+                SharedDefaults.updateHourlyHistory(with: today)
+            }
+
+            let hourlyHistory = SharedDefaults.hourlyHistory
             let dto = UserDataDTO.fromLocal(
                 userId: userId,
-                essenceCatalogManager: essenceCatalogManager
+                essenceCatalogManager: essenceCatalogManager,
+                hourlyHistory: hourlyHistory.isEmpty ? nil : hourlyHistory
             )
 
             try await client
@@ -87,8 +94,18 @@ extension SyncManager {
                     UserDefaults.standard.set(gender, forKey: DefaultsKeys.gender)
                 }
 
+                // Restore hourly history for DailyPatternCard
+                if let history = payload.hourlyHistory, !history.isEmpty {
+                    SharedDefaults.hourlyHistory = history
+                    // Invalidate all cached aggregates and pre-compute all-time
+                    for limit in SharedDefaults.supportedDaysLimits {
+                        SharedDefaults.setHourlyAggregate(nil, daysLimit: limit)
+                    }
+                    SharedDefaults.hourlyAggregate = HourlyAggregate.fromBreakdowns(history)
+                }
+
                 #if DEBUG
-                print("[SyncManager] User data restored — coins: \(payload.coinsBalance), essences: \(restoredEssences.count)")
+                print("[SyncManager] User data restored — coins: \(payload.coinsBalance), essences: \(restoredEssences.count), hourlyDays: \(payload.hourlyHistory?.count ?? 0)")
                 #endif
             } else {
                 #if DEBUG

@@ -1,8 +1,8 @@
 import Foundation
 
 extension SnapshotStore {
-    /// Computes per-day hourly breakdowns from usageThreshold events.
-    /// Uses same delta logic as computeHourlyAggregate but returns per-day instead of averaged.
+    /// Computes per-day hourly breakdowns from usageThreshold events for a specific pet.
+    /// Used for per-pet DayDetailSheet data synced to active_pets/archived_pets.
     /// - Parameter petId: The pet ID to filter events for.
     func computeDailyHourlyBreakdowns(petId: UUID) -> [DailyHourlyBreakdown] {
         let allEvents = loadAll().filter { $0.petId == petId }
