@@ -100,7 +100,6 @@ struct IslandView<TransitionContent: View>: View {
     // MARK: - Computed Properties
 
     private var petHeight: CGFloat { screenHeight * 0.10 }
-    private var petOffset: CGFloat { -petHeight }
     private var dropZoneSize: CGFloat { petHeight * 1.5 }
     private var essenceDropZoneSize: CGFloat { petHeight * 2.0 }
 
@@ -156,6 +155,7 @@ struct IslandView<TransitionContent: View>: View {
             IslandBase(screenHeight: screenHeight)
             islandContent
         }
+        .offset(y: IslandLayout.compactDownshift)
     }
 
     // MARK: - Island Content
@@ -188,7 +188,7 @@ struct IslandView<TransitionContent: View>: View {
             }
         }
         .padding(.top, petHeight * 0.6)
-        .offset(y: petOffset)
+        .offset(y: -petHeight)
     }
 
     // MARK: - Pet View

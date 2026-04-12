@@ -39,7 +39,6 @@ struct OnboardingIslandView: View {
     // MARK: - Computed
 
     private var petHeight: CGFloat { screenHeight * 0.10 }
-    private var petOffset: CGFloat { -petHeight }
 
     private var windConfig: WindConfig {
         WindConfig.interpolated(progress: windProgress)
@@ -63,6 +62,7 @@ struct OnboardingIslandView: View {
             IslandBase(screenHeight: screenHeight)
             petContent
         }
+        .offset(y: IslandLayout.compactDownshift)
     }
 
     // MARK: - Pet Content
@@ -95,7 +95,7 @@ struct OnboardingIslandView: View {
             )
         }
         .padding(.top, petHeight * 0.6)
-        .offset(y: petOffset)
+        .offset(y: -petHeight)
     }
 
     private var dropZoneLayer: some View {
