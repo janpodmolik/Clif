@@ -236,6 +236,12 @@ struct ProfileScreen: View {
                 Text("Thank you for your feedback!")
             }
         }
+        .onChange(of: authManager.authState) { _, _ in
+            withAnimation { coinBalance = SharedDefaults.coinsBalance }
+        }
+        .onChange(of: syncManager.lastSyncDate) { _, _ in
+            withAnimation { coinBalance = SharedDefaults.coinsBalance }
+        }
     }
 
     // MARK: - Profile Row
