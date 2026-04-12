@@ -1245,6 +1245,9 @@
     "No active pet" : {
 
     },
+    "No active subscription was found for this Apple Account." : {
+
+    },
     "No commitment, cancel anytime" : {
 
     },
@@ -1261,6 +1264,9 @@
 
     },
     "No log data. Tap Refresh to load." : {
+
+    },
+    "No Purchase Found" : {
 
     },
     "No results" : {
@@ -1509,6 +1515,9 @@
     "Purchase is pending approval" : {
 
     },
+    "Purchase Restored" : {
+
+    },
     "Purchase verification failed" : {
 
     },
@@ -1588,6 +1597,9 @@
 
     },
     "Restart Onboarding" : {
+
+    },
+    "Restore Failed" : {
 
     },
     "Restore Purchase" : {
@@ -1781,6 +1793,9 @@
 
     },
     "Smooth sky gradient that transitions continuously throughout the day." : {
+
+    },
+    "Something went wrong. Please check your internet connection and try again." : {
 
     },
     "Somewhere, a tiny island floats in the sky..." : {
@@ -2231,6 +2246,9 @@
 
     },
     "Your pet was waiting for you in the cloud. What would you like to do?" : {
+
+    },
+    "Your premium subscription has been restored." : {
 
     },
     "Your screen time speaks for itself." : {

@@ -15,6 +15,14 @@ final class StoreManager {
         case failed
     }
 
+    enum RestoreState: Equatable {
+        case idle
+        case restoring
+        case restored
+        case nothingToRestore
+        case failed
+    }
+
     enum StoreError: LocalizedError {
         case failedVerification
         case purchaseCancelled
@@ -66,6 +74,7 @@ final class StoreManager {
     private(set) var purchaseState: PurchaseState = .idle
     private(set) var purchasingProductId: String?
     private(set) var error: StoreError?
+    private(set) var restoreState: RestoreState = .idle
 
     private var transactionListener: Task<Void, Never>?
 
@@ -183,14 +192,21 @@ final class StoreManager {
     // MARK: - Restore
 
     func restorePurchases() async {
+        restoreState = .restoring
         do {
             try await AppStore.sync()
             await checkCurrentEntitlements()
+            restoreState = isPremium ? .restored : .nothingToRestore
         } catch {
+            restoreState = .failed
             #if DEBUG
             print("StoreManager: Restore failed — \(error)")
             #endif
         }
+    }
+
+    func clearRestoreState() {
+        restoreState = .idle
     }
 
     // MARK: - Manage Subscriptions

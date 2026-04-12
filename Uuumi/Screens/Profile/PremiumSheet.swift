@@ -48,6 +48,11 @@ struct PremiumSheet: View {
             } message: { error in
                 Text(error.localizedDescription)
             }
+            .alert(restoreAlertTitle, isPresented: showRestoreAlert) {
+                Button("OK") { storeManager.clearRestoreState() }
+            } message: {
+                Text(restoreAlertMessage)
+            }
         }
     }
 
@@ -340,6 +345,31 @@ struct PremiumSheet: View {
             get: { storeManager.error != nil },
             set: { if !$0 { storeManager.clearError() } }
         )
+    }
+
+    private var showRestoreAlert: Binding<Bool> {
+        Binding(
+            get: { storeManager.restoreState == .restored || storeManager.restoreState == .nothingToRestore || storeManager.restoreState == .failed },
+            set: { if !$0 { storeManager.clearRestoreState() } }
+        )
+    }
+
+    private var restoreAlertTitle: String {
+        switch storeManager.restoreState {
+        case .restored: String(localized: "Purchase Restored")
+        case .nothingToRestore: String(localized: "No Purchase Found")
+        case .failed: String(localized: "Restore Failed")
+        default: ""
+        }
+    }
+
+    private var restoreAlertMessage: String {
+        switch storeManager.restoreState {
+        case .restored: String(localized: "Your premium subscription has been restored.")
+        case .nothingToRestore: String(localized: "No active subscription was found for this Apple Account.")
+        case .failed: String(localized: "Something went wrong. Please check your internet connection and try again.")
+        default: ""
+        }
     }
 }
 
