@@ -12,7 +12,6 @@ struct OverviewScreen: View {
     @State private var historyViewMode: HistoryViewMode = .list
     @State private var refreshTick: Int = 0
     @State private var hourlyAggregate: HourlyAggregate?
-    @State private var totalDayCount: Int = 0
     @State private var daysLimit: Int?
 
     init(hourlyAggregate: HourlyAggregate? = nil) {
@@ -59,7 +58,6 @@ struct OverviewScreen: View {
         .background(ThemeRadialBackground())
         .task {
             archivedPetManager.loadSummariesIfNeeded()
-            await loadTotalDayCount()
             await loadHourlyAggregate()
         }
         .fullScreenCover(item: $selectedActivePet) { pet in
@@ -81,24 +79,11 @@ struct OverviewScreen: View {
                 summaries: archivedPetManager.summaries
             )
         }
-        .onChange(of: petManager.currentPet?.id) {
-            // Pet changed (sign-in restore or sign-out clear) — reload hourly data
-            hourlyAggregate = nil
-            totalDayCount = 0
-            Task {
-                await loadTotalDayCount()
-                await loadHourlyAggregate()
-            }
-        }
         .onReceive(Timer.publish(every: 1.0, on: .main, in: .common).autoconnect()) { _ in
             refreshTick += 1
         }
         .onReceive(NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)) { _ in
             refreshTick += 1
-            Task {
-                await loadTotalDayCount()
-                await loadHourlyAggregate(force: true)
-            }
         }
     }
 
@@ -157,7 +142,7 @@ struct OverviewScreen: View {
     @ViewBuilder
     private var dailyPatternSection: some View {
         if let aggregate = hourlyAggregate, aggregate.dayCount >= 1 {
-            DailyPatternCard(aggregate: aggregate, totalDayCount: totalDayCount, daysLimit: $daysLimit)
+            DailyPatternCard(aggregate: aggregate, daysLimit: $daysLimit)
                 .padding(.horizontal, 20)
                 .onChange(of: daysLimit) {
                     Task { await loadHourlyAggregate(force: true) }
@@ -237,18 +222,6 @@ struct OverviewScreen: View {
     }
 
     // MARK: - Hourly Aggregate
-
-    private func loadTotalDayCount() async {
-        if let allTime = SharedDefaults.hourlyAggregate(daysLimit: nil), allTime.dayCount > 0 {
-            totalDayCount = allTime.dayCount
-            return
-        }
-        // Fallback: count from disk breakdowns
-        let count = await Task.detached(priority: .userInitiated) {
-            DailyHourlyBreakdown.loadAllFromDisk().count
-        }.value
-        if count > 0 { totalDayCount = count }
-    }
 
     private func loadHourlyAggregate(force: Bool = false) async {
         // Skip if already set (e.g. from init for previews) unless forced
