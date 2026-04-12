@@ -62,13 +62,6 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
         ExtensionLogger.log("[Extension] Baseline updated: \(oldBaseline) + \(existingThreshold) = \(newBaseline)")
     }
 
-    /// Removes all shields from ManagedSettingsStore.
-    private func clearShieldStore() {
-        store.shield.applications = nil
-        store.shield.applicationCategories = nil
-        store.shield.webDomains = nil
-    }
-
     /// Loads stored tokens and applies them to ManagedSettingsStore.
     /// Returns false if no tokens could be loaded.
     @discardableResult

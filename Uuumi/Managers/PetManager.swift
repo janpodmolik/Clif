@@ -334,6 +334,7 @@ final class PetManager {
             ShieldManager.shared.turnOff(success: true)
         }
         ScreenTimeManager.shared.stopMonitoringAndClear()
+        SharedDefaults.isDayStartShieldActive = false
 
         self.pet = nil
         saveActivePet()
@@ -370,10 +371,11 @@ final class PetManager {
     /// Restores an active pet from a cloud DTO. Sets windPoints in SharedDefaults.
     /// Returns the restored Pet, or nil if a local pet already exists.
     ///
-    /// After restore, detects token validity:
-    /// - Auth `.approved` (sign-out/sign-in, no reinstall) → tokens valid → starts monitoring
-    /// - Auth `.notDetermined` (reinstall) → tokens invalid → sets `needsAppReselection`
-    func restoreActivePet(from remoteDTO: ActivePetDTO) -> Pet? {
+    /// - Parameter skipMonitoring: When true, skips monitoring setup entirely.
+    ///   Use when the caller handles monitoring separately (e.g., WelcomeBack flow
+    ///   where the user already reauthorized and will re-select apps via
+    ///   `handleAppReselectionComplete`).
+    func restoreActivePet(from remoteDTO: ActivePetDTO, skipMonitoring: Bool = false) -> Pet? {
         guard pet == nil else { return nil }
 
         let dto = PetLocalDTO(from: remoteDTO)
@@ -391,21 +393,22 @@ final class PetManager {
             nextEvolutionUnlockDate: restoredPet.evolutionHistory.nextEvolutionUnlockDate
         )
 
-        // Detect token validity based on authorization status
-        if AuthorizationCenter.shared.authorizationStatus == .approved {
-            // No reinstall — tokens are still valid, start monitoring immediately
-            if !restoredPet.isBlownAway, restoredPet.limitedSources.hasTokens {
-                let limitSeconds = Int(restoredPet.preset.minutesToBlowAway * 60)
-                ScreenTimeManager.shared.startMonitoring(
-                    petId: restoredPet.id,
-                    petName: restoredPet.name,
-                    limitSeconds: limitSeconds,
-                    limitedSources: restoredPet.limitedSources
-                )
+        if !skipMonitoring {
+            if AuthorizationCenter.shared.authorizationStatus == .approved {
+                // Sign-in without reinstall — tokens are still valid, start monitoring
+                if !restoredPet.isBlownAway, restoredPet.limitedSources.hasTokens {
+                    let limitSeconds = Int(restoredPet.preset.minutesToBlowAway * 60)
+                    ScreenTimeManager.shared.startMonitoring(
+                        petId: restoredPet.id,
+                        petName: restoredPet.name,
+                        limitSeconds: limitSeconds,
+                        limitedSources: restoredPet.limitedSources
+                    )
+                }
+            } else if !restoredPet.isBlownAway {
+                // Reinstall without prior reauth — tokens invalid, need reselection
+                needsAppReselection = true
             }
-        } else if !restoredPet.isBlownAway {
-            // Reinstall — tokens invalid, need reselection after reauth
-            needsAppReselection = true
         }
 
         return restoredPet

@@ -155,6 +155,12 @@ final class ScreenTimeManager: ObservableObject {
         SharedDefaults.monitoredPetName = petName
         SharedDefaults.setInt(limitSeconds, forKey: DefaultsKeys.monitoringLimitSeconds)
 
+        // Fresh monitoring start = no break active → clear any stale shields from store
+        // (Extension may have set shields between monitoring restarts, e.g., after reinstall restore)
+        store.shield.applications = nil
+        store.shield.applicationCategories = nil
+        store.shield.webDomains = nil
+
         // Reset all shield flags - fresh monitoring start means no shield blocking wind
         SharedDefaults.resetShieldFlags()
 

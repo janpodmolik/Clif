@@ -9,7 +9,8 @@ extension SyncManager {
     /// Only runs when authenticated and no local pet exists.
     func restoreFromCloud(
         petManager: PetManager,
-        archivedPetManager: ArchivedPetManager
+        archivedPetManager: ArchivedPetManager,
+        skipMonitoring: Bool = false
     ) async {
         guard !petManager.hasPet, let userId = await currentUserId() else { return }
 
@@ -26,7 +27,7 @@ extension SyncManager {
                 .value
 
             if let cloudPet = activePetResponse.first.map(migrateIfNeeded) {
-                let restoredPet = petManager.restoreActivePet(from: cloudPet)
+                let restoredPet = petManager.restoreActivePet(from: cloudPet, skipMonitoring: skipMonitoring)
 
                 // Restore hourly aggregate to SharedDefaults (for DailyPatternCard)
                 if let aggregate = cloudPet.hourlyAggregate {
@@ -41,6 +42,7 @@ extension SyncManager {
                 // Mark today's preset as selected — restored pet already has one
                 SharedDefaults.todaySelectedPreset = cloudPet.preset
                 SharedDefaults.lastDayResetDate = Calendar.current.startOfDay(for: Date())
+                SharedDefaults.isDayStartShieldActive = false
 
                 #if DEBUG
                 print("[SyncManager] Active pet restored: \(cloudPet.name)")
@@ -158,9 +160,11 @@ extension SyncManager {
 
         switch action {
         case .continueWithPet:
-            // Restore user data + active pet from cloud, skip onboarding
+            // Restore user data + active pet from cloud, skip onboarding.
+            // Skip monitoring — tokens from cloud are invalid after reinstall.
+            // ContentView will call handleAppReselectionComplete with fresh tokens.
             await restoreUserData(essenceCatalogManager: essenceCatalogManager)
-            await restoreFromCloud(petManager: petManager, archivedPetManager: archivedPetManager)
+            await restoreFromCloud(petManager: petManager, archivedPetManager: archivedPetManager, skipMonitoring: true)
 
         case .archivePet:
             await resolveWelcomeBackArchive(
