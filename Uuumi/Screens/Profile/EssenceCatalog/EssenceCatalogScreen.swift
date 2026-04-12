@@ -7,6 +7,8 @@ struct EssenceCatalogScreen: View {
 
     @State private var selectedEssenceRecord: EssenceRecord?
     @State private var essenceToUnlock: Essence?
+    @State private var showCoinShopSheet = false
+    @State private var coinBalance = SharedDefaults.coinsBalance
 
     private let columns = [
         GridItem(.flexible(), spacing: 12),
@@ -31,8 +33,44 @@ struct EssenceCatalogScreen: View {
                 summaries: archivedPetManager.summaries
             )
         }
-        .sheet(item: $essenceToUnlock) { essence in
+        .sheet(item: $essenceToUnlock, onDismiss: {
+            withAnimation {
+                coinBalance = SharedDefaults.coinsBalance
+            }
+        }) { essence in
             EssenceUnlockSheet(essence: essence)
+        }
+        .sheet(isPresented: $showCoinShopSheet, onDismiss: {
+            withAnimation {
+                coinBalance = SharedDefaults.coinsBalance
+            }
+        }) {
+            CoinShopSheet(source: "essence_catalog")
+        }
+        .onAppear {
+            coinBalance = SharedDefaults.coinsBalance
+        }
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    showCoinShopSheet = true
+                } label: {
+                    HStack(spacing: 6) {
+                        Image("coin")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 18, height: 18)
+                        Text("\(coinBalance)")
+                            .fontWeight(.semibold)
+                            .contentTransition(.numericText())
+                    }
+                    .font(.body)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
+                }
+                .buttonStyle(.plain)
+                .sensoryFeedback(.success, trigger: coinBalance)
+            }
         }
     }
 
