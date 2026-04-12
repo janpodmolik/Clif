@@ -154,6 +154,7 @@ struct DebugView: View {
                         Button("Evolve Now") {
                             pet.debugUnlockEvolution()
                             pet.evolve()
+                            CoinStore.shared.reload()
                             petManager.savePet()
                         }
                         .tint(.orange)
@@ -223,12 +224,10 @@ struct DebugView: View {
 
     // MARK: - Coins & Essences
 
-    @State private var debugCoinBalance = SharedDefaults.coinsBalance
-
     private var coinsAndEssencesSection: some View {
         sectionCard("Coins & Essences", icon: "dollarsign.circle.fill", tint: Color("PremiumGold")) {
             VStack(alignment: .leading, spacing: 3) {
-                debugRow("Coins", "\(debugCoinBalance)")
+                debugRow("Coins", "\(CoinStore.shared.balance)")
                 debugRow("Unlocked essences", "\(catalogManager.allUnlocked.count)/\(Essence.allCases.count)")
             }
 
@@ -236,20 +235,17 @@ struct DebugView: View {
 
             FlowLayout(spacing: 8) {
                 Button("+100 Coins") {
-                    SharedDefaults.addCoins(100)
-                    debugCoinBalance = SharedDefaults.coinsBalance
+                    CoinStore.shared.addCoins(100)
                 }
                 .tint(.green)
 
                 Button("+1000 Coins") {
-                    SharedDefaults.addCoins(1000)
-                    debugCoinBalance = SharedDefaults.coinsBalance
+                    CoinStore.shared.addCoins(1000)
                 }
                 .tint(.green)
 
                 Button("Reset Coins") {
-                    SharedDefaults.coinsBalance = 0
-                    debugCoinBalance = 0
+                    CoinStore.shared.setBalance(0)
                 }
                 .tint(.red)
 
@@ -447,7 +443,7 @@ struct DebugView: View {
             return
         }
 
-        let coinsBefore = SharedDefaults.coinsBalance
+        let coinsBefore = CoinStore.shared.balance
         ShieldManager.shared.endExpiredBreakIfNeeded()
 
         // If endExpiredBreakIfNeeded didn't expire it (not yet expired), force it
@@ -457,7 +453,7 @@ struct DebugView: View {
         }
 
         ShieldManager.shared.resumeBreakMonitoringIfNeeded()
-        let coinsAwarded = SharedDefaults.coinsBalance - coinsBefore
+        let coinsAwarded = CoinStore.shared.balance - coinsBefore
         log("Break expired. Coins awarded: \(coinsAwarded)")
     }
 
@@ -494,12 +490,12 @@ struct DebugView: View {
         SharedDefaults.monitoredWindPoints = 50
         SharedDefaults.synchronize()
 
-        let coinsBefore = SharedDefaults.coinsBalance
+        let coinsBefore = CoinStore.shared.balance
 
         ShieldManager.shared.endExpiredBreakIfNeeded()
         ShieldManager.shared.resumeBreakMonitoringIfNeeded()
 
-        let coinsAwarded = SharedDefaults.coinsBalance - coinsBefore
+        let coinsAwarded = CoinStore.shared.balance - coinsBefore
         log("Coins awarded: \(coinsAwarded) (expected: 1 for 15-minute break)")
     }
 
@@ -528,12 +524,12 @@ struct DebugView: View {
         SharedDefaults.monitoredFallRate = fallRatePerSecond
         SharedDefaults.synchronize()
 
-        let coinsBefore = SharedDefaults.coinsBalance
+        let coinsBefore = CoinStore.shared.balance
 
         // This calls checkBreakCompletion() → turnOff(success: true) since effectiveWind <= 0
         ShieldManager.shared.resumeBreakMonitoringIfNeeded()
 
-        let coinsAwarded = SharedDefaults.coinsBalance - coinsBefore
+        let coinsAwarded = CoinStore.shared.balance - coinsBefore
         let passed = coinsAwarded == expectedCoins
         log("Break duration: \(expectedMinutes) min, coins: \(coinsAwarded) (expected: \(expectedCoins), bug would show: 4) — \(passed ? "PASS ✅" : "FAIL ❌")")
     }

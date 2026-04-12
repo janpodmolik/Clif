@@ -98,6 +98,7 @@ struct TesterView: View {
                 Button("Evolve to Next Phase") {
                     pet.debugUnlockEvolution()
                     pet.evolve()
+                    CoinStore.shared.reload()
                     petManager.savePet()
                 }
             }

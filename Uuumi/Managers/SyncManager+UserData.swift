@@ -83,7 +83,7 @@ extension SyncManager {
 
             if cloudIsNewer {
                 // Tier 1
-                SharedDefaults.coinsBalance = payload.coinsBalance
+                CoinStore.shared.setBalance(payload.coinsBalance)
 
                 let restoredEssences = Set(payload.unlockedEssences.compactMap { Essence(rawValue: $0) })
                 essenceCatalogManager.restoreUnlocked(restoredEssences)
@@ -145,7 +145,7 @@ extension SyncManager {
             guard !unclaimed.isEmpty else { return 0 }
 
             let total = unclaimed.reduce(0) { $0 + $1.amount }
-            SharedDefaults.addCoins(total)
+            CoinStore.shared.addCoins(total)
 
             // Mark all as claimed
             let claimedIds = unclaimed.map(\.id.uuidString)

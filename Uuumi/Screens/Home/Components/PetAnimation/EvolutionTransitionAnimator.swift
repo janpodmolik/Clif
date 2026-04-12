@@ -80,6 +80,7 @@ final class EvolutionTransitionAnimator {
 
         startTransition()
         pet.evolve()
+        CoinStore.shared.reload()
     }
 
     /// Triggers the evolution transition for applying essence to a blob pet.
@@ -100,6 +101,7 @@ final class EvolutionTransitionAnimator {
 
         startTransition()
         pet.applyEssence(essence)
+        CoinStore.shared.reload()
     }
 
     /// Called when the transition animation completes.

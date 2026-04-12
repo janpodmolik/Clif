@@ -8,7 +8,7 @@ struct CoinShopSheet: View {
     @Environment(AnalyticsManager.self) private var analytics
     @Environment(\.dismiss) private var dismiss
 
-    @State private var coinBalance = SharedDefaults.coinsBalance
+    private var coinBalance: Int { CoinStore.shared.balance }
     @State private var selectedProduct: Product?
 
     var body: some View {
@@ -44,7 +44,6 @@ struct CoinShopSheet: View {
             }
             .onChange(of: storeManager.purchaseState) { _, newState in
                 if newState == .purchased {
-                    coinBalance = SharedDefaults.coinsBalance
                     Task {
                         try? await Task.sleep(for: .seconds(0.8))
                         dismiss()

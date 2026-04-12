@@ -14,7 +14,7 @@ struct EssenceUnlockSheet: View {
     @State private var showUnlockCelebration = false
 
     private var path: EvolutionPath { .path(for: essence) }
-    private var balance: Int { SharedDefaults.coinsBalance }
+    private var balance: Int { CoinStore.shared.balance }
     private var canAfford: Bool { balance >= essence.price }
     private var coinsNeeded: Int { max(0, essence.price - balance) }
 

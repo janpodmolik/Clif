@@ -207,10 +207,10 @@ extension SyncManager {
 
             if let cloudData = response.first.map(migrateUserDataIfNeeded) {
                 let cloudPayload = cloudData.data
-                let localCoins = SharedDefaults.coinsBalance
+                let localCoins = CoinStore.shared.balance
 
                 // Coins: keep the higher value (safe — avoids duplicating coins)
-                SharedDefaults.coinsBalance = max(localCoins, cloudPayload.coinsBalance)
+                CoinStore.shared.setBalance(max(localCoins, cloudPayload.coinsBalance))
 
                 // Essences: union of both sets
                 let cloudEssences = Set(cloudPayload.unlockedEssences.compactMap { Essence(rawValue: $0) })
@@ -218,7 +218,7 @@ extension SyncManager {
                 essenceCatalogManager.restoreUnlocked(merged)
 
                 #if DEBUG
-                print("[SyncManager] Merged user data — coins: \(SharedDefaults.coinsBalance) (local: \(localCoins), cloud: \(cloudPayload.coinsBalance)), essences: \(merged.count)")
+                print("[SyncManager] Merged user data — coins: \(CoinStore.shared.balance) (local: \(localCoins), cloud: \(cloudPayload.coinsBalance)), essences: \(merged.count)")
                 #endif
             }
         } catch {

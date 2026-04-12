@@ -156,7 +156,7 @@ final class StoreManager {
 
                 if Self.coinPackIDs.contains(transaction.productID) {
                     let amount = Self.coinPackAmounts[transaction.productID] ?? 0
-                    SharedDefaults.addCoins(amount)
+                    CoinStore.shared.addCoins(amount)
                 } else {
                     await updatePremiumStatus(from: transaction)
                 }
@@ -262,7 +262,7 @@ final class StoreManager {
 
                 if Self.coinPackIDs.contains(transaction.productID) {
                     let amount = Self.coinPackAmounts[transaction.productID] ?? 0
-                    SharedDefaults.addCoins(amount)
+                    CoinStore.shared.addCoins(amount)
                 } else {
                     await updatePremiumStatus(from: transaction)
                 }

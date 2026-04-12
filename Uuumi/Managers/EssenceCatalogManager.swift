@@ -40,7 +40,7 @@ final class EssenceCatalogManager {
 
     func purchaseEssence(_ essence: Essence) -> PurchaseResult {
         guard !isUnlocked(essence) else { return .alreadyUnlocked }
-        guard SharedDefaults.spendCoins(essence.price) else { return .insufficientBalance }
+        guard CoinStore.shared.spendCoins(essence.price) else { return .insufficientBalance }
         unlock(essence)
         return .success
     }

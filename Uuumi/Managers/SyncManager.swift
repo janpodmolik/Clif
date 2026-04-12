@@ -84,7 +84,7 @@ final class SyncManager {
     /// Cloud data is preserved for future restore.
     func clearOnSignOut() {
         // User data
-        SharedDefaults.coinsBalance = 0
+        CoinStore.shared.setBalance(0)
         SharedDefaults.limitSettings = .default
 
         // Snapshot data & hourly caches

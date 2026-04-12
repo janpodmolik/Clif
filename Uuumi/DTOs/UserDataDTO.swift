@@ -27,7 +27,7 @@ struct UserDataDTO: Codable {
         UserDataDTO(
             userId: userId,
             data: UserDataPayload(
-                coinsBalance: SharedDefaults.coinsBalance,
+                coinsBalance: CoinStore.shared.balance,
                 unlockedEssences: essenceCatalogManager.unlockedEssences.map(\.rawValue),
                 limitSettings: SharedDefaults.limitSettings,
                 gender: UserDefaults.standard.string(forKey: DefaultsKeys.gender),

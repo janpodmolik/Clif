@@ -24,7 +24,7 @@ struct ProfileScreen: View {
     @State private var systemNotificationsEnabled = true
     @State private var showPremiumSheet = false
     @State private var showCoinShopSheet = false
-    @State private var coinBalance = SharedDefaults.coinsBalance
+    private var coinBalance: Int { CoinStore.shared.balance }
     @State private var showAuthSheet = false
     @State private var showAccountSheet = false
     @State private var showMyAppsSheet = false
@@ -168,11 +168,7 @@ struct ProfileScreen: View {
             .sheet(isPresented: $showPremiumSheet) {
                 PremiumSheet(source: "profile")
             }
-            .sheet(isPresented: $showCoinShopSheet, onDismiss: {
-                withAnimation {
-                    coinBalance = SharedDefaults.coinsBalance
-                }
-            }) {
+            .sheet(isPresented: $showCoinShopSheet) {
                 CoinShopSheet(source: "profile")
             }
             .sheet(isPresented: $showMyAppsSheet, onDismiss: {
@@ -214,7 +210,6 @@ struct ProfileScreen: View {
             }
             .onChange(of: scenePhase) {
                 if scenePhase == .active {
-                    coinBalance = SharedDefaults.coinsBalance
                     limitSettings = SharedDefaults.limitSettings
                     Task {
                         let settings = await UNUserNotificationCenter.current().notificationSettings()
@@ -235,12 +230,6 @@ struct ProfileScreen: View {
             } message: {
                 Text("Thank you for your feedback!")
             }
-        }
-        .onChange(of: authManager.authState) { _, _ in
-            withAnimation { coinBalance = SharedDefaults.coinsBalance }
-        }
-        .onChange(of: syncManager.lastSyncDate) { _, _ in
-            withAnimation { coinBalance = SharedDefaults.coinsBalance }
         }
     }
 

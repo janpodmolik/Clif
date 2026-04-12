@@ -238,7 +238,7 @@ final class ShieldManager {
             )
             let coins = CoinRewards.forBreak(minutes: coinMinutes)
             if coins > 0 {
-                SharedDefaults.addCoins(coins)
+                CoinStore.shared.addCoins(coins)
                 SharedDefaults.pendingCoinsAwarded += coins
             }
         }

@@ -8,7 +8,7 @@ struct EssenceCatalogScreen: View {
     @State private var selectedEssenceRecord: EssenceRecord?
     @State private var essenceToUnlock: Essence?
     @State private var showCoinShopSheet = false
-    @State private var coinBalance = SharedDefaults.coinsBalance
+    private var coinBalance: Int { CoinStore.shared.balance }
 
     private let columns = [
         GridItem(.flexible(), spacing: 12),
@@ -33,22 +33,11 @@ struct EssenceCatalogScreen: View {
                 summaries: archivedPetManager.summaries
             )
         }
-        .sheet(item: $essenceToUnlock, onDismiss: {
-            withAnimation {
-                coinBalance = SharedDefaults.coinsBalance
-            }
-        }) { essence in
+        .sheet(item: $essenceToUnlock) { essence in
             EssenceUnlockSheet(essence: essence)
         }
-        .sheet(isPresented: $showCoinShopSheet, onDismiss: {
-            withAnimation {
-                coinBalance = SharedDefaults.coinsBalance
-            }
-        }) {
+        .sheet(isPresented: $showCoinShopSheet) {
             CoinShopSheet(source: "essence_catalog")
-        }
-        .onAppear {
-            coinBalance = SharedDefaults.coinsBalance
         }
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
