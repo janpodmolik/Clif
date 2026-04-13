@@ -55,7 +55,7 @@ struct ThemeRadialBackground: View {
         case .light:
             dayTheme.gradient.first ?? .blue
         case .automatic:
-            if SkyGradient.isDaytime() {
+            if SkyGradient.isLightAppearance() {
                 dayTheme.gradient.first ?? .blue
             } else {
                 nightTheme.gradient.last ?? .purple

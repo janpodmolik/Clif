@@ -148,6 +148,20 @@ struct SkyGradient {
         return time > riseEnd && time < setStart
     }
 
+    /// Whether the sky is visually light enough to use light color scheme.
+    /// Unlike `isDaytime()`, this covers transition periods where the gradient
+    /// is already bright (sunrise midpoint) or still bright (sunset midpoint).
+    static func isLightAppearance() -> Bool {
+        let time = timeOfDay()
+        let rise = sunriseHour / 24
+        let riseEnd = rise + transitionHours / 24
+        let setStart = sunsetHour / 24
+        let setEnd = setStart + transitionHours / 24
+        let riseMid = rise + (riseEnd - rise) * 0.5
+        let setMid = setStart + (setEnd - setStart) * 0.5
+        return time > riseMid && time < setMid
+    }
+
     /// Star opacity for the given time (0 = invisible, 1 = fully visible).
     static func starOpacity(at time: Double) -> Double {
         let color = starOpacityStops.interpolated(amount: time)

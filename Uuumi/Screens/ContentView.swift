@@ -42,7 +42,7 @@ struct ContentView: View {
     @Environment(DeepLinkRouter.self) private var router
 
     @State private var activeTab: AppTab = .home
-    @State private var isDaytime: Bool = SkyGradient.isDaytime()
+    @State private var isDaytime: Bool = SkyGradient.isLightAppearance()
     @State private var navigationPaths: [AppTab: NavigationPath] = [:]
     @State private var essenceCoordinator = EssencePickerCoordinator()
     @State private var createPetCoordinator = CreatePetCoordinator()
@@ -128,7 +128,7 @@ struct ContentView: View {
         .environment(coinsAnimator)
         .preferredColorScheme(resolvedColorScheme)
         .onReceive(Timer.publish(every: 60, on: .main, in: .common).autoconnect()) { _ in
-            isDaytime = SkyGradient.isDaytime()
+            isDaytime = SkyGradient.isLightAppearance()
         }
         .onReceive(NotificationCenter.default.publisher(for: .navigateHome)) { _ in
             activeTab = .home

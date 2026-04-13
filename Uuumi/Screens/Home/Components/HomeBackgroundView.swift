@@ -29,7 +29,7 @@ struct HomeBackgroundView: View {
                 AutomaticBackgroundView()
             } else {
                 TimelineView(.periodic(from: .now, by: 60)) { _ in
-                    if SkyGradient.isDaytime() {
+                    if SkyGradient.isLightAppearance() {
                         DayBackgroundView(theme: dayTheme)
                     } else {
                         NightBackgroundView(theme: nightTheme)
