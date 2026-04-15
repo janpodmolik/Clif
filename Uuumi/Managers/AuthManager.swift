@@ -97,7 +97,7 @@ final class AuthManager {
             guard let self else { return }
             for await (event, session) in client.auth.authStateChanges {
                 #if DEBUG
-                print("[AuthManager] Event: \(event), hasSession=\(session != nil), userId=\(session?.user.id.uuidString ?? "nil")")
+                print("[Sync] AuthEvent: \(event), hasSession=\(session != nil), userId=\(session?.user.id.uuidString ?? "nil")")
                 #endif
                 switch event {
                 case .initialSession:
@@ -108,13 +108,13 @@ final class AuthManager {
                         do {
                             let validatedUser = try await client.auth.user()
                             #if DEBUG
-                            print("[AuthManager] initialSession validated — userId=\(validatedUser.id)")
+                            print("[Sync] initialSession validated — userId=\(validatedUser.id)")
                             #endif
                             self.authState = .authenticated(validatedUser)
                         } catch is Auth.AuthError {
                             // Server explicitly rejected — user deleted or session invalid.
                             #if DEBUG
-                            print("[AuthManager] initialSession REJECTED by server (AuthError) — signing out")
+                            print("[Sync] initialSession REJECTED by server (AuthError) — signing out")
                             #endif
                             if self.authState != .anonymous {
                                 try? await client.auth.signOut()
@@ -124,38 +124,38 @@ final class AuthManager {
                             // Network error (offline, timeout, server down).
                             // Trust cached session — validate next launch.
                             #if DEBUG
-                            print("[AuthManager] initialSession validation failed (network?) — trusting cache: \(error.localizedDescription)")
+                            print("[Sync] initialSession network error — trusting cache: \(error.localizedDescription)")
                             #endif
                             self.authState = .authenticated(session.user)
                         }
                     } else {
                         #if DEBUG
-                        print("[AuthManager] initialSession — no cached session, going anonymous")
+                        print("[Sync] initialSession — no cached session, going anonymous")
                         #endif
                         self.authState = .anonymous
                     }
                 case .signedIn:
                     if let session {
                         #if DEBUG
-                        print("[AuthManager] signedIn — userId=\(session.user.id)")
+                        print("[Sync] signedIn — userId=\(session.user.id)")
                         #endif
                         self.authState = .authenticated(session.user)
                     }
                 case .signedOut:
                     #if DEBUG
-                    print("[AuthManager] signedOut event received")
+                    print("[Sync] signedOut event received")
                     #endif
                     self.authState = .anonymous
                 case .tokenRefreshed:
                     if let session {
                         #if DEBUG
-                        print("[AuthManager] tokenRefreshed — userId=\(session.user.id)")
+                        print("[Sync] tokenRefreshed — userId=\(session.user.id)")
                         #endif
                         self.authState = .authenticated(session.user)
                     }
                 default:
                     #if DEBUG
-                    print("[AuthManager] Unhandled event: \(event)")
+                    print("[Sync] Unhandled auth event: \(event)")
                     #endif
                     break
                 }

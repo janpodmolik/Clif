@@ -78,7 +78,7 @@ struct MainApp: App {
         switch newState {
         case .authenticated:
             #if DEBUG
-            print("[Auth] Authenticated — oldState=\(oldState), userId=\(authManager.currentUser?.id.uuidString ?? "nil"), hasPet=\(petManager.hasPet), onboarding=\(hasCompletedOnboarding)")
+            print("[Sync] Auth → authenticated — oldState=\(oldState), userId=\(authManager.currentUser?.id.uuidString ?? "nil"), hasPet=\(petManager.hasPet), onboarding=\(hasCompletedOnboarding)")
             #endif
             Task {
                 await analyticsManager.updateUser(
@@ -92,13 +92,13 @@ struct MainApp: App {
                 Task {
                     #if DEBUG
                     let coinsBefore = CoinStore.shared.balance
-                    print("[Auth] hasPet path — restoring user data from cloud (coins before: \(coinsBefore))")
+                    print("[Sync] hasPet path — restoring user data from cloud (coins before: \(coinsBefore))")
                     #endif
 
                     await syncManager.restoreUserData(essenceCatalogManager: essenceCatalogManager)
 
                     #if DEBUG
-                    print("[Auth] User data restored (coins after: \(CoinStore.shared.balance))")
+                    print("[Sync] User data restored (coins after: \(CoinStore.shared.balance))")
                     #endif
 
                     await syncManager.checkForPetConflict(
@@ -113,7 +113,7 @@ struct MainApp: App {
                     let claimed = await syncManager.claimPendingRewards()
                     #if DEBUG
                     if claimed > 0 {
-                        print("[Auth] Claimed \(claimed) pending reward coins on login")
+                        print("[Sync] Claimed \(claimed) pending reward coins on login")
                     }
                     #endif
                 }
@@ -123,7 +123,7 @@ struct MainApp: App {
                     // Reinstall scenario: Keychain token survived but onboarding was wiped.
                     // Show WelcomeBackSheet if a cloud pet exists, otherwise treat as new user.
                     #if DEBUG
-                    print("[Auth] No pet + no onboarding — checking WelcomeBack (reinstall scenario)")
+                    print("[Sync] No pet + no onboarding — checking WelcomeBack (reinstall scenario)")
                     #endif
                     Task {
                         await syncManager.checkForWelcomeBack(
@@ -136,7 +136,7 @@ struct MainApp: App {
                     // Onboarding already completed but no local pet — restore from cloud
                     // (e.g. onboarding flag survived reinstall, or local pet file was lost)
                     #if DEBUG
-                    print("[Auth] No pet + onboarding done — restoring from cloud")
+                    print("[Sync] No pet + onboarding done — restoring from cloud")
                     #endif
                     Task {
                         await syncManager.restoreUserData(essenceCatalogManager: essenceCatalogManager)
@@ -151,11 +151,11 @@ struct MainApp: App {
         case .anonymous:
             // Signed out — clear local data (cloud backup preserved for future restore)
             #if DEBUG
-            print("[Auth] → anonymous — oldState=\(oldState)")
+            print("[Sync] Auth → anonymous — oldState=\(oldState)")
             #endif
             guard case .authenticated = oldState else { return }
             #if DEBUG
-            print("[Auth] Was authenticated → clearing local data")
+            print("[Sync] Was authenticated → clearing local data")
             #endif
             petManager.clearOnSignOut()
             archivedPetManager.clearOnSignOut()

@@ -33,13 +33,13 @@ extension SyncManager {
             UserDefaults.standard.set(Date(), forKey: DefaultsKeys.lastUserDataSync)
 
             #if DEBUG
-            print("[SyncManager] User data synced successfully")
+            print("[Sync] User data synced successfully")
             #endif
         } catch {
             lastUserDataSyncAttempt = Date()
             lastError = error
             #if DEBUG
-            print("[SyncManager] User data sync failed: \(error)")
+            print("[Sync] User data sync failed: \(error)")
             #endif
         }
     }
@@ -58,13 +58,13 @@ extension SyncManager {
     func restoreUserData(essenceCatalogManager: EssenceCatalogManager) async {
         guard let userId = await currentUserId() else {
             #if DEBUG
-            print("[SyncManager] restoreUserData — no userId, aborting")
+            print("[Sync] restoreUserData — no userId, aborting")
             #endif
             return
         }
 
         #if DEBUG
-        print("[SyncManager] restoreUserData — fetching cloud data for userId=\(userId)")
+        print("[Sync] restoreUserData — fetching cloud data for userId=\(userId)")
         #endif
 
         do {
@@ -77,7 +77,7 @@ extension SyncManager {
 
             guard let cloudData = response.first.map(migrateUserDataIfNeeded) else {
                 #if DEBUG
-                print("[SyncManager] No cloud user data found — skipping restore")
+                print("[Sync] No cloud user data found — skipping restore")
                 #endif
                 return
             }
@@ -92,9 +92,9 @@ extension SyncManager {
             let cloudIsNewer = localSyncDate.map { cloudUpdatedAt > $0 } ?? true
 
             #if DEBUG
-            print("[SyncManager] Freshness check — localSync=\(localSyncDate?.description ?? "nil"), cloudUpdatedAt=\(cloudUpdatedAt), cloudIsNewer=\(cloudIsNewer)")
-            print("[SyncManager] Cloud data — coins=\(payload.coinsBalance), essences=\(payload.unlockedEssences.count), hourlyDays=\(payload.hourlyHistory?.count ?? 0)")
-            print("[SyncManager] Local data — coins=\(CoinStore.shared.balance), hourlyDays=\(SharedDefaults.hourlyHistory.count)")
+            print("[Sync] Freshness check — localSync=\(localSyncDate?.description ?? "nil"), cloudUpdatedAt=\(cloudUpdatedAt), cloudIsNewer=\(cloudIsNewer)")
+            print("[Sync] Cloud data — coins=\(payload.coinsBalance), essences=\(payload.unlockedEssences.count), hourlyDays=\(payload.hourlyHistory?.count ?? 0)")
+            print("[Sync] Local data — coins=\(CoinStore.shared.balance), hourlyDays=\(SharedDefaults.hourlyHistory.count)")
             #endif
 
             if cloudIsNewer {
@@ -120,11 +120,11 @@ extension SyncManager {
                 }
 
                 #if DEBUG
-                print("[SyncManager] ✅ User data restored — coins: \(payload.coinsBalance), essences: \(restoredEssences.count), hourlyDays: \(payload.hourlyHistory?.count ?? 0)")
+                print("[Sync] ✅ User data restored — coins: \(payload.coinsBalance), essences: \(restoredEssences.count), hourlyDays: \(payload.hourlyHistory?.count ?? 0)")
                 #endif
             } else {
                 #if DEBUG
-                print("[SyncManager] ⏭️ Local user data is newer — skipping restore, will upload instead")
+                print("[Sync] ⏭️ Local user data is newer — skipping restore, will upload instead")
                 #endif
             }
 
@@ -135,7 +135,7 @@ extension SyncManager {
         } catch {
             lastError = error
             #if DEBUG
-            print("[SyncManager] ❌ User data restore failed: \(error)")
+            print("[Sync] ❌ User data restore failed: \(error)")
             #endif
         }
     }
@@ -173,14 +173,14 @@ extension SyncManager {
             lastClaimedRewards = total
 
             #if DEBUG
-            print("[SyncManager] Claimed \(unclaimed.count) pending reward(s): +\(total) coins")
+            print("[Sync] Claimed \(unclaimed.count) pending reward(s): +\(total) coins")
             #endif
 
             return total
         } catch {
             lastError = error
             #if DEBUG
-            print("[SyncManager] Claim pending rewards failed: \(error)")
+            print("[Sync] Claim pending rewards failed: \(error)")
             #endif
             return 0
         }
