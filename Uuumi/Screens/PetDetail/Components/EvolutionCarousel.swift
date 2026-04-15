@@ -2,7 +2,6 @@ import SwiftUI
 
 struct EvolutionCarousel<Pet: PetEvolvable>: View {
     let pet: Pet
-    var isBlownAway: Bool = false
     var canUseEssence: Bool = false
     var showCurrentBadge: Bool = true
     var showBlobStatusBadge: Bool = true
@@ -134,7 +133,7 @@ struct EvolutionCarousel<Pet: PetEvolvable>: View {
     private func cardView(for index: Int) -> some View {
         if isBlob {
             // Blob-only card (no essence yet)
-            BlobOnlyCard(isBlownAway: isBlownAway, canUseEssence: canUseEssence, showStatusBadge: showBlobStatusBadge)
+            BlobOnlyCard(canUseEssence: canUseEssence, showStatusBadge: showBlobStatusBadge)
         } else if hasUnknownEssence, let essenceId = pet.evolutionHistory.essenceRawValue {
             UnknownEssenceCard(
                 essenceId: essenceId,
@@ -142,14 +141,13 @@ struct EvolutionCarousel<Pet: PetEvolvable>: View {
                 currentPhase: currentPhase
             )
         } else if index == 0, let essence, let path = evolutionPath {
-            EvolutionOriginCard(essence: essence, path: path, isBlownAway: isBlownAway)
+            EvolutionOriginCard(essence: essence, path: path)
         } else if let path = evolutionPath {
             EvolutionPhaseCard(
                 phase: index,
                 isCurrentPhase: index == currentPhase,
                 isLocked: index > currentPhase,
                 evolutionPath: path,
-                isBlownAway: isBlownAway,
                 showCurrentBadge: showCurrentBadge
             )
         }
@@ -170,13 +168,12 @@ struct EvolutionCarousel<Pet: PetEvolvable>: View {
 // MARK: - Blob Only Card
 
 struct BlobOnlyCard: View {
-    var isBlownAway: Bool = false
     var canUseEssence: Bool = false
     var showStatusBadge: Bool = true
 
     var body: some View {
         VStack(spacing: 12) {
-            PetImage(Blob.shared, isBlownAway: isBlownAway)
+            PetImage(Blob.shared)
                 .frame(height: 140)
 
             Text("Blob")
@@ -228,7 +225,6 @@ struct BlobOnlyCard: View {
 struct EvolutionOriginCard: View {
     let essence: Essence
     let path: EvolutionPath
-    var isBlownAway: Bool = false
 
     var body: some View {
         VStack(spacing: 12) {
@@ -255,7 +251,7 @@ struct EvolutionOriginCard: View {
 
             HStack(spacing: 6) {
                 // Blob image (2/3)
-                PetImage(Blob.shared, isBlownAway: isBlownAway)
+                PetImage(Blob.shared)
                     .frame(width: blobSize, height: blobSize)
 
                 Text("+")
@@ -299,7 +295,6 @@ struct EvolutionPhaseCard: View {
     let isCurrentPhase: Bool
     let isLocked: Bool
     let evolutionPath: EvolutionPath
-    var isBlownAway: Bool = false
     var showCurrentBadge: Bool = true
 
     var body: some View {
@@ -328,7 +323,7 @@ struct EvolutionPhaseCard: View {
                     .foregroundStyle(.secondary.opacity(0.5))
             }
         } else if let evolution = evolutionPath.phase(at: phase) {
-            PetImage(evolution, isBlownAway: isBlownAway)
+            PetImage(evolution)
         } else {
             RoundedRectangle(cornerRadius: 16)
                 .fill(Color.secondary.opacity(0.1))
@@ -414,8 +409,7 @@ struct EvolutionPhaseCard: View {
 
             Text("Blown away at Phase 1").font(.caption)
             EvolutionCarousel(
-                pet: ArchivedPet.mock(phase: 1, archiveReason: .blown),
-                isBlownAway: true
+                pet: ArchivedPet.mock(phase: 1, archiveReason: .blown)
             )
 
             Text("Fully evolved - Phase 4").font(.caption)

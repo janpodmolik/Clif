@@ -27,7 +27,6 @@ struct ArchivedPetDetailScreen: View {
 
                     EvolutionCarousel(
                         pet: pet,
-                        isBlownAway: pet.isBlown,
                         showCurrentBadge: false,
                         showBlobStatusBadge: false
                     )
