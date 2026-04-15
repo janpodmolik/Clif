@@ -116,13 +116,13 @@
 		B4HA00142F40000100BB0004 /* SharedDefaults+HourlyAggregate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4HA00112F40000100BB0001 /* SharedDefaults+HourlyAggregate.swift */; };
 		B4HA00152F40000100BB0005 /* SharedDefaults+HourlyAggregate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4HA00112F40000100BB0001 /* SharedDefaults+HourlyAggregate.swift */; };
 		B4HA00162F40000100BB0006 /* SharedDefaults+HourlyAggregate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4HA00112F40000100BB0001 /* SharedDefaults+HourlyAggregate.swift */; };
+		B4SH1M022F90000100000002 /* ShieldImagePaths.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4SH1M012F90000100000001 /* ShieldImagePaths.swift */; };
+		B4SH1M032F90000100000003 /* ShieldImagePaths.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4SH1M012F90000100000001 /* ShieldImagePaths.swift */; };
 		B4WIND0022F40A0000000002 /* WindReminderNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4WIND0012F40A0000000001 /* WindReminderNotification.swift */; };
 		B4WIND0032F40A0000000003 /* WindReminderNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4WIND0012F40A0000000001 /* WindReminderNotification.swift */; };
 		B4WIND0042F40A0000000004 /* WindReminderNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4WIND0012F40A0000000001 /* WindReminderNotification.swift */; };
 		B4WIND0052F40A0000000005 /* WindReminderNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4WIND0012F40A0000000001 /* WindReminderNotification.swift */; };
 		B4WIND0062F40A0000000006 /* WindReminderNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4WIND0012F40A0000000001 /* WindReminderNotification.swift */; };
-		B4SH1M022F90000100000002 /* ShieldImagePaths.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4SH1M012F90000100000001 /* ShieldImagePaths.swift */; };
-		B4SH1M032F90000100000003 /* ShieldImagePaths.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4SH1M012F90000100000001 /* ShieldImagePaths.swift */; };
 		B69D416F4A4050543817B940 /* CommittedBreakMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86B0768E9118B8C6063AF858 /* CommittedBreakMode.swift */; };
 		BF0EEAEE5062B2771401AABC /* CommittedBreakMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86B0768E9118B8C6063AF858 /* CommittedBreakMode.swift */; };
 /* End PBXBuildFile section */
@@ -218,8 +218,8 @@
 		B4C64EFC2F2B5EC00054A50E /* BreakType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BreakType.swift; sourceTree = "<group>"; };
 		B4HA00012F40000100AA0001 /* HourlyAggregate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HourlyAggregate.swift; sourceTree = "<group>"; };
 		B4HA00112F40000100BB0001 /* SharedDefaults+HourlyAggregate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SharedDefaults+HourlyAggregate.swift"; sourceTree = "<group>"; };
-		B4WIND0012F40A0000000001 /* WindReminderNotification.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindReminderNotification.swift; sourceTree = "<group>"; };
 		B4SH1M012F90000100000001 /* ShieldImagePaths.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShieldImagePaths.swift; sourceTree = "<group>"; };
+		B4WIND0012F40A0000000001 /* WindReminderNotification.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindReminderNotification.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -993,7 +993,7 @@
 				CODE_SIGN_ENTITLEMENTS = Uuumi/Uuumi.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 3;
 				DEVELOPMENT_TEAM = NS75N22AKL;
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -1044,7 +1044,7 @@
 				CODE_SIGN_ENTITLEMENTS = Uuumi/Uuumi.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 3;
 				DEVELOPMENT_TEAM = NS75N22AKL;
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_HARDENED_RUNTIME = YES;

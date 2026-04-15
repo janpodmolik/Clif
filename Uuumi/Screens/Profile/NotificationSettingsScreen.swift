@@ -6,7 +6,11 @@ struct NotificationSettingsScreen: View {
     @Environment(AnalyticsManager.self) private var analytics
     @Environment(\.scenePhase) private var scenePhase
     @State private var limitSettings = SharedDefaults.limitSettings
-    @State private var systemNotificationsEnabled = true
+    @State private var authorizationStatus: UNAuthorizationStatus = .notDetermined
+
+    private var systemNotificationsEnabled: Bool {
+        authorizationStatus == .authorized
+    }
 
     private var notifications: Binding<NotificationSettings> {
         $limitSettings.notifications
@@ -18,7 +22,33 @@ struct NotificationSettingsScreen: View {
 
     var body: some View {
         Form {
-            if !systemNotificationsEnabled {
+            if authorizationStatus == .notDetermined {
+                Section {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Label {
+                            Text("Notifications are not enabled")
+                                .font(AppFont.quicksand(.subheadline, weight: .semiBold))
+                        } icon: {
+                            Image(systemName: "bell.badge.fill")
+                                .foregroundStyle(.blue)
+                        }
+
+                        Text("Allow notifications so Uuumi can reach you when it matters.")
+                            .font(AppFont.quicksand(.caption, weight: .medium))
+                            .foregroundStyle(.secondary)
+
+                        Button("Enable Notifications") {
+                            Task {
+                                await AppDelegate.requestNotificationPermission()
+                                await checkNotificationStatus()
+                            }
+                        }
+                        .font(AppFont.quicksand(.subheadline, weight: .semiBold))
+                        .padding(.top, 4)
+                    }
+                    .padding(.vertical, 4)
+                }
+            } else if !systemNotificationsEnabled {
                 Section {
                     VStack(alignment: .leading, spacing: 8) {
                         Label {
@@ -171,9 +201,8 @@ struct NotificationSettingsScreen: View {
 
     private func checkNotificationStatus() async {
         let settings = await UNUserNotificationCenter.current().notificationSettings()
-        let enabled = settings.authorizationStatus == .authorized
-        if systemNotificationsEnabled != enabled {
-            systemNotificationsEnabled = enabled
+        if authorizationStatus != settings.authorizationStatus {
+            authorizationStatus = settings.authorizationStatus
         }
     }
 
