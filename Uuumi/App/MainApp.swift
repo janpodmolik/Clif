@@ -77,6 +77,9 @@ struct MainApp: App {
     private func handleAuthStateChange(from oldState: AuthManager.AuthState, to newState: AuthManager.AuthState) {
         switch newState {
         case .authenticated:
+            #if DEBUG
+            print("[Auth] Authenticated — oldState=\(oldState), userId=\(authManager.currentUser?.id.uuidString ?? "nil"), hasPet=\(petManager.hasPet), onboarding=\(hasCompletedOnboarding)")
+            #endif
             Task {
                 await analyticsManager.updateUser(
                     userId: authManager.currentUser?.id,
@@ -84,9 +87,20 @@ struct MainApp: App {
                 )
             }
             if petManager.hasPet {
-                // Local pet exists — check if cloud also has one (potential conflict)
-                // Only upload local settings if no conflict (conflict resolution handles sync)
+                // Local pet exists — restore user data from cloud (coins, hourly history, etc.)
+                // then check for pet conflict and upload local settings if no conflict
                 Task {
+                    #if DEBUG
+                    let coinsBefore = CoinStore.shared.balance
+                    print("[Auth] hasPet path — restoring user data from cloud (coins before: \(coinsBefore))")
+                    #endif
+
+                    await syncManager.restoreUserData(essenceCatalogManager: essenceCatalogManager)
+
+                    #if DEBUG
+                    print("[Auth] User data restored (coins after: \(CoinStore.shared.balance))")
+                    #endif
+
                     await syncManager.checkForPetConflict(
                         petManager: petManager,
                         archivedPetManager: archivedPetManager
@@ -94,12 +108,23 @@ struct MainApp: App {
                     if syncManager.pendingConflict == nil {
                         await syncManager.syncUserData(essenceCatalogManager: essenceCatalogManager)
                     }
+
+                    // Claim any pending rewards (admin-granted coins)
+                    let claimed = await syncManager.claimPendingRewards()
+                    #if DEBUG
+                    if claimed > 0 {
+                        print("[Auth] Claimed \(claimed) pending reward coins on login")
+                    }
+                    #endif
                 }
             } else {
                 // No local pet — check if this is a reinstall with an existing cloud pet
                 if !hasCompletedOnboarding {
                     // Reinstall scenario: Keychain token survived but onboarding was wiped.
                     // Show WelcomeBackSheet if a cloud pet exists, otherwise treat as new user.
+                    #if DEBUG
+                    print("[Auth] No pet + no onboarding — checking WelcomeBack (reinstall scenario)")
+                    #endif
                     Task {
                         await syncManager.checkForWelcomeBack(
                             petManager: petManager,
@@ -110,6 +135,9 @@ struct MainApp: App {
                 } else {
                     // Onboarding already completed but no local pet — restore from cloud
                     // (e.g. onboarding flag survived reinstall, or local pet file was lost)
+                    #if DEBUG
+                    print("[Auth] No pet + onboarding done — restoring from cloud")
+                    #endif
                     Task {
                         await syncManager.restoreUserData(essenceCatalogManager: essenceCatalogManager)
                         await syncManager.restoreFromCloud(
@@ -122,7 +150,13 @@ struct MainApp: App {
 
         case .anonymous:
             // Signed out — clear local data (cloud backup preserved for future restore)
+            #if DEBUG
+            print("[Auth] → anonymous — oldState=\(oldState)")
+            #endif
             guard case .authenticated = oldState else { return }
+            #if DEBUG
+            print("[Auth] Was authenticated → clearing local data")
+            #endif
             petManager.clearOnSignOut()
             archivedPetManager.clearOnSignOut()
             essenceCatalogManager.clearOnSignOut()

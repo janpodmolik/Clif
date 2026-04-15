@@ -56,7 +56,16 @@ extension SyncManager {
     /// Restores user data from the cloud to local storage.
     /// Called during cloud restore (fresh install) or sign-in with existing account.
     func restoreUserData(essenceCatalogManager: EssenceCatalogManager) async {
-        guard let userId = await currentUserId() else { return }
+        guard let userId = await currentUserId() else {
+            #if DEBUG
+            print("[SyncManager] restoreUserData — no userId, aborting")
+            #endif
+            return
+        }
+
+        #if DEBUG
+        print("[SyncManager] restoreUserData — fetching cloud data for userId=\(userId)")
+        #endif
 
         do {
             let response: [UserDataDTO] = try await client
@@ -79,10 +88,16 @@ extension SyncManager {
             // When editing data manually in Supabase, always update `updated_at` to now()
             // so that the change propagates to the app on next restore.
             let localSyncDate = UserDefaults.standard.object(forKey: DefaultsKeys.lastUserDataSync) as? Date
-            let cloudIsNewer = localSyncDate.map { cloudData.updatedAt ?? .distantPast > $0 } ?? true
+            let cloudUpdatedAt = cloudData.updatedAt ?? .distantPast
+            let cloudIsNewer = localSyncDate.map { cloudUpdatedAt > $0 } ?? true
+
+            #if DEBUG
+            print("[SyncManager] Freshness check — localSync=\(localSyncDate?.description ?? "nil"), cloudUpdatedAt=\(cloudUpdatedAt), cloudIsNewer=\(cloudIsNewer)")
+            print("[SyncManager] Cloud data — coins=\(payload.coinsBalance), essences=\(payload.unlockedEssences.count), hourlyDays=\(payload.hourlyHistory?.count ?? 0)")
+            print("[SyncManager] Local data — coins=\(CoinStore.shared.balance), hourlyDays=\(SharedDefaults.hourlyHistory.count)")
+            #endif
 
             if cloudIsNewer {
-                // Tier 1
                 CoinStore.shared.setBalance(payload.coinsBalance)
 
                 let restoredEssences = Set(payload.unlockedEssences.compactMap { Essence(rawValue: $0) })
@@ -105,11 +120,11 @@ extension SyncManager {
                 }
 
                 #if DEBUG
-                print("[SyncManager] User data restored — coins: \(payload.coinsBalance), essences: \(restoredEssences.count), hourlyDays: \(payload.hourlyHistory?.count ?? 0)")
+                print("[SyncManager] ✅ User data restored — coins: \(payload.coinsBalance), essences: \(restoredEssences.count), hourlyDays: \(payload.hourlyHistory?.count ?? 0)")
                 #endif
             } else {
                 #if DEBUG
-                print("[SyncManager] Local user data is newer — skipping restore, will upload instead")
+                print("[SyncManager] ⏭️ Local user data is newer — skipping restore, will upload instead")
                 #endif
             }
 
@@ -120,7 +135,7 @@ extension SyncManager {
         } catch {
             lastError = error
             #if DEBUG
-            print("[SyncManager] User data restore failed: \(error)")
+            print("[SyncManager] ❌ User data restore failed: \(error)")
             #endif
         }
     }

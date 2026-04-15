@@ -96,6 +96,9 @@ final class AuthManager {
         authStateTask = Task { [weak self] in
             guard let self else { return }
             for await (event, session) in client.auth.authStateChanges {
+                #if DEBUG
+                print("[AuthManager] Event: \(event), hasSession=\(session != nil), userId=\(session?.user.id.uuidString ?? "nil")")
+                #endif
                 switch event {
                 case .initialSession:
                     if let session {
@@ -104,9 +107,15 @@ final class AuthManager {
                         // but the JWT is still in the Keychain.
                         do {
                             let validatedUser = try await client.auth.user()
+                            #if DEBUG
+                            print("[AuthManager] initialSession validated — userId=\(validatedUser.id)")
+                            #endif
                             self.authState = .authenticated(validatedUser)
                         } catch is Auth.AuthError {
                             // Server explicitly rejected — user deleted or session invalid.
+                            #if DEBUG
+                            print("[AuthManager] initialSession REJECTED by server (AuthError) — signing out")
+                            #endif
                             if self.authState != .anonymous {
                                 try? await client.auth.signOut()
                                 self.authState = .anonymous
@@ -114,22 +123,40 @@ final class AuthManager {
                         } catch {
                             // Network error (offline, timeout, server down).
                             // Trust cached session — validate next launch.
+                            #if DEBUG
+                            print("[AuthManager] initialSession validation failed (network?) — trusting cache: \(error.localizedDescription)")
+                            #endif
                             self.authState = .authenticated(session.user)
                         }
                     } else {
+                        #if DEBUG
+                        print("[AuthManager] initialSession — no cached session, going anonymous")
+                        #endif
                         self.authState = .anonymous
                     }
                 case .signedIn:
                     if let session {
+                        #if DEBUG
+                        print("[AuthManager] signedIn — userId=\(session.user.id)")
+                        #endif
                         self.authState = .authenticated(session.user)
                     }
                 case .signedOut:
+                    #if DEBUG
+                    print("[AuthManager] signedOut event received")
+                    #endif
                     self.authState = .anonymous
                 case .tokenRefreshed:
                     if let session {
+                        #if DEBUG
+                        print("[AuthManager] tokenRefreshed — userId=\(session.user.id)")
+                        #endif
                         self.authState = .authenticated(session.user)
                     }
                 default:
+                    #if DEBUG
+                    print("[AuthManager] Unhandled event: \(event)")
+                    #endif
                     break
                 }
             }
