@@ -84,14 +84,14 @@ class ShieldActionExtension: ShieldActionDelegate {
 
         switch action {
         case .primaryButtonPressed:
-            logToFile("Primary button (Close App) pressed")
-            completionHandler(.close)
-
-        case .secondaryButtonPressed:
-            logToFile("Secondary button (Unlock) pressed - redirecting to app")
+            logToFile("Primary button (Unlock) pressed - redirecting to app")
             prepareUnlock()
             completionHandler(.defer)
             openContainingApp()
+
+        case .secondaryButtonPressed:
+            logToFile("Secondary button (Close) pressed")
+            completionHandler(.close)
 
         @unknown default:
             logToFile("Unknown action - closing shield")
@@ -111,13 +111,13 @@ class ShieldActionExtension: ShieldActionDelegate {
 
         switch action {
         case .primaryButtonPressed:
-            completionHandler(.close)
-
-        case .secondaryButtonPressed:
             logToFile("Unlock pressed - redirecting to app")
             prepareUnlock()
             completionHandler(.defer)
             openContainingApp()
+
+        case .secondaryButtonPressed:
+            completionHandler(.close)
 
         @unknown default:
             completionHandler(.close)
@@ -136,13 +136,13 @@ class ShieldActionExtension: ShieldActionDelegate {
 
         switch action {
         case .primaryButtonPressed:
-            completionHandler(.close)
-
-        case .secondaryButtonPressed:
             logToFile("Unlock pressed - redirecting to app")
             prepareUnlock()
             completionHandler(.defer)
             openContainingApp()
+
+        case .secondaryButtonPressed:
+            completionHandler(.close)
 
         @unknown default:
             completionHandler(.close)

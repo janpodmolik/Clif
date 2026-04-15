@@ -16,16 +16,16 @@ class ShieldConfigurationExtension: ShieldConfigurationDataSource {
 
     private func getDayStartShieldConfiguration() -> ShieldConfiguration {
         return ShieldConfiguration(
-            backgroundBlurStyle: .prominent,
-            backgroundColor: .systemBlue,
-            icon: UIImage.Shields.dailyPreset,
-            title: ShieldConfiguration.Label(text: DayStartGreeting.text, color: .label),
+            backgroundBlurStyle: .extraLight,
+            backgroundColor: nil,
+            icon: loadShieldPetImage(happy: true) ?? UIImage.Shields.dailyPreset,
+            title: ShieldConfiguration.Label(text: DayStartGreeting.text, color: .black),
             subtitle: ShieldConfiguration.Label(
                 text: "What kind of day do you want?",
-                color: .secondaryLabel
+                color: .darkGray
             ),
-            primaryButtonLabel: ShieldConfiguration.Label(text: "Start your day", color: .black),
-            primaryButtonBackgroundColor: .white,
+            primaryButtonLabel: ShieldConfiguration.Label(text: "Start your day", color: .white),
+            primaryButtonBackgroundColor: .black,
             secondaryButtonLabel: nil
         )
     }
@@ -46,15 +46,21 @@ class ShieldConfigurationExtension: ShieldConfigurationDataSource {
         }
 
         return ShieldConfiguration(
-            backgroundBlurStyle: .prominent,
-            backgroundColor: .systemBlue,
-            icon: UIImage.Shields.break,
-            title: ShieldConfiguration.Label(text: titleText, color: .label),
-            subtitle: ShieldConfiguration.Label(text: subtitleText, color: .secondaryLabel),
-            primaryButtonLabel: ShieldConfiguration.Label(text: "Close", color: .white),
-            primaryButtonBackgroundColor: .systemGray,
-            secondaryButtonLabel: ShieldConfiguration.Label(text: "Unlock in Uuumi", color: .systemBlue)
+            backgroundBlurStyle: .extraLight,
+            backgroundColor: nil,
+            icon: loadShieldPetImage(happy: false) ?? UIImage.Shields.break,
+            title: ShieldConfiguration.Label(text: titleText, color: .black),
+            subtitle: ShieldConfiguration.Label(text: subtitleText, color: .darkGray),
+            primaryButtonLabel: ShieldConfiguration.Label(text: "Unlock in Uuumi", color: .white),
+            primaryButtonBackgroundColor: .black,
+            secondaryButtonLabel: ShieldConfiguration.Label(text: "Close", color: .darkGray)
         )
+    }
+
+    private func loadShieldPetImage(happy: Bool) -> UIImage? {
+        let url = happy ? ShieldImagePaths.happyPetImageURL : ShieldImagePaths.neutralPetImageURL
+        guard let url, let data = try? Data(contentsOf: url) else { return nil }
+        return UIImage(data: data)
     }
 
     override func configuration(shielding application: Application) -> ShieldConfiguration {
