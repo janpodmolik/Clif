@@ -555,8 +555,21 @@ private extension PetManager {
         if let pet = pet,
            let data = try? JSONEncoder().encode(PetLocalDTO(from: pet)) {
             SharedDefaults.setData(data, forKey: DefaultsKeys.activePet)
+            let bodyAsset = pet.bodyAssetName(for: .none)
+            let happyEyes = pet.eyesAssetName(for: .none)
+            let neutralEyes = pet.eyesAssetName(for: .medium)
+            Task { @MainActor in
+                ShieldImageRenderer.saveShieldImages(
+                    bodyAssetName: bodyAsset,
+                    happyEyesAssetName: happyEyes,
+                    neutralEyesAssetName: neutralEyes
+                )
+            }
         } else {
             SharedDefaults.removeObject(forKey: DefaultsKeys.activePet)
+            Task { @MainActor in
+                ShieldImageRenderer.clearShieldImages()
+            }
         }
     }
 }

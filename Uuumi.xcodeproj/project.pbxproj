@@ -121,6 +121,8 @@
 		B4WIND0042F40A0000000004 /* WindReminderNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4WIND0012F40A0000000001 /* WindReminderNotification.swift */; };
 		B4WIND0052F40A0000000005 /* WindReminderNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4WIND0012F40A0000000001 /* WindReminderNotification.swift */; };
 		B4WIND0062F40A0000000006 /* WindReminderNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4WIND0012F40A0000000001 /* WindReminderNotification.swift */; };
+		B4SH1M022F90000100000002 /* ShieldImagePaths.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4SH1M012F90000100000001 /* ShieldImagePaths.swift */; };
+		B4SH1M032F90000100000003 /* ShieldImagePaths.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4SH1M012F90000100000001 /* ShieldImagePaths.swift */; };
 		B69D416F4A4050543817B940 /* CommittedBreakMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86B0768E9118B8C6063AF858 /* CommittedBreakMode.swift */; };
 		BF0EEAEE5062B2771401AABC /* CommittedBreakMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86B0768E9118B8C6063AF858 /* CommittedBreakMode.swift */; };
 /* End PBXBuildFile section */
@@ -217,6 +219,7 @@
 		B4HA00012F40000100AA0001 /* HourlyAggregate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HourlyAggregate.swift; sourceTree = "<group>"; };
 		B4HA00112F40000100BB0001 /* SharedDefaults+HourlyAggregate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SharedDefaults+HourlyAggregate.swift"; sourceTree = "<group>"; };
 		B4WIND0012F40A0000000001 /* WindReminderNotification.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindReminderNotification.swift; sourceTree = "<group>"; };
+		B4SH1M012F90000100000001 /* ShieldImagePaths.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShieldImagePaths.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -404,6 +407,7 @@
 			children = (
 				B451D3792F26856C004C534F /* SharedDefaults */,
 				B451D20D2F24FEF0004C534F /* ExtensionLogger.swift */,
+				B4SH1M012F90000100000001 /* ShieldImagePaths.swift */,
 				B4167E642F1FF93800D89B36 /* SnapshotLogging.swift */,
 				B4167E5E2F1FEF4E00D89B36 /* SnapshotStore.swift */,
 			);
@@ -725,6 +729,7 @@
 				B4HA00122F40000100BB0002 /* SharedDefaults+HourlyAggregate.swift in Sources */,
 				B451D2102F24FEF0004C534F /* ExtensionLogger.swift in Sources */,
 				B45862442EE5FAF60088CB78 /* ActivityReportContext.swift in Sources */,
+				B4SH1M022F90000100000002 /* ShieldImagePaths.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -803,6 +808,7 @@
 				022C0C1616488462C9084B88 /* CommittedBreakMode.swift in Sources */,
 				B4153D432F2741C30006FEE3 /* LimitSettings.swift in Sources */,
 				B46FF15117FC695A07A0CA6E /* NotificationSettings.swift in Sources */,
+				B4SH1M032F90000100000003 /* ShieldImagePaths.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
