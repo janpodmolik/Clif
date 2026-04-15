@@ -138,6 +138,21 @@ struct ProfileScreen: View {
                     NavigationLink(value: ProfileDestination.feedback) {
                         Label("Feedback", systemImage: "text.bubble")
                     }
+
+                    Button {
+                        if let url = URL(string: "https://discord.gg/F8Z8GzmJ") {
+                            UIApplication.shared.open(url)
+                        }
+                    } label: {
+                        Label {
+                            Text("Join Community")
+                        } icon: {
+                            Image("discord-logo")
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 20, height: 20)
+                        }
+                    }
                 }
 
             }
