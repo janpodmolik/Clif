@@ -101,6 +101,12 @@ struct EvolutionTimelineView: View {
                 Circle()
                     .fill(circleColor(isUnlocked: isUnlocked, isCurrent: isCurrent))
                     .frame(width: 32, height: 32)
+                    .overlay {
+                        if !isUnlocked {
+                            Circle()
+                                .strokeBorder(Color.secondary.opacity(0.5), lineWidth: 1.5)
+                        }
+                    }
 
                 if isCurrent && showPulse {
                     Circle()
@@ -116,7 +122,7 @@ struct EvolutionTimelineView: View {
 
                 Text("\(phase)")
                     .font(.caption.weight(.semibold))
-                    .foregroundStyle(isUnlocked ? .white : .secondary)
+                    .foregroundStyle(isUnlocked ? .white : .primary.opacity(0.6))
             }
 
             // Date label
@@ -146,7 +152,7 @@ struct EvolutionTimelineView: View {
         } else if isUnlocked {
             return .primary.opacity(0.5)
         } else {
-            return .secondary
+            return .secondary.opacity(0.3)
         }
     }
 }

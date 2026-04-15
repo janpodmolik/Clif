@@ -46,6 +46,7 @@ struct HomeScreen: View {
     @State private var debugBumpState: DebugBumpState = .actual
     /// Debug override for time-of-day (0.0–1.0). nil = use real time.
     @State private var debugTimeOverride: Double? = nil
+    private var screenshotMode: Bool { ScreenshotMode.shared.isActive }
     #endif
 
     private let homeCardInset: CGFloat = 16
@@ -158,7 +159,7 @@ struct HomeScreen: View {
                 }
 
                 #if DEBUG
-                if !isInCreationMode {
+                if !isInCreationMode, !screenshotMode {
                     HomeDebugOverlay(
                         debugBumpState: $debugBumpState,
                         debugTimeOverride: $debugTimeOverride,
@@ -166,8 +167,18 @@ struct HomeScreen: View {
                         hasPet: currentPet != nil
                     )
                 }
+
+                // Triple-tap anywhere to exit screenshot mode — no overlay needed,
+                // gesture is attached to the container via .simultaneousGesture below
                 #endif
             }
+            #if DEBUG
+            .simultaneousGesture(
+                TapGesture(count: 3).onEnded {
+                    ScreenshotMode.shared.isActive = false
+                }
+            )
+            #endif
             .onAppear {
                 currentScreenWidth = geometry.size.width
                 currentScreenHeight = geometry.size.height
@@ -193,6 +204,7 @@ struct HomeScreen: View {
                 createPetCoordinator.petHeight = fullScreenHeight * 0.10
             }
         }
+        .modifier(LegacyTabBarBackground())
         .fullScreenCover(isPresented: $showPetDetail, onDismiss: {
             if blowAwayAnimator.pendingBlowAway {
                 blowAwayAnimator.pendingBlowAway = false
@@ -674,6 +686,22 @@ struct HomeScreen: View {
         }
     }
 
+}
+
+// MARK: - LegacyTabBarBackground
+
+/// Forces a visible tab bar background on iOS < 26 where automatic liquid glass is unavailable.
+/// HomeScreen has no ScrollView, so the system tab bar stays transparent by default.
+private struct LegacyTabBarBackground: ViewModifier {
+    func body(content: Content) -> some View {
+        if #available(iOS 26.0, *) {
+            content
+        } else {
+            content
+                .toolbarBackground(.ultraThinMaterial, for: .tabBar)
+                .toolbarBackground(.visible, for: .tabBar)
+        }
+    }
 }
 
 // MARK: - HomeCardBackgroundModifier

@@ -51,23 +51,27 @@ struct BreakTypePicker: View {
     }
 
     var body: some View {
-        VStack(spacing: 20) {
+        VStack(spacing: 0) {
+            // Pinned top: segmented picker
             segmentedPicker
                 .padding(.horizontal)
                 .padding(.top, 8)
 
-            Spacer()
-
-            if selection == .free {
-                freeContent
-            } else if storeManager.isPremium {
-                committedContent
-            } else {
-                committedUpsellContent
+            // Flexible middle: absorbs content size changes without pushing top/bottom
+            VStack {
+                Spacer(minLength: 0)
+                if selection == .free {
+                    freeContent
+                } else if storeManager.isPremium {
+                    committedContent
+                } else {
+                    committedUpsellContent
+                }
+                Spacer(minLength: 0)
             }
+            .frame(maxHeight: .infinity)
 
-            Spacer()
-
+            // Pinned bottom: CTA button
             if selection == .free || storeManager.isPremium {
                 confirmButton
             } else {
