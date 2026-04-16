@@ -111,6 +111,7 @@ struct CoinShopSheet: View {
                     .clipShape(Capsule())
             }
         }
+        .frame(maxWidth: .infinity)
         .padding(.vertical, 24)
     }
 

@@ -135,6 +135,7 @@ struct PremiumSheet: View {
                     .clipShape(Capsule())
             }
         }
+        .frame(maxWidth: .infinity)
         .padding(.vertical, 24)
     }
 
