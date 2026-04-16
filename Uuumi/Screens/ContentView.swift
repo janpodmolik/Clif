@@ -262,8 +262,7 @@ struct ContentView: View {
         ShieldManager.shared.endExpiredBreakIfNeeded()
 
         guard petManager.hasPet,
-              SharedDefaults.isNewDay,
-              !SharedDefaults.isShieldActive else {
+              SharedDefaults.isNewDay else {
             return
         }
 
@@ -275,6 +274,7 @@ struct ContentView: View {
             // Auto-apply default preset
             let preset = WindPreset(rawValue: settings.defaultWindPresetRaw) ?? .balanced
             ScreenTimeManager.shared.applyPreset(preset, for: pet)
+            petManager.savePet()
         }
     }
 

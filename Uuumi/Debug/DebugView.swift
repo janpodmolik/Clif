@@ -416,6 +416,11 @@ struct DebugView: View {
                 }
                 .tint(.pink)
 
+                Button("Overnight + Shield") {
+                    simulateOvernightBreakWithShield()
+                }
+                .tint(.pink)
+
                 Button("Zombie Break") {
                     simulateZombieCommittedBreak()
                 }
@@ -472,6 +477,29 @@ struct DebugView: View {
         SharedDefaults.synchronize()
 
         print("[DebugTools] Simulated overnight break state — backgrounding and foregrounding should trigger daily preset picker")
+    }
+
+    /// Full overnight break simulation: sets day to "yesterday" AND activates a real shield.
+    /// Apps will be blocked. On next app open, daily preset picker should appear immediately.
+    private func simulateOvernightBreakWithShield() {
+        let yesterday = Calendar.current.date(byAdding: .day, value: -1, to: Calendar.current.startOfDay(for: Date()))!
+
+        // Set day state to yesterday (triggers isNewDay)
+        SharedDefaults.lastDayResetDate = yesterday
+        SharedDefaults.todaySelectedPreset = nil
+
+        // Clear any existing break first
+        SharedDefaults.resetShieldFlags()
+        ShieldManager.shared.clear()
+
+        // Activate shield using stored tokens (blocks apps) without starting a break
+        ShieldManager.shared.activateStoreFromStoredTokens()
+        SharedDefaults.isDayStartShieldActive = true
+
+        SharedDefaults.synchronize()
+        ShieldState.shared.refresh()
+
+        print("[DebugTools] Overnight + Shield: new day + day-start shield active. Close app, tap a blocked app — you should see the day-start shield. Come back to app — preset picker should appear immediately.")
     }
 
     /// Simulates a committed break that started 9 hours ago but never completed.

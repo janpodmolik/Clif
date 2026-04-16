@@ -51,8 +51,8 @@ final class Pet: Identifiable, PetPresentable, PetEvolvable {
         )
     }
 
-    /// Configuration for wind rise/fall behavior.
-    let preset: WindPreset
+    /// Configuration for wind rise/fall behavior. Updated daily when user selects a preset.
+    var preset: WindPreset
 
     // MARK: - Stats & Sources
 

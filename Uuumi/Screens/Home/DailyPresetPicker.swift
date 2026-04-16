@@ -107,6 +107,7 @@ struct DailyPresetPicker: View {
 
         if let pet = currentPet {
             ScreenTimeManager.shared.applyPreset(selectedPreset, for: pet)
+            petManager.savePet()
         }
         analytics.send(.presetSelected(preset: selectedPreset.rawValue, context: .daily))
         dismiss()

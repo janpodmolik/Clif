@@ -80,11 +80,18 @@ final class ScreenTimeManager: ObservableObject {
     /// - Clears any existing shields
     /// - Restarts monitoring with new preset parameters
     func applyPreset(_ preset: WindPreset, for pet: Pet) {
+        // End any active break properly (awards coins, applies reduction)
+        // Must happen before resetForNewDay() which zeroes wind points
+        if SharedDefaults.activeBreakType != nil {
+            ShieldManager.shared.turnOff(success: true)
+        }
+
         // Reset all day state (wind, baseline, break reduction, day start shield)
         SharedDefaults.resetForNewDay()
 
-        // Save selected preset
+        // Save selected preset and update pet model
         SharedDefaults.todaySelectedPreset = preset.rawValue
+        pet.preset = preset
 
         // Log preset selection to snapshot analytics
         SnapshotLogging.logPresetSelected(
@@ -93,7 +100,8 @@ final class ScreenTimeManager: ObservableObject {
             preset: preset
         )
 
-        // Clear any active shields
+        // Clear any active shields (turnOff already deactivated the store,
+        // but clearShield handles day-start shield and other edge cases)
         clearShield()
 
         // Notify UI to refresh wind immediately (SharedDefaults changes aren't @Observable)
