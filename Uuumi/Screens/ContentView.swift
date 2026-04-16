@@ -40,6 +40,7 @@ struct ContentView: View {
     @Environment(EssenceCatalogManager.self) private var essenceCatalogManager
     @Environment(SyncManager.self) private var syncManager
     @Environment(DeepLinkRouter.self) private var router
+    @Environment(StoreManager.self) private var storeManager
 
     @State private var activeTab: AppTab = .home
     @State private var isDaytime: Bool = SkyGradient.isLightAppearance()
@@ -55,6 +56,8 @@ struct ContentView: View {
 
     @State private var showTesterView = false
     @State private var showNotificationRequest = false
+    @State private var showPostOnboardingPremium = false
+    @AppStorage("hasSeenPostOnboardingPaywall") private var hasSeenPostOnboardingPaywall = false
 
     #if DEBUG
     @State private var showPetDebug = false
@@ -228,8 +231,18 @@ struct ContentView: View {
         .sheet(isPresented: $showNotificationRequest) {
             NotificationRequestSheet()
         }
+        .sheet(isPresented: $showPostOnboardingPremium) {
+            PremiumSheet(source: .onboarding)
+        }
         .onAppear {
             checkDayResetAndShowPicker()
+
+            if hasCompletedOnboarding, !hasSeenPostOnboardingPaywall, !storeManager.isPremium {
+                hasSeenPostOnboardingPaywall = true
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                    showPostOnboardingPremium = true
+                }
+            }
         }
     }
 

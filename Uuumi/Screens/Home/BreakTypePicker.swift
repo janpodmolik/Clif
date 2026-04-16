@@ -214,7 +214,7 @@ struct BreakTypePicker: View {
                 .foregroundStyle(.tertiary)
         }
         .sheet(isPresented: $showPremiumSheet) {
-            PremiumSheet(source: "committed_break")
+            PremiumSheet(source: .committedBreak)
         }
     }
 

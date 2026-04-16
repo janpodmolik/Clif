@@ -28,6 +28,7 @@ struct HomeScreen: View {
     @State private var showAuthorizationAlert = false
     @State private var showEvolutionUpsell = false
     @State private var showEssenceUpsell = false
+    @State private var showPremiumSheet = false
     @State private var pendingEvolveAction: (() -> Void)?
     @State private var pendingEssenceAction: (() -> Void)?
     @State private var petFrame: CGRect = .zero
@@ -326,6 +327,9 @@ struct HomeScreen: View {
                 pendingEssenceAction = nil
             }
         }
+        .sheet(isPresented: $showPremiumSheet) {
+            PremiumSheet(source: .petCreated)
+        }
         .windNotCalmSheet(isPresented: $showWindNotCalmAlert)
         .alert(
             "Screen Time Access",
@@ -544,8 +548,13 @@ struct HomeScreen: View {
         let status = AuthorizationCenter.shared.authorizationStatus
         if status == .approved {
             withAnimation(.easeInOut(duration: 0.5)) {
-                createPetCoordinator.show { _ in
+                createPetCoordinator.show { [storeManager] _ in
                     reactionAnimator.playRandom(withGlow: true)
+                    if !storeManager.isPremium {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                            showPremiumSheet = true
+                        }
+                    }
                 }
             }
             return
@@ -554,8 +563,13 @@ struct HomeScreen: View {
         do {
             try await AuthorizationCenter.shared.requestAuthorization(for: .individual)
             withAnimation(.easeInOut(duration: 0.5)) {
-                createPetCoordinator.show { _ in
+                createPetCoordinator.show { [storeManager] _ in
                     reactionAnimator.playRandom(withGlow: true)
+                    if !storeManager.isPremium {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                            showPremiumSheet = true
+                        }
+                    }
                 }
             }
         } catch {

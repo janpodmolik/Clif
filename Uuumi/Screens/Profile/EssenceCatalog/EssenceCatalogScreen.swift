@@ -37,7 +37,7 @@ struct EssenceCatalogScreen: View {
             EssenceUnlockSheet(essence: essence)
         }
         .sheet(isPresented: $showCoinShopSheet) {
-            CoinShopSheet(source: "essence_catalog")
+            CoinShopSheet(source: .essenceCatalog)
         }
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {

@@ -58,7 +58,7 @@ struct EssenceApplicationUpsellSheet: View {
         .presentationDetents([.medium])
         .presentationDragIndicator(.visible)
         .sheet(isPresented: $showPremiumSheet) {
-            PremiumSheet(source: "essence_application_upsell")
+            PremiumSheet(source: .essenceApplicationUpsell)
         }
     }
 

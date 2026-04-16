@@ -211,7 +211,7 @@ struct PetDetailScreen: View {
             }
             .dismissButton()
             .sheet(isPresented: $showPremiumSheet) {
-                PremiumSheet(source: "pet_detail_trend")
+                PremiumSheet(source: .petDetailTrend)
             }
         }
     }

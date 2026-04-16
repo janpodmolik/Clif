@@ -52,7 +52,7 @@ struct EvolutionUpsellSheet: View {
         .presentationDetents([.medium])
         .presentationDragIndicator(.visible)
         .sheet(isPresented: $showPremiumSheet) {
-            PremiumSheet(source: "evolution_upsell")
+            PremiumSheet(source: .evolutionUpsell)
         }
     }
 

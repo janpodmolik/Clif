@@ -2,7 +2,7 @@ import StoreKit
 import SwiftUI
 
 struct CoinShopSheet: View {
-    var source: String = "profile"
+    var source: PaywallSource = .profile
 
     @Environment(StoreManager.self) private var storeManager
     @Environment(AnalyticsManager.self) private var analytics
@@ -36,7 +36,7 @@ struct CoinShopSheet: View {
             .navigationBarTitleDisplayMode(.inline)
             .dismissButton()
             .task {
-                analytics.send(.paywallShown(source: source, type: "coins"))
+                analytics.send(.paywallShown(source: source.rawValue, type: "coins"))
                 await storeManager.loadProducts()
                 if selectedProduct == nil {
                     selectedProduct = storeManager.coinPackProducts.first { $0.id == StoreManager.coinsMediumID }
@@ -183,9 +183,9 @@ struct CoinShopSheet: View {
                 await storeManager.purchase(product)
                 switch storeManager.purchaseState {
                 case .purchased:
-                    analytics.send(.purchaseCompleted(product: product.id, source: source, revenue: product.displayPrice))
+                    analytics.send(.purchaseCompleted(product: product.id, source: source.rawValue, revenue: product.displayPrice))
                 case .failed:
-                    analytics.send(.purchaseFailed(product: product.id, source: source, reason: storeManager.error?.localizedDescription ?? "unknown"))
+                    analytics.send(.purchaseFailed(product: product.id, source: source.rawValue, reason: storeManager.error?.localizedDescription ?? "unknown"))
                 default:
                     break
                 }

@@ -1,8 +1,25 @@
 import SwiftUI
 import StoreKit
 
+enum PaywallSource: String {
+    case profile
+    case onboarding
+    case petCreated = "pet_created"
+    case committedBreak = "committed_break"
+    case appearanceTheme = "appearance_theme"
+    case appearanceSky = "appearance_sky"
+    case essenceUnlock = "essence_unlock"
+    case essenceApplicationUpsell = "essence_application_upsell"
+    case evolutionUpsell = "evolution_upsell"
+    case essenceCatalog = "essence_catalog"
+    case petDetailTrend = "pet_detail_trend"
+    case dayByDayStats = "day_by_day_stats"
+    case dayDetailTimeline = "day_detail_timeline"
+    case dailyPattern = "daily_pattern"
+}
+
 struct PremiumSheet: View {
-    var source: String = "profile"
+    var source: PaywallSource = .profile
 
     @Environment(StoreManager.self) private var storeManager
     @Environment(AnalyticsManager.self) private var analytics
@@ -36,7 +53,7 @@ struct PremiumSheet: View {
             .navigationBarTitleDisplayMode(.inline)
             .dismissButton()
             .task {
-                analytics.send(.paywallShown(source: source, type: "premium"))
+                analytics.send(.paywallShown(source: source.rawValue, type: "premium"))
                 await storeManager.loadProducts()
                 // Pre-select yearly as best value
                 if selectedProduct == nil {
@@ -241,10 +258,10 @@ struct PremiumSheet: View {
                 await storeManager.purchase(product)
                 switch storeManager.purchaseState {
                 case .purchased:
-                    analytics.send(.purchaseCompleted(product: product.id, source: source, revenue: product.displayPrice))
+                    analytics.send(.purchaseCompleted(product: product.id, source: source.rawValue, revenue: product.displayPrice))
                     await analytics.updatePremiumPlan(storeManager.activeProductId)
                 case .failed:
-                    analytics.send(.purchaseFailed(product: product.id, source: source, reason: storeManager.error?.localizedDescription ?? "unknown"))
+                    analytics.send(.purchaseFailed(product: product.id, source: source.rawValue, reason: storeManager.error?.localizedDescription ?? "unknown"))
                 default:
                     break
                 }
