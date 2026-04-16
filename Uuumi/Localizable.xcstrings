@@ -28,6 +28,9 @@
     "—" : {
 
     },
+    "." : {
+
+    },
     "·" : {
 
     },
@@ -35,6 +38,12 @@
 
     },
     "(optional)" : {
+
+    },
+    "[Privacy Policy](https://uuumi.app/privacy/)" : {
+
+    },
+    "[Terms of Service](https://uuumi.app/terms/)" : {
 
     },
     "%.1f" : {
@@ -1500,9 +1509,6 @@
     "Privacy & Terms" : {
 
     },
-    "Privacy Policy" : {
-
-    },
     "Profile" : {
 
     },
@@ -1898,9 +1904,6 @@
 
     },
     "Tell us what's missing, what could be improved, or what problem you encountered." : {
-
-    },
-    "Terms of Service" : {
 
     },
     "Tester Tools" : {

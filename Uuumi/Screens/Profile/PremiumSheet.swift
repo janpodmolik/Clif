@@ -279,7 +279,7 @@ struct PremiumSheet: View {
                 Button("Restore Purchase") {
                     Task { await storeManager.restorePurchases() }
                 }
-                Link("Privacy & Terms", destination: URL(string: "https://uuumi.app/terms")!)
+                Link("Privacy & Terms", destination: URL(string: "https://uuumi.app/terms/")!)
                 Button("Redeem Code") {
                     Task {
                         guard let scene = UIApplication.shared.connectedScenes

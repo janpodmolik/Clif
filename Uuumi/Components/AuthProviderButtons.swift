@@ -116,18 +116,23 @@ struct AuthProviderButtons: View {
 
     // MARK: - Legal Footer
 
-    // TODO: Make legal links tappable once privacy policy & terms pages are live
     private var legalFooter: some View {
-        (Text("By continuing, you agree to the ") +
-        Text("Privacy Policy")
+        legalText
+            .font(.caption)
+            .foregroundStyle(.primary.opacity(0.6))
+            .tint(.primary.opacity(0.6))
+            .multilineTextAlignment(.center)
+            .padding(.horizontal, 24)
+    }
+
+    private var legalText: Text {
+        Text("By continuing, you agree to the ") +
+        Text("[Privacy Policy](https://uuumi.app/privacy/)")
             .underline() +
         Text(" and ") +
-        Text("Terms of Service")
-            .underline())
-        .font(.caption)
-        .foregroundStyle(.primary.opacity(0.6))
-        .multilineTextAlignment(.center)
-        .padding(.horizontal, 24)
+        Text("[Terms of Service](https://uuumi.app/terms/)")
+            .underline() +
+        Text(".")
     }
 
     // MARK: - Helpers
