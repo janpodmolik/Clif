@@ -64,10 +64,6 @@ struct OnboardingView: View {
                 // Progress indicator
                 progressIndicator
 
-                #if DEBUG
-                debugOverlay
-                    .offset(y: 100)
-                #endif
             }
         }
         .onAppear { analytics.send(.onboardingStarted) }
@@ -294,46 +290,6 @@ struct OnboardingView: View {
         hasCompletedOnboarding = true
     }
 
-    #if DEBUG
-    // MARK: - Debug Overlay
-
-    private var debugOverlay: some View {
-        VStack(alignment: .leading, spacing: 2) {
-            Text("screen: \(currentScreen.title)")
-            Text("wind: \(windProgress, specifier: "%.3f")")
-
-            HStack(spacing: 8) {
-                Button("< Prev") {
-                    if let previous = currentScreen.previous {
-                        visitedScreens.insert(currentScreen)
-                        withAnimation { currentScreen = previous }
-                    }
-                }
-                .disabled(currentScreen.previous == nil)
-
-                Button("Skip >") {
-                    advanceScreen()
-                }
-
-                Button("-> WindPreset") {
-                    showBlob = true
-                    windProgress = 0
-                    eyesOverride = "neutral"
-                    visitedScreens = Set(OnboardingScreen.allCases)
-                    withAnimation {
-                        currentScreen = .windPreset
-                    }
-                }
-            }
-        }
-        .font(.caption.monospaced())
-        .padding(8)
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 8))
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
-        .padding(.top, 50)
-        .padding(.trailing, 8)
-    }
-    #endif
 }
 
 #if DEBUG

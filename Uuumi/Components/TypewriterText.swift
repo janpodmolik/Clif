@@ -67,6 +67,7 @@ struct TypewriterText: View {
                 guard !Task.isCancelled else { return }
 
                 await MainActor.run {
+                    guard !hasCompleted else { return }
                     visibleCount = index + 1
 
                     if haptic {
@@ -79,6 +80,7 @@ struct TypewriterText: View {
             }
 
             await MainActor.run {
+                guard !hasCompleted else { return }
                 hasCompleted = true
                 onCompleted?()
             }
@@ -87,9 +89,9 @@ struct TypewriterText: View {
 
     private func completeImmediately() {
         guard !hasCompleted else { return }
+        hasCompleted = true
         typingTask?.cancel()
         visibleCount = text.count
-        hasCompleted = true
         onCompleted?()
     }
 }
