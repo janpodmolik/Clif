@@ -11,6 +11,8 @@ struct OnboardingWindSliderStep: View {
     @Binding var windDirection: CGFloat
     @Binding var windBurstActive: Bool
 
+    @Environment(\.onboardingFontScale) private var fontScale
+
     // MARK: - Phase
 
     private enum SliderPhase {
@@ -187,7 +189,7 @@ struct OnboardingWindSliderStep: View {
             if skipAnimation {
                 Text("This is what happens when you scroll.")
                 Text("Drag to feel Uuumi's world change.")
-                    .font(AppFont.quicksand(.title2, weight: .semiBold))
+                    .font(AppFont.quicksandOnboarding(.title2, weight: .semiBold, scale: fontScale))
                     .padding(.top, 12)
             } else {
                 let skipped = narrativeBeat >= 1
@@ -213,12 +215,12 @@ struct OnboardingWindSliderStep: View {
                         textCompleted = true
                     }
                 )
-                .font(AppFont.quicksand(.title2, weight: .semiBold))
+                .font(AppFont.quicksandOnboarding(.title2, weight: .semiBold, scale: fontScale))
                 .opacity(showSecondLine ? 1 : 0)
                 .padding(.top, 12)
             }
         }
-        .font(AppFont.quicksand(.title3, weight: .medium))
+        .font(AppFont.quicksandOnboarding(.title3, weight: .medium, scale: fontScale))
         .foregroundStyle(.primary)
         .multilineTextAlignment(.center)
     }
@@ -230,7 +232,7 @@ struct OnboardingWindSliderStep: View {
                     .transition(.opacity)
             }
         }
-        .font(AppFont.quicksand(.title3, weight: .medium))
+        .font(AppFont.quicksandOnboarding(.title3, weight: .medium, scale: fontScale))
         .foregroundStyle(.primary)
         .multilineTextAlignment(.center)
     }
@@ -240,7 +242,7 @@ struct OnboardingWindSliderStep: View {
             if skipAnimation {
                 Text("This was just practice.")
                 Text("Out there, there's no rewind.")
-                    .font(AppFont.quicksand(.title2, weight: .semiBold))
+                    .font(AppFont.quicksandOnboarding(.title2, weight: .semiBold, scale: fontScale))
                     .padding(.top, 12)
             } else {
                 TypewriterText(
@@ -266,12 +268,12 @@ struct OnboardingWindSliderStep: View {
                         postRewindTextCompleted = true
                     }
                 )
-                .font(AppFont.quicksand(.title2, weight: .semiBold))
+                .font(AppFont.quicksandOnboarding(.title2, weight: .semiBold, scale: fontScale))
                 .opacity(showPostRewindLine2 ? 1 : 0)
                 .padding(.top, 12)
             }
         }
-        .font(AppFont.quicksand(.title3, weight: .medium))
+        .font(AppFont.quicksandOnboarding(.title3, weight: .medium, scale: fontScale))
         .foregroundStyle(.primary)
         .multilineTextAlignment(.center)
     }
@@ -281,7 +283,7 @@ struct OnboardingWindSliderStep: View {
     private var sliderArea: some View {
         VStack(spacing: 16) {
             Text(windLabel)
-                .font(AppFont.quicksand(.body, weight: .medium))
+                .font(AppFont.quicksandOnboarding(.body, weight: .medium, scale: fontScale))
                 .foregroundStyle(.secondary)
                 .contentTransition(.numericText())
                 .animation(.easeInOut(duration: 0.2), value: windLevel)

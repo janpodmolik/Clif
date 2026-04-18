@@ -5,6 +5,12 @@ enum AppFont {
         .custom(weight.fontName, size: style.defaultSize, relativeTo: style)
     }
 
+    /// Quicksand font that scales with the onboarding font scale environment value.
+    /// Intended for use only within the onboarding flow.
+    static func quicksandOnboarding(_ style: Font.TextStyle, weight: Weight = .regular, scale: CGFloat) -> Font {
+        .custom(weight.fontName, size: style.defaultSize * scale, relativeTo: style)
+    }
+
     enum Weight {
         case light
         case regular
@@ -21,6 +27,19 @@ enum AppFont {
             case .bold: "Quicksand-Bold"
             }
         }
+    }
+}
+
+// MARK: - Onboarding Font Scale
+
+private struct OnboardingFontScaleKey: EnvironmentKey {
+    static let defaultValue: CGFloat = 1.0
+}
+
+extension EnvironmentValues {
+    var onboardingFontScale: CGFloat {
+        get { self[OnboardingFontScaleKey.self] }
+        set { self[OnboardingFontScaleKey.self] = newValue }
     }
 }
 

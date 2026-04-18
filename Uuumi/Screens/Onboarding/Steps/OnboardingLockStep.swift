@@ -24,6 +24,8 @@ struct OnboardingLockStep: View {
 
     // MARK: - State
 
+    @Environment(\.onboardingFontScale) private var fontScale
+
     // Phase 1 — pre-lock narrative
     @State private var narrativeBeat = 0
     @State private var showSecondLine = false
@@ -134,7 +136,7 @@ struct OnboardingLockStep: View {
             if skipAnimation {
                 Text("But you have the power to stop it.")
                 Text("Tap the lock.")
-                    .font(AppFont.quicksand(.title2, weight: .semiBold))
+                    .font(AppFont.quicksandOnboarding(.title2, weight: .semiBold, scale: fontScale))
                     .padding(.top, 12)
             } else {
                 let skipped = narrativeBeat >= 1
@@ -160,12 +162,12 @@ struct OnboardingLockStep: View {
                         textCompleted = true
                     }
                 )
-                .font(AppFont.quicksand(.title2, weight: .semiBold))
+                .font(AppFont.quicksandOnboarding(.title2, weight: .semiBold, scale: fontScale))
                 .opacity(showSecondLine ? 1 : 0)
                 .padding(.top, 12)
             }
         }
-        .font(AppFont.quicksand(.title3, weight: .medium))
+        .font(AppFont.quicksandOnboarding(.title3, weight: .medium, scale: fontScale))
         .foregroundStyle(.primary)
         .multilineTextAlignment(.center)
     }
@@ -175,7 +177,7 @@ struct OnboardingLockStep: View {
             if skipAnimation {
                 Text("The wind stops. Uuumi is safe.")
                 Text("Your selected apps are now blocked.")
-                    .font(AppFont.quicksand(.title2, weight: .semiBold))
+                    .font(AppFont.quicksandOnboarding(.title2, weight: .semiBold, scale: fontScale))
                     .padding(.top, 12)
                 Text("You just proved you can do it.")
             } else {
@@ -207,7 +209,7 @@ struct OnboardingLockStep: View {
                         }
                     }
                 )
-                .font(AppFont.quicksand(.title2, weight: .semiBold))
+                .font(AppFont.quicksandOnboarding(.title2, weight: .semiBold, scale: fontScale))
                 .opacity(showPostLockLine2 ? 1 : 0)
                 .padding(.top, 12)
 
@@ -222,7 +224,7 @@ struct OnboardingLockStep: View {
                 .opacity(showPostLockLine3 ? 1 : 0)
             }
         }
-        .font(AppFont.quicksand(.title3, weight: .medium))
+        .font(AppFont.quicksandOnboarding(.title3, weight: .medium, scale: fontScale))
         .foregroundStyle(.primary)
         .multilineTextAlignment(.center)
     }
@@ -232,7 +234,7 @@ struct OnboardingLockStep: View {
     private var progressBarArea: some View {
         VStack(spacing: 8) {
             Text(windLabel)
-                .font(AppFont.quicksand(.body, weight: .medium))
+                .font(AppFont.quicksandOnboarding(.body, weight: .medium, scale: fontScale))
                 .foregroundStyle(.primary.opacity(0.7))
                 .contentTransition(.numericText())
                 .animation(.easeInOut(duration: 0.2), value: windLevel)

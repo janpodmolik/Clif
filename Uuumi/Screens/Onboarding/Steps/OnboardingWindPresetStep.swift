@@ -6,6 +6,8 @@ struct OnboardingWindPresetStep: View {
     @Binding var windProgress: CGFloat
     @Binding var eyesOverride: String?
 
+    @Environment(\.onboardingFontScale) private var fontScale
+
     @State private var selectedPreset: WindPreset = .balanced
     @State private var narrativeBeat = 0
     @State private var showSecondLine = false
@@ -64,7 +66,7 @@ struct OnboardingWindPresetStep: View {
             if skipAnimation {
                 Text("How strict should the wind be?")
                 Text("Pick what feels realistic. You'll choose again tomorrow.")
-                    .font(AppFont.quicksand(.callout, weight: .semiBold))
+                    .font(AppFont.quicksandOnboarding(.callout, weight: .semiBold, scale: fontScale))
                     .foregroundStyle(.secondary)
             } else {
                 let skipped = narrativeBeat >= 1
@@ -96,12 +98,12 @@ struct OnboardingWindPresetStep: View {
                         }
                     }
                 )
-                .font(AppFont.quicksand(.callout, weight: .semiBold))
+                .font(AppFont.quicksandOnboarding(.callout, weight: .semiBold, scale: fontScale))
                 .foregroundStyle(.secondary)
                 .opacity(showSecondLine ? 1 : 0)
             }
         }
-        .font(AppFont.quicksand(.title2, weight: .semiBold))
+        .font(AppFont.quicksandOnboarding(.title2, weight: .semiBold, scale: fontScale))
         .foregroundStyle(.primary)
         .multilineTextAlignment(.center)
     }
@@ -133,7 +135,7 @@ struct OnboardingWindPresetStep: View {
         } icon: {
             Image(systemName: "arrow.triangle.2.circlepath")
         }
-        .font(AppFont.quicksand(.footnote, weight: .medium))
+        .font(AppFont.quicksandOnboarding(.footnote, weight: .medium, scale: fontScale))
         .foregroundStyle(.primary.opacity(0.7))
     }
 

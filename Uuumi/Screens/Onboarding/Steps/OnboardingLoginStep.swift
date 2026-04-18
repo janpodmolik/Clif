@@ -7,6 +7,7 @@ struct OnboardingLoginStep: View {
 
     @Environment(AuthManager.self) private var authManager
     @Environment(PetManager.self) private var petManager
+    @Environment(\.onboardingFontScale) private var fontScale
 
     // MARK: - Narrative State
 
@@ -84,7 +85,7 @@ struct OnboardingLoginStep: View {
                             }
                         }
                     )
-                    .font(AppFont.quicksand(.callout, weight: .semiBold))
+                    .font(AppFont.quicksandOnboarding(.callout, weight: .semiBold, scale: fontScale))
                     .foregroundStyle(.secondary)
                 }
 
@@ -94,20 +95,20 @@ struct OnboardingLoginStep: View {
                 }
             }
         }
-        .font(AppFont.quicksand(.title2, weight: .semiBold))
+        .font(AppFont.quicksandOnboarding(.title2, weight: .semiBold, scale: fontScale))
         .foregroundStyle(.primary)
         .multilineTextAlignment(.center)
     }
 
     private var subtitle: some View {
         Text("Sign in to save your progress, coins, and streaks. Restore everything if you switch devices or reinstall.")
-            .font(AppFont.quicksand(.callout, weight: .semiBold))
+            .font(AppFont.quicksandOnboarding(.callout, weight: .semiBold, scale: fontScale))
             .foregroundStyle(.secondary)
     }
 
     private var privacyNote: some View {
         Text("We only store your progress, nothing else.")
-            .font(AppFont.quicksand(.caption, weight: .medium))
+            .font(AppFont.quicksandOnboarding(.caption, weight: .medium, scale: fontScale))
             .foregroundStyle(.secondary)
             .padding(.top, 4)
     }

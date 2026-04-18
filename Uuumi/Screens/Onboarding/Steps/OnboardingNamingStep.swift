@@ -8,6 +8,7 @@ struct OnboardingNamingStep: View {
 
     @Environment(PetManager.self) private var petManager
     @Environment(AnalyticsManager.self) private var analytics
+    @Environment(\.onboardingFontScale) private var fontScale
 
     // MARK: - Narrative State
 
@@ -69,7 +70,7 @@ struct OnboardingNamingStep: View {
             if skipAnimation {
                 Text("Every Uuumi deserves a name.")
                 Text("What will you call yours?")
-                    .font(AppFont.quicksand(.callout, weight: .semiBold))
+                    .font(AppFont.quicksandOnboarding(.callout, weight: .semiBold, scale: fontScale))
                     .foregroundStyle(.secondary)
             } else {
                 let skipped = narrativeBeat >= 1
@@ -96,12 +97,12 @@ struct OnboardingNamingStep: View {
                         revealInput()
                     }
                 )
-                .font(AppFont.quicksand(.callout, weight: .semiBold))
+                .font(AppFont.quicksandOnboarding(.callout, weight: .semiBold, scale: fontScale))
                 .foregroundStyle(.secondary)
                 .opacity(showSecondLine ? 1 : 0)
             }
         }
-        .font(AppFont.quicksand(.title2, weight: .semiBold))
+        .font(AppFont.quicksandOnboarding(.title2, weight: .semiBold, scale: fontScale))
         .foregroundStyle(.primary)
         .multilineTextAlignment(.center)
     }
@@ -126,11 +127,11 @@ struct OnboardingNamingStep: View {
             VStack(alignment: .leading, spacing: 6) {
                 HStack {
                     Text("Purpose")
-                        .font(AppFont.quicksand(.subheadline, weight: .medium))
+                        .font(AppFont.quicksandOnboarding(.subheadline, weight: .medium, scale: fontScale))
                         .foregroundStyle(.secondary)
 
                     Text("(optional)")
-                        .font(AppFont.quicksand(.caption, weight: .medium))
+                        .font(AppFont.quicksandOnboarding(.caption, weight: .medium, scale: fontScale))
                         .foregroundStyle(.secondary)
                 }
                 .padding(.leading, 4)
@@ -149,7 +150,7 @@ struct OnboardingNamingStep: View {
                     }
             }
         }
-        .font(AppFont.quicksand(.body, weight: .medium))
+        .font(AppFont.quicksandOnboarding(.body, weight: .medium, scale: fontScale))
         .multilineTextAlignment(.center)
     }
 

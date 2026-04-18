@@ -22,9 +22,6 @@
     "-%@ pts" : {
 
     },
-    "-> WindPreset" : {
-
-    },
     "—" : {
 
     },
@@ -213,9 +210,6 @@
 
     },
     "+1000 Coins" : {
-
-    },
-    "< Prev" : {
 
     },
     "~%@" : {
@@ -1687,9 +1681,6 @@
     "Screen Time access is required" : {
 
     },
-    "screen: %@" : {
-
-    },
     "Search" : {
 
     },
@@ -1802,9 +1793,6 @@
 
     },
     "Skip" : {
-
-    },
-    "Skip >" : {
 
     },
     "Skip daily selection" : {
@@ -2192,9 +2180,6 @@
 
     },
     "Wind timeline" : {
-
-    },
-    "wind: %.3f" : {
 
     },
     "Without it, there's no wind, no protection, no evolution." : {

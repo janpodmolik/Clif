@@ -11,6 +11,7 @@ struct OnboardingReviewStep: View {
 
     @Environment(PetManager.self) private var petManager
     @Environment(\.requestReview) private var requestReview
+    @Environment(\.onboardingFontScale) private var fontScale
     // MARK: - Narrative State
 
     @State private var narrativeBeat = 0
@@ -59,7 +60,7 @@ struct OnboardingReviewStep: View {
             if skipAnimation {
                 Text("\(petName) is ready.")
                 Text("If you believe in what we're building, a review would mean the world to us.")
-                    .font(AppFont.quicksand(.callout, weight: .semiBold))
+                    .font(AppFont.quicksandOnboarding(.callout, weight: .semiBold, scale: fontScale))
                     .foregroundStyle(.secondary)
             } else {
                 let skipped = narrativeBeat >= 1
@@ -91,12 +92,12 @@ struct OnboardingReviewStep: View {
                         revealButtons()
                     }
                 )
-                .font(AppFont.quicksand(.callout, weight: .semiBold))
+                .font(AppFont.quicksandOnboarding(.callout, weight: .semiBold, scale: fontScale))
                 .foregroundStyle(.secondary)
                 .opacity(showSecondLine ? 1 : 0)
             }
         }
-        .font(AppFont.quicksand(.title2, weight: .semiBold))
+        .font(AppFont.quicksandOnboarding(.title2, weight: .semiBold, scale: fontScale))
         .foregroundStyle(.primary)
         .multilineTextAlignment(.center)
     }

@@ -37,6 +37,15 @@ struct OnboardingView: View {
     // Evolution step state — thought bubble
     @State private var showThoughtBubble = false
 
+    /// Scales onboarding typography based on screen height.
+    /// Baseline: iPhone SE (~667pt → scale 1.0). iPhone 15 Pro Max (~932pt → scale ~1.18).
+    /// Clamped so smaller devices don't shrink and very large ones don't over-scale.
+    private func fontScale(for screenHeight: CGFloat) -> CGFloat {
+        let baseline: CGFloat = 667
+        let rawScale = screenHeight / baseline
+        return min(max(rawScale, 1.0), 1.2)
+    }
+
     var body: some View {
         GeometryReader { geometry in
             ZStack {
@@ -65,6 +74,7 @@ struct OnboardingView: View {
                 progressIndicator
 
             }
+            .environment(\.onboardingFontScale, fontScale(for: geometry.size.height))
         }
         .onAppear { analytics.send(.onboardingStarted) }
     }

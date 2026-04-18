@@ -6,6 +6,8 @@ struct OnboardingEvolutionStep: View {
     @Binding var eyesOverride: String?
     @Binding var showThoughtBubble: Bool
 
+    @Environment(\.onboardingFontScale) private var fontScale
+
     @State private var narrativeBeat = 0
     @State private var showSecondLine = false
     @State private var textCompleted = false
@@ -48,7 +50,7 @@ struct OnboardingEvolutionStep: View {
             if skipAnimation {
                 Text("Protect your Uuumi each day, and it evolves.")
                 Text("A new form. A new beginning.")
-                    .font(AppFont.quicksand(.title2, weight: .semiBold))
+                    .font(AppFont.quicksandOnboarding(.title2, weight: .semiBold, scale: fontScale))
                     .padding(.top, 8)
             } else {
                 let skipped = narrativeBeat >= 1
@@ -79,12 +81,12 @@ struct OnboardingEvolutionStep: View {
                         }
                     }
                 )
-                .font(AppFont.quicksand(.title2, weight: .semiBold))
+                .font(AppFont.quicksandOnboarding(.title2, weight: .semiBold, scale: fontScale))
                 .opacity(showSecondLine ? 1 : 0)
                 .padding(.top, 8)
             }
         }
-        .font(AppFont.quicksand(.title3, weight: .medium))
+        .font(AppFont.quicksandOnboarding(.title3, weight: .medium, scale: fontScale))
         .foregroundStyle(.primary)
         .multilineTextAlignment(.center)
     }

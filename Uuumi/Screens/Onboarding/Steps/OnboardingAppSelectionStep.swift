@@ -6,6 +6,8 @@ struct OnboardingAppSelectionStep: View {
     var onContinue: () -> Void
     @Binding var eyesOverride: String?
 
+    @Environment(\.onboardingFontScale) private var fontScale
+
     @State private var selection = FamilyActivitySelection()
     @State private var pickerID = UUID()
     @State private var showPickerSheet = false
@@ -73,11 +75,11 @@ struct OnboardingAppSelectionStep: View {
     private var narrative: some View {
         VStack(spacing: 8) {
             Text("The wind doesn't come from everywhere.")
-                .font(AppFont.quicksand(.title2, weight: .semiBold))
+                .font(AppFont.quicksandOnboarding(.title2, weight: .semiBold, scale: fontScale))
                 .foregroundStyle(.primary)
 
             Text("Only from the apps that pull you in.")
-                .font(AppFont.quicksand(.callout, weight: .semiBold))
+                .font(AppFont.quicksandOnboarding(.title2, weight: .semiBold, scale: fontScale))
                 .foregroundStyle(.secondary)
         }
         .multilineTextAlignment(.center)
@@ -115,7 +117,7 @@ struct OnboardingAppSelectionStep: View {
                 showPickerSheet = true
             } label: {
                 Text("Edit")
-                    .font(AppFont.quicksand(.subheadline, weight: .medium))
+                    .font(AppFont.quicksandOnboarding(.subheadline, weight: .medium, scale: fontScale))
             }
             .buttonStyle(.borderless)
         }
@@ -132,7 +134,7 @@ struct OnboardingAppSelectionStep: View {
         } icon: {
             Image(systemName: "arrow.triangle.2.circlepath")
         }
-        .font(AppFont.quicksand(.footnote, weight: .medium))
+        .font(AppFont.quicksandOnboarding(.footnote, weight: .medium, scale: fontScale))
         .foregroundStyle(.primary.opacity(0.7))
     }
 

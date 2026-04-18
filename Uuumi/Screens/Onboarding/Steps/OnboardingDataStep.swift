@@ -6,6 +6,8 @@ struct OnboardingDataStep: View {
     var onContinue: () -> Void
     @Binding var eyesOverride: String?
 
+    @Environment(\.onboardingFontScale) private var fontScale
+
     @State private var showReport = false
     @State private var showContinue = false
 
@@ -57,11 +59,11 @@ struct OnboardingDataStep: View {
     private var narrative: some View {
         VStack(spacing: 8) {
             Text("This is what Uuumi is up against.")
-                .font(AppFont.quicksand(.title2, weight: .semiBold))
+                .font(AppFont.quicksandOnboarding(.title2, weight: .semiBold, scale: fontScale))
                 .foregroundStyle(.primary)
 
             Text("Your screen time speaks for itself.")
-                .font(AppFont.quicksand(.callout, weight: .semiBold))
+                .font(AppFont.quicksandOnboarding(.callout, weight: .semiBold, scale: fontScale))
                 .foregroundStyle(.secondary)
         }
         .multilineTextAlignment(.center)

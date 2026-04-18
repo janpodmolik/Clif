@@ -10,6 +10,8 @@ struct OnboardingEssenceStep: View {
     @Binding var reactionTrigger: UUID?
     var petDropFrame: CGRect?
 
+    @Environment(\.onboardingFontScale) private var fontScale
+
     // MARK: - Narrative State
 
     @State private var narrativeBeat = 0
@@ -95,7 +97,7 @@ struct OnboardingEssenceStep: View {
             if skipAnimation {
                 Text("After your first day, you can give your Uuumi an essence.")
                 Text("Let's practice it now.")
-                    .font(AppFont.quicksand(.callout, weight: .semiBold))
+                    .font(AppFont.quicksandOnboarding(.callout, weight: .semiBold, scale: fontScale))
                     .foregroundStyle(.secondary)
             } else {
                 let skipped = narrativeBeat >= 1
@@ -128,12 +130,12 @@ struct OnboardingEssenceStep: View {
                         }
                     }
                 )
-                .font(AppFont.quicksand(.callout, weight: .semiBold))
+                .font(AppFont.quicksandOnboarding(.callout, weight: .semiBold, scale: fontScale))
                 .foregroundStyle(.secondary)
                 .opacity(showSecondLine ? 1 : 0)
             }
         }
-        .font(AppFont.quicksand(.title2, weight: .semiBold))
+        .font(AppFont.quicksandOnboarding(.title2, weight: .semiBold, scale: fontScale))
         .foregroundStyle(.primary)
         .multilineTextAlignment(.center)
     }
@@ -160,7 +162,7 @@ struct OnboardingEssenceStep: View {
             essenceCard
                 .padding(.top, 20)
             Text("Drag essence to Uuumi")
-                .font(AppFont.quicksand(.body, weight: .semiBold))
+                .font(AppFont.quicksandOnboarding(.body, weight: .semiBold, scale: fontScale))
                 .foregroundStyle(.primary)
                 .padding(.top, 12)
         }

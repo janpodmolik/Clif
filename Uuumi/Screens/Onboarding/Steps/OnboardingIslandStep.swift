@@ -4,6 +4,8 @@ struct OnboardingIslandStep: View {
     let skipAnimation: Bool
     var onContinue: () -> Void
 
+    @Environment(\.onboardingFontScale) private var fontScale
+
     @State private var showSecondLine = false
     @State private var showThirdLine = false
     @State private var textCompleted = false
@@ -44,7 +46,7 @@ struct OnboardingIslandStep: View {
                 Text("Somewhere, a tiny island floats in the sky...")
                 Text("A peaceful place, untouched by the chaos below.")
                 Text("But it's empty.")
-                    .font(AppFont.quicksand(.title2, weight: .semiBold))
+                    .font(AppFont.quicksandOnboarding(.title2, weight: .semiBold, scale: fontScale))
                     .foregroundStyle(.primary)
                     .padding(.top, 20)
             } else {
@@ -77,13 +79,13 @@ struct OnboardingIslandStep: View {
                 .opacity(showSecondLine ? 1 : 0)
 
                 Text("But it's empty.")
-                    .font(AppFont.quicksand(.title2, weight: .semiBold))
+                    .font(AppFont.quicksandOnboarding(.title2, weight: .semiBold, scale: fontScale))
                     .foregroundStyle(.primary)
                     .opacity(showThirdLine ? 1 : 0)
                     .padding(.top, 20)
             }
         }
-        .font(AppFont.quicksand(.title3, weight: .medium))
+        .font(AppFont.quicksandOnboarding(.title3, weight: .medium, scale: fontScale))
         .foregroundStyle(.primary)
         .multilineTextAlignment(.center)
     }

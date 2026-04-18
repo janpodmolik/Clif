@@ -11,6 +11,8 @@ struct OnboardingMeetPetStep: View {
     @Binding var speechBubbleVisible: Bool
     @Binding var showTapHint: Bool
 
+    @Environment(\.onboardingFontScale) private var fontScale
+
     @State private var showSecondLine = false
     @State private var textCompleted = false
     @State private var hasBeenTapped = false
@@ -83,7 +85,7 @@ struct OnboardingMeetPetStep: View {
         VStack(spacing: 12) {
             if skipAnimation {
                 Text("Meet Uuumi.")
-                    .font(AppFont.quicksand(.title2, weight: .semiBold))
+                    .font(AppFont.quicksandOnboarding(.title2, weight: .semiBold, scale: fontScale))
                 Text("A tiny creature looking for somewhere to grow.")
             } else {
                 TypewriterText(
@@ -98,7 +100,7 @@ struct OnboardingMeetPetStep: View {
                         }
                     }
                 )
-                .font(AppFont.quicksand(.title2, weight: .semiBold))
+                .font(AppFont.quicksandOnboarding(.title2, weight: .semiBold, scale: fontScale))
 
                 TypewriterText(
                     text: "A tiny creature looking for somewhere to grow.",
@@ -114,7 +116,7 @@ struct OnboardingMeetPetStep: View {
                 .opacity(showSecondLine ? 1 : 0)
             }
         }
-        .font(AppFont.quicksand(.title3, weight: .medium))
+        .font(AppFont.quicksandOnboarding(.title3, weight: .medium, scale: fontScale))
         .foregroundStyle(.primary)
         .multilineTextAlignment(.center)
     }

@@ -4,6 +4,8 @@ import SwiftUI
 struct RewindOverlayVHS: View {
     let isVisible: Bool
 
+    @Environment(\.onboardingFontScale) private var fontScale
+
     @State private var isTextPulsing = false
     @State private var scanLineOffset: CGFloat = 0
     @State private var noiseBarOffset: CGFloat = -100
@@ -98,7 +100,7 @@ struct RewindOverlayVHS: View {
             Image(systemName: "backward.fill")
                 .font(.title3.weight(.bold))
             Text("REWIND")
-                .font(AppFont.quicksand(.title2, weight: .bold))
+                .font(AppFont.quicksandOnboarding(.title2, weight: .bold, scale: fontScale))
                 .tracking(4)
         }
         .foregroundStyle(.white)

@@ -2,6 +2,7 @@ import SwiftUI
 
 struct OnboardingNotificationStep: View {
     @Environment(AnalyticsManager.self) private var analytics
+    @Environment(\.onboardingFontScale) private var fontScale
 
     let skipAnimation: Bool
     var onContinue: () -> Void
@@ -72,7 +73,7 @@ struct OnboardingNotificationStep: View {
             if skipAnimation {
                 Text("You can't always be here.")
                 Text("But Uuumi can reach you when it matters.")
-                    .font(AppFont.quicksand(.callout, weight: .semiBold))
+                    .font(AppFont.quicksandOnboarding(.callout, weight: .semiBold, scale: fontScale))
                     .foregroundStyle(.secondary)
             } else {
                 let skipped = narrativeBeat >= 1
@@ -99,12 +100,12 @@ struct OnboardingNotificationStep: View {
                         showNotifications()
                     }
                 )
-                .font(AppFont.quicksand(.callout, weight: .semiBold))
+                .font(AppFont.quicksandOnboarding(.callout, weight: .semiBold, scale: fontScale))
                 .foregroundStyle(.secondary)
                 .opacity(showSecondLine ? 1 : 0)
             }
         }
-        .font(AppFont.quicksand(.title2, weight: .semiBold))
+        .font(AppFont.quicksandOnboarding(.title2, weight: .semiBold, scale: fontScale))
         .foregroundStyle(.primary)
         .multilineTextAlignment(.center)
     }
@@ -139,7 +140,7 @@ struct OnboardingNotificationStep: View {
             VStack(spacing: 16) {
                 if permissionDenied {
                     Text("You can enable notifications in app settings anytime.")
-                        .font(AppFont.quicksand(.footnote, weight: .medium))
+                        .font(AppFont.quicksandOnboarding(.footnote, weight: .medium, scale: fontScale))
                         .foregroundStyle(.primary.opacity(0.7))
                         .multilineTextAlignment(.center)
                         .transition(.opacity)

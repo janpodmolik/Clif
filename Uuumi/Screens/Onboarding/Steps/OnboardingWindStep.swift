@@ -7,6 +7,8 @@ struct OnboardingWindStep: View {
     @Binding var windProgress: CGFloat
     @Binding var eyesOverride: String?
 
+    @Environment(\.onboardingFontScale) private var fontScale
+
     @State private var showSecondLine = false
     @State private var showThirdLine = false
     @State private var textCompleted = false
@@ -61,7 +63,7 @@ struct OnboardingWindStep: View {
                 Text("The wind comes from your screen time.")
                 Text("The more you scroll, the stronger it gets.")
                 Text("Let's see what Uuumi is up against.")
-                    .font(AppFont.quicksand(.title2, weight: .semiBold))
+                    .font(AppFont.quicksandOnboarding(.title2, weight: .semiBold, scale: fontScale))
                     .padding(.top, 12)
             } else {
                 let skipped = narrativeBeat >= 1
@@ -108,12 +110,12 @@ struct OnboardingWindStep: View {
                 .opacity(showSecondLine ? 1 : 0)
 
                 Text("Let's see what Uuumi is up against.")
-                    .font(AppFont.quicksand(.title2, weight: .semiBold))
+                    .font(AppFont.quicksandOnboarding(.title2, weight: .semiBold, scale: fontScale))
                     .padding(.top, 12)
                     .opacity(showThirdLine ? 1 : 0)
             }
         }
-        .font(AppFont.quicksand(.title3, weight: .medium))
+        .font(AppFont.quicksandOnboarding(.title3, weight: .medium, scale: fontScale))
         .foregroundStyle(.primary)
         .multilineTextAlignment(.center)
     }
@@ -153,11 +155,11 @@ struct OnboardingWindStep: View {
                         .foregroundStyle(.orange)
 
                     Text("Screen Time access is required")
-                        .font(AppFont.quicksand(.headline, weight: .semiBold))
+                        .font(AppFont.quicksandOnboarding(.headline, weight: .semiBold, scale: fontScale))
                         .foregroundStyle(.primary)
 
                     Text("Without it, there's no wind, no protection, no evolution.")
-                        .font(AppFont.quicksand(.subheadline, weight: .medium))
+                        .font(AppFont.quicksandOnboarding(.subheadline, weight: .medium, scale: fontScale))
                         .foregroundStyle(.secondary)
                         .multilineTextAlignment(.center)
                 }
@@ -167,7 +169,7 @@ struct OnboardingWindStep: View {
             }
 
             Text("Your data stays on your device. Always.")
-                .font(AppFont.quicksand(.footnote, weight: .medium))
+                .font(AppFont.quicksandOnboarding(.footnote, weight: .medium, scale: fontScale))
                 .foregroundStyle(.primary.opacity(0.7))
 
             Button {

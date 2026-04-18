@@ -26,6 +26,8 @@ struct OnboardingIslandView: View {
     var blowAwayOffsetX: CGFloat = 0
     var blowAwayRotation: CGFloat = 0
 
+    @Environment(\.onboardingFontScale) private var fontScale
+
     // Pet animation state
     @State private var reactionStartTime: TimeInterval = -1
     @State private var currentTapType: PetReactionType = .none
@@ -126,7 +128,7 @@ struct OnboardingIslandView: View {
             Image(systemName: "hand.tap.fill")
                 .font(.title3)
             Text("Tap")
-                .font(AppFont.quicksand(.caption, weight: .medium))
+                .font(AppFont.quicksandOnboarding(.caption, weight: .medium, scale: fontScale))
         }
         .foregroundStyle(.primary)
         .scaleEffect(isTapHintPulsing ? 1.15 : 1.0)
