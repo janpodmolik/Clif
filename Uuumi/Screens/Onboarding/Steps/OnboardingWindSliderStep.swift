@@ -341,8 +341,8 @@ struct OnboardingWindSliderStep: View {
                     .onChanged { value in
                         guard phase == .slider else { return }
 
-                        let fraction = (value.location.x - thumbSize / 2) / usableWidth
-                        windProgress = min(max(fraction, 0), 1)
+                        let fingerFraction = (value.location.x - thumbSize / 2) / usableWidth
+                        windProgress = Self.applyDragResistance(to: min(max(fingerFraction, 0), 1))
 
                         selectionGenerator.selectionChanged()
 
@@ -421,6 +421,27 @@ struct OnboardingWindSliderStep: View {
             Text("Continue")
         }
         .buttonStyle(.primary)
+    }
+
+    // MARK: - Drag Resistance
+
+    /// Maps linear finger position (0–1) to windProgress with progressive resistance above 0.5.
+    /// Below threshold: 1:1 linear response. Above: blend of linear (floor) + power curve creates
+    /// gradual resistance — thumb always moves with finger, but progressively less the closer
+    /// to blow-away. `linearFloor` guarantees non-zero slope so the slider never feels stuck.
+    private static func applyDragResistance(to fingerFraction: CGFloat) -> CGFloat {
+        let resistanceStart: CGFloat = 0.5
+        let linearFloor: CGFloat = 0.2
+        let curveWeight: CGFloat = 0.8
+        let resistanceExponent: CGFloat = 3.0
+
+        if fingerFraction <= resistanceStart {
+            return fingerFraction
+        }
+
+        let excess = (fingerFraction - resistanceStart) / (1 - resistanceStart)
+        let eased = linearFloor * excess + curveWeight * pow(excess, resistanceExponent)
+        return resistanceStart + eased * (1 - resistanceStart)
     }
 
     // MARK: - Appear
