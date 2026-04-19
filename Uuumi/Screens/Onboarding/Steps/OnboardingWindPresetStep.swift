@@ -195,7 +195,7 @@ private struct PresetCard: View {
         case .gentle:
             return "\(riseMinutes) min to max out, \(recoverMinutes) to recover. A gentle start."
         case .balanced:
-            return "\(riseMinutes) min to max out, \(recoverMinutes) to recover. Real friction. Most users start here."
+            return "\(riseMinutes) min to max out, \(recoverMinutes) to recover. Real friction."
         case .intense:
             return "\(riseMinutes) min to max out, \(recoverMinutes) to recover. High stakes."
         }
