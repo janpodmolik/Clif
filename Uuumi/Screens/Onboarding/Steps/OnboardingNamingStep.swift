@@ -16,6 +16,10 @@ struct OnboardingNamingStep: View {
     @State private var showSecondLine = false
     @State private var textCompleted = false
 
+    // MARK: - Narrative Text
+    private let narrativeLine1 = "Every Uuumi deserves a name."
+    private let narrativeLine2 = "What will you call yours?"
+
     // MARK: - Input State
 
     @State private var petName = ""
@@ -67,42 +71,46 @@ struct OnboardingNamingStep: View {
 
     private var narrative: some View {
         VStack(spacing: 12) {
-            if skipAnimation {
-                Text("Every Uuumi deserves a name.")
-                Text("What will you call yours?")
-                    .font(AppFont.quicksandOnboarding(.callout, weight: .semiBold, scale: fontScale))
-                    .foregroundStyle(.secondary)
-            } else {
-                let skipped = narrativeBeat >= 1
-
-                TypewriterText(
-                    text: "Every Uuumi deserves a name.",
-                    skipRequested: skipped,
-                    onCompleted: {
-                        Task {
-                            if !skipped {
-                                try? await Task.sleep(for: .seconds(0.5))
+            Group {
+                if skipAnimation {
+                    Text(narrativeLine1)
+                } else {
+                    let skipped = narrativeBeat >= 1
+                    TypewriterText(
+                        text: narrativeLine1,
+                        skipRequested: skipped,
+                        onCompleted: {
+                            Task {
+                                if !skipped {
+                                    try? await Task.sleep(for: .seconds(0.5))
+                                }
+                                withAnimation { showSecondLine = true }
                             }
-                            withAnimation { showSecondLine = true }
                         }
-                    }
-                )
-
-                TypewriterText(
-                    text: "What will you call yours?",
-                    active: showSecondLine,
-                    skipRequested: narrativeBeat >= 2,
-                    onCompleted: {
-                        textCompleted = true
-                        revealInput()
-                    }
-                )
-                .font(AppFont.quicksandOnboarding(.callout, weight: .semiBold, scale: fontScale))
-                .foregroundStyle(.secondary)
-                .opacity(showSecondLine ? 1 : 0)
+                    )
+                }
             }
+            .font(AppFont.quicksandOnboarding(.title2, weight: .semiBold, scale: fontScale))
+
+            Group {
+                if skipAnimation {
+                    Text(narrativeLine2)
+                } else {
+                    TypewriterText(
+                        text: narrativeLine2,
+                        active: showSecondLine,
+                        skipRequested: narrativeBeat >= 2,
+                        onCompleted: {
+                            textCompleted = true
+                            revealInput()
+                        }
+                    )
+                    .opacity(showSecondLine ? 1 : 0)
+                }
+            }
+            .font(AppFont.quicksandOnboarding(.callout, weight: .semiBold, scale: fontScale))
+            .foregroundStyle(.secondary)
         }
-        .font(AppFont.quicksandOnboarding(.title2, weight: .semiBold, scale: fontScale))
         .foregroundStyle(.primary)
         .multilineTextAlignment(.center)
     }

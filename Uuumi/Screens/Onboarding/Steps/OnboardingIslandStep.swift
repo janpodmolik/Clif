@@ -11,6 +11,11 @@ struct OnboardingIslandStep: View {
     @State private var textCompleted = false
     @State private var narrativeBeat = 0
 
+    // MARK: - Narrative Text
+    private let narrativeLine1 = "Somewhere, a tiny island floats in the sky..."
+    private let narrativeLine2 = "A peaceful place, untouched by the chaos below."
+    private let narrativeLine3 = "But it's empty."
+
     var body: some View {
         Color.clear
             .overlay(alignment: .top) {
@@ -42,48 +47,56 @@ struct OnboardingIslandStep: View {
 
     private var narrative: some View {
         VStack(spacing: 12) {
-            if skipAnimation {
-                Text("Somewhere, a tiny island floats in the sky...")
-                Text("A peaceful place, untouched by the chaos below.")
-                Text("But it's empty.")
-                    .font(AppFont.quicksandOnboarding(.title2, weight: .semiBold, scale: fontScale))
-                    .foregroundStyle(.primary)
-                    .padding(.top, 20)
-            } else {
-                let skipped = narrativeBeat >= 1
+            Group {
+                if skipAnimation {
+                    Text(narrativeLine1)
+                } else {
+                    let skipped = narrativeBeat >= 1
+                    TypewriterText(
+                        text: narrativeLine1,
+                        skipRequested: skipped,
+                        onCompleted: { showSecondLine = true }
+                    )
+                }
+            }
 
-                TypewriterText(
-                    text: "Somewhere, a tiny island floats in the sky...",
-                    skipRequested: skipped,
-                    onCompleted: { showSecondLine = true }
-                )
-
-                TypewriterText(
-                    text: "A peaceful place, untouched by the chaos below.",
-                    active: showSecondLine,
-                    skipRequested: narrativeBeat >= 2,
-                    onCompleted: {
-                        Task {
-                            if narrativeBeat < 2 {
-                                try? await Task.sleep(for: .seconds(1.0))
-                            }
-                            withAnimation(.easeIn(duration: skipped ? 0.3 : 0.6)) {
-                                showThirdLine = true
-                            }
-                            withAnimation(.easeOut(duration: skipped ? 0.3 : 0.4)) {
-                                textCompleted = true
+            Group {
+                if skipAnimation {
+                    Text(narrativeLine2)
+                } else {
+                    TypewriterText(
+                        text: narrativeLine2,
+                        active: showSecondLine,
+                        skipRequested: narrativeBeat >= 2,
+                        onCompleted: {
+                            Task {
+                                if narrativeBeat < 2 {
+                                    try? await Task.sleep(for: .seconds(1.0))
+                                }
+                                withAnimation(.easeIn(duration: narrativeBeat >= 2 ? 0.3 : 0.6)) {
+                                    showThirdLine = true
+                                }
+                                withAnimation(.easeOut(duration: narrativeBeat >= 2 ? 0.3 : 0.4)) {
+                                    textCompleted = true
+                                }
                             }
                         }
-                    }
-                )
-                .opacity(showSecondLine ? 1 : 0)
-
-                Text("But it's empty.")
-                    .font(AppFont.quicksandOnboarding(.title2, weight: .semiBold, scale: fontScale))
-                    .foregroundStyle(.primary)
-                    .opacity(showThirdLine ? 1 : 0)
-                    .padding(.top, 20)
+                    )
+                    .opacity(showSecondLine ? 1 : 0)
+                }
             }
+
+            Group {
+                if skipAnimation {
+                    Text(narrativeLine3)
+                } else {
+                    Text(narrativeLine3)
+                        .opacity(showThirdLine ? 1 : 0)
+                }
+            }
+            .font(AppFont.quicksandOnboarding(.title2, weight: .semiBold, scale: fontScale))
+            .foregroundStyle(.primary)
+            .padding(.top, 20)
         }
         .font(AppFont.quicksandOnboarding(.title3, weight: .medium, scale: fontScale))
         .foregroundStyle(.primary)

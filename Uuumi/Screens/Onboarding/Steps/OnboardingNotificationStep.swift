@@ -16,6 +16,10 @@ struct OnboardingNotificationStep: View {
     @State private var showSecondLine = false
     @State private var textCompleted = false
 
+    // MARK: - Narrative Text
+    private let narrativeLine1 = "You can't always be here."
+    private let narrativeLine2 = "But Uuumi can reach you when it matters."
+
     // MARK: - Notification State
 
     @State private var showFirstNotification = false
@@ -70,42 +74,46 @@ struct OnboardingNotificationStep: View {
 
     private var narrative: some View {
         VStack(spacing: 12) {
-            if skipAnimation {
-                Text("You can't always be here.")
-                Text("But Uuumi can reach you when it matters.")
-                    .font(AppFont.quicksandOnboarding(.callout, weight: .semiBold, scale: fontScale))
-                    .foregroundStyle(.secondary)
-            } else {
-                let skipped = narrativeBeat >= 1
-
-                TypewriterText(
-                    text: "You can't always be here.",
-                    skipRequested: skipped,
-                    onCompleted: {
-                        Task {
-                            if !skipped {
-                                try? await Task.sleep(for: .seconds(0.5))
+            Group {
+                if skipAnimation {
+                    Text(narrativeLine1)
+                } else {
+                    let skipped = narrativeBeat >= 1
+                    TypewriterText(
+                        text: narrativeLine1,
+                        skipRequested: skipped,
+                        onCompleted: {
+                            Task {
+                                if !skipped {
+                                    try? await Task.sleep(for: .seconds(0.5))
+                                }
+                                withAnimation { showSecondLine = true }
                             }
-                            withAnimation { showSecondLine = true }
                         }
-                    }
-                )
-
-                TypewriterText(
-                    text: "But Uuumi can reach you when it matters.",
-                    active: showSecondLine,
-                    skipRequested: narrativeBeat >= 2,
-                    onCompleted: {
-                        textCompleted = true
-                        showNotifications()
-                    }
-                )
-                .font(AppFont.quicksandOnboarding(.callout, weight: .semiBold, scale: fontScale))
-                .foregroundStyle(.secondary)
-                .opacity(showSecondLine ? 1 : 0)
+                    )
+                }
             }
+            .font(AppFont.quicksandOnboarding(.title2, weight: .semiBold, scale: fontScale))
+
+            Group {
+                if skipAnimation {
+                    Text(narrativeLine2)
+                } else {
+                    TypewriterText(
+                        text: narrativeLine2,
+                        active: showSecondLine,
+                        skipRequested: narrativeBeat >= 2,
+                        onCompleted: {
+                            textCompleted = true
+                            showNotifications()
+                        }
+                    )
+                    .opacity(showSecondLine ? 1 : 0)
+                }
+            }
+            .font(AppFont.quicksandOnboarding(.callout, weight: .semiBold, scale: fontScale))
+            .foregroundStyle(.secondary)
         }
-        .font(AppFont.quicksandOnboarding(.title2, weight: .semiBold, scale: fontScale))
         .foregroundStyle(.primary)
         .multilineTextAlignment(.center)
     }

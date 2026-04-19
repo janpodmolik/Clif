@@ -15,6 +15,10 @@ struct OnboardingWindPresetStep: View {
     @State private var showCards = false
     @State private var showInfo = false
 
+    // MARK: - Narrative Text
+    private let narrativeLine1 = "How strict should the wind be?"
+    private let narrativeLine2 = "Pick what feels realistic. You'll choose again tomorrow."
+
     var body: some View {
         VStack(spacing: 0) {
             narrative
@@ -63,47 +67,51 @@ struct OnboardingWindPresetStep: View {
 
     private var narrative: some View {
         VStack(spacing: 12) {
-            if skipAnimation {
-                Text("How strict should the wind be?")
-                Text("Pick what feels realistic. You'll choose again tomorrow.")
-                    .font(AppFont.quicksandOnboarding(.title3, weight: .semiBold, scale: fontScale))
-                    .foregroundStyle(.secondary)
-            } else {
-                let skipped = narrativeBeat >= 1
-
-                TypewriterText(
-                    text: "How strict should the wind be?",
-                    skipRequested: skipped,
-                    onCompleted: {
-                        Task {
-                            if !skipped {
-                                try? await Task.sleep(for: .seconds(0.5))
+            Group {
+                if skipAnimation {
+                    Text(narrativeLine1)
+                } else {
+                    let skipped = narrativeBeat >= 1
+                    TypewriterText(
+                        text: narrativeLine1,
+                        skipRequested: skipped,
+                        onCompleted: {
+                            Task {
+                                if !skipped {
+                                    try? await Task.sleep(for: .seconds(0.5))
+                                }
+                                withAnimation { showSecondLine = true }
                             }
-                            withAnimation { showSecondLine = true }
                         }
-                    }
-                )
-
-                TypewriterText(
-                    text: "Pick what feels realistic. You'll choose again tomorrow.",
-                    active: showSecondLine,
-                    skipRequested: narrativeBeat >= 2,
-                    onCompleted: {
-                        textCompleted = true
-                        Task {
-                            try? await Task.sleep(for: .seconds(0.3))
-                            withAnimation { showCards = true }
-                            try? await Task.sleep(for: .seconds(0.3))
-                            withAnimation { showInfo = true }
-                        }
-                    }
-                )
-                .font(AppFont.quicksandOnboarding(.title3, weight: .semiBold, scale: fontScale))
-                .foregroundStyle(.secondary)
-                .opacity(showSecondLine ? 1 : 0)
+                    )
+                }
             }
+            .font(AppFont.quicksandOnboarding(.title2, weight: .semiBold, scale: fontScale))
+
+            Group {
+                if skipAnimation {
+                    Text(narrativeLine2)
+                } else {
+                    TypewriterText(
+                        text: narrativeLine2,
+                        active: showSecondLine,
+                        skipRequested: narrativeBeat >= 2,
+                        onCompleted: {
+                            textCompleted = true
+                            Task {
+                                try? await Task.sleep(for: .seconds(0.3))
+                                withAnimation { showCards = true }
+                                try? await Task.sleep(for: .seconds(0.3))
+                                withAnimation { showInfo = true }
+                            }
+                        }
+                    )
+                    .opacity(showSecondLine ? 1 : 0)
+                }
+            }
+            .font(AppFont.quicksandOnboarding(.title3, weight: .semiBold, scale: fontScale))
+            .foregroundStyle(.secondary)
         }
-        .font(AppFont.quicksandOnboarding(.title2, weight: .semiBold, scale: fontScale))
         .foregroundStyle(.primary)
         .multilineTextAlignment(.center)
     }

@@ -46,6 +46,13 @@ struct OnboardingLockStep: View {
     @State private var showPostLockLine3 = false
     @State private var postLockTextCompleted = false
 
+    // MARK: - Narrative Text
+    private let preLockNarrativeLine1 = "But you have the power to stop it."
+    private let preLockNarrativeLine2 = "Tap the lock."
+    private let postLockNarrativeLine1 = "The wind stops. Uuumi is safe."
+    private let postLockNarrativeLine2 = "Your selected apps are now blocked."
+    private let postLockNarrativeLine3 = "You just proved you can do it."
+
     private var windLevel: WindLevel {
         WindLevel.from(progress: windProgress)
     }
@@ -133,39 +140,43 @@ struct OnboardingLockStep: View {
 
     private var preLockNarrative: some View {
         VStack(spacing: 12) {
-            if skipAnimation {
-                Text("But you have the power to stop it.")
-                Text("Tap the lock.")
-                    .font(AppFont.quicksandOnboarding(.title2, weight: .semiBold, scale: fontScale))
-                    .padding(.top, 12)
-            } else {
-                let skipped = narrativeBeat >= 1
-
-                TypewriterText(
-                    text: "But you have the power to stop it.",
-                    skipRequested: skipped,
-                    onCompleted: {
-                        Task {
-                            if !skipped {
-                                try? await Task.sleep(for: .seconds(0.5))
+            Group {
+                if skipAnimation {
+                    Text(preLockNarrativeLine1)
+                } else {
+                    let skipped = narrativeBeat >= 1
+                    TypewriterText(
+                        text: preLockNarrativeLine1,
+                        skipRequested: skipped,
+                        onCompleted: {
+                            Task {
+                                if !skipped {
+                                    try? await Task.sleep(for: .seconds(0.5))
+                                }
+                                withAnimation { showSecondLine = true }
                             }
-                            withAnimation { showSecondLine = true }
                         }
-                    }
-                )
-
-                TypewriterText(
-                    text: "Tap the lock.",
-                    active: showSecondLine,
-                    skipRequested: narrativeBeat >= 2,
-                    onCompleted: {
-                        textCompleted = true
-                    }
-                )
-                .font(AppFont.quicksandOnboarding(.title2, weight: .semiBold, scale: fontScale))
-                .opacity(showSecondLine ? 1 : 0)
-                .padding(.top, 12)
+                    )
+                }
             }
+
+            Group {
+                if skipAnimation {
+                    Text(preLockNarrativeLine2)
+                } else {
+                    TypewriterText(
+                        text: preLockNarrativeLine2,
+                        active: showSecondLine,
+                        skipRequested: narrativeBeat >= 2,
+                        onCompleted: {
+                            textCompleted = true
+                        }
+                    )
+                    .opacity(showSecondLine ? 1 : 0)
+                }
+            }
+            .font(AppFont.quicksandOnboarding(.title2, weight: .semiBold, scale: fontScale))
+            .padding(.top, 12)
         }
         .font(AppFont.quicksandOnboarding(.title3, weight: .medium, scale: fontScale))
         .foregroundStyle(.primary)
@@ -174,54 +185,63 @@ struct OnboardingLockStep: View {
 
     private var postLockNarrative: some View {
         VStack(spacing: 12) {
-            if skipAnimation {
-                Text("The wind stops. Uuumi is safe.")
-                Text("Your selected apps are now blocked.")
-                    .font(AppFont.quicksandOnboarding(.title2, weight: .semiBold, scale: fontScale))
-                    .padding(.top, 12)
-                Text("You just proved you can do it.")
-            } else {
-                let skipped = postLockBeat >= 1
-
-                TypewriterText(
-                    text: "The wind stops. Uuumi is safe.",
-                    skipRequested: skipped,
-                    onCompleted: {
-                        Task {
-                            if !skipped {
-                                try? await Task.sleep(for: .seconds(0.5))
+            Group {
+                if skipAnimation {
+                    Text(postLockNarrativeLine1)
+                } else {
+                    let skipped = postLockBeat >= 1
+                    TypewriterText(
+                        text: postLockNarrativeLine1,
+                        skipRequested: skipped,
+                        onCompleted: {
+                            Task {
+                                if !skipped {
+                                    try? await Task.sleep(for: .seconds(0.5))
+                                }
+                                withAnimation { showPostLockLine2 = true }
                             }
-                            withAnimation { showPostLockLine2 = true }
                         }
-                    }
-                )
+                    )
+                }
+            }
 
-                TypewriterText(
-                    text: "Your selected apps are now blocked.",
-                    active: showPostLockLine2,
-                    skipRequested: postLockBeat >= 2,
-                    onCompleted: {
-                        Task {
-                            if postLockBeat < 2 {
-                                try? await Task.sleep(for: .seconds(0.5))
+            Group {
+                if skipAnimation {
+                    Text(postLockNarrativeLine2)
+                } else {
+                    TypewriterText(
+                        text: postLockNarrativeLine2,
+                        active: showPostLockLine2,
+                        skipRequested: postLockBeat >= 2,
+                        onCompleted: {
+                            Task {
+                                if postLockBeat < 2 {
+                                    try? await Task.sleep(for: .seconds(0.5))
+                                }
+                                withAnimation { showPostLockLine3 = true }
                             }
-                            withAnimation { showPostLockLine3 = true }
                         }
-                    }
-                )
-                .font(AppFont.quicksandOnboarding(.title2, weight: .semiBold, scale: fontScale))
-                .opacity(showPostLockLine2 ? 1 : 0)
-                .padding(.top, 12)
+                    )
+                    .opacity(showPostLockLine2 ? 1 : 0)
+                }
+            }
+            .font(AppFont.quicksandOnboarding(.title2, weight: .semiBold, scale: fontScale))
+            .padding(.top, 12)
 
-                TypewriterText(
-                    text: "You just proved you can do it.",
-                    active: showPostLockLine3,
-                    skipRequested: postLockBeat >= 3,
-                    onCompleted: {
-                        postLockTextCompleted = true
-                    }
-                )
-                .opacity(showPostLockLine3 ? 1 : 0)
+            Group {
+                if skipAnimation {
+                    Text(postLockNarrativeLine3)
+                } else {
+                    TypewriterText(
+                        text: postLockNarrativeLine3,
+                        active: showPostLockLine3,
+                        skipRequested: postLockBeat >= 3,
+                        onCompleted: {
+                            postLockTextCompleted = true
+                        }
+                    )
+                    .opacity(showPostLockLine3 ? 1 : 0)
+                }
             }
         }
         .font(AppFont.quicksandOnboarding(.title3, weight: .medium, scale: fontScale))

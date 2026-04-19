@@ -19,6 +19,10 @@ struct OnboardingMeetPetStep: View {
     @State private var speechBubbleTask: Task<Void, Never>?
     @State private var narrativeBeat = 0
 
+    // MARK: - Narrative Text
+    private let narrativeLine1 = "Meet Uuumi."
+    private let narrativeLine2 = "A tiny creature looking for somewhere to grow."
+
     var body: some View {
         Color.clear
             .overlay(alignment: .top) {
@@ -83,37 +87,43 @@ struct OnboardingMeetPetStep: View {
 
     private var narrative: some View {
         VStack(spacing: 12) {
-            if skipAnimation {
-                Text("Meet Uuumi.")
-                    .font(AppFont.quicksandOnboarding(.title2, weight: .semiBold, scale: fontScale))
-                Text("A tiny creature looking for somewhere to grow.")
-            } else {
-                TypewriterText(
-                    text: "Meet Uuumi.",
-                    skipRequested: narrativeBeat >= 1,
-                    onCompleted: {
-                        Task {
-                            if narrativeBeat < 1 {
-                                try? await Task.sleep(for: .seconds(0.5))
+            Group {
+                if skipAnimation {
+                    Text(narrativeLine1)
+                } else {
+                    TypewriterText(
+                        text: narrativeLine1,
+                        skipRequested: narrativeBeat >= 1,
+                        onCompleted: {
+                            Task {
+                                if narrativeBeat < 1 {
+                                    try? await Task.sleep(for: .seconds(0.5))
+                                }
+                                withAnimation { showSecondLine = true }
                             }
-                            withAnimation { showSecondLine = true }
                         }
-                    }
-                )
-                .font(AppFont.quicksandOnboarding(.title2, weight: .semiBold, scale: fontScale))
+                    )
+                }
+            }
+            .font(AppFont.quicksandOnboarding(.title2, weight: .semiBold, scale: fontScale))
 
-                TypewriterText(
-                    text: "A tiny creature looking for somewhere to grow.",
-                    active: showSecondLine,
-                    skipRequested: narrativeBeat >= 2,
-                    onCompleted: {
-                        textCompleted = true
-                        withAnimation(.easeOut(duration: 0.4)) {
-                            showTapHint = true
+            Group {
+                if skipAnimation {
+                    Text(narrativeLine2)
+                } else {
+                    TypewriterText(
+                        text: narrativeLine2,
+                        active: showSecondLine,
+                        skipRequested: narrativeBeat >= 2,
+                        onCompleted: {
+                            textCompleted = true
+                            withAnimation(.easeOut(duration: 0.4)) {
+                                showTapHint = true
+                            }
                         }
-                    }
-                )
-                .opacity(showSecondLine ? 1 : 0)
+                    )
+                    .opacity(showSecondLine ? 1 : 0)
+                }
             }
         }
         .font(AppFont.quicksandOnboarding(.title3, weight: .medium, scale: fontScale))

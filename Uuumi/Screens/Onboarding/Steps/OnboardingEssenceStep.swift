@@ -18,6 +18,10 @@ struct OnboardingEssenceStep: View {
     @State private var showSecondLine = false
     @State private var textCompleted = false
 
+    // MARK: - Narrative Text
+    private let narrativeLine1 = "After your first day, you can give your Uuumi an essence."
+    private let narrativeLine2 = "Let's practice it now."
+
     // MARK: - Drag State
 
     @State private var showStagingArea = false
@@ -94,48 +98,52 @@ struct OnboardingEssenceStep: View {
 
     private var narrative: some View {
         VStack(spacing: 12) {
-            if skipAnimation {
-                Text("After your first day, you can give your Uuumi an essence.")
-                Text("Let's practice it now.")
-                    .font(AppFont.quicksandOnboarding(.callout, weight: .semiBold, scale: fontScale))
-                    .foregroundStyle(.secondary)
-            } else {
-                let skipped = narrativeBeat >= 1
-
-                TypewriterText(
-                    text: "After your first day, you can give your Uuumi an essence.",
-                    skipRequested: skipped,
-                    onCompleted: {
-                        Task {
-                            if !skipped {
-                                try? await Task.sleep(for: .seconds(0.5))
-                            }
-                            withAnimation { showSecondLine = true }
-                        }
-                    }
-                )
-
-                TypewriterText(
-                    text: "Let's practice it now.",
-                    active: showSecondLine,
-                    skipRequested: narrativeBeat >= 2,
-                    onCompleted: {
-                        textCompleted = true
-                        Task {
-                            try? await Task.sleep(for: .seconds(0.3))
-                            withAnimation {
-                                showStagingArea = true
-                                showDropZone = true
+            Group {
+                if skipAnimation {
+                    Text(narrativeLine1)
+                } else {
+                    let skipped = narrativeBeat >= 1
+                    TypewriterText(
+                        text: narrativeLine1,
+                        skipRequested: skipped,
+                        onCompleted: {
+                            Task {
+                                if !skipped {
+                                    try? await Task.sleep(for: .seconds(0.5))
+                                }
+                                withAnimation { showSecondLine = true }
                             }
                         }
-                    }
-                )
-                .font(AppFont.quicksandOnboarding(.callout, weight: .semiBold, scale: fontScale))
-                .foregroundStyle(.secondary)
-                .opacity(showSecondLine ? 1 : 0)
+                    )
+                }
             }
+            .font(AppFont.quicksandOnboarding(.title2, weight: .semiBold, scale: fontScale))
+
+            Group {
+                if skipAnimation {
+                    Text(narrativeLine2)
+                } else {
+                    TypewriterText(
+                        text: narrativeLine2,
+                        active: showSecondLine,
+                        skipRequested: narrativeBeat >= 2,
+                        onCompleted: {
+                            textCompleted = true
+                            Task {
+                                try? await Task.sleep(for: .seconds(0.3))
+                                withAnimation {
+                                    showStagingArea = true
+                                    showDropZone = true
+                                }
+                            }
+                        }
+                    )
+                    .opacity(showSecondLine ? 1 : 0)
+                }
+            }
+            .font(AppFont.quicksandOnboarding(.callout, weight: .semiBold, scale: fontScale))
+            .foregroundStyle(.secondary)
         }
-        .font(AppFont.quicksandOnboarding(.title2, weight: .semiBold, scale: fontScale))
         .foregroundStyle(.primary)
         .multilineTextAlignment(.center)
     }

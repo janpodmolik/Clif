@@ -18,6 +18,9 @@ struct OnboardingLoginStep: View {
     @State private var showSkip = false
     @State private var textCompleted = false
 
+    // MARK: - Narrative Text
+    private let narrativeLine2 = "Sign in to save your progress, coins, and streaks. Restore everything if you switch devices or reinstall."
+
     private var petName: String {
         petManager.currentPet?.name ?? "Your Uuumi"
     }
@@ -70,7 +73,7 @@ struct OnboardingLoginStep: View {
 
                 if showSubtitle {
                     TypewriterText(
-                        text: "Sign in to save your progress, coins, and streaks. Restore everything if you switch devices or reinstall.",
+                        text: narrativeLine2,
                         active: showSubtitle,
                         skipRequested: narrativeBeat >= 2,
                         onCompleted: {
@@ -101,7 +104,7 @@ struct OnboardingLoginStep: View {
     }
 
     private var subtitle: some View {
-        Text("Sign in to save your progress, coins, and streaks. Restore everything if you switch devices or reinstall.")
+        Text(narrativeLine2)
             .font(AppFont.quicksandOnboarding(.callout, weight: .semiBold, scale: fontScale))
             .foregroundStyle(.secondary)
     }

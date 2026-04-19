@@ -20,6 +20,11 @@ struct OnboardingWindStep: View {
     @State private var didAdvance = false
     @State private var narrativeBeat = 0
 
+    // MARK: - Narrative Text
+    private let narrativeLine1 = "The wind comes from your screen time."
+    private let narrativeLine2 = "The more you scroll, the stronger it gets."
+    private let narrativeLine3 = "Let's see what Uuumi is up against."
+
     var body: some View {
         Color.clear
             .overlay(alignment: .top) {
@@ -59,61 +64,71 @@ struct OnboardingWindStep: View {
 
     private var narrative: some View {
         VStack(spacing: 12) {
-            if skipAnimation {
-                Text("The wind comes from your screen time.")
-                Text("The more you scroll, the stronger it gets.")
-                Text("Let's see what Uuumi is up against.")
-                    .font(AppFont.quicksandOnboarding(.title2, weight: .semiBold, scale: fontScale))
-                    .padding(.top, 12)
-            } else {
-                let skipped = narrativeBeat >= 1
-
-                TypewriterText(
-                    text: "The wind comes from your screen time.",
-                    skipRequested: skipped,
-                    onCompleted: {
-                        withAnimation(.easeInOut(duration: skipped ? 0.5 : 1.0)) {
-                            windProgress = 0.08
-                        }
-                        Task {
-                            if !skipped {
-                                try? await Task.sleep(for: .seconds(0.5))
+            Group {
+                if skipAnimation {
+                    Text(narrativeLine1)
+                } else {
+                    let skipped = narrativeBeat >= 1
+                    TypewriterText(
+                        text: narrativeLine1,
+                        skipRequested: skipped,
+                        onCompleted: {
+                            withAnimation(.easeInOut(duration: skipped ? 0.5 : 1.0)) {
+                                windProgress = 0.08
                             }
-                            withAnimation { showSecondLine = true }
-                        }
-                    }
-                )
-
-                TypewriterText(
-                    text: "The more you scroll, the stronger it gets.",
-                    active: showSecondLine,
-                    skipRequested: narrativeBeat >= 2,
-                    onCompleted: {
-                        withAnimation(.easeInOut(duration: skipped ? 0.5 : 1.0)) {
-                            windProgress = OnboardingScreen.wind.initialWindProgress ?? 0.15
-                        }
-                        Task {
-                            if narrativeBeat < 2 {
-                                try? await Task.sleep(for: .seconds(0.8))
-                            }
-                            eyesOverride = "neutral"
-                            withAnimation(.easeIn(duration: skipped ? 0.3 : 0.6)) {
-                                showThirdLine = true
-                            }
-                            textCompleted = true
-                            withAnimation(.easeOut(duration: skipped ? 0.3 : 0.4)) {
-                                showPermissionCTA = true
+                            Task {
+                                if !skipped {
+                                    try? await Task.sleep(for: .seconds(0.5))
+                                }
+                                withAnimation { showSecondLine = true }
                             }
                         }
-                    }
-                )
-                .opacity(showSecondLine ? 1 : 0)
-
-                Text("Let's see what Uuumi is up against.")
-                    .font(AppFont.quicksandOnboarding(.title2, weight: .semiBold, scale: fontScale))
-                    .padding(.top, 12)
-                    .opacity(showThirdLine ? 1 : 0)
+                    )
+                }
             }
+
+            Group {
+                if skipAnimation {
+                    Text(narrativeLine2)
+                } else {
+                    let skipped = narrativeBeat >= 1
+                    TypewriterText(
+                        text: narrativeLine2,
+                        active: showSecondLine,
+                        skipRequested: narrativeBeat >= 2,
+                        onCompleted: {
+                            withAnimation(.easeInOut(duration: skipped ? 0.5 : 1.0)) {
+                                windProgress = OnboardingScreen.wind.initialWindProgress ?? 0.15
+                            }
+                            Task {
+                                if narrativeBeat < 2 {
+                                    try? await Task.sleep(for: .seconds(0.8))
+                                }
+                                eyesOverride = "neutral"
+                                withAnimation(.easeIn(duration: skipped ? 0.3 : 0.6)) {
+                                    showThirdLine = true
+                                }
+                                textCompleted = true
+                                withAnimation(.easeOut(duration: skipped ? 0.3 : 0.4)) {
+                                    showPermissionCTA = true
+                                }
+                            }
+                        }
+                    )
+                    .opacity(showSecondLine ? 1 : 0)
+                }
+            }
+
+            Group {
+                if skipAnimation {
+                    Text(narrativeLine3)
+                } else {
+                    Text(narrativeLine3)
+                        .opacity(showThirdLine ? 1 : 0)
+                }
+            }
+            .font(AppFont.quicksandOnboarding(.title2, weight: .semiBold, scale: fontScale))
+            .padding(.top, 12)
         }
         .font(AppFont.quicksandOnboarding(.title3, weight: .medium, scale: fontScale))
         .foregroundStyle(.primary)

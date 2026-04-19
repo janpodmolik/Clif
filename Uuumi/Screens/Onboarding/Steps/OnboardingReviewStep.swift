@@ -18,6 +18,9 @@ struct OnboardingReviewStep: View {
     @State private var showSecondLine = false
     @State private var textCompleted = false
 
+    // MARK: - Narrative Text
+    private let narrativeLine2 = "If you believe in what we're building, a review would mean the world to us."
+
     // MARK: - Review State
 
     @State private var reviewRequested = false
@@ -57,47 +60,51 @@ struct OnboardingReviewStep: View {
 
     private var narrative: some View {
         VStack(spacing: 12) {
-            if skipAnimation {
-                Text("\(petName) is ready.")
-                Text("If you believe in what we're building, a review would mean the world to us.")
-                    .font(AppFont.quicksandOnboarding(.callout, weight: .semiBold, scale: fontScale))
-                    .foregroundStyle(.secondary)
-            } else {
-                let skipped = narrativeBeat >= 1
-
-                TypewriterText(
-                    text: "\(petName) is ready.",
-                    skipRequested: skipped,
-                    onCompleted: {
-                        Task {
-                            if !skipped {
-                                try? await Task.sleep(for: .seconds(0.3))
+            Group {
+                if skipAnimation {
+                    Text("\(petName) is ready.")
+                } else {
+                    let skipped = narrativeBeat >= 1
+                    TypewriterText(
+                        text: "\(petName) is ready.",
+                        skipRequested: skipped,
+                        onCompleted: {
+                            Task {
+                                if !skipped {
+                                    try? await Task.sleep(for: .seconds(0.3))
+                                }
+                                showHeartBubble()
+                                reactionTrigger = UUID()
+                                if !skipped {
+                                    try? await Task.sleep(for: .seconds(0.5))
+                                }
+                                withAnimation { showSecondLine = true }
                             }
-                            showHeartBubble()
-                            reactionTrigger = UUID()
-                            if !skipped {
-                                try? await Task.sleep(for: .seconds(0.5))
-                            }
-                            withAnimation { showSecondLine = true }
                         }
-                    }
-                )
-
-                TypewriterText(
-                    text: "If you believe in what we're building, a review would mean the world to us.",
-                    active: showSecondLine,
-                    skipRequested: narrativeBeat >= 2,
-                    onCompleted: {
-                        textCompleted = true
-                        revealButtons()
-                    }
-                )
-                .font(AppFont.quicksandOnboarding(.callout, weight: .semiBold, scale: fontScale))
-                .foregroundStyle(.secondary)
-                .opacity(showSecondLine ? 1 : 0)
+                    )
+                }
             }
+            .font(AppFont.quicksandOnboarding(.title2, weight: .semiBold, scale: fontScale))
+
+            Group {
+                if skipAnimation {
+                    Text(narrativeLine2)
+                } else {
+                    TypewriterText(
+                        text: narrativeLine2,
+                        active: showSecondLine,
+                        skipRequested: narrativeBeat >= 2,
+                        onCompleted: {
+                            textCompleted = true
+                            revealButtons()
+                        }
+                    )
+                    .opacity(showSecondLine ? 1 : 0)
+                }
+            }
+            .font(AppFont.quicksandOnboarding(.callout, weight: .semiBold, scale: fontScale))
+            .foregroundStyle(.secondary)
         }
-        .font(AppFont.quicksandOnboarding(.title2, weight: .semiBold, scale: fontScale))
         .foregroundStyle(.primary)
         .multilineTextAlignment(.center)
     }

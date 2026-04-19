@@ -13,6 +13,10 @@ struct OnboardingEvolutionStep: View {
     @State private var textCompleted = false
     @State private var showButton = false
 
+    // MARK: - Narrative Text
+    private let narrativeLine1 = "Protect your Uuumi each day, and it evolves."
+    private let narrativeLine2 = "A new form. A new beginning."
+
     var body: some View {
         VStack(spacing: 0) {
             narrative
@@ -47,44 +51,48 @@ struct OnboardingEvolutionStep: View {
 
     private var narrative: some View {
         VStack(spacing: 12) {
-            if skipAnimation {
-                Text("Protect your Uuumi each day, and it evolves.")
-                Text("A new form. A new beginning.")
-                    .font(AppFont.quicksandOnboarding(.title2, weight: .semiBold, scale: fontScale))
-                    .padding(.top, 8)
-            } else {
-                let skipped = narrativeBeat >= 1
-
-                TypewriterText(
-                    text: "Protect your Uuumi each day, and it evolves.",
-                    skipRequested: skipped,
-                    onCompleted: {
-                        Task {
-                            if !skipped {
-                                try? await Task.sleep(for: .seconds(0.5))
+            Group {
+                if skipAnimation {
+                    Text(narrativeLine1)
+                } else {
+                    let skipped = narrativeBeat >= 1
+                    TypewriterText(
+                        text: narrativeLine1,
+                        skipRequested: skipped,
+                        onCompleted: {
+                            Task {
+                                if !skipped {
+                                    try? await Task.sleep(for: .seconds(0.5))
+                                }
+                                withAnimation { showSecondLine = true }
                             }
-                            withAnimation { showSecondLine = true }
                         }
-                    }
-                )
-
-                TypewriterText(
-                    text: "A new form. A new beginning.",
-                    active: showSecondLine,
-                    skipRequested: narrativeBeat >= 2,
-                    onCompleted: {
-                        textCompleted = true
-                        showThoughtBubble = true
-                        Task {
-                            try? await Task.sleep(for: .seconds(0.3))
-                            withAnimation { showButton = true }
-                        }
-                    }
-                )
-                .font(AppFont.quicksandOnboarding(.title2, weight: .semiBold, scale: fontScale))
-                .opacity(showSecondLine ? 1 : 0)
-                .padding(.top, 8)
+                    )
+                }
             }
+
+            Group {
+                if skipAnimation {
+                    Text(narrativeLine2)
+                } else {
+                    TypewriterText(
+                        text: narrativeLine2,
+                        active: showSecondLine,
+                        skipRequested: narrativeBeat >= 2,
+                        onCompleted: {
+                            textCompleted = true
+                            showThoughtBubble = true
+                            Task {
+                                try? await Task.sleep(for: .seconds(0.3))
+                                withAnimation { showButton = true }
+                            }
+                        }
+                    )
+                    .opacity(showSecondLine ? 1 : 0)
+                }
+            }
+            .font(AppFont.quicksandOnboarding(.title2, weight: .semiBold, scale: fontScale))
+            .padding(.top, 8)
         }
         .font(AppFont.quicksandOnboarding(.title3, weight: .medium, scale: fontScale))
         .foregroundStyle(.primary)

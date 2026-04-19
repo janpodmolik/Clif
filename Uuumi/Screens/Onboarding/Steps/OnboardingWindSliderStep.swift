@@ -42,6 +42,14 @@ struct OnboardingWindSliderStep: View {
     @State private var postRewindBeat = 0
     @State private var postRewindTextCompleted = false
 
+    // MARK: - Narrative Text
+    private let sliderNarrativeLine1 = "This is what happens when you scroll."
+    private let sliderNarrativeLine2 = "Drag to feel Uuumi's world change."
+    private let blowAwayNarrativeLine1 = "Too much."
+    private let blowAwayNarrativeLine2 = "Uuumi is gone."
+    private let postRewindNarrativeLine1 = "This was just practice."
+    private let postRewindNarrativeLine2 = "Out there, there's no rewind."
+
     // MARK: - Slider State
 
     @State private var hasInteracted = false
@@ -189,39 +197,43 @@ struct OnboardingWindSliderStep: View {
 
     private var sliderNarrative: some View {
         VStack(spacing: 12) {
-            if skipAnimation {
-                Text("This is what happens when you scroll.")
-                Text("Drag to feel Uuumi's world change.")
-                    .font(AppFont.quicksandOnboarding(.title2, weight: .semiBold, scale: fontScale))
-                    .padding(.top, 12)
-            } else {
-                let skipped = narrativeBeat >= 1
-
-                TypewriterText(
-                    text: "This is what happens when you scroll.",
-                    skipRequested: skipped,
-                    onCompleted: {
-                        Task {
-                            if !skipped {
-                                try? await Task.sleep(for: .seconds(0.5))
+            Group {
+                if skipAnimation {
+                    Text(sliderNarrativeLine1)
+                } else {
+                    let skipped = narrativeBeat >= 1
+                    TypewriterText(
+                        text: sliderNarrativeLine1,
+                        skipRequested: skipped,
+                        onCompleted: {
+                            Task {
+                                if !skipped {
+                                    try? await Task.sleep(for: .seconds(0.5))
+                                }
+                                withAnimation { showSecondLine = true }
                             }
-                            withAnimation { showSecondLine = true }
                         }
-                    }
-                )
-
-                TypewriterText(
-                    text: "Drag to feel Uuumi's world change.",
-                    active: showSecondLine,
-                    skipRequested: narrativeBeat >= 2,
-                    onCompleted: {
-                        textCompleted = true
-                    }
-                )
-                .font(AppFont.quicksandOnboarding(.title2, weight: .semiBold, scale: fontScale))
-                .opacity(showSecondLine ? 1 : 0)
-                .padding(.top, 12)
+                    )
+                }
             }
+
+            Group {
+                if skipAnimation {
+                    Text(sliderNarrativeLine2)
+                } else {
+                    TypewriterText(
+                        text: sliderNarrativeLine2,
+                        active: showSecondLine,
+                        skipRequested: narrativeBeat >= 2,
+                        onCompleted: {
+                            textCompleted = true
+                        }
+                    )
+                    .opacity(showSecondLine ? 1 : 0)
+                }
+            }
+            .font(AppFont.quicksandOnboarding(.title2, weight: .semiBold, scale: fontScale))
+            .padding(.top, 12)
         }
         .font(AppFont.quicksandOnboarding(.title3, weight: .medium, scale: fontScale))
         .foregroundStyle(.primary)
@@ -232,7 +244,7 @@ struct OnboardingWindSliderStep: View {
         VStack(spacing: 12) {
             if showBlowAwayText {
                 TypewriterText(
-                    text: "Too much.",
+                    text: blowAwayNarrativeLine1,
                     skipRequested: blowAwayBeat >= 1,
                     onCompleted: {
                         Task {
@@ -245,8 +257,8 @@ struct OnboardingWindSliderStep: View {
                 .foregroundStyle(.secondary)
 
                 if showBlowAwayLine2 {
-                    Text("Uuumi is gone.")
-                        .font(AppFont.quicksandOnboarding(.title, weight: .semiBold, scale: fontScale))
+                    Text(blowAwayNarrativeLine2)
+                        .font(AppFont.quicksandOnboarding(.title2, weight: .semiBold, scale: fontScale))
                         .padding(.top, 8)
                         .transition(.opacity)
                 }
@@ -258,39 +270,44 @@ struct OnboardingWindSliderStep: View {
 
     private var postRewindNarrative: some View {
         VStack(spacing: 12) {
-            if skipAnimation {
-                Text("This was just practice.")
-                Text("Out there, there's no rewind.")
-                    .font(AppFont.quicksandOnboarding(.title2, weight: .semiBold, scale: fontScale))
-                    .padding(.top, 12)
-            } else {
-                TypewriterText(
-                    text: "This was just practice.",
-                    active: showPostRewindLine1,
-                    skipRequested: postRewindBeat >= 1,
-                    onCompleted: {
-                        Task {
-                            if postRewindBeat < 1 {
-                                try? await Task.sleep(for: .seconds(0.5))
+            Group {
+                if skipAnimation {
+                    Text(postRewindNarrativeLine1)
+                } else {
+                    TypewriterText(
+                        text: postRewindNarrativeLine1,
+                        active: showPostRewindLine1,
+                        skipRequested: postRewindBeat >= 1,
+                        onCompleted: {
+                            Task {
+                                if postRewindBeat < 1 {
+                                    try? await Task.sleep(for: .seconds(0.5))
+                                }
+                                withAnimation { showPostRewindLine2 = true }
                             }
-                            withAnimation { showPostRewindLine2 = true }
                         }
-                    }
-                )
-                .opacity(showPostRewindLine1 ? 1 : 0)
-
-                TypewriterText(
-                    text: "Out there, there's no rewind.",
-                    active: showPostRewindLine2,
-                    skipRequested: postRewindBeat >= 2,
-                    onCompleted: {
-                        postRewindTextCompleted = true
-                    }
-                )
-                .font(AppFont.quicksandOnboarding(.title2, weight: .semiBold, scale: fontScale))
-                .opacity(showPostRewindLine2 ? 1 : 0)
-                .padding(.top, 12)
+                    )
+                    .opacity(showPostRewindLine1 ? 1 : 0)
+                }
             }
+
+            Group {
+                if skipAnimation {
+                    Text(postRewindNarrativeLine2)
+                } else {
+                    TypewriterText(
+                        text: postRewindNarrativeLine2,
+                        active: showPostRewindLine2,
+                        skipRequested: postRewindBeat >= 2,
+                        onCompleted: {
+                            postRewindTextCompleted = true
+                        }
+                    )
+                    .opacity(showPostRewindLine2 ? 1 : 0)
+                }
+            }
+            .font(AppFont.quicksandOnboarding(.title2, weight: .semiBold, scale: fontScale))
+            .padding(.top, 12)
         }
         .font(AppFont.quicksandOnboarding(.title3, weight: .medium, scale: fontScale))
         .foregroundStyle(.primary)
