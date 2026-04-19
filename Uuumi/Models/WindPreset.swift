@@ -3,13 +3,13 @@ import SwiftUI
 
 /// Wind intensity presets that control how quickly wind rises during app usage and falls during breaks.
 enum WindPreset: String, Codable, CaseIterable {
-    /// Low pressure mode for beginners: 15 min to blow away, 30 min to recover.
+    /// Low pressure mode for beginners: 20 min to blow away, 30 min to recover.
     case gentle
 
-    /// Default balanced mode: 8 min to blow away, 20 min to recover.
+    /// Default balanced mode: 12 min to blow away, 40 min to recover.
     case balanced
 
-    /// High stakes mode: 5 min to blow away, 15 min to recover.
+    /// High stakes mode: 8 min to blow away, 60 min to recover.
     case intense
 
     // MARK: - Wind Rise (during app usage)
@@ -43,8 +43,8 @@ enum WindPreset: String, Codable, CaseIterable {
         }
         switch self {
         case .gentle: return 30
-        case .balanced: return 20
-        case .intense: return 15
+        case .balanced: return 40
+        case .intense: return 60
         }
     }
 

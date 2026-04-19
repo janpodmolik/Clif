@@ -189,14 +189,15 @@ private struct PresetCard: View {
     let onTap: () -> Void
 
     private var onboardingDescription: String {
-        let minutes = Int(preset.minutesToBlowAway)
+        let riseMinutes = Int(preset.minutesToBlowAway)
+        let recoverMinutes = Int(preset.minutesToRecover)
         switch preset {
         case .gentle:
-            return "\(minutes) minutes of scrolling before the wind maxes out. A good place to start."
+            return "\(riseMinutes) min to max out, \(recoverMinutes) to recover. A gentle start."
         case .balanced:
-            return "\(minutes) minutes. Enough to notice, not too strict. Most users start here."
+            return "\(riseMinutes) min to max out, \(recoverMinutes) to recover. Real friction. Most users start here."
         case .intense:
-            return "\(minutes) minutes. Less room to scroll, more reason to put it down."
+            return "\(riseMinutes) min to max out, \(recoverMinutes) to recover. High stakes."
         }
     }
 
