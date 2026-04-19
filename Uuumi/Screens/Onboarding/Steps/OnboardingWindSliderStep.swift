@@ -32,6 +32,9 @@ struct OnboardingWindSliderStep: View {
 
     // Blow away narrative
     @State private var showBlowAwayText = false
+    @State private var showBlowAwayLine1 = false
+    @State private var showBlowAwayLine2 = false
+    @State private var blowAwayBeat = 0
 
     // Post-rewind narrative
     @State private var showPostRewindLine1 = false
@@ -228,11 +231,27 @@ struct OnboardingWindSliderStep: View {
     private var blowAwayNarrative: some View {
         VStack(spacing: 12) {
             if showBlowAwayText {
-                Text("Too much. Uuumi is gone.")
-                    .transition(.opacity)
+                TypewriterText(
+                    text: "Too much.",
+                    skipRequested: blowAwayBeat >= 1,
+                    onCompleted: {
+                        Task {
+                            try? await Task.sleep(for: .seconds(0.6))
+                            withAnimation(.easeIn(duration: 0.5)) { showBlowAwayLine2 = true }
+                        }
+                    }
+                )
+                .font(AppFont.quicksandOnboarding(.title2, weight: .medium, scale: fontScale))
+                .foregroundStyle(.secondary)
+
+                if showBlowAwayLine2 {
+                    Text("Uuumi is gone.")
+                        .font(AppFont.quicksandOnboarding(.title, weight: .semiBold, scale: fontScale))
+                        .padding(.top, 8)
+                        .transition(.opacity)
+                }
             }
         }
-        .font(AppFont.quicksandOnboarding(.title3, weight: .medium, scale: fontScale))
         .foregroundStyle(.primary)
         .multilineTextAlignment(.center)
     }
@@ -498,6 +517,7 @@ struct OnboardingWindSliderStep: View {
             // Show narrative
             withAnimation(.easeOut(duration: 0.4)) {
                 showBlowAwayText = true
+                showBlowAwayLine1 = true
             }
 
             // Show rewind button after delay

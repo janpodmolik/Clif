@@ -66,7 +66,7 @@ struct OnboardingWindPresetStep: View {
             if skipAnimation {
                 Text("How strict should the wind be?")
                 Text("Pick what feels realistic. You'll choose again tomorrow.")
-                    .font(AppFont.quicksandOnboarding(.callout, weight: .semiBold, scale: fontScale))
+                    .font(AppFont.quicksandOnboarding(.title3, weight: .semiBold, scale: fontScale))
                     .foregroundStyle(.secondary)
             } else {
                 let skipped = narrativeBeat >= 1
@@ -98,7 +98,7 @@ struct OnboardingWindPresetStep: View {
                         }
                     }
                 )
-                .font(AppFont.quicksandOnboarding(.callout, weight: .semiBold, scale: fontScale))
+                .font(AppFont.quicksandOnboarding(.title3, weight: .semiBold, scale: fontScale))
                 .foregroundStyle(.secondary)
                 .opacity(showSecondLine ? 1 : 0)
             }
@@ -200,15 +200,15 @@ private struct PresetCard: View {
                     .foregroundStyle(preset.themeColor)
                     .frame(width: 28, height: 28)
 
-                VStack(alignment: .leading, spacing: 2) {
+                VStack(alignment: .leading, spacing: 4) {
                     HStack(spacing: 6) {
                         Text(preset.displayName)
-                            .font(.headline)
+                            .font(AppFont.quicksandOnboarding(.body, weight: .semiBold, scale: 1.0))
                             .foregroundStyle(.primary)
 
                         if preset == .balanced {
                             Text("Recommended")
-                                .font(.caption2.weight(.semibold))
+                                .font(AppFont.quicksandOnboarding(.caption, weight: .semiBold, scale: 1.0))
                                 .foregroundStyle(preset.themeColor)
                                 .padding(.horizontal, 6)
                                 .padding(.vertical, 2)
@@ -217,7 +217,7 @@ private struct PresetCard: View {
                     }
 
                     Text(onboardingDescription)
-                        .font(.caption)
+                        .font(AppFont.quicksandOnboarding(.callout, weight: .medium, scale: 1.0))
                         .foregroundStyle(.secondary)
                         .lineLimit(2, reservesSpace: true)
                 }
