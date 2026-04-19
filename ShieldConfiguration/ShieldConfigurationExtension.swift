@@ -53,7 +53,7 @@ class ShieldConfigurationExtension: ShieldConfigurationDataSource {
             subtitle: ShieldConfiguration.Label(text: subtitleText, color: .darkGray),
             primaryButtonLabel: ShieldConfiguration.Label(text: "Unlock in Uuumi", color: .white),
             primaryButtonBackgroundColor: .black,
-            secondaryButtonLabel: ShieldConfiguration.Label(text: "Close", color: .darkGray)
+            secondaryButtonLabel: ShieldConfiguration.Label(text: "Close", color: .black)
         )
     }
 
