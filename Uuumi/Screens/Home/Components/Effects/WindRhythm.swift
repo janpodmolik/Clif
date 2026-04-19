@@ -19,6 +19,8 @@ final class WindRhythm {
     private static let gustFrequencyMin: CGFloat = 1.0
     private static let gustFrequencyMax: CGFloat = 1.5
 
+    let isOnboarding: Bool
+
     /// Current wind progress (0-1). Higher progress = faster gusts.
     var windProgress: CGFloat = 0 {
         didSet {
@@ -152,8 +154,19 @@ final class WindRhythm {
     /// Frequency is scaled by `gustFrequency` (derived from wind progress).
     private func computeWave(at time: CFTimeInterval) -> CGFloat {
         let f = gustFrequency
-        let rawValue = sin(time * 1.5 * f) * 0.6 + sin(time * 2.3 * f) * 0.3 + sin(time * 0.7 * f) * 0.1
-        // Asymmetric: full amplitude forward (negative), 40% back swing (positive)
-        return rawValue < 0 ? rawValue : rawValue * 0.4
+
+        // In onboarding: faster oscillations with higher frequency multipliers
+        if isOnboarding {
+            let rawValue = sin(time * 3.8 * f) * 0.6 + sin(time * 5.5 * f) * 0.3 + sin(time * 2.0 * f) * 0.1
+            return rawValue
+        } else {
+            let rawValue = sin(time * 1.5 * f) * 0.6 + sin(time * 2.3 * f) * 0.3 + sin(time * 0.7 * f) * 0.1
+            return rawValue < 0 ? rawValue : rawValue * 0.4
+        }
+    }
+
+    init(isOnboarding: Bool = false) {
+        self.isOnboarding = isOnboarding
+        self.gustFrequency = Self.gustFrequencyMin
     }
 }
