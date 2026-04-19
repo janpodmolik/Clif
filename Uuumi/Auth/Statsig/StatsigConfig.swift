@@ -4,10 +4,19 @@ import Statsig
 enum StatsigConfig {
     static let sdkKey = "client-exN0VQofgnkuPnTq9tXqCPvRglqF27FilxXYQBx5Zo1"
 
+    private static var environmentTier: String {
+        #if DEBUG
+        return "development"
+        #else
+        return TesterConfig.isTestFlight ? "staging" : "production"
+        #endif
+    }
+
     static func start(userId: String?) async {
         let user = StatsigUser(userID: userId)
+        let options = StatsigOptions(environment: StatsigEnvironment(tier: environmentTier))
         await withCheckedContinuation { continuation in
-            Statsig.start(sdkKey: sdkKey, user: user, options: StatsigOptions()) { _ in
+            Statsig.start(sdkKey: sdkKey, user: user, options: options) { _ in
                 continuation.resume()
             }
         }
