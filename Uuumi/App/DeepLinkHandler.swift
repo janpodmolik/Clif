@@ -44,6 +44,7 @@ extension Notification.Name {
     static let showBreakTypePicker = Notification.Name("showBreakTypePicker")
     static let navigateToNotificationSettings = Notification.Name("navigateToNotificationSettings")
     static let windDidReset = Notification.Name("windDidReset")
+    static let shieldUnlockRequested = Notification.Name("shieldUnlockRequested")
     #if DEBUG
     static let showMockSheet = Notification.Name("showMockSheet")
     #endif

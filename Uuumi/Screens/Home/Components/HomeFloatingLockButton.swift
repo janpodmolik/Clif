@@ -4,7 +4,6 @@ import SwiftUI
 /// Manages its own break picker and unlock confirmation sheets.
 struct HomeFloatingLockButton: View {
     @Environment(AnalyticsManager.self) private var analytics
-    @Environment(\.scenePhase) private var scenePhase
     @AppStorage(DefaultsKeys.lockButtonSide) private var lockButtonSide: LockButtonSide = .trailing
     @AppStorage(DefaultsKeys.lockButtonSize) private var lockButtonSize: LockButtonSize = .normal
 
@@ -45,13 +44,8 @@ struct HomeFloatingLockButton: View {
         .onReceive(NotificationCenter.default.publisher(for: .showBreakTypePicker)) { _ in
             showBreakTypePicker = true
         }
-        .onChange(of: scenePhase) { _, phase in
-            if phase == .active {
-                checkPendingShieldUnlock()
-            }
-        }
-        .onAppear {
-            checkPendingShieldUnlock()
+        .onReceive(NotificationCenter.default.publisher(for: .shieldUnlockRequested)) { _ in
+            startPulsingForUnlock()
         }
     }
 
@@ -123,9 +117,8 @@ struct HomeFloatingLockButton: View {
 
     // MARK: - Shield Unlock Pulse
 
-    private func checkPendingShieldUnlock() {
-        guard SharedDefaults.pendingShieldUnlock, shieldState.isActive else { return }
-        SharedDefaults.pendingShieldUnlock = false
+    private func startPulsingForUnlock() {
+        guard shieldState.isActive else { return }
         isPulsingForUnlock = true
 
         Task {

@@ -173,7 +173,11 @@ struct ContentView: View {
                 checkDayResetAndShowPicker()
                 checkNotificationPrompt()
                 if SharedDefaults.pendingShieldUnlock {
-                    activeTab = .home
+                    SharedDefaults.pendingShieldUnlock = false
+                    dismissAllPresentedSheets {
+                        activeTab = .home
+                        NotificationCenter.default.post(name: .shieldUnlockRequested, object: nil)
+                    }
                 }
             }
         }
@@ -336,6 +340,16 @@ struct ContentView: View {
         }
         .padding()
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+
+    private func dismissAllPresentedSheets(completion: @escaping () -> Void) {
+        guard let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+              let root = scene.windows.first(where: \.isKeyWindow)?.rootViewController,
+              root.presentedViewController != nil else {
+            completion()
+            return
+        }
+        root.dismiss(animated: true) { completion() }
     }
 }
 
