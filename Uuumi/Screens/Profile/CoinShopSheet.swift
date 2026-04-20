@@ -35,6 +35,23 @@ struct CoinShopSheet: View {
             .navigationTitle("Get Coins")
             .navigationBarTitleDisplayMode(.inline)
             .dismissButton()
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    HStack(spacing: 6) {
+                        Image("coin")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 18, height: 18)
+                        Text("\(coinBalance)")
+                            .fontWeight(.semibold)
+                            .contentTransition(.numericText())
+                    }
+                    .font(.body)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
+                    .sensoryFeedback(.success, trigger: coinBalance)
+                }
+            }
             .task {
                 analytics.send(.paywallShown(source: source.rawValue, type: "coins"))
                 await storeManager.loadProducts()
@@ -67,15 +84,6 @@ struct CoinShopSheet: View {
                 .scaledToFit()
                 .frame(height: 120)
                 .animation(.easeInOut(duration: 0.2), value: selectedProduct?.id)
-
-            HStack(spacing: 4) {
-                Text("\(coinBalance)")
-                    .font(.title2.weight(.bold))
-                    .contentTransition(.numericText())
-                Text("coins")
-                    .font(.title2)
-                    .foregroundStyle(.secondary)
-            }
 
             Text("Power up your collection.")
                 .font(.title2.weight(.bold))
