@@ -172,6 +172,9 @@ struct ContentView: View {
                 ShieldState.shared.refresh()
                 checkDayResetAndShowPicker()
                 checkNotificationPrompt()
+                if SharedDefaults.pendingShieldUnlock {
+                    activeTab = .home
+                }
             }
         }
         .onChange(of: shieldState.lastEarnedCoins) { _, coins in
