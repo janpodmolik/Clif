@@ -19,6 +19,9 @@
     "--:--" : {
 
     },
+    "-%@ pts" : {
+
+    },
     "—" : {
 
     },
@@ -28,6 +31,9 @@
     "·" : {
 
     },
+    "(%lld)" : {
+
+    },
     "(optional)" : {
 
     },
@@ -35,6 +41,12 @@
 
     },
     "[Terms of Service](https://uuumi.app/terms/)" : {
+
+    },
+    "%.1f" : {
+
+    },
+    "%.2f" : {
 
     },
     "%@" : {
@@ -94,6 +106,16 @@
         }
       }
     },
+    "%lld apps, %lld cat." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld apps, %2$lld cat."
+          }
+        }
+      }
+    },
     "%lld Coins" : {
 
     },
@@ -104,6 +126,12 @@
 
     },
     "%lld evolutions" : {
+
+    },
+    "%lld min" : {
+
+    },
+    "%lld min ago" : {
 
     },
     "%lld pets" : {
@@ -145,6 +173,9 @@
         }
       }
     },
+    "%lld/100" : {
+
+    },
     "%lld%%" : {
 
     },
@@ -169,7 +200,16 @@
     "+%lld" : {
 
     },
+    "+1 Day" : {
+
+    },
     "+1 Day (bump age)" : {
+
+    },
+    "+100 Coins" : {
+
+    },
+    "+1000 Coins" : {
 
     },
     "~%@" : {
@@ -216,6 +256,15 @@
         }
       }
     },
+    "🫧" : {
+
+    },
+    "0 = bottom, 1 = top. Full effect below Start, fades to End." : {
+
+    },
+    "0.5" : {
+
+    },
     "0%" : {
 
     },
@@ -223,6 +272,9 @@
 
     },
     "1-week" : {
+
+    },
+    "2.0" : {
 
     },
     "2×" : {
@@ -279,10 +331,16 @@
     "ACT %lld" : {
 
     },
+    "Activate" : {
+
+    },
     "Activate Safety Shield at" : {
 
     },
     "Active" : {
+
+    },
+    "Active Break" : {
 
     },
     "Activity detail is not available" : {
@@ -315,7 +373,16 @@
     "Always uses the light theme." : {
 
     },
+    "Always visible" : {
+
+    },
+    "Amplitude: %.3f" : {
+
+    },
     "Animate" : {
+
+    },
+    "Animation Type" : {
 
     },
     "Annual Plan" : {
@@ -327,6 +394,9 @@
     "Appearance" : {
 
     },
+    "Apple Developer Forum discussion" : {
+
+    },
     "Apply %@ Essence?" : {
 
     },
@@ -336,7 +406,23 @@
     "Apply Essence" : {
 
     },
+    "Apply Shield" : {
+
+    },
+    "Apps: %lld | Categories: %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Apps: %1$lld | Categories: %2$lld"
+          }
+        }
+      }
+    },
     "Archive" : {
+
+    },
+    "Archive Reason" : {
 
     },
     "Archived" : {
@@ -349,6 +435,12 @@
 
     },
     "At least 8 characters" : {
+
+    },
+    "Authorize Screen Time" : {
+
+    },
+    "Authorize to use Screen Time debug tools." : {
 
     },
     "Automatic" : {
@@ -369,13 +461,38 @@
     "Back" : {
 
     },
+    "Bend: %.1f" : {
+
+    },
     "Best Value" : {
 
     },
     "Blob" : {
 
     },
+    "Blob (no essence)" : {
+
+    },
+    "Blow Away" : {
+
+    },
+    "Blow Away Button" : {
+
+    },
     "Blow away: %@ min" : {
+
+    },
+    "Blow: %lld min • Recover: %lld min" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Blow: %1$lld min • Recover: %2$lld min"
+          }
+        }
+      }
+    },
+    "Blown" : {
 
     },
     "blown away" : {
@@ -387,6 +504,9 @@
     "Blown Away" : {
 
     },
+    "Blown Away State" : {
+
+    },
     "Blown away!" : {
 
     },
@@ -394,6 +514,9 @@
 
     },
     "Break ended" : {
+
+    },
+    "Break Type" : {
 
     },
     "Break violated" : {
@@ -450,7 +573,13 @@
     "Choose your apps" : {
 
     },
+    "Clear" : {
+
+    },
     "Clear filters" : {
+
+    },
+    "Clear Shield" : {
 
     },
     "Clear Sky" : {
@@ -480,6 +609,15 @@
     "Continue with Google" : {
 
     },
+    "Copy" : {
+
+    },
+    "Copy All" : {
+
+    },
+    "Count: %lld" : {
+
+    },
     "Create a new pet on the homepage." : {
 
     },
@@ -507,7 +645,13 @@
     "Current Weather" : {
 
     },
+    "Custom Config" : {
+
+    },
     "Custom range" : {
+
+    },
+    "Custom Tap Config" : {
 
     },
     "Customize" : {
@@ -531,10 +675,28 @@
     "Dark Theme" : {
 
     },
+    "Day Start Shield" : {
+
+    },
     "days" : {
 
     },
+    "Days Ago" : {
+
+    },
     "Days alive" : {
+
+    },
+    "Days Until Evolution" : {
+
+    },
+    "Deactivate" : {
+
+    },
+    "Debug" : {
+
+    },
+    "Decay: %.1f" : {
 
     },
     "Decreasing" : {
@@ -552,6 +714,9 @@
     "Delete Account" : {
 
     },
+    "Delete Button" : {
+
+    },
     "Delete My Apps?" : {
 
     },
@@ -562,6 +727,9 @@
 
     },
     "Details" : {
+
+    },
+    "Display Scale" : {
 
     },
     "Don't have an account? Sign Up" : {
@@ -582,6 +750,12 @@
     "Duration" : {
 
     },
+    "Duration: %.1fs" : {
+
+    },
+    "Duration: %.2fs" : {
+
+    },
     "Dynamic Sky" : {
 
     },
@@ -589,6 +763,9 @@
 
     },
     "e.g. Reduce social media" : {
+
+    },
+    "e.g. Social Media" : {
 
     },
     "Early termination will cause loss of pet" : {
@@ -624,6 +801,9 @@
     "End break" : {
 
     },
+    "End: %.2f" : {
+
+    },
     "Ending this break early will cause immediate loss of your pet." : {
 
     },
@@ -648,6 +828,12 @@
     "Essence Collection" : {
 
     },
+    "Event Log" : {
+
+    },
+    "Events blocked" : {
+
+    },
     "Every evolution earns you coins. Premium doubles the reward." : {
 
     },
@@ -663,10 +849,22 @@
     "Evolution Path" : {
 
     },
+    "Evolution Phase" : {
+
+    },
     "Evolution ready!" : {
 
     },
+    "Evolution Scale" : {
+
+    },
+    "Evolution Stage" : {
+
+    },
     "Evolution Timeline" : {
+
+    },
+    "Evolution transition not available for Blob" : {
 
     },
     "evolutions" : {
@@ -675,10 +873,22 @@
     "Evolve anyway" : {
 
     },
+    "Evolve Now" : {
+
+    },
     "Evolve to Next Phase" : {
 
     },
     "Evolve!" : {
+
+    },
+    "Exp" : {
+
+    },
+    "exp: %.1f" : {
+
+    },
+    "Expire Break" : {
 
     },
     "Fast Wind Preset" : {
@@ -690,6 +900,12 @@
     "Female" : {
 
     },
+    "Filter: %@" : {
+
+    },
+    "Focus Zone" : {
+
+    },
     "Forgot Password?" : {
 
     },
@@ -699,7 +915,16 @@
     "free trial" : {
 
     },
+    "Frequency: %.0f" : {
+
+    },
+    "Frequency: %.2f Hz" : {
+
+    },
     "From" : {
+
+    },
+    "From Phase" : {
 
     },
     "Fully evolved" : {
@@ -726,6 +951,9 @@
     "Give your new companion a name and purpose" : {
 
     },
+    "Glow Intensity: %.1f" : {
+
+    },
     "Go to Settings" : {
 
     },
@@ -733,6 +961,15 @@
 
     },
     "Grants access and allows app selection" : {
+
+    },
+    "Gust Intensity" : {
+
+    },
+    "Haptic" : {
+
+    },
+    "Haptic Feedback" : {
 
     },
     "HELLOOO?! It's getting really dangerous here, help please!" : {
@@ -747,6 +984,9 @@
     "Hey, it's getting windy... but at least it won't be hot!" : {
 
     },
+    "High (red)" : {
+
+    },
     "History" : {
 
     },
@@ -754,6 +994,9 @@
 
     },
     "Home" : {
+
+    },
+    "HomeCard Debug" : {
 
     },
     "Hour" : {
@@ -768,13 +1011,34 @@
     "How It Works" : {
 
     },
+    "Idle Enabled" : {
+
+    },
     "Important only" : {
 
     },
     "Increasing" : {
 
     },
+    "Int: %.2f" : {
+
+    },
+    "Intensity: %.1f" : {
+
+    },
+    "Intensity: %.2f" : {
+
+    },
+    "Interpolated Values" : {
+
+    },
     "Invalid credentials" : {
+
+    },
+    "iOS 26.2 has a confirmed bug where Apple's Screen Time system occasionally reports app usage that didn't actually happen. Apple acknowledged the bug and is working on a fix. Uuumi filters out impossible spikes so your pet isn't punished unfairly." : {
+
+    },
+    "Is Blown" : {
 
     },
     "Join Community" : {
@@ -786,10 +1050,16 @@
     "Keep %@ safe!" : {
 
     },
+    "Known iOS Issue" : {
+
+    },
     "Large" : {
 
     },
     "Last 3 months" : {
+
+    },
+    "Last filtered" : {
 
     },
     "Last month" : {
@@ -799,6 +1069,9 @@
 
     },
     "Last year" : {
+
+    },
+    "Learn More" : {
 
     },
     "left" : {
@@ -840,7 +1113,19 @@
     "Link Sent" : {
 
     },
+    "Live" : {
+
+    },
+    "Load Products" : {
+
+    },
+    "Loading..." : {
+
+    },
     "Loads your saved app and category selection. You can manage your saved selection in Profile." : {
+
+    },
+    "Lock All Essences" : {
 
     },
     "Lock Button" : {
@@ -855,10 +1140,19 @@
     "Locking activates a break — selected apps get blocked. Unlocking ends the break." : {
 
     },
+    "Low (green)" : {
+
+    },
     "Male" : {
 
     },
     "Manage Subscription" : {
+
+    },
+    "Manual" : {
+
+    },
+    "Max" : {
 
     },
     "Max: %@ days" : {
@@ -870,13 +1164,22 @@
     "Medium" : {
 
     },
+    "Medium (orange)" : {
+
+    },
     "Mild" : {
+
+    },
+    "Min" : {
 
     },
     "Min: %lld days" : {
 
     },
     "Minutes" : {
+
+    },
+    "Minutes Ago" : {
 
     },
     "Mock Sheet" : {
@@ -921,6 +1224,9 @@
     "Next unlock" : {
 
     },
+    "No" : {
+
+    },
     "No active pet" : {
 
     },
@@ -940,6 +1246,12 @@
 
     },
     "No history yet" : {
+
+    },
+    "No log data. Tap Refresh to load." : {
+
+    },
+    "No phantom events detected on this device yet." : {
 
     },
     "No Purchase Found" : {
@@ -970,6 +1282,9 @@
 
     },
     "Not yet selected" : {
+
+    },
+    "Notification Request" : {
 
     },
     "Notifications" : {
@@ -1005,16 +1320,31 @@
     "on break" : {
 
     },
+    "On Break" : {
+
+    },
     "Onboarding" : {
 
     },
     "Only from the apps that pull you in." : {
 
     },
+    "Open Pet Detail Sheet" : {
+
+    },
     "Open Settings" : {
 
     },
     "Origin" : {
+
+    },
+    "Overnight + Shield" : {
+
+    },
+    "Overnight Break" : {
+
+    },
+    "Override" : {
 
     },
     "Overrides daily preset. Rise: %@ pts/min, Fall: %@ pts/min" : {
@@ -1033,10 +1363,25 @@
     "Own choice" : {
 
     },
+    "Particles" : {
+
+    },
     "Password" : {
 
     },
+    "Paused" : {
+
+    },
+    "Peak Mode" : {
+
+    },
     "Period" : {
+
+    },
+    "Pet Debug" : {
+
+    },
+    "Pet name" : {
 
     },
     "Pet was blown away at your own request." : {
@@ -1054,6 +1399,12 @@
     "Pet will go to the archive and you will continue with onboarding." : {
 
     },
+    "PetDetail Debug" : {
+
+    },
+    "PetHistoryRow Debug" : {
+
+    },
     "Phase" : {
 
     },
@@ -1069,6 +1420,25 @@
           }
         }
       }
+    },
+    "Phase %lld/%lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Phase %1$lld/%2$lld"
+          }
+        }
+      }
+    },
+    "Phase: %lld" : {
+
+    },
+    "Plant P3" : {
+
+    },
+    "Plant P4 (fully evolved)" : {
+
     },
     "Position" : {
 
@@ -1091,6 +1461,9 @@
     "Preset" : {
 
     },
+    "Preset Picker" : {
+
+    },
     "Presets" : {
 
     },
@@ -1103,13 +1476,22 @@
     "Profile" : {
 
     },
+    "Progress" : {
+
+    },
     "Progress: %.2f" : {
+
+    },
+    "Progress: %lld%%" : {
 
     },
     "Progressed today" : {
 
     },
     "Prumerne %@ na den" : {
+
+    },
+    "Pulsing / Shield Active (flow ←)" : {
 
     },
     "Purchase is pending approval" : {
@@ -1154,6 +1536,15 @@
     "Redeem Code" : {
 
     },
+    "Refresh" : {
+
+    },
+    "Refresh Entitlements" : {
+
+    },
+    "Refresh Report" : {
+
+    },
     "remaining" : {
 
     },
@@ -1163,10 +1554,22 @@
     "Replay" : {
 
     },
+    "Replay Button" : {
+
+    },
     "Reset" : {
 
     },
+    "Reset Coins" : {
+
+    },
+    "Reset Onboarding" : {
+
+    },
     "Reset Password" : {
+
+    },
+    "Reset Position" : {
 
     },
     "Reset to Blob" : {
@@ -1196,7 +1599,16 @@
     "Right" : {
 
     },
+    "Rot: %.1f" : {
+
+    },
+    "Rotation: %.0f°" : {
+
+    },
     "Safe Unlock Below" : {
+
+    },
+    "Safety Shield" : {
 
     },
     "Save" : {
@@ -1215,6 +1627,9 @@
 
     },
     "Saved Selection" : {
+
+    },
+    "Scale: %.2f" : {
 
     },
     "Screen %lld of %lld" : {
@@ -1242,6 +1657,9 @@
     "Search pets..." : {
 
     },
+    "Seconds blocked" : {
+
+    },
     "Secured via the App Store" : {
 
     },
@@ -1263,10 +1681,19 @@
     "Select an essence to determine your pet's evolution path" : {
 
     },
+    "Select Apps" : {
+
+    },
     "Select apps or categories" : {
 
     },
     "Select apps to limit" : {
+
+    },
+    "Select different From/To phases" : {
+
+    },
+    "Select Pet" : {
 
     },
     "Select tracked apps" : {
@@ -1290,10 +1717,22 @@
     "Shield" : {
 
     },
+    "Shield Active (cyan, flow ←)" : {
+
+    },
+    "Show Detail Button" : {
+
+    },
+    "Show Evolve Button" : {
+
+    },
     "Show my screen time" : {
 
     },
     "Show pets" : {
+
+    },
+    "Show Speech Bubble" : {
 
     },
     "Sign In" : {
@@ -1309,6 +1748,9 @@
 
     },
     "Sign-in error (missing nonce)" : {
+
+    },
+    "Simulate New Day" : {
 
     },
     "Since %@" : {
@@ -1338,6 +1780,9 @@
     "Stable" : {
 
     },
+    "Stage" : {
+
+    },
     "Start" : {
 
     },
@@ -1350,6 +1795,15 @@
     "Start your day" : {
 
     },
+    "Start: %.2f" : {
+
+    },
+    "Started" : {
+
+    },
+    "States Preview" : {
+
+    },
     "Status" : {
 
     },
@@ -1359,6 +1813,9 @@
     "Stop" : {
 
     },
+    "Streak" : {
+
+    },
     "Strict Mode" : {
 
     },
@@ -1366,6 +1823,15 @@
 
     },
     "Strong wind" : {
+
+    },
+    "Summary (today)" : {
+
+    },
+    "Summary (yesterday)" : {
+
+    },
+    "Sway: %.1f" : {
 
     },
     "Switches between light and dark theme based on time of day." : {
@@ -1390,6 +1856,9 @@
 
     },
     "Tester Tools" : {
+
+    },
+    "Text (empty = emoji)" : {
 
     },
     "Thank you for your feedback!" : {
@@ -1434,6 +1903,9 @@
     "To create a pet, you need to allow Screen Time access in Settings." : {
 
     },
+    "To Phase" : {
+
+    },
     "Today" : {
 
     },
@@ -1441,6 +1913,9 @@
 
     },
     "total" : {
+
+    },
+    "Total Days" : {
 
     },
     "Total time" : {
@@ -1452,13 +1927,22 @@
     "Tracked Apps" : {
 
     },
+    "Transition in progress..." : {
+
+    },
     "Trend" : {
 
     },
     "trial" : {
 
     },
+    "Trigger %@" : {
+
+    },
     "Trigger Evolution" : {
+
+    },
+    "Troubleshooting" : {
 
     },
     "Try 7 Days Free" : {
@@ -1473,7 +1957,13 @@
     "Try changing your search or filters." : {
 
     },
+    "Tune Bounds" : {
+
+    },
     "Twilight" : {
+
+    },
+    "Type" : {
 
     },
     "Unable to load coin packs" : {
@@ -1485,6 +1975,9 @@
     "Unknown essence" : {
 
     },
+    "Unknown Essence" : {
+
+    },
     "Unlimited break" : {
 
     },
@@ -1494,10 +1987,19 @@
     "Unlock %@" : {
 
     },
+    "Unlock All Essences" : {
+
+    },
     "Unlock Evolution Now" : {
 
     },
+    "Unlock in 1 min" : {
+
+    },
     "Unlock new evolution paths for your pets." : {
+
+    },
+    "Unlock Now" : {
 
     },
     "Unlock the full journey." : {
@@ -1542,6 +2044,12 @@
     "Version" : {
 
     },
+    "Visible when blown away" : {
+
+    },
+    "We ignore thresholds that claim more usage than real time elapsed. The first event in a batch can still slip through — we're still improving this defence." : {
+
+    },
     "We only store your progress, nothing else." : {
 
     },
@@ -1557,10 +2065,25 @@
     "What kind of day do you want?" : {
 
     },
+    "What We Filtered Out" : {
+
+    },
     "wind" : {
 
     },
     "Wind" : {
+
+    },
+    "Wind burst active..." : {
+
+    },
+    "Wind Coin Bug" : {
+
+    },
+    "Wind Decrease" : {
+
+    },
+    "Wind decreasing ←" : {
 
     },
     "Wind has completely stopped – your pet is safe!" : {
@@ -1572,13 +2095,28 @@
     "Wind has stopped – you can safely unlock your phone." : {
 
     },
+    "Wind increasing →" : {
+
+    },
     "Wind is still blowing" : {
+
+    },
+    "Wind Level" : {
 
     },
     "Wind must drop below the selected threshold to unlock without penalty." : {
 
     },
+    "Wind Points" : {
+
+    },
+    "Wind Preset" : {
+
+    },
     "Wind Presets" : {
+
+    },
+    "Wind Progress Bar" : {
 
     },
     "Wind rises when you use limited apps and falls when you take breaks." : {
@@ -1593,10 +2131,16 @@
     "Wind timeline" : {
 
     },
+    "Wind went up without using the app?" : {
+
+    },
     "Without it, there's no wind, no protection, no evolution." : {
 
     },
     "Yearly" : {
+
+    },
+    "Yes" : {
 
     },
     "You can change this anytime in Settings → Daily Preset." : {
@@ -1663,6 +2207,12 @@
 
     },
     "za poslednich 7 dni" : {
+
+    },
+    "Zombie Break" : {
+
+    },
+    "Zone: %@" : {
 
     }
   },
