@@ -39,6 +39,20 @@ enum AppConstants {
 
     static let maxPetNameLength = 15
     static let maxPetPurposeLength = 30
+
+    // MARK: - iOS 26.2 Phantom Burst Workaround (FB21450954)
+    // Grep for PHANTOM_BURST_WORKAROUND to find all call sites that need removal
+    // once Apple ships the fix. Bump this version at each app release and run the
+    // app once on the latest iOS — if phantomBurstAssumedFixedVersion has been
+    // reached and no phantom drops are recorded in normal testing, the workaround
+    // (and this constant) can be deleted.
+    // Tracking thread: https://developer.apple.com/forums/thread/811305
+    /// iOS version where Apple is expected to have fixed the DeviceActivity bug.
+    /// Community reports point at 26.5 beta — treat as "revisit this in every release
+    /// after user base has moved past this version."
+    static let phantomBurstAssumedFixedVersion = OperatingSystemVersion(
+        majorVersion: 26, minorVersion: 5, patchVersion: 0
+    )
 }
 
 /// Logging category identifiers
@@ -145,6 +159,13 @@ enum DefaultsKeys {
 
     static let lastThresholdTimestamp = "lastThresholdTimestamp"
     static let lastMonitoringRestart = "lastMonitoringRestart"
+
+    // MARK: - iOS 26.2 Phantom Burst Diagnostics (FB21450954)
+    // Tracks events the physical-limit guard dropped. Surfaced in the Troubleshooting
+    // screen so users see evidence that the app is actively filtering Apple's bug.
+    static let lastBurstDropAt = "lastBurstDropAt"
+    static let burstDropCount = "burstDropCount"
+    static let burstDropSecondsTotal = "burstDropSecondsTotal"
 
     // MARK: - Daily Reset
 

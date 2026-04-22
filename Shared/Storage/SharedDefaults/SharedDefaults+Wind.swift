@@ -132,6 +132,56 @@ extension SharedDefaults {
         set { defaults?.set(newValue, forKey: DefaultsKeys.windReminderSent) }
     }
 
+    // MARK: - iOS 26.2 Phantom Burst Diagnostics (FB21450954)
+    // Remove together with validateThresholdAgainstWallClock once Apple ships the fix.
+
+    /// Timestamp of the most recent phantom-burst event that was dropped by the guard.
+    /// Surfaced in the Help screen so the user sees confirmation when they suspect phantom wind.
+    static var lastBurstDropAt: Date? {
+        get {
+            let fresh = UserDefaults(suiteName: AppConstants.appGroupIdentifier)
+            fresh?.synchronize()
+            return fresh?.object(forKey: DefaultsKeys.lastBurstDropAt) as? Date
+        }
+        set {
+            defaults?.set(newValue, forKey: DefaultsKeys.lastBurstDropAt)
+            defaults?.synchronize()
+        }
+    }
+
+    /// Running count of phantom bursts dropped (lifetime), for optional diagnostics.
+    static var burstDropCount: Int {
+        get {
+            let fresh = UserDefaults(suiteName: AppConstants.appGroupIdentifier)
+            fresh?.synchronize()
+            return fresh?.integer(forKey: DefaultsKeys.burstDropCount) ?? 0
+        }
+        set {
+            defaults?.set(newValue, forKey: DefaultsKeys.burstDropCount)
+            defaults?.synchronize()
+        }
+    }
+
+    /// Total reported seconds dropped across all phantom bursts (lifetime).
+    static var burstDropSecondsTotal: Int {
+        get {
+            let fresh = UserDefaults(suiteName: AppConstants.appGroupIdentifier)
+            fresh?.synchronize()
+            return fresh?.integer(forKey: DefaultsKeys.burstDropSecondsTotal) ?? 0
+        }
+        set {
+            defaults?.set(newValue, forKey: DefaultsKeys.burstDropSecondsTotal)
+            defaults?.synchronize()
+        }
+    }
+
+    /// Called from the extension each time the physical-limit guard drops a phantom burst.
+    static func registerBurstDrop(droppedSeconds: Int) {
+        lastBurstDropAt = Date()
+        burstDropCount = burstDropCount + 1
+        burstDropSecondsTotal = burstDropSecondsTotal + droppedSeconds
+    }
+
     // MARK: - Wind Helpers
 
     /// Resets all wind-related values for a new monitoring session.

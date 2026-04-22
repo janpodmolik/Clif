@@ -102,23 +102,37 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
                 return
             }
 
-            guard let currentSeconds = parseSecondsFromEvent(event) else { return }
+            guard let currentSeconds = parseSecondsFromEvent(event) else {
+                ExtensionLogger.log("[Extension] eventDidReachThreshold: unparseable event=\(event.rawValue)")
+                return
+            }
+
+            let petId = SharedDefaults.monitoredPetId?.uuidString ?? "nil"
+            let limit = SharedDefaults.integer(forKey: DefaultsKeys.monitoringLimitSeconds)
+            let baseline = SharedDefaults.cumulativeBaseline
+            let lastProcessed = SharedDefaults.monitoredLastThresholdSeconds
+            let wallDelta: String = {
+                guard let last = SharedDefaults.lastThresholdTimestamp else { return "nil" }
+                return String(format: "%.2fs", Date().timeIntervalSince(last))
+            }()
+            ExtensionLogger.log("[Extension] eventDidReachThreshold: event=\(event.rawValue) current=\(currentSeconds)s last=\(lastProcessed)s delta=\(currentSeconds - lastProcessed)s wallDelta=\(wallDelta) petId=\(petId) limit=\(limit)s baseline=\(baseline)s")
 
             // Guard against out-of-order threshold bursts: only process if this threshold
             // is higher than the last one we processed. When monitoring restarts, iOS may fire
             // multiple thresholds simultaneously in non-deterministic order.
-            let lastProcessed = SharedDefaults.monitoredLastThresholdSeconds
             guard currentSeconds > lastProcessed else {
-                ExtensionLogger.log("[Extension] Skipping out-of-order threshold: \(currentSeconds)s <= last \(lastProcessed)s")
+                ExtensionLogger.log("[Extension] Skipping out-of-order threshold: \(currentSeconds)s <= last \(lastProcessed)s wallDelta=\(wallDelta)")
                 return
             }
 
-            // Burst detection: if reported usage increase far exceeds wall-clock time,
-            // iOS delivered stale accumulated data after a monitoring restart.
-            let adjustedSeconds = validateThresholdAgainstWallClock(
+            // iOS 26.2 phantom burst guard — see validateThresholdAgainstWallClock header.
+            // nil return = phantom event, drop it entirely (don't even move the cursor).
+            guard let adjustedSeconds = validateThresholdAgainstWallClock(
                 currentSeconds: currentSeconds,
                 lastProcessedSeconds: lastProcessed
-            )
+            ) else {
+                return
+            }
 
             SharedDefaults.monitoredLastThresholdSeconds = adjustedSeconds
             SharedDefaults.lastThresholdTimestamp = Date()
@@ -143,43 +157,66 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
         return seconds
     }
 
-    /// Validates a threshold against wall-clock time to detect iOS burst delivery.
-    /// After a monitoring restart, iOS may deliver stale accumulated usage as a burst
-    /// (e.g., 720s of "current" reported within 1 second). This causes double-counting
-    /// because the baseline already contains the real usage.
+    // MARK: - PHANTOM_BURST_WORKAROUND (iOS 26.2 — FB21450954)
+    // -------------------------------------------------------------------------
+    // Workaround for confirmed Apple bug: DeviceActivityMonitor.eventDidReachThreshold
+    // fires phantom events on iOS 26.2 without corresponding real app usage —
+    // sometimes dozens in a single millisecond, causing wind jumps of 50+ percentage
+    // points. Related radars: FB18351583, FB13696022, FB21320644.
+    //
+    // Apple Developer Relations acknowledged the bug but hasn't shipped a fix.
+    // Community reports point at iOS 26.5 as the likely fix target
+    // (see AppConstants.phantomBurstAssumedFixedVersion).
+    //
+    // Tracking: https://developer.apple.com/forums/thread/811305
+    //
+    // When removing: grep the repo for `PHANTOM_BURST_WORKAROUND` to find every site.
+    //   1) this file — validateThresholdAgainstWallClock + the caller guard
+    //   2) SharedDefaults+Wind.swift — burstDrop accessors + registerBurstDrop
+    //   3) Constants.swift — burstDrop keys + phantomBurstAssumedFixedVersion
+    //   4) TroubleshootingScreen.swift + ProfileDestination.troubleshooting
+    //   5) MainApp.swift — checkPhantomBurstWorkaroundRelevance()
+    // -------------------------------------------------------------------------
+
+    /// Detects phantom threshold bursts by the physical-limit principle:
+    /// reported usage cannot accumulate faster than wall-clock time passes.
     ///
-    /// Returns adjusted seconds if burst is detected, or original value if legitimate.
+    /// Returns the seconds value to store for this event, or `nil` if the event is a phantom
+    /// burst and should be ignored entirely (nothing written, wind unchanged).
+    ///
+    /// Trade-off: the first event in a phantom burst is indistinguishable from legitimate
+    /// late delivery (both have large wallDelta), so it passes through uncapped. Only
+    /// subsequent events arriving within the same wall-clock moment get filtered. We accept
+    /// this limitation — perfect detection would require cross-checking iOS's reported
+    /// total usage, which is a separate (more complex) defence.
     private func validateThresholdAgainstWallClock(
         currentSeconds: Int,
         lastProcessedSeconds: Int
-    ) -> Int {
+    ) -> Int? {
         guard let lastTimestamp = SharedDefaults.lastThresholdTimestamp else {
-            // First threshold — no baseline to compare, accept as-is
+            // First threshold of the session — no prior fire to compare against.
             return currentSeconds
         }
 
         let wallClockElapsed = Date().timeIntervalSince(lastTimestamp)
         let reportedIncrease = currentSeconds - lastProcessedSeconds
+        guard reportedIncrease > 0 else { return currentSeconds }
 
-        // Skip burst detection for short intervals — rapid legitimate thresholds
-        // can appear as false positives when wall-clock elapsed is tiny.
-        guard reportedIncrease > 0, wallClockElapsed > 5 else {
-            return currentSeconds
+        // Grace absorbs iOS's normal delivery jitter: thresholds legitimately spaced
+        // 25–40s apart can arrive bundled within a second or two. 10s is safely above
+        // that jitter and orders of magnitude below observed phantom burst deltas (100s+).
+        let graceSeconds = 10
+        let plausibleIncrease = Int(ceil(wallClockElapsed)) + graceSeconds
+
+        if reportedIncrease > plausibleIncrease {
+            // Physically impossible increase in the elapsed time → phantom burst.
+            // Forgive it: return nil so the caller writes nothing, wind stays unchanged.
+            SharedDefaults.registerBurstDrop(droppedSeconds: reportedIncrease)
+            ExtensionLogger.log("[Extension] PHANTOM BURST ignored: reported=+\(reportedIncrease)s in \(String(format: "%.2f", wallClockElapsed))s (allowed=\(plausibleIncrease)s) — event discarded")
+            return nil
         }
 
-        // If reported increase is more than 2x the wall-clock elapsed time,
-        // this is a burst from stale data. Cap to wall-clock elapsed.
-        let ratio = Double(reportedIncrease) / wallClockElapsed
-
-        if ratio > 2.0 {
-            let cappedIncrease = Int(ceil(wallClockElapsed))
-            let adjusted = lastProcessedSeconds + cappedIncrease
-
-            ExtensionLogger.log("[Extension] BURST DETECTED: reported +\(reportedIncrease)s in \(Int(wallClockElapsed))s (ratio=\(String(format: "%.1f", ratio))x). Capping to +\(cappedIncrease)s → \(adjusted)s")
-
-            return adjusted
-        }
-
+        ExtensionLogger.log("[Extension] validate: OK reported=+\(reportedIncrease)s in \(String(format: "%.2f", wallClockElapsed))s → pass current=\(currentSeconds)s")
         return currentSeconds
     }
 

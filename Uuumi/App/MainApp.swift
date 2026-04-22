@@ -28,11 +28,25 @@ struct MainApp: App {
     init() {
         #if DEBUG
         print("🟢 MainApp init")
+        Self.checkPhantomBurstWorkaroundRelevance()
         #endif
         // Eagerly initialize ShieldManager so its Darwin notification observer
         // is registered before any extension threshold can fire.
         _ = ShieldManager.shared
     }
+
+    #if DEBUG
+    /// PHANTOM_BURST_WORKAROUND — reminds us at each run whether Apple may have
+    /// shipped the iOS 26.2 DeviceActivity fix yet. If we're on a version at or
+    /// past our assumed-fixed marker, grep `PHANTOM_BURST_WORKAROUND` and verify
+    /// the workaround still serves a purpose before the next release.
+    private static func checkPhantomBurstWorkaroundRelevance() {
+        let target = AppConstants.phantomBurstAssumedFixedVersion
+        guard ProcessInfo.processInfo.isOperatingSystemAtLeast(target) else { return }
+        let current = ProcessInfo.processInfo.operatingSystemVersionString
+        print("⚠️ PHANTOM_BURST_WORKAROUND: running on \(current) ≥ \(target.majorVersion).\(target.minorVersion) — re-test iOS DeviceActivity bug (FB21450954) and consider removing workaround.")
+    }
+    #endif
 
     var body: some Scene {
         WindowGroup {
