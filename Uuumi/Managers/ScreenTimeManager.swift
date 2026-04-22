@@ -178,6 +178,8 @@ final class ScreenTimeManager: ObservableObject {
         print("  limitSeconds: \(limitSeconds)s")
         #endif
 
+        ExtensionLogger.log("[ScreenTimeManager] startMonitoring: petId=\(petId.uuidString) limit=\(limitSeconds)s apps=\(appTokens.count) cats=\(catTokens.count) webs=\(webTokens.count) baseline=\(SharedDefaults.cumulativeBaseline)s last=\(SharedDefaults.monitoredLastThresholdSeconds)s wind=\(String(format: "%.1f", SharedDefaults.monitoredWindPoints))%")
+
         registerMonitoring(
             petId: petId,
             limitSeconds: limitSeconds,

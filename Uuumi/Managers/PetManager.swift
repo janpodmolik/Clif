@@ -259,6 +259,16 @@ final class PetManager {
         // Persist selection for pre-populating the picker on next edit
         SharedDefaults.saveFamilyActivitySelection(selection)
 
+        // Reset threshold accounting so iOS-queued events from the previous token set
+        // can't be processed against the new tokens. Wind already earned is preserved
+        // in `monitoredWindPoints`; only the per-interval counters are cleared.
+        let priorBaseline = SharedDefaults.cumulativeBaseline
+        let priorLast = SharedDefaults.monitoredLastThresholdSeconds
+        SharedDefaults.cumulativeBaseline = 0
+        SharedDefaults.monitoredLastThresholdSeconds = 0
+        SharedDefaults.lastThresholdTimestamp = nil
+        ExtensionLogger.log("[PetManager] updateLimitedSources: reset threshold state (baseline=\(priorBaseline)s, last=\(priorLast)s); wind=\(String(format: "%.1f", SharedDefaults.monitoredWindPoints))% preserved; apps=\(newSources.applicationTokens.count) cats=\(newSources.categoryTokens.count) webs=\(newSources.webDomainTokens.count)")
+
         // Restart monitoring with new tokens (wind preserved)
         let limitSeconds = Int(pet.preset.minutesToBlowAway * 60)
         ScreenTimeManager.shared.startMonitoring(
