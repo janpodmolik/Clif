@@ -11,6 +11,7 @@ enum ProfileDestination: Hashable {
     case lockButtonSettings
     case appearanceSettings
     case feedback
+    case troubleshooting
 }
 
 struct ProfileScreen: View {
@@ -135,6 +136,10 @@ struct ProfileScreen: View {
                         syncStatusRow
                     }
 
+                    NavigationLink(value: ProfileDestination.troubleshooting) {
+                        Label("Troubleshooting", systemImage: "stethoscope")
+                    }
+
                     NavigationLink(value: ProfileDestination.feedback) {
                         Label("Feedback", systemImage: "text.bubble")
                     }
@@ -213,6 +218,8 @@ struct ProfileScreen: View {
                     AppearanceSettingsScreen()
                 case .feedback:
                     FeedbackScreen(showSuccess: $showFeedbackSuccess)
+                case .troubleshooting:
+                    TroubleshootingScreen()
                 }
             }
             .onAppear {
