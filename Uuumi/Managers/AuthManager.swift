@@ -276,6 +276,25 @@ final class AuthManager {
         }
     }
 
+    // MARK: - Update Profile
+
+    /// Updates the user's `full_name` in Supabase auth user metadata.
+    @discardableResult
+    func updateDisplayName(_ name: String) async -> Bool {
+        error = nil
+        let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        do {
+            let updatedUser = try await client.auth.update(
+                user: UserAttributes(data: ["full_name": .string(trimmed)])
+            )
+            self.authState = .authenticated(updatedUser)
+            return true
+        } catch {
+            self.error = .supabase(error)
+            return false
+        }
+    }
+
     // MARK: - Sign Out
 
     func signOut() async {

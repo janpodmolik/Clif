@@ -7,6 +7,8 @@ struct AccountScreen: View {
 
     @AppStorage(DefaultsKeys.gender) private var gender: Gender = .notSpecified
     @State private var displayName: String = ""
+    @State private var initialDisplayName: String = ""
+    @State private var isSavingName = false
     @State private var showDeleteConfirmation = false
     @State private var isDeleting = false
 
@@ -118,20 +120,56 @@ struct AccountScreen: View {
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
-                        dismiss()
+                        Task { await saveAndDismiss() }
                     } label: {
-                        Image(systemName: "checkmark")
-                            .font(.system(size: 16))
-                            .foregroundStyle(.secondary)
+                        if isSavingName {
+                            ProgressView()
+                        } else {
+                            Image(systemName: "checkmark")
+                                .font(.system(size: 16))
+                                .foregroundStyle(.secondary)
+                        }
                     }
-                }   
+                    .disabled(isSavingName)
+                }
             }
             .onAppear {
                 if let name = authManager.currentUser?.userMetadata["full_name"],
                    case .string(let value) = name {
                     displayName = value
+                    initialDisplayName = value
                 }
             }
+            .alert(
+                String(localized: "Couldn't save"),
+                isPresented: hasAuthError,
+                presenting: authManager.error
+            ) { _ in
+                Button("OK", role: .cancel) { }
+            } message: { error in
+                Text(error.localizedDescription)
+            }
+        }
+    }
+
+    private var hasAuthError: Binding<Bool> {
+        Binding(
+            get: { authManager.error != nil },
+            set: { if !$0 { authManager.clearError() } }
+        )
+    }
+
+    private func saveAndDismiss() async {
+        let trimmed = displayName.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard trimmed != initialDisplayName.trimmingCharacters(in: .whitespacesAndNewlines) else {
+            dismiss()
+            return
+        }
+        isSavingName = true
+        let success = await authManager.updateDisplayName(trimmed)
+        isSavingName = false
+        if success {
+            dismiss()
         }
     }
 }
