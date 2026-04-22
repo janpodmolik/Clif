@@ -14,6 +14,11 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
         super.intervalDidStart(for: activity)
         ExtensionLogger.log("[Extension] intervalDidStart")
         saveBaselineAndResetThreshold()
+        // PHANTOM_BURST_WORKAROUND — anchor for the absolute validator: any event
+        // whose `current` seconds exceeds wall-clock since this moment is phantom.
+        // Also clear lastThresholdTimestamp so the inter-event check restarts cleanly.
+        SharedDefaults.currentIntervalStartedAt = Date()
+        SharedDefaults.lastThresholdTimestamp = nil
         activateDayStartShieldIfNeeded()
     }
 
@@ -184,33 +189,48 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
     /// Returns the seconds value to store for this event, or `nil` if the event is a phantom
     /// burst and should be ignored entirely (nothing written, wind unchanged).
     ///
-    /// Trade-off: the first event in a phantom burst is indistinguishable from legitimate
-    /// late delivery (both have large wallDelta), so it passes through uncapped. Only
-    /// subsequent events arriving within the same wall-clock moment get filtered. We accept
-    /// this limitation — perfect detection would require cross-checking iOS's reported
-    /// total usage, which is a separate (more complex) defence.
+    /// Two-layer defence:
+    /// 1. **Absolute check** (interval-bound) — `current` seconds cannot exceed how long
+    ///    the current DeviceActivity interval has been running. This catches iOS flushing
+    ///    queued events from a previous interval after monitoring restart — the canonical
+    ///    phantom burst symptom.
+    /// 2. **Inter-event check** (delta-bound) — the per-event increase cannot exceed
+    ///    wall-clock elapsed since the previous processed event. Catches mid-interval
+    ///    bursts where multiple events arrive in the same millisecond.
+    ///
+    /// Grace of 10s absorbs iOS's normal delivery jitter.
     private func validateThresholdAgainstWallClock(
         currentSeconds: Int,
         lastProcessedSeconds: Int
     ) -> Int? {
+        let graceSeconds = 10
+        let now = Date()
+
+        // Absolute check — bounds `current` against the current interval's age.
+        if let intervalStart = SharedDefaults.currentIntervalStartedAt {
+            let intervalAge = now.timeIntervalSince(intervalStart)
+            let plausibleMax = Int(ceil(intervalAge)) + graceSeconds
+            if currentSeconds > plausibleMax {
+                let dropped = currentSeconds - lastProcessedSeconds
+                SharedDefaults.registerBurstDrop(droppedSeconds: dropped)
+                ExtensionLogger.log("[Extension] PHANTOM BURST ignored: current=\(currentSeconds)s but interval only \(String(format: "%.2f", intervalAge))s old (allowed=\(plausibleMax)s) — event discarded")
+                return nil
+            }
+        }
+
+        // Inter-event check — bounds the per-event delta against wall-clock between events.
         guard let lastTimestamp = SharedDefaults.lastThresholdTimestamp else {
-            // First threshold of the session — no prior fire to compare against.
+            // First event in this interval — no delta to check, absolute check already passed.
+            ExtensionLogger.log("[Extension] validate: first threshold in interval → pass current=\(currentSeconds)s")
             return currentSeconds
         }
 
-        let wallClockElapsed = Date().timeIntervalSince(lastTimestamp)
+        let wallClockElapsed = now.timeIntervalSince(lastTimestamp)
         let reportedIncrease = currentSeconds - lastProcessedSeconds
         guard reportedIncrease > 0 else { return currentSeconds }
 
-        // Grace absorbs iOS's normal delivery jitter: thresholds legitimately spaced
-        // 25–40s apart can arrive bundled within a second or two. 10s is safely above
-        // that jitter and orders of magnitude below observed phantom burst deltas (100s+).
-        let graceSeconds = 10
         let plausibleIncrease = Int(ceil(wallClockElapsed)) + graceSeconds
-
         if reportedIncrease > plausibleIncrease {
-            // Physically impossible increase in the elapsed time → phantom burst.
-            // Forgive it: return nil so the caller writes nothing, wind stays unchanged.
             SharedDefaults.registerBurstDrop(droppedSeconds: reportedIncrease)
             ExtensionLogger.log("[Extension] PHANTOM BURST ignored: reported=+\(reportedIncrease)s in \(String(format: "%.2f", wallClockElapsed))s (allowed=\(plausibleIncrease)s) — event discarded")
             return nil

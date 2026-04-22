@@ -167,6 +167,11 @@ enum DefaultsKeys {
     static let burstDropCount = "burstDropCount"
     static let burstDropSecondsTotal = "burstDropSecondsTotal"
 
+    /// Wall-clock start of the currently-running DeviceActivity interval (set in intervalDidStart).
+    /// Used by the phantom-burst validator to reject events whose `current` seconds exceed
+    /// how long the interval has actually been running.
+    static let currentIntervalStartedAt = "currentIntervalStartedAt"
+
     // MARK: - Daily Reset
 
     static let lastDayResetDate = "lastDayResetDate"

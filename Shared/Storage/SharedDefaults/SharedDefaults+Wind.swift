@@ -182,6 +182,20 @@ extension SharedDefaults {
         burstDropSecondsTotal = burstDropSecondsTotal + droppedSeconds
     }
 
+    /// Wall-clock timestamp when the current DeviceActivity interval started.
+    /// Set on intervalDidStart, consumed by the validator to bound `current` seconds.
+    static var currentIntervalStartedAt: Date? {
+        get {
+            let fresh = UserDefaults(suiteName: AppConstants.appGroupIdentifier)
+            fresh?.synchronize()
+            return fresh?.object(forKey: DefaultsKeys.currentIntervalStartedAt) as? Date
+        }
+        set {
+            defaults?.set(newValue, forKey: DefaultsKeys.currentIntervalStartedAt)
+            defaults?.synchronize()
+        }
+    }
+
     // MARK: - Wind Helpers
 
     /// Resets all wind-related values for a new monitoring session.
