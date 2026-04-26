@@ -393,6 +393,28 @@ enum MonitoringEventBuilder {
             threshold: DateComponents(second: AppConstants.minimumThresholdSeconds)
         )
 
+        // PHANTOM_BURST_WORKAROUND — over-limit safety net at 110% of the limit.
+        // Sub-limit thresholds end exactly at 100% of the limit; if the phantom-burst guard drops
+        // the 100% event the wind freezes just under 100% and the safety shield never activates,
+        // letting the user keep using limited apps unpunished until something restarts monitoring.
+        // This extra threshold past the limit guarantees a follow-up event so the safety shield
+        // catches up. The monitor extension recognizes the `overlimit_` prefix and bypasses the
+        // phantom-burst drop for these events (it clamps the delta instead) — losing accuracy on
+        // the 110% event is much better than losing the safety shield entirely.
+        // Floor at limitSeconds + minimumThresholdSeconds so the over-limit threshold can't
+        // collapse onto the 100% threshold for very short debug limits (integer division pitfall).
+        let overLimitSeconds = max(
+            limitSeconds + AppConstants.minimumThresholdSeconds,
+            limitSeconds * AppConstants.overLimitThresholdNumerator / AppConstants.overLimitThresholdDenominator
+        )
+        let overLimitName = DeviceActivityEvent.Name("\(EventNames.overLimitPrefix)\(overLimitSeconds)")
+        events[overLimitName] = DeviceActivityEvent(
+            applications: appTokens,
+            categories: catTokens,
+            webDomains: webTokens,
+            threshold: DateComponents(minute: overLimitSeconds / 60, second: overLimitSeconds % 60)
+        )
+
         #if DEBUG
         print("  Created \(events.count) events (incl. sentinel)")
         if let firstKey = events.keys.min(by: { $0.rawValue < $1.rawValue }) {

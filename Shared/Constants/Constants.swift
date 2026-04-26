@@ -27,8 +27,20 @@ enum AppConstants {
     /// Maximum thresholds per schedule (DeviceActivity API limit is ~20)
     static let maxThresholds = 20
 
-    /// Thresholds reserved for non-wind events (e.g. day-start sentinel)
-    static let reservedThresholds = 1
+    /// Thresholds reserved for non-wind events:
+    ///   - 1 day-start sentinel (early-day shield activation)
+    ///   - 1 over-limit safety net (PHANTOM_BURST_WORKAROUND — see below)
+    static let reservedThresholds = 2
+
+    /// Over-limit safety net threshold position, expressed as numerator/denominator of `limitSeconds`.
+    /// PHANTOM_BURST_WORKAROUND — sub-limit thresholds end exactly at 100% of the limit. If the
+    /// phantom-burst guard drops the 100% event, no further threshold ever fires and the user can
+    /// keep using limited apps with wind frozen near 100%. This extra threshold past the limit
+    /// guarantees a follow-up event that activates the safety shield. 110% chosen because at the
+    /// longest configurable limit (20 min) the gap to 100% is ~2 min — small enough to catch over-use
+    /// quickly, large enough that the inter-event delta check still has headroom.
+    static let overLimitThresholdNumerator = 11
+    static let overLimitThresholdDenominator = 10
 
     // MARK: - UI
 
@@ -78,6 +90,9 @@ enum DeepLinks {
 enum EventNames {
     static let secondPrefix = "second_"
     static let dayStartSentinel = "daystart_sentinel"
+    /// PHANTOM_BURST_WORKAROUND — over-limit safety net. Distinct prefix so the
+    /// monitor extension can recognize over-limit events and skip the phantom-burst drop.
+    static let overLimitPrefix = "overlimit_"
 }
 
 /// Darwin notification names for cross-process IPC (extension → main app)
