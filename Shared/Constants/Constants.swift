@@ -27,20 +27,8 @@ enum AppConstants {
     /// Maximum thresholds per schedule (DeviceActivity API limit is ~20)
     static let maxThresholds = 20
 
-    /// Thresholds reserved for non-wind events:
-    ///   - 1 day-start sentinel (early-day shield activation)
-    ///   - 1 over-limit safety net (PHANTOM_BURST_WORKAROUND — see below)
-    static let reservedThresholds = 2
-
-    /// Over-limit safety net threshold position, expressed as numerator/denominator of `limitSeconds`.
-    /// PHANTOM_BURST_WORKAROUND — sub-limit thresholds end exactly at 100% of the limit. If the
-    /// phantom-burst guard drops the 100% event, no further threshold ever fires and the user can
-    /// keep using limited apps with wind frozen near 100%. This extra threshold past the limit
-    /// guarantees a follow-up event that activates the safety shield. 110% chosen because at the
-    /// longest configurable limit (20 min) the gap to 100% is ~2 min — small enough to catch over-use
-    /// quickly, large enough that the inter-event delta check still has headroom.
-    static let overLimitThresholdNumerator = 11
-    static let overLimitThresholdDenominator = 10
+    /// Thresholds reserved for non-wind events (1 day-start sentinel for early-day shield activation).
+    static let reservedThresholds = 1
 
     // MARK: - UI
 
@@ -51,20 +39,6 @@ enum AppConstants {
 
     static let maxPetNameLength = 15
     static let maxPetPurposeLength = 30
-
-    // MARK: - iOS 26.2 Phantom Burst Workaround (FB21450954)
-    // Grep for PHANTOM_BURST_WORKAROUND to find all call sites that need removal
-    // once Apple ships the fix. Bump this version at each app release and run the
-    // app once on the latest iOS — if phantomBurstAssumedFixedVersion has been
-    // reached and no phantom drops are recorded in normal testing, the workaround
-    // (and this constant) can be deleted.
-    // Tracking thread: https://developer.apple.com/forums/thread/811305
-    /// iOS version where Apple is expected to have fixed the DeviceActivity bug.
-    /// Community reports point at 26.5 beta — treat as "revisit this in every release
-    /// after user base has moved past this version."
-    static let phantomBurstAssumedFixedVersion = OperatingSystemVersion(
-        majorVersion: 26, minorVersion: 5, patchVersion: 0
-    )
 }
 
 /// Logging category identifiers
@@ -90,9 +64,6 @@ enum DeepLinks {
 enum EventNames {
     static let secondPrefix = "second_"
     static let dayStartSentinel = "daystart_sentinel"
-    /// PHANTOM_BURST_WORKAROUND — over-limit safety net. Distinct prefix so the
-    /// monitor extension can recognize over-limit events and skip the phantom-burst drop.
-    static let overLimitPrefix = "overlimit_"
 }
 
 /// Darwin notification names for cross-process IPC (extension → main app)
@@ -172,20 +143,7 @@ enum DefaultsKeys {
 
     // MARK: - Monitoring Safety
 
-    static let lastThresholdTimestamp = "lastThresholdTimestamp"
     static let lastMonitoringRestart = "lastMonitoringRestart"
-
-    // MARK: - iOS 26.2 Phantom Burst Diagnostics (FB21450954)
-    // Tracks events the physical-limit guard dropped. Surfaced in the Troubleshooting
-    // screen so users see evidence that the app is actively filtering Apple's bug.
-    static let lastBurstDropAt = "lastBurstDropAt"
-    static let burstDropCount = "burstDropCount"
-    static let burstDropSecondsTotal = "burstDropSecondsTotal"
-
-    /// Wall-clock start of the currently-running DeviceActivity interval (set in intervalDidStart).
-    /// Used by the phantom-burst validator to reject events whose `current` seconds exceed
-    /// how long the interval has actually been running.
-    static let currentIntervalStartedAt = "currentIntervalStartedAt"
 
     // MARK: - Daily Reset
 

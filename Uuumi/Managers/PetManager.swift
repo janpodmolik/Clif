@@ -266,7 +266,6 @@ final class PetManager {
         let priorLast = SharedDefaults.monitoredLastThresholdSeconds
         SharedDefaults.cumulativeBaseline = 0
         SharedDefaults.monitoredLastThresholdSeconds = 0
-        SharedDefaults.lastThresholdTimestamp = nil
         ExtensionLogger.log("[PetManager] updateLimitedSources: reset threshold state (baseline=\(priorBaseline)s, last=\(priorLast)s); wind=\(String(format: "%.1f", SharedDefaults.monitoredWindPoints))% preserved; apps=\(newSources.applicationTokens.count) cats=\(newSources.categoryTokens.count) webs=\(newSources.webDomainTokens.count)")
 
         // Restart monitoring with new tokens (wind preserved)

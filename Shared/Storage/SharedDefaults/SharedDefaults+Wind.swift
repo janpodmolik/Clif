@@ -111,89 +111,11 @@ extension SharedDefaults {
         set { defaults?.set(newValue, forKey: DefaultsKeys.lastMonitoringRestart) }
     }
 
-    /// Timestamp of last processed threshold event (for burst detection in extension).
-    /// Uses fresh UserDefaults instance for cross-process sync.
-    static var lastThresholdTimestamp: Date? {
-        get {
-            let fresh = UserDefaults(suiteName: AppConstants.appGroupIdentifier)
-            fresh?.synchronize()
-            return fresh?.object(forKey: DefaultsKeys.lastThresholdTimestamp) as? Date
-        }
-        set {
-            defaults?.set(newValue, forKey: DefaultsKeys.lastThresholdTimestamp)
-            defaults?.synchronize()
-        }
-    }
-
     /// Whether wind reminder notification has already been sent this wind session.
     /// Prevents repeated reminders while wind stays above 0. Resets when wind drops to 0 or on new day.
     static var windReminderSent: Bool {
         get { defaults?.bool(forKey: DefaultsKeys.windReminderSent) ?? false }
         set { defaults?.set(newValue, forKey: DefaultsKeys.windReminderSent) }
-    }
-
-    // MARK: - iOS 26.2 Phantom Burst Diagnostics (FB21450954)
-    // Remove together with validateThresholdAgainstWallClock once Apple ships the fix.
-
-    /// Timestamp of the most recent phantom-burst event that was dropped by the guard.
-    /// Surfaced in the Help screen so the user sees confirmation when they suspect phantom wind.
-    static var lastBurstDropAt: Date? {
-        get {
-            let fresh = UserDefaults(suiteName: AppConstants.appGroupIdentifier)
-            fresh?.synchronize()
-            return fresh?.object(forKey: DefaultsKeys.lastBurstDropAt) as? Date
-        }
-        set {
-            defaults?.set(newValue, forKey: DefaultsKeys.lastBurstDropAt)
-            defaults?.synchronize()
-        }
-    }
-
-    /// Running count of phantom bursts dropped (lifetime), for optional diagnostics.
-    static var burstDropCount: Int {
-        get {
-            let fresh = UserDefaults(suiteName: AppConstants.appGroupIdentifier)
-            fresh?.synchronize()
-            return fresh?.integer(forKey: DefaultsKeys.burstDropCount) ?? 0
-        }
-        set {
-            defaults?.set(newValue, forKey: DefaultsKeys.burstDropCount)
-            defaults?.synchronize()
-        }
-    }
-
-    /// Total reported seconds dropped across all phantom bursts (lifetime).
-    static var burstDropSecondsTotal: Int {
-        get {
-            let fresh = UserDefaults(suiteName: AppConstants.appGroupIdentifier)
-            fresh?.synchronize()
-            return fresh?.integer(forKey: DefaultsKeys.burstDropSecondsTotal) ?? 0
-        }
-        set {
-            defaults?.set(newValue, forKey: DefaultsKeys.burstDropSecondsTotal)
-            defaults?.synchronize()
-        }
-    }
-
-    /// Called from the extension each time the physical-limit guard drops a phantom burst.
-    static func registerBurstDrop(droppedSeconds: Int) {
-        lastBurstDropAt = Date()
-        burstDropCount = burstDropCount + 1
-        burstDropSecondsTotal = burstDropSecondsTotal + droppedSeconds
-    }
-
-    /// Wall-clock timestamp when the current DeviceActivity interval started.
-    /// Set on intervalDidStart, consumed by the validator to bound `current` seconds.
-    static var currentIntervalStartedAt: Date? {
-        get {
-            let fresh = UserDefaults(suiteName: AppConstants.appGroupIdentifier)
-            fresh?.synchronize()
-            return fresh?.object(forKey: DefaultsKeys.currentIntervalStartedAt) as? Date
-        }
-        set {
-            defaults?.set(newValue, forKey: DefaultsKeys.currentIntervalStartedAt)
-            defaults?.synchronize()
-        }
     }
 
     // MARK: - Wind Helpers
@@ -205,7 +127,6 @@ extension SharedDefaults {
         totalBreakReduction = 0
         cumulativeBaseline = 0
         lastKnownWindLevel = 0
-        lastThresholdTimestamp = nil
         windReminderSent = false
         synchronize()
     }

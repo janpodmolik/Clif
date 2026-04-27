@@ -341,9 +341,8 @@ final class ScreenTimeManager: ObservableObject {
 /// Helper for building DeviceActivity threshold events.
 enum MonitoringEventBuilder {
 
-    /// Builds threshold events for monitoring.
-    ///
-    /// Always generates thresholds from 0s to limit+buffer.
+    /// Builds threshold events for monitoring: evenly-spaced wind thresholds from
+    /// `intervalSeconds` up to `limitSeconds`, plus one day-start sentinel at 6s.
     /// iOS automatically ignores thresholds that have already been passed.
     static func buildEvents(
         limitSeconds: Int,
@@ -355,8 +354,6 @@ enum MonitoringEventBuilder {
 
         let maxWindThresholds = AppConstants.maxThresholds - AppConstants.reservedThresholds
         let minInterval = AppConstants.minimumThresholdSeconds
-
-        // Calculate interval to spread thresholds evenly across full range
         let intervalSeconds = max(limitSeconds / maxWindThresholds, minInterval)
 
         #if DEBUG
@@ -365,8 +362,6 @@ enum MonitoringEventBuilder {
         print("  intervalSeconds: \(intervalSeconds)s")
         #endif
 
-        // Generate thresholds from first interval to cover full range
-        // iOS ignores already-passed thresholds automatically
         var currentSeconds = intervalSeconds
 
         while events.count < maxWindThresholds {
@@ -391,28 +386,6 @@ enum MonitoringEventBuilder {
             categories: catTokens,
             webDomains: webTokens,
             threshold: DateComponents(second: AppConstants.minimumThresholdSeconds)
-        )
-
-        // PHANTOM_BURST_WORKAROUND — over-limit safety net at 110% of the limit.
-        // Sub-limit thresholds end exactly at 100% of the limit; if the phantom-burst guard drops
-        // the 100% event the wind freezes just under 100% and the safety shield never activates,
-        // letting the user keep using limited apps unpunished until something restarts monitoring.
-        // This extra threshold past the limit guarantees a follow-up event so the safety shield
-        // catches up. The monitor extension recognizes the `overlimit_` prefix and bypasses the
-        // phantom-burst drop for these events (it clamps the delta instead) — losing accuracy on
-        // the 110% event is much better than losing the safety shield entirely.
-        // Floor at limitSeconds + minimumThresholdSeconds so the over-limit threshold can't
-        // collapse onto the 100% threshold for very short debug limits (integer division pitfall).
-        let overLimitSeconds = max(
-            limitSeconds + AppConstants.minimumThresholdSeconds,
-            limitSeconds * AppConstants.overLimitThresholdNumerator / AppConstants.overLimitThresholdDenominator
-        )
-        let overLimitName = DeviceActivityEvent.Name("\(EventNames.overLimitPrefix)\(overLimitSeconds)")
-        events[overLimitName] = DeviceActivityEvent(
-            applications: appTokens,
-            categories: catTokens,
-            webDomains: webTokens,
-            threshold: DateComponents(minute: overLimitSeconds / 60, second: overLimitSeconds % 60)
         )
 
         #if DEBUG

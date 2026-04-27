@@ -14,11 +14,6 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
         super.intervalDidStart(for: activity)
         ExtensionLogger.log("[Extension] intervalDidStart")
         saveBaselineAndResetThreshold()
-        // PHANTOM_BURST_WORKAROUND — anchor for the absolute validator: any event
-        // whose `current` seconds exceeds wall-clock since this moment is phantom.
-        // Also clear lastThresholdTimestamp so the inter-event check restarts cleanly.
-        SharedDefaults.currentIntervalStartedAt = Date()
-        SharedDefaults.lastThresholdTimestamp = nil
         activateDayStartShieldIfNeeded()
     }
 
@@ -116,40 +111,22 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
             let limit = SharedDefaults.integer(forKey: DefaultsKeys.monitoringLimitSeconds)
             let baseline = SharedDefaults.cumulativeBaseline
             let lastProcessed = SharedDefaults.monitoredLastThresholdSeconds
-            let wallDelta: String = {
-                guard let last = SharedDefaults.lastThresholdTimestamp else { return "nil" }
-                return String(format: "%.2fs", Date().timeIntervalSince(last))
-            }()
-            ExtensionLogger.log("[Extension] eventDidReachThreshold: event=\(event.rawValue) current=\(currentSeconds)s last=\(lastProcessed)s delta=\(currentSeconds - lastProcessed)s wallDelta=\(wallDelta) petId=\(petId) limit=\(limit)s baseline=\(baseline)s")
+            ExtensionLogger.log("[Extension] eventDidReachThreshold: event=\(event.rawValue) current=\(currentSeconds)s last=\(lastProcessed)s delta=\(currentSeconds - lastProcessed)s petId=\(petId) limit=\(limit)s baseline=\(baseline)s")
 
-            // Guard against out-of-order threshold bursts: only process if this threshold
-            // is higher than the last one we processed. When monitoring restarts, iOS may fire
-            // multiple thresholds simultaneously in non-deterministic order.
+            // Skip out-of-order events: when monitoring restarts iOS can flush queued
+            // thresholds in non-deterministic order, including ones we've already passed.
             guard currentSeconds > lastProcessed else {
-                ExtensionLogger.log("[Extension] Skipping out-of-order threshold: \(currentSeconds)s <= last \(lastProcessed)s wallDelta=\(wallDelta)")
+                ExtensionLogger.log("[Extension] Skipping out-of-order threshold: \(currentSeconds)s <= last \(lastProcessed)s")
                 return
             }
 
-            // iOS 26.2 phantom burst guard — see validateThresholdAgainstWallClock header.
-            // nil return = phantom event, drop it entirely (don't even move the cursor).
-            // Over-limit safety-net events bypass the drop and clamp instead, so the safety shield
-            // can never be stranded by a dropped 100% event.
-            guard let adjustedSeconds = validateThresholdAgainstWallClock(
-                currentSeconds: currentSeconds,
-                lastProcessedSeconds: lastProcessed,
-                isOverLimit: isOverLimitEvent(event)
-            ) else {
-                return
-            }
-
-            SharedDefaults.monitoredLastThresholdSeconds = adjustedSeconds
-            SharedDefaults.lastThresholdTimestamp = Date()
+            SharedDefaults.monitoredLastThresholdSeconds = currentSeconds
 
             activateDayStartShieldIfNeeded()
 
             guard shouldProcessThreshold() else { return }
 
-            processThresholdEvent(currentSeconds: adjustedSeconds)
+            processThresholdEvent(currentSeconds: currentSeconds)
         }
     }
 
@@ -157,126 +134,12 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
 
     private func parseSecondsFromEvent(_ event: DeviceActivityEvent.Name) -> Int? {
         let eventName = event.rawValue
-        // Both `second_<n>` (sub-limit) and `overlimit_<n>` (PHANTOM_BURST_WORKAROUND safety net)
-        // encode their threshold seconds as the last `_`-separated component.
-        guard eventName.hasPrefix(EventNames.secondPrefix) || eventName.hasPrefix(EventNames.overLimitPrefix),
+        guard eventName.hasPrefix(EventNames.secondPrefix),
               let valueString = eventName.split(separator: "_").last,
               let seconds = Int(valueString) else {
             return nil
         }
         return seconds
-    }
-
-    /// PHANTOM_BURST_WORKAROUND — true for the over-limit safety-net threshold.
-    /// These events bypass the phantom-burst drop (clamp-only) so a single dropped 100% event
-    /// can never strand the user just below the safety shield activation threshold.
-    private func isOverLimitEvent(_ event: DeviceActivityEvent.Name) -> Bool {
-        event.rawValue.hasPrefix(EventNames.overLimitPrefix)
-    }
-
-    // MARK: - PHANTOM_BURST_WORKAROUND (iOS 26.2 — FB21450954)
-    // -------------------------------------------------------------------------
-    // Workaround for confirmed Apple bug: DeviceActivityMonitor.eventDidReachThreshold
-    // fires phantom events on iOS 26.2 without corresponding real app usage —
-    // sometimes dozens in a single millisecond, causing wind jumps of 50+ percentage
-    // points. Related radars: FB18351583, FB13696022, FB21320644.
-    //
-    // Apple Developer Relations acknowledged the bug but hasn't shipped a fix.
-    // Community reports point at iOS 26.5 as the likely fix target
-    // (see AppConstants.phantomBurstAssumedFixedVersion).
-    //
-    // Tracking: https://developer.apple.com/forums/thread/811305
-    //
-    // When removing: grep the repo for `PHANTOM_BURST_WORKAROUND` to find every site.
-    //   1) this file — validateThresholdAgainstWallClock + the caller guard +
-    //      isOverLimitEvent + parseSecondsFromEvent's overLimitPrefix branch
-    //   2) SharedDefaults+Wind.swift — burstDrop accessors + registerBurstDrop
-    //   3) Constants.swift — burstDrop keys + phantomBurstAssumedFixedVersion +
-    //      overLimitThresholdNumerator/Denominator + EventNames.overLimitPrefix
-    //      + drop reservedThresholds back to 1
-    //   4) ScreenTimeManager.swift — over-limit threshold emission in MonitoringEventBuilder
-    //   5) TroubleshootingScreen.swift + ProfileDestination.troubleshooting
-    //   6) MainApp.swift — checkPhantomBurstWorkaroundRelevance()
-    // -------------------------------------------------------------------------
-
-    /// Detects phantom threshold bursts by the physical-limit principle:
-    /// reported usage cannot accumulate faster than wall-clock time passes.
-    ///
-    /// Returns the seconds value to store for this event, or `nil` if the event is a phantom
-    /// burst and should be ignored entirely (nothing written, wind unchanged).
-    ///
-    /// Two-layer defence:
-    /// 1. **Absolute check** (interval-bound) — `current` seconds cannot exceed how long
-    ///    the current DeviceActivity interval has been running. This catches iOS flushing
-    ///    queued events from a previous interval after monitoring restart — the canonical
-    ///    phantom burst symptom.
-    /// 2. **Inter-event check** (delta-bound) — the per-event increase cannot exceed
-    ///    wall-clock elapsed since the previous processed event. Catches mid-interval
-    ///    bursts where multiple events arrive in the same millisecond.
-    ///
-    /// Grace of 10s absorbs iOS's normal delivery jitter.
-    ///
-    /// **Over-limit clamp mode** (`isOverLimit == true`): for the safety-net threshold past 100%
-    /// of the limit, dropping is unsafe — it would let the user keep using limited apps with wind
-    /// frozen near 100% and the safety shield never activating. In this mode the guard never
-    /// returns nil; if a check would have failed it clamps `currentSeconds` to the largest plausible
-    /// value (`lastProcessed + plausibleIncrease`) and lets the event through. Worst-case loss is
-    /// some accuracy on the 110% number — much better than losing the safety shield trigger.
-    private func validateThresholdAgainstWallClock(
-        currentSeconds: Int,
-        lastProcessedSeconds: Int,
-        isOverLimit: Bool
-    ) -> Int? {
-        let graceSeconds = 10
-        let now = Date()
-
-        // Absolute check — bounds `current` against the current interval's age.
-        if let intervalStart = SharedDefaults.currentIntervalStartedAt {
-            let intervalAge = now.timeIntervalSince(intervalStart)
-            let plausibleMax = Int(ceil(intervalAge)) + graceSeconds
-            if currentSeconds > plausibleMax {
-                let dropped = currentSeconds - lastProcessedSeconds
-                SharedDefaults.registerBurstDrop(droppedSeconds: dropped)
-                if isOverLimit {
-                    // Clamp must advance the cursor past `lastProcessedSeconds` — otherwise
-                    // when the absolute check fires right after a monitoring restart (small
-                    // intervalAge, plausibleMax ~ 11s) the cursor wouldn't move and the wind
-                    // would never cross the safety-shield threshold. `lastProcessed + plausibleMax`
-                    // mirrors the inter-event branch below: advance by a wall-clock-bounded delta.
-                    let clamped = lastProcessedSeconds + plausibleMax
-                    ExtensionLogger.log("[Extension] PHANTOM BURST clamped (over-limit): current=\(currentSeconds)s → \(clamped)s (interval \(String(format: "%.2f", intervalAge))s old)")
-                    return clamped
-                }
-                ExtensionLogger.log("[Extension] PHANTOM BURST ignored: current=\(currentSeconds)s but interval only \(String(format: "%.2f", intervalAge))s old (allowed=\(plausibleMax)s) — event discarded")
-                return nil
-            }
-        }
-
-        // Inter-event check — bounds the per-event delta against wall-clock between events.
-        guard let lastTimestamp = SharedDefaults.lastThresholdTimestamp else {
-            // First event in this interval — no delta to check, absolute check already passed.
-            ExtensionLogger.log("[Extension] validate: first threshold in interval → pass current=\(currentSeconds)s")
-            return currentSeconds
-        }
-
-        let wallClockElapsed = now.timeIntervalSince(lastTimestamp)
-        let reportedIncrease = currentSeconds - lastProcessedSeconds
-        guard reportedIncrease > 0 else { return currentSeconds }
-
-        let plausibleIncrease = Int(ceil(wallClockElapsed)) + graceSeconds
-        if reportedIncrease > plausibleIncrease {
-            SharedDefaults.registerBurstDrop(droppedSeconds: reportedIncrease)
-            if isOverLimit {
-                let clamped = lastProcessedSeconds + plausibleIncrease
-                ExtensionLogger.log("[Extension] PHANTOM BURST clamped (over-limit): reported=+\(reportedIncrease)s in \(String(format: "%.2f", wallClockElapsed))s → current \(currentSeconds)s clamped to \(clamped)s")
-                return clamped
-            }
-            ExtensionLogger.log("[Extension] PHANTOM BURST ignored: reported=+\(reportedIncrease)s in \(String(format: "%.2f", wallClockElapsed))s (allowed=\(plausibleIncrease)s) — event discarded")
-            return nil
-        }
-
-        ExtensionLogger.log("[Extension] validate: OK reported=+\(reportedIncrease)s in \(String(format: "%.2f", wallClockElapsed))s → pass current=\(currentSeconds)s")
-        return currentSeconds
     }
 
     private func shouldProcessThreshold() -> Bool {
