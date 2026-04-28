@@ -63,9 +63,7 @@ struct AppearanceSettingsScreen: View {
         }
         .navigationTitle("Appearance")
         .navigationBarTitleDisplayMode(.inline)
-        .sheet(isPresented: $showPremiumSheet) {
-            PremiumSheet(source: .appearanceTheme)
-        }
+        .premiumSheet(isPresented: $showPremiumSheet, source: .appearanceTheme)
     }
 
     // MARK: - Dynamic Sky Row
@@ -157,9 +155,7 @@ struct ThemePicker<T: Hashable & Identifiable>: View {
             }
         }
         .padding(.vertical, 4)
-        .sheet(isPresented: $showPremiumSheet) {
-            PremiumSheet(source: .appearanceSky)
-        }
+        .premiumSheet(isPresented: $showPremiumSheet, source: .appearanceSky)
     }
 }
 

@@ -57,9 +57,7 @@ struct EssenceApplicationUpsellSheet: View {
         .padding()
         .presentationDetents([.medium])
         .presentationDragIndicator(.visible)
-        .sheet(isPresented: $showPremiumSheet) {
-            PremiumSheet(source: .essenceApplicationUpsell)
-        }
+        .premiumSheet(isPresented: $showPremiumSheet, source: .essenceApplicationUpsell)
     }
 
     // MARK: - Coin Comparison

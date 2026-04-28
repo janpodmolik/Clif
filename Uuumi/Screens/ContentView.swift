@@ -238,9 +238,7 @@ struct ContentView: View {
         .sheet(isPresented: $showNotificationRequest) {
             NotificationRequestSheet()
         }
-        .sheet(isPresented: $showPostOnboardingPremium) {
-            PremiumSheet(source: .onboarding)
-        }
+        .premiumSheet(isPresented: $showPostOnboardingPremium, source: .onboarding)
         .onAppear {
             checkDayResetAndShowPicker()
 

@@ -185,9 +185,7 @@ struct ProfileScreen: View {
                     .sensoryFeedback(.success, trigger: coinBalance)
                 }
             }
-            .sheet(isPresented: $showPremiumSheet) {
-                PremiumSheet(source: .profile)
-            }
+            .premiumSheet(isPresented: $showPremiumSheet, source: .profile)
             .sheet(isPresented: $showCoinShopSheet) {
                 CoinShopSheet(source: .profile)
             }

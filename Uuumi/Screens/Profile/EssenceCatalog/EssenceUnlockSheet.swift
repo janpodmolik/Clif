@@ -39,9 +39,7 @@ struct EssenceUnlockSheet: View {
         .tint(.primary)
         .presentationDetents([.medium])
         .presentationDragIndicator(.visible)
-        .sheet(isPresented: $showPremiumSheet) {
-            PremiumSheet(source: .essenceUnlock)
-        }
+        .premiumSheet(isPresented: $showPremiumSheet, source: .essenceUnlock)
         .sheet(isPresented: $showCoinShopSheet) {
             CoinShopSheet(source: .essenceUnlock)
         }

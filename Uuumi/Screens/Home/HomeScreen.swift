@@ -327,9 +327,7 @@ struct HomeScreen: View {
                 pendingEssenceAction = nil
             }
         }
-        .sheet(isPresented: $showPremiumSheet) {
-            PremiumSheet(source: .petCreated)
-        }
+        .premiumSheet(isPresented: $showPremiumSheet, source: .petCreated)
         .windNotCalmSheet(isPresented: $showWindNotCalmAlert)
         .alert(
             "Screen Time Access",

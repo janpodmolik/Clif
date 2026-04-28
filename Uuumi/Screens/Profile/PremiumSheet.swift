@@ -46,10 +46,9 @@ struct PremiumSheet: View {
                         footer
                     }
                 }
-                .padding()  
+                .padding()
             }
             .background(Color(.systemGroupedBackground))
-            .navigationTitle("Uuumium")
             .navigationBarTitleDisplayMode(.inline)
             .dismissButton()
             .task {
@@ -387,6 +386,16 @@ struct PremiumSheet: View {
         case .nothingToRestore: String(localized: "No active subscription was found for this Apple Account.")
         case .failed: String(localized: "Something went wrong. Please check your internet connection and try again.")
         default: ""
+        }
+    }
+}
+
+// MARK: - Presentation Modifier
+
+extension View {
+    func premiumSheet(isPresented: Binding<Bool>, source: PaywallSource = .profile) -> some View {
+        fullScreenCover(isPresented: isPresented) {
+            PremiumSheet(source: source)
         }
     }
 }

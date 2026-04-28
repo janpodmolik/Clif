@@ -51,9 +51,7 @@ struct EvolutionUpsellSheet: View {
         .padding()
         .presentationDetents([.medium])
         .presentationDragIndicator(.visible)
-        .sheet(isPresented: $showPremiumSheet) {
-            PremiumSheet(source: .evolutionUpsell)
-        }
+        .premiumSheet(isPresented: $showPremiumSheet, source: .evolutionUpsell)
     }
 
     // MARK: - Coin Comparison

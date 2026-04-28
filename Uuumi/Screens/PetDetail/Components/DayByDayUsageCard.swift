@@ -54,9 +54,7 @@ struct DayByDayUsageCard: View {
                 viewMode = .week
             }
         }
-        .sheet(isPresented: $showPremiumSheet) {
-            PremiumSheet(source: .dayByDayStats)
-        }
+        .premiumSheet(isPresented: $showPremiumSheet, source: .dayByDayStats)
         .sheet(item: $selectedDay) { day in
             DayDetailSheet(day: day, petId: petId, limitMinutes: limitMinutes, hourlyBreakdown: nil)
         }

@@ -50,9 +50,7 @@ struct DayDetailSheet: View {
         }
         .presentationDetents(storeManager.isPremium ? [.large] : [.medium, .large])
         .presentationDragIndicator(.visible)
-        .sheet(isPresented: $showPremiumSheet) {
-            PremiumSheet(source: .dayDetailTimeline)
-        }
+        .premiumSheet(isPresented: $showPremiumSheet, source: .dayDetailTimeline)
     }
 
     private var breakCount: Int {

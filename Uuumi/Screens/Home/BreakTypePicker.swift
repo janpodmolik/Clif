@@ -213,9 +213,7 @@ struct BreakTypePicker: View {
                 .font(.caption)
                 .foregroundStyle(.tertiary)
         }
-        .sheet(isPresented: $showPremiumSheet) {
-            PremiumSheet(source: .committedBreak)
-        }
+        .premiumSheet(isPresented: $showPremiumSheet, source: .committedBreak)
     }
 
     // MARK: - Committed Content
