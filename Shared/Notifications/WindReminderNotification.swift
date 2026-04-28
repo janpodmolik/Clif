@@ -15,10 +15,24 @@ enum WindReminderNotification {
     /// Fixed identifier — scheduling always replaces previous pending reminder.
     private static let identifier = "wind_reminder_scheduled"
 
-    static var title: String { String(localized: "Wind is still blowing") }
+    static var title: String {
+        [
+            String(localized: "Wind is still blowing"),
+            String(localized: "Still windy out here"),
+            String(localized: "Wind hasn't given up"),
+            String(localized: "It's still rough"),
+            String(localized: "Anybody home?"),
+        ].randomElement()!
+    }
 
     static var body: String {
-        String(localized: "Your pet is still in the wind. Start a break and let it breathe!")
+        [
+            String(localized: "Your pet is still in the wind. Start a break and let it breathe!"),
+            String(localized: "Still getting blown around. A break would really help right now."),
+            String(localized: "The wind didn't go anywhere. Mind taking a break?"),
+            String(localized: "Pet's holding on but tired. One break would calm things down."),
+            String(localized: "Hello? Wind's still happening. Break, please?"),
+        ].randomElement()!
     }
 
     // MARK: - Scheduling
