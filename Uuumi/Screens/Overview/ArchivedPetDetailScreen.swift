@@ -84,7 +84,7 @@ struct ArchivedPetDetailScreen: View {
         } label: {
             HStack {
                 Image(systemName: "trash")
-                Text("Smazat peta")
+                Text("Delete pet")
             }
             .foregroundStyle(.red)
             .frame(maxWidth: .infinity)

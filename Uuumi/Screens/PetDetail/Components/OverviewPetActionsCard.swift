@@ -26,11 +26,11 @@ struct OverviewPetActionsCard: View {
 
     private var normalActions: some View {
         HStack(spacing: 16) {
-            ActionButton(icon: "trash", label: "Smazat", color: .red) {
+            ActionButton(icon: "trash", label: "Delete", color: .red) {
                 onAction(.delete)
             }
             Spacer()
-            ActionButton(icon: "house.fill", label: "Zobrazit", color: .green) {
+            ActionButton(icon: "house.fill", label: "Show", color: .green) {
                 onAction(.showOnHomepage)
             }
         }
