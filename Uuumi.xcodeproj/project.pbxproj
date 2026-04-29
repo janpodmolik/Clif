@@ -71,7 +71,6 @@
 		B45862442EE5FAF60088CB78 /* ActivityReportContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = B45862422EE5FAF60088CB78 /* ActivityReportContext.swift */; };
 		B45CF5A52F279E83009B4F06 /* DayStartGreeting.swift in Sources */ = {isa = PBXBuildFile; fileRef = B45CF5A42F279E83009B4F06 /* DayStartGreeting.swift */; };
 		B45CF5A62F279E83009B4F06 /* DayStartGreeting.swift in Sources */ = {isa = PBXBuildFile; fileRef = B45CF5A42F279E83009B4F06 /* DayStartGreeting.swift */; };
-		B45D2A972F73C61400398B8F /* Statsig in Frameworks */ = {isa = PBXBuildFile; productRef = B45D2A962F73C61400398B8F /* Statsig */; };
 		B46003DB2F3BC5FC007CC2C3 /* Products.storekit in Resources */ = {isa = PBXBuildFile; fileRef = B46003DA2F3BC5FC007CC2C3 /* Products.storekit */; };
 		B465CE0C8FADC1A606CB0FB3 /* NotificationSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = B40CCE351C80317FA3B1799D /* NotificationSettings.swift */; };
 		B46FF15117FC695A07A0CA6E /* NotificationSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = B40CCE351C80317FA3B1799D /* NotificationSettings.swift */; };
@@ -97,6 +96,7 @@
 		B49387902F0E39F40090C730 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B493878C2F0E39F40090C730 /* Assets.xcassets */; };
 		B49387912F0E39F40090C730 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B493878C2F0E39F40090C730 /* Assets.xcassets */; };
 		B4A181BE2F3B273400CDA090 /* SnapshotLogging.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4167E642F1FF93800D89B36 /* SnapshotLogging.swift */; };
+		B4A54C4C2FA152D70085933B /* PostHog in Frameworks */ = {isa = PBXBuildFile; productRef = B4A54C4B2FA152D70085933B /* PostHog */; };
 		B4C4C0922EE7FECE00E469E8 /* ManagedSettings.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B4924ADF2EE57EEE0033475C /* ManagedSettings.framework */; };
 		B4C4C09A2EE7FECE00E469E8 /* ShieldAction.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = B4C4C0912EE7FECE00E469E8 /* ShieldAction.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		B4C4C0A02EE7FF0900E469E8 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = B45862142EE5B92C0088CB78 /* Constants.swift */; };
@@ -317,8 +317,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				B45D2A972F73C61400398B8F /* Statsig in Frameworks */,
 				B45862252EE5D0A60088CB78 /* Supabase in Frameworks */,
+				B4A54C4C2FA152D70085933B /* PostHog in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -509,7 +509,7 @@
 			name = Uuumi;
 			packageProductDependencies = (
 				B45862242EE5D0A60088CB78 /* Supabase */,
-				B45D2A962F73C61400398B8F /* Statsig */,
+				B4A54C4B2FA152D70085933B /* PostHog */,
 			);
 			productName = Uuumi;
 			productReference = B4159A322EE56ED700BAE49D /* Uuumi.app */;
@@ -641,7 +641,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				B45862232EE5D0A60088CB78 /* XCRemoteSwiftPackageReference "supabase-swift" */,
-				B45D2A952F73C61400398B8F /* XCRemoteSwiftPackageReference "statsig-kit" */,
+				B4A54C4A2FA152D60085933B /* XCRemoteSwiftPackageReference "posthog-ios" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = B4159A332EE56ED700BAE49D /* Products */;
@@ -1447,12 +1447,12 @@
 				minimumVersion = 2.5.1;
 			};
 		};
-		B45D2A952F73C61400398B8F /* XCRemoteSwiftPackageReference "statsig-kit" */ = {
+		B4A54C4A2FA152D60085933B /* XCRemoteSwiftPackageReference "posthog-ios" */ = {
 			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/statsig-io/statsig-kit.git";
+			repositoryURL = "https://github.com/PostHog/posthog-ios";
 			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = 1.62.1;
+				minimumVersion = 3.57.2;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
@@ -1463,10 +1463,10 @@
 			package = B45862232EE5D0A60088CB78 /* XCRemoteSwiftPackageReference "supabase-swift" */;
 			productName = Supabase;
 		};
-		B45D2A962F73C61400398B8F /* Statsig */ = {
+		B4A54C4B2FA152D70085933B /* PostHog */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = B45D2A952F73C61400398B8F /* XCRemoteSwiftPackageReference "statsig-kit" */;
-			productName = Statsig;
+			package = B4A54C4A2FA152D60085933B /* XCRemoteSwiftPackageReference "posthog-ios" */;
+			productName = PostHog;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

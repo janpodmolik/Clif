@@ -6,6 +6,7 @@ struct OnboardingAppSelectionStep: View {
     var onContinue: () -> Void
     @Binding var eyesOverride: String?
 
+    @Environment(AnalyticsManager.self) private var analytics
     @Environment(\.onboardingFontScale) private var fontScale
 
     @State private var selection = FamilyActivitySelection()
@@ -218,6 +219,7 @@ struct OnboardingAppSelectionStep: View {
     // MARK: - Actions
 
     private func handleAppear() {
+        analytics.send(.onboardingScreenViewed(step: "app_selection"))
         eyesOverride = "neutral"
 
         if let saved = SharedDefaults.loadFamilyActivitySelection() {

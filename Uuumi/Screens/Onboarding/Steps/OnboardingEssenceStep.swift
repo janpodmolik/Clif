@@ -10,6 +10,7 @@ struct OnboardingEssenceStep: View {
     @Binding var reactionTrigger: UUID?
     var petDropFrame: CGRect?
 
+    @Environment(AnalyticsManager.self) private var analytics
     @Environment(\.onboardingFontScale) private var fontScale
 
     // MARK: - Narrative State
@@ -274,6 +275,7 @@ struct OnboardingEssenceStep: View {
     // MARK: - Lifecycle
 
     private func handleAppear() {
+        analytics.send(.onboardingScreenViewed(step: "essence"))
         windProgress = 0
         eyesOverride = hasDropped ? "happy" : "neutral"
 

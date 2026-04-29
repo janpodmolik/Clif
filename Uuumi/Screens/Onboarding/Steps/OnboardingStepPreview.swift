@@ -71,6 +71,7 @@ struct OnboardingStepPreview<Content: View>: View {
                 content(geometry, $windProgress, $eyesOverride, $showThoughtBubble)
             }
         }
+        .environment(AnalyticsManager())
     }
 }
 #endif

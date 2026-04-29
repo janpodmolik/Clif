@@ -6,6 +6,7 @@ struct OnboardingEvolutionStep: View {
     @Binding var eyesOverride: String?
     @Binding var showThoughtBubble: Bool
 
+    @Environment(AnalyticsManager.self) private var analytics
     @Environment(\.onboardingFontScale) private var fontScale
 
     @State private var narrativeBeat = 0
@@ -115,6 +116,7 @@ struct OnboardingEvolutionStep: View {
     // MARK: - Actions
 
     private func handleAppear() {
+        analytics.send(.onboardingScreenViewed(step: "evolution"))
         eyesOverride = "happy"
 
         if skipAnimation {

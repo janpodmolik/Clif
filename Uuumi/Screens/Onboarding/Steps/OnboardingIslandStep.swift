@@ -4,6 +4,7 @@ struct OnboardingIslandStep: View {
     let skipAnimation: Bool
     var onContinue: () -> Void
 
+    @Environment(AnalyticsManager.self) private var analytics
     @Environment(\.onboardingFontScale) private var fontScale
 
     @State private var showSecondLine = false
@@ -41,6 +42,7 @@ struct OnboardingIslandStep: View {
                         }
                 }
             }
+            .onAppear { analytics.send(.onboardingScreenViewed(step: "welcome")) }
     }
 
     // MARK: - Narrative
@@ -123,6 +125,7 @@ struct OnboardingIslandStep: View {
             skipAnimation: false,
             onContinue: {}
         )
+        .environment(AnalyticsManager())
     }
 }
 #endif

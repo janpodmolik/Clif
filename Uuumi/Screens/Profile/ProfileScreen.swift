@@ -10,6 +10,7 @@ enum ProfileDestination: Hashable {
     case dailyPresetSettings
     case lockButtonSettings
     case appearanceSettings
+    case privacySettings
     case feedback
     case troubleshooting
 }
@@ -140,6 +141,10 @@ struct ProfileScreen: View {
                         Label("Troubleshooting", systemImage: "stethoscope")
                     }
 
+                    NavigationLink(value: ProfileDestination.privacySettings) {
+                        Label("Privacy", systemImage: "hand.raised.fill")
+                    }
+
                     NavigationLink(value: ProfileDestination.feedback) {
                         Label("Feedback", systemImage: "text.bubble")
                     }
@@ -214,6 +219,8 @@ struct ProfileScreen: View {
                     LockButtonSettingsScreen()
                 case .appearanceSettings:
                     AppearanceSettingsScreen()
+                case .privacySettings:
+                    PrivacySettingsScreen()
                 case .feedback:
                     FeedbackScreen(showSuccess: $showFeedbackSuccess)
                 case .troubleshooting:

@@ -1,12 +1,13 @@
 import Foundation
 import Observation
-import Statsig
+import PostHog
 
 @Observable
 final class AnalyticsManager {
 
     private var isStarted = false
     private var currentUserId: UUID?
+    private var lastIdentifiedUserId: UUID?
     private var pendingEvents: [(Event)] = []
 
     // MARK: - Event Definitions
@@ -15,6 +16,8 @@ final class AnalyticsManager {
         // Lifecycle
         case appOpened
         case onboardingStarted
+        case onboardingScreenViewed(step: String)
+        case familyControlsAuthorized(granted: Bool)
         case onboardingCompleted
 
         // Pet
@@ -54,6 +57,8 @@ final class AnalyticsManager {
             switch self {
             case .appOpened: "app_opened"
             case .onboardingStarted: "onboarding_started"
+            case .onboardingScreenViewed: "onboarding_screen_viewed"
+            case .familyControlsAuthorized: "family_controls_authorized"
             case .onboardingCompleted: "onboarding_completed"
             case .petCreated: "pet_created"
             case .presetSelected: "preset_selected"
@@ -77,6 +82,10 @@ final class AnalyticsManager {
             switch self {
             case .appOpened, .onboardingStarted, .onboardingCompleted:
                 [:] as [String: String]
+            case .onboardingScreenViewed(let step):
+                ["step": step]
+            case .familyControlsAuthorized(let granted):
+                ["granted": "\(granted)"]
             case .petCreated(let source):
                 ["source": source]
             case .presetSelected(let preset, let context):
@@ -115,18 +124,41 @@ final class AnalyticsManager {
 
     func start(userId: UUID?) async {
         currentUserId = userId
-        await StatsigConfig.start(userId: userId?.uuidString)
+        AppPostHog.start()
+        if let userId, lastIdentifiedUserId != userId {
+            AppPostHog.identify(userId: userId.uuidString, premiumPlan: nil)
+            lastIdentifiedUserId = userId
+        }
         isStarted = true
         flushPendingEvents()
     }
 
     func updateUser(userId: UUID?, premiumPlan: String?) async {
         currentUserId = userId
-        await StatsigConfig.updateUser(userId: userId?.uuidString, premiumPlan: premiumPlan)
+        if let userId {
+            if lastIdentifiedUserId != userId {
+                AppPostHog.identify(userId: userId.uuidString, premiumPlan: premiumPlan)
+                lastIdentifiedUserId = userId
+            } else {
+                AppPostHog.updatePremiumPlan(premiumPlan)
+            }
+        } else if lastIdentifiedUserId != nil {
+            AppPostHog.signOut()
+            lastIdentifiedUserId = nil
+        }
     }
 
     func updatePremiumPlan(_ plan: String?) async {
-        await StatsigConfig.updateUser(userId: currentUserId?.uuidString, premiumPlan: plan)
+        guard lastIdentifiedUserId != nil else { return }
+        AppPostHog.updatePremiumPlan(plan)
+    }
+
+    func setAnalyticsOptedOut(_ optedOut: Bool) {
+        AppPostHog.setOptedOut(optedOut)
+        // Force re-identify on next updateUser regardless of direction:
+        // opt-in needs to re-attach the user to PostHog's anon-id chain,
+        // and opt-out → re-opt-in flows would otherwise skip identify.
+        lastIdentifiedUserId = nil
     }
 
     // MARK: - Sending
@@ -140,7 +172,7 @@ final class AnalyticsManager {
     }
 
     private func dispatch(_ event: Event) {
-        Statsig.logEvent(event.name, metadata: event.metadata)
+        PostHogSDK.shared.capture(event.name, properties: event.metadata)
         #if DEBUG
         print("[Analytics] \(event.name) \(event.metadata)")
         #endif

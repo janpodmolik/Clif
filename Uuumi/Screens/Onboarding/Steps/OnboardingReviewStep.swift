@@ -10,6 +10,7 @@ struct OnboardingReviewStep: View {
     @Binding var reactionTrigger: UUID?
 
     @Environment(PetManager.self) private var petManager
+    @Environment(AnalyticsManager.self) private var analytics
     @Environment(\.requestReview) private var requestReview
     @Environment(\.onboardingFontScale) private var fontScale
     // MARK: - Narrative State
@@ -163,6 +164,7 @@ struct OnboardingReviewStep: View {
     // MARK: - Lifecycle
 
     private func handleAppear() {
+        analytics.send(.onboardingScreenViewed(step: "review"))
         eyesOverride = "happy"
 
         if skipAnimation {

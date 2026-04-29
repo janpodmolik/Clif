@@ -382,6 +382,9 @@
     "Amplitude: %.3f" : {
 
     },
+    "Analytics" : {
+
+    },
     "Animate" : {
 
     },
@@ -1002,6 +1005,9 @@
     "Helps us decide which pet evolutions and assets to create next." : {
 
     },
+    "Helps us understand how Uuumi is used so we can make it better. We never share your data with advertisers. You can turn this off any time." : {
+
+    },
     "Hey, it's getting windy... but at least it won't be hot!" : {
 
     },
@@ -1518,6 +1524,9 @@
     "Price" : {
 
     },
+    "Privacy" : {
+
+    },
     "Privacy & Terms" : {
 
     },
@@ -1760,6 +1769,9 @@
 
     },
     "Sent!" : {
+
+    },
+    "Share Usage Analytics" : {
 
     },
     "Shield" : {

@@ -11,6 +11,7 @@ struct OnboardingMeetPetStep: View {
     @Binding var speechBubbleVisible: Bool
     @Binding var showTapHint: Bool
 
+    @Environment(AnalyticsManager.self) private var analytics
     @Environment(\.onboardingFontScale) private var fontScale
 
     @State private var showSecondLine = false
@@ -55,6 +56,7 @@ struct OnboardingMeetPetStep: View {
                 }
             }
             .onAppear {
+                analytics.send(.onboardingScreenViewed(step: "meet_pet"))
                 // Register pet tap handler
                 onPetTap = handleBlobTap
 

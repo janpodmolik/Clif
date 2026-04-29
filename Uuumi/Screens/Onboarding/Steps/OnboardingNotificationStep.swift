@@ -332,6 +332,7 @@ struct OnboardingNotificationStep: View {
     // MARK: - Lifecycle
 
     private func handleAppear() {
+        analytics.send(.onboardingScreenViewed(step: "notifications"))
         eyesOverride = "neutral"
 
         if skipAnimation {

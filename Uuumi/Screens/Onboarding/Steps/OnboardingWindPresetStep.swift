@@ -6,6 +6,7 @@ struct OnboardingWindPresetStep: View {
     @Binding var windProgress: CGFloat
     @Binding var eyesOverride: String?
 
+    @Environment(AnalyticsManager.self) private var analytics
     @Environment(\.onboardingFontScale) private var fontScale
 
     @State private var selectedPreset: WindPreset = .balanced
@@ -163,6 +164,7 @@ struct OnboardingWindPresetStep: View {
     // MARK: - Actions
 
     private func handleAppear() {
+        analytics.send(.onboardingScreenViewed(step: "wind_preset"))
         eyesOverride = "neutral"
         windProgress = 0
 

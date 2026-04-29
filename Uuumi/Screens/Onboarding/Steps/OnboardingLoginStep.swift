@@ -7,6 +7,7 @@ struct OnboardingLoginStep: View {
 
     @Environment(AuthManager.self) private var authManager
     @Environment(PetManager.self) private var petManager
+    @Environment(AnalyticsManager.self) private var analytics
     @Environment(\.onboardingFontScale) private var fontScale
 
     // MARK: - Narrative State
@@ -168,6 +169,7 @@ struct OnboardingLoginStep: View {
     // MARK: - Lifecycle
 
     private func handleAppear() {
+        analytics.send(.onboardingScreenViewed(step: "login"))
         eyesOverride = "happy"
 
         if skipAnimation {

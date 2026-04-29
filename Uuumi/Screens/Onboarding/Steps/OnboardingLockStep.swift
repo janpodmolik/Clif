@@ -24,6 +24,7 @@ struct OnboardingLockStep: View {
 
     // MARK: - State
 
+    @Environment(AnalyticsManager.self) private var analytics
     @Environment(\.onboardingFontScale) private var fontScale
 
     // Phase 1 — pre-lock narrative
@@ -383,6 +384,7 @@ struct OnboardingLockStep: View {
     }
 
     private func handleAppear() {
+        analytics.send(.onboardingScreenViewed(step: "lock"))
         hasDisappeared = false
 
         if skipAnimation {

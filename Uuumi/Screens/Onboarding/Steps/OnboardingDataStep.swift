@@ -6,6 +6,7 @@ struct OnboardingDataStep: View {
     var onContinue: () -> Void
     @Binding var eyesOverride: String?
 
+    @Environment(AnalyticsManager.self) private var analytics
     @Environment(\.onboardingFontScale) private var fontScale
 
     @State private var showReport = false
@@ -34,6 +35,7 @@ struct OnboardingDataStep: View {
             }
         }
             .onAppear {
+                analytics.send(.onboardingScreenViewed(step: "data"))
                 eyesOverride = "neutral"
 
                 if skipAnimation {

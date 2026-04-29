@@ -236,6 +236,7 @@ struct OnboardingNamingStep: View {
     // MARK: - Lifecycle
 
     private func handleAppear() {
+        analytics.send(.onboardingScreenViewed(step: "pet_naming"))
         eyesOverride = "happy"
 
         if skipAnimation {

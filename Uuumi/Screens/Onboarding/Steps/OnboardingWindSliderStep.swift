@@ -11,6 +11,7 @@ struct OnboardingWindSliderStep: View {
     @Binding var windDirection: CGFloat
     @Binding var windBurstActive: Bool
 
+    @Environment(AnalyticsManager.self) private var analytics
     @Environment(\.onboardingFontScale) private var fontScale
 
     // MARK: - Phase
@@ -483,6 +484,7 @@ struct OnboardingWindSliderStep: View {
     // MARK: - Appear
 
     private func handleAppear() {
+        analytics.send(.onboardingScreenViewed(step: "wind_slider"))
         let initial = OnboardingScreen.windSlider.initialWindProgress ?? 0.1
         windProgress = initial
         eyesOverride = WindLevel.from(progress: initial).eyes

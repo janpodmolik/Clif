@@ -7,6 +7,7 @@ struct OnboardingWindStep: View {
     @Binding var windProgress: CGFloat
     @Binding var eyesOverride: String?
 
+    @Environment(AnalyticsManager.self) private var analytics
     @Environment(\.onboardingFontScale) private var fontScale
 
     @State private var showSecondLine = false
@@ -208,9 +209,11 @@ struct OnboardingWindStep: View {
     private func requestPermission() {
         isRequestingPermission = true
         showPermissionDenied = false
+        analytics.send(.onboardingScreenViewed(step: "family_controls"))
         Task {
             await screenTimeManager.requestAuthorization()
             isRequestingPermission = false
+            analytics.send(.familyControlsAuthorized(granted: screenTimeManager.isAuthorized))
             if screenTimeManager.isAuthorized, !didAdvance {
                 didAdvance = true
                 try? await Task.sleep(for: .seconds(0.5))
@@ -233,6 +236,7 @@ struct OnboardingWindStep: View {
             windProgress: windProgress,
             eyesOverride: eyesOverride
         )
+        .environment(AnalyticsManager())
     }
 }
 #endif
