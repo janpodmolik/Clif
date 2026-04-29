@@ -10,9 +10,9 @@ struct ShieldSettingsScreen: View {
 
             Section {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("Activate Safety Shield at")
+                    Text("Save your pet automatically")
                         .fontWeight(.bold)
-                    Text("Automatic protection when the wind percentage is reached.")
+                    Text("Locks apps when wind reaches the chosen level.")
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                 }

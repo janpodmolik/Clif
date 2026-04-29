@@ -481,25 +481,13 @@ struct HomeCardView: View {
 
     @ViewBuilder
     private func breakCountdownView(_ activeBreak: ActiveBreak) -> some View {
-        HStack(alignment: .firstTextBaseline, spacing: 6) {
+        Group {
             if let remaining = activeBreak.remainingSeconds {
                 // Committed break: countdown
-                Text(formatTime(remaining))
-                    .font(.system(size: 28, weight: .bold, design: .monospaced))
-                    .foregroundStyle(.cyan)
-                    .contentTransition(.identity)
-                Text("left")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                breakRow(time: formatTime(remaining), label: "left")
             } else {
-                // Free break: elapsed time
-                Text(formatTime(activeBreak.elapsedMinutes * 60))
-                    .font(.system(size: 28, weight: .bold, design: .monospaced))
-                    .foregroundStyle(.cyan)
-                    .contentTransition(.identity)
-                Text("on break")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                // Free break: elapsed time, optionally alternating with ETA to 0% wind
+                unlimitedFreeBreakView(activeBreak)
             }
         }
         .opacity(isBreakPulsing ? 1.0 : 0.6)
@@ -509,11 +497,52 @@ struct HomeCardView: View {
         )
     }
 
+    @ViewBuilder
+    private func unlimitedFreeBreakView(_ activeBreak: ActiveBreak) -> some View {
+        let elapsedRow = breakRow(time: formatTime(activeBreak.elapsedMinutes * 60), label: "on break")
+        let fallRate = pet.preset.fallRate
+        let currentWindPercent = Double(windProgress) * 100
+        let etaSeconds = (fallRate > 0 && currentWindPercent > 0) ? currentWindPercent / fallRate * 60 : 0
+
+        if etaSeconds >= 30 {
+            TimelineView(.periodic(from: .now, by: 8.0)) { context in
+                let showEta = Int(context.date.timeIntervalSinceReferenceDate / 8) % 2 == 1
+                ZStack {
+                    if showEta {
+                        breakRow(time: formatTime(etaSeconds), label: "until 0%")
+                    } else {
+                        elapsedRow
+                    }
+                }
+                .transition(.opacity.animation(.easeInOut(duration: 0.6)))
+                .animation(.easeInOut(duration: 0.6), value: showEta)
+            }
+        } else {
+            elapsedRow
+        }
+    }
+
+    private func breakRow(time: String, label: String) -> some View {
+        HStack(alignment: .firstTextBaseline, spacing: 6) {
+            Text(time)
+                .font(.system(size: 28, weight: .bold, design: .monospaced))
+                .foregroundStyle(.cyan)
+                .contentTransition(.identity)
+            Text(label)
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+        }
+    }
+
     private func formatTime(_ seconds: TimeInterval) -> String {
         let totalSeconds = Int(seconds)
-        let minutes = totalSeconds / 60
+        let hours = totalSeconds / 3600
+        let minutes = (totalSeconds % 3600) / 60
         let secs = totalSeconds % 60
-        return String(format: "%d:%02d", minutes, secs)
+        if hours > 0 {
+            return String(format: "%d:%02d:%02d", hours, minutes, secs)
+        }
+        return String(format: "%02d:%02d", minutes, secs)
     }
 
 }

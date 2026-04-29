@@ -340,9 +340,6 @@
     "Activate" : {
 
     },
-    "Activate Safety Shield at" : {
-
-    },
     "Active" : {
 
     },
@@ -455,10 +452,10 @@
     "Automatic" : {
 
     },
-    "Automatic protection when the wind percentage is reached." : {
+    "average" : {
 
     },
-    "average" : {
+    "Average %@ per day" : {
 
     },
     "average daily time" : {
@@ -556,9 +553,6 @@
 
     },
     "Cannot get Apple identity token" : {
-
-    },
-    "Cas u obrazovky" : {
 
     },
     "Change" : {
@@ -736,6 +730,9 @@
 
     },
     "Delete My Apps?" : {
+
+    },
+    "Delete pet" : {
 
     },
     "Delete Saved Selection" : {
@@ -1059,6 +1056,9 @@
     "Important only" : {
 
     },
+    "in the last 7 days" : {
+
+    },
     "Increasing" : {
 
     },
@@ -1122,9 +1122,6 @@
     "Learn More" : {
 
     },
-    "left" : {
-
-    },
     "Left" : {
 
     },
@@ -1186,6 +1183,9 @@
 
     },
     "Locking activates a break — selected apps get blocked. Unlocking ends the break." : {
+
+    },
+    "Locks apps when wind reaches the chosen level." : {
 
     },
     "Low (green)" : {
@@ -1353,9 +1353,6 @@
     "Ø %@/day" : {
 
     },
-    "Od %@" : {
-
-    },
     "Off" : {
 
     },
@@ -1366,9 +1363,6 @@
 
     },
     "On" : {
-
-    },
-    "on break" : {
 
     },
     "On Break" : {
@@ -1542,9 +1536,6 @@
     "Progressed today" : {
 
     },
-    "Prumerne %@ na den" : {
-
-    },
     "Pulsing / Shield Active (flow ←)" : {
 
     },
@@ -1677,6 +1668,9 @@
     "Save your app and category selection so you can quickly use it when creating a new path. You can manage your saved selection in Profile." : {
 
     },
+    "Save your pet automatically" : {
+
+    },
     "Saved App Selection" : {
 
     },
@@ -1695,6 +1689,9 @@
           }
         }
       }
+    },
+    "Screen Time" : {
+
     },
     "Screen Time Access" : {
 
@@ -1814,9 +1811,6 @@
 
     },
     "Skip daily selection" : {
-
-    },
-    "Smazat peta" : {
 
     },
     "Smooth sky gradient that transitions continuously throughout the day." : {
@@ -2288,9 +2282,6 @@
 
     },
     "Your Uuumi is ready to evolve. Don't keep it waiting!" : {
-
-    },
-    "za poslednich 7 dni" : {
 
     },
     "Zombie Break" : {
