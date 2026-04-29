@@ -13,15 +13,15 @@ struct UsageChart<Stats: UsageStatsProtocol>: View {
 
     private static var dayFormatter: DateFormatter {
         let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "cs_CZ")
+        formatter.locale = Locale(identifier: "en_US")
         formatter.setLocalizedDateFormatFromTemplate("EEE")
         return formatter
     }
 
     private static var dateFormatter: DateFormatter {
         let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "cs_CZ")
-        formatter.dateFormat = "d.M."
+        formatter.locale = Locale(identifier: "en_US")
+        formatter.dateFormat = "M/d"
         return formatter
     }
 

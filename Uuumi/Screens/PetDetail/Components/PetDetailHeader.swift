@@ -10,8 +10,8 @@ struct PetDetailHeader: View {
     private var formattedCreatedAt: String? {
         guard let createdAt else { return nil }
         let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "cs_CZ")
-        formatter.setLocalizedDateFormatFromTemplate("d. MMMM yyyy")
+        formatter.locale = Locale(identifier: "en_US")
+        formatter.setLocalizedDateFormatFromTemplate("d MMMM yyyy")
         return formatter.string(from: createdAt)
     }
 
@@ -28,7 +28,7 @@ struct PetDetailHeader: View {
                 }
 
                 if let formattedCreatedAt {
-                    Text("Od \(formattedCreatedAt)")
+                    Text("Since \(formattedCreatedAt)")
                         .font(.caption)
                         .foregroundStyle(.tertiary)
                 }

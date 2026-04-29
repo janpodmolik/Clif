@@ -31,7 +31,7 @@ struct FallbackScreenTimeCard: View {
                 }
             )
 
-            Text("Prumerne \(formatMinutes(stats.averageMinutes)) na den")
+            Text("Average \(formatMinutes(stats.averageMinutes)) per day")
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
         }
@@ -45,7 +45,7 @@ struct FallbackScreenTimeCard: View {
     // MARK: - Header
 
     private var headerSection: some View {
-        Text("Cas u obrazovky")
+        Text("Screen Time")
             .font(.headline)
     }
 
@@ -55,7 +55,7 @@ struct FallbackScreenTimeCard: View {
         HStack(alignment: .lastTextBaseline, spacing: 8) {
             Text(formatMinutes(stats.totalMinutes))
                 .font(.system(size: 34, weight: .bold))
-            Text("za poslednich 7 dni")
+            Text("in the last 7 days")
                 .foregroundStyle(.secondary)
         }
     }
