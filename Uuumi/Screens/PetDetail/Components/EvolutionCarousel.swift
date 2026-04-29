@@ -198,9 +198,16 @@ struct BlobOnlyCard: View {
                 .padding(.vertical, 4)
                 .background(Color.green, in: Capsule())
         } else {
-            Text("Awaiting essence")
-                .font(.caption)
-                .foregroundStyle(.secondary)
+            VStack(spacing: 2) {
+                Text("Available tomorrow")
+                    .font(.caption.weight(.medium))
+                    .foregroundStyle(.secondary)
+
+                Text("Let your pet settle in first")
+                    .font(.caption2)
+                    .foregroundStyle(.tertiary)
+            }
+            .multilineTextAlignment(.center)
         }
     }
 

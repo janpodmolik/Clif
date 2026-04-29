@@ -13,9 +13,6 @@ struct PetInfoStep: View {
         @Bindable var coordinator = coordinator
 
         VStack(spacing: 8) {
-            Text("Name your pet")
-                .font(.title3.weight(.semibold))
-
             Text("Give your new companion a name and purpose")
                 .font(.subheadline)
                 .foregroundStyle(.secondary)

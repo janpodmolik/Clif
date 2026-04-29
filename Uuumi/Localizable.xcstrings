@@ -455,6 +455,9 @@
     "Automatic" : {
 
     },
+    "Available tomorrow" : {
+
+    },
     "average" : {
 
     },
@@ -462,9 +465,6 @@
 
     },
     "average daily time" : {
-
-    },
-    "Awaiting essence" : {
 
     },
     "Back" : {
@@ -1137,6 +1137,9 @@
     "Let Uuumi reach me" : {
 
     },
+    "Let your pet settle in first" : {
+
+    },
     "Lifespan" : {
 
     },
@@ -1267,9 +1270,6 @@
 
     },
     "Name" : {
-
-    },
-    "Name your pet" : {
 
     },
     "Next evolution in %lld days" : {
