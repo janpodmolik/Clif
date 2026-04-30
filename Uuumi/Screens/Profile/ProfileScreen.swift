@@ -150,7 +150,9 @@ struct ProfileScreen: View {
                     }
 
                     Button {
-                        if let url = URL(string: "https://discord.gg/F8Z8GzmJ") {
+                        // TODO: Move to web redirect (e.g. discord.uuumi.app → discord.gg/...) so an expired or
+                        // revoked invite can be rotated server-side without shipping a new App Store build.
+                        if let url = URL(string: "https://discord.gg/QY7FAmX3zr") {
                             UIApplication.shared.open(url)
                         }
                     } label: {

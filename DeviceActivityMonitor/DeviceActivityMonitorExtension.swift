@@ -214,13 +214,14 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
     // MARK: - Wind Reminder
 
     /// Schedules or cancels the wind reminder notification based on current wind level.
-    /// When wind is active (>0%), schedules a reminder 5 min from now (resets on each threshold event).
-    /// At zero wind, cancels any pending reminder.
+    /// When wind is at or above `WindReminderNotification.triggerThreshold`, schedules a reminder
+    /// 5 min from now (resets on each threshold event). Below the threshold, cancels any pending
+    /// reminder.
     private func checkWindReminder(newWind: Double) {
         let settings = SharedDefaults.limitSettings
         guard settings.notifications.shouldSendWindReminder() else { return }
 
-        if newWind > 0 {
+        if newWind >= WindReminderNotification.triggerThreshold {
             guard !SharedDefaults.windReminderSent else { return }
             SharedDefaults.windReminderSent = true
             WindReminderNotification.schedule { message in

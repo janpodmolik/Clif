@@ -115,7 +115,6 @@ struct PetDetailScreen: View {
                             switch action {
                             case .delete: showDeleteConfirmation = true
                             case .showOnHomepage: onAction(.showOnHomepage)
-                            case .replay: onAction(.replay)
                             }
                         }
                     } else {

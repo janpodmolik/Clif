@@ -289,7 +289,10 @@ struct OverviewScreen: View {
                 UIApplication.shared.open(url)
             }
         case .blowAway, .replay, .delete, .progress, .breakHistory, .archive:
-            break // TODO: Implement remaining actions
+            // Overview kontext exposuje jen .showOnHomepage (a .delete přes DeletePetSheet,
+            // který volá petManager.delete přímo). Ostatní cases jsou by-design nedosažitelné
+            // přes OverviewPetActionsCard a zůstávají no-op.
+            break
         }
     }
 }

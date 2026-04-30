@@ -1,9 +1,13 @@
 import Foundation
 import UserNotifications
 
-/// Wind reminder notification — sent 5 minutes after wind is active (>0%) with no active break.
+/// Wind reminder notification — sent 5 minutes after wind reaches `triggerThreshold` with no active break.
 /// Reminds the user to start a break so wind can decrease.
 enum WindReminderNotification {
+
+    /// Wind percentage at or above which a reminder is scheduled. Below this value any pending
+    /// reminder is cancelled and the once-per-session debounce flag is reset.
+    static let triggerThreshold: Double = 15
 
     /// Delay before notification fires.
     #if DEBUG
@@ -17,21 +21,21 @@ enum WindReminderNotification {
 
     static var title: String {
         [
-            String(localized: "Wind is still blowing"),
-            String(localized: "Still windy out here"),
-            String(localized: "Wind hasn't given up"),
-            String(localized: "It's still rough"),
-            String(localized: "Anybody home?"),
+            String(localized: "A little breeze lingering"),
+            String(localized: "Wind's still around"),
+            String(localized: "Pet feels a draft"),
+            String(localized: "Bit of wind hanging on"),
+            String(localized: "Wind hasn't cleared"),
         ].randomElement()!
     }
 
     static var body: String {
         [
-            String(localized: "Your pet is still in the wind. Start a break and let it breathe!"),
-            String(localized: "Still getting blown around. A break would really help right now."),
-            String(localized: "The wind didn't go anywhere. Mind taking a break?"),
-            String(localized: "Pet's holding on but tired. One break would calm things down."),
-            String(localized: "Hello? Wind's still happening. Break, please?"),
+            String(localized: "Wind is sitting above zero. A break would bring it down."),
+            String(localized: "Pet's doing fine, but the wind won't clear on its own."),
+            String(localized: "Wind isn't going anywhere by itself. A short break clears it."),
+            String(localized: "Wind's hanging above zero. How about a break?"),
+            String(localized: "Pet's managing, but the breeze is sticking around."),
         ].randomElement()!
     }
 

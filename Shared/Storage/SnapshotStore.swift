@@ -144,22 +144,6 @@ final class SnapshotStore {
         try? fileManager.removeItem(at: url)
     }
 
-    // MARK: - Sync Support
-
-    // TODO: Consider removing - loadForSync provides the same functionality with aggregation.
-    // This method returns raw (non-aggregated) events. Keep only if raw access is needed for debugging.
-
-    /// Loads events that haven't been synced yet (after the given offset).
-    /// Returns events and the new offset (total count after these events).
-    func loadUnsynced(afterOffset offset: Int) -> (events: [SnapshotEvent], newOffset: Int) {
-        let all = loadAll()
-        guard offset < all.count else {
-            return ([], all.count)
-        }
-        let unsynced = Array(all[offset...])
-        return (unsynced, all.count)
-    }
-
     // MARK: - Wind Sync Support
 
     /// Returns the latest cumulative minutes from today's usage threshold events for the given pet.
@@ -187,16 +171,12 @@ final class SnapshotStore {
         }
     }
 
-    // MARK: - Aggregation for BE Sync
+    // MARK: - Aggregation
 
-    // TODO: Implement sync to Supabase
-    // Sync triggers:
-    // 1. Foreground sync - when app becomes active (scenePhase → .active)
-    // 2. Periodic sync - every 6-12 hours if there's new data
-    // 3. Background task - BGAppRefreshTask (iOS schedules opportunistically)
-    //
-    // Foreground sync is most reliable. Periodic/background is bonus for users
-    // who don't open the app frequently.
+    // Raw event log is local-only by design — the main app aggregates via SyncManager+UserData
+    // (HourlyHistory in UserDataDTO) which is what cloud-syncs. Raw snapshots stay on device
+    // because they're a high-volume extension→app channel, not a cross-device source of truth.
+    // Revisit only if multi-device sync becomes a real requirement.
 
     /// Aggregates usageThreshold events into time-based intervals.
     /// Other event types are kept unchanged.

@@ -112,7 +112,8 @@ extension SharedDefaults {
     }
 
     /// Whether wind reminder notification has already been sent this wind session.
-    /// Prevents repeated reminders while wind stays above 0. Resets when wind drops to 0 or on new day.
+    /// Prevents repeated reminders while wind stays at or above `WindReminderNotification.triggerThreshold`.
+    /// Resets when wind drops below the threshold or on new day.
     static var windReminderSent: Bool {
         get { defaults?.bool(forKey: DefaultsKeys.windReminderSent) ?? false }
         set { defaults?.set(newValue, forKey: DefaultsKeys.windReminderSent) }

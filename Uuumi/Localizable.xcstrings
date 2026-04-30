@@ -289,6 +289,9 @@
     "100%" : {
 
     },
+    "A little breeze lingering" : {
+
+    },
     "A little gust" : {
 
     },
@@ -394,9 +397,6 @@
     "Annual Plan" : {
 
     },
-    "Anybody home?" : {
-
-    },
     "App changes" : {
 
     },
@@ -474,6 +474,9 @@
 
     },
     "Best Value" : {
+
+    },
+    "Bit of wind hanging on" : {
 
     },
     "Blob" : {
@@ -993,9 +996,6 @@
     "Haptic Feedback" : {
 
     },
-    "Hello? Wind's still happening. Break, please?" : {
-
-    },
     "HELLOOO?! It's getting really dangerous here, help please!" : {
 
     },
@@ -1087,9 +1087,6 @@
 
     },
     "Is Blown" : {
-
-    },
-    "It's still rough" : {
 
     },
     "Join Community" : {
@@ -1432,6 +1429,9 @@
     "Pet Debug" : {
 
     },
+    "Pet feels a draft" : {
+
+    },
     "Pet name" : {
 
     },
@@ -1450,7 +1450,10 @@
     "Pet will go to the archive and you will continue with onboarding." : {
 
     },
-    "Pet's holding on but tired. One break would calm things down." : {
+    "Pet's doing fine, but the wind won't clear on its own." : {
+
+    },
+    "Pet's managing, but the breeze is sticking around." : {
 
     },
     "PetDetail Debug" : {
@@ -1867,12 +1870,6 @@
     "Stay connected" : {
 
     },
-    "Still getting blown around. A break would really help right now." : {
-
-    },
-    "Still windy out here" : {
-
-    },
     "Stop" : {
 
     },
@@ -1940,9 +1937,6 @@
 
     },
     "The saved selection will be deleted." : {
-
-    },
-    "The wind didn't go anywhere. Mind taking a break?" : {
 
     },
     "The wind doesn't come from everywhere." : {
@@ -2173,7 +2167,7 @@
     "Wind has stopped – you can safely unlock your phone." : {
 
     },
-    "Wind hasn't given up" : {
+    "Wind hasn't cleared" : {
 
     },
     "Wind increasing →" : {
@@ -2182,7 +2176,10 @@
     "Wind is serious now" : {
 
     },
-    "Wind is still blowing" : {
+    "Wind is sitting above zero. A break would bring it down." : {
+
+    },
+    "Wind isn't going anywhere by itself. A short break clears it." : {
 
     },
     "Wind just rolled in. Still cozy though." : {
@@ -2222,6 +2219,12 @@
 
     },
     "Wind went up without using the app?" : {
+
+    },
+    "Wind's hanging above zero. How about a break?" : {
+
+    },
+    "Wind's still around" : {
 
     },
     "Without it, there's no wind, no protection, no evolution." : {
@@ -2279,9 +2282,6 @@
 
     },
     "Your Message" : {
-
-    },
-    "Your pet is still in the wind. Start a break and let it breathe!" : {
 
     },
     "Your pet was waiting for you in the cloud. What would you like to do?" : {

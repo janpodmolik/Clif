@@ -28,7 +28,8 @@ struct NotificationSettings: Codable, Equatable {
 
     // MARK: - Wind Reminder
 
-    /// Reminder when wind stays active (>0%) for 5 min without a break.
+    /// Reminder when wind stays at or above `WindReminderNotification.triggerThreshold` for 5 min
+    /// without a break.
     var windReminder: Bool = true
 
     // MARK: - Summaries & Reminders
