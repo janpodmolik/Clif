@@ -65,7 +65,7 @@ struct OverviewScreen: View {
         .fullScreenCover(item: $selectedActivePet) { pet in
             PetDetailScreen(
                 pet: pet,
-                showOverviewActions: true,
+                showHomeShortcut: true,
                 onAction: { handlePetAction($0, for: pet) }
             )
         }
@@ -283,15 +283,12 @@ struct OverviewScreen: View {
 
     private func handlePetAction(_ action: PetDetailAction, for pet: Pet) {
         switch action {
-        case .showOnHomepage:
+        case .showOnHomepage, .blowAway, .replay, .progress, .archive:
             selectedActivePet = nil
             if let url = URL(string: DeepLinks.pet(pet.id)) {
                 UIApplication.shared.open(url)
             }
-        case .blowAway, .replay, .delete, .progress, .breakHistory, .archive:
-            // Overview kontext exposuje jen .showOnHomepage (a .delete přes DeletePetSheet,
-            // který volá petManager.delete přímo). Ostatní cases jsou by-design nedosažitelné
-            // přes OverviewPetActionsCard a zůstávají no-op.
+        case .delete, .breakHistory:
             break
         }
     }

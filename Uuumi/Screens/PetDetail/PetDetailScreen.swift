@@ -4,7 +4,7 @@ struct PetDetailScreen: View {
     let pet: Pet
 
     // MARK: - Context
-    var showOverviewActions: Bool = false
+    var showHomeShortcut: Bool = false
 
     // MARK: - Actions
     var onAction: (PetDetailAction) -> Void = { _ in }
@@ -108,47 +108,49 @@ struct PetDetailScreen: View {
                         )
                     }
 
-                    if showOverviewActions {
-                        OverviewPetActionsCard(
-                            isBlownAway: pet.isBlown
-                        ) { action in
-                            switch action {
-                            case .delete: showDeleteConfirmation = true
-                            case .showOnHomepage: onAction(.showOnHomepage)
+                    ActivePetActionsCard(
+                        isBlob: pet.isBlob,
+                        isFullyEvolved: pet.isFullyEvolved && !pet.isBlown,
+                        canProgress: canProgress,
+                        canArchiveEarly: canArchiveEarly,
+                        isBlownAway: pet.isBlown
+                    ) { action in
+                        switch action {
+                        case .progress:
+                            guard pet.windLevel == .none else {
+                                showWindNotCalmAlert = true
+                                return
+                            }
+                            onAction(.progress)
+                            dismiss()
+                        case .blowAway: onAction(.blowAway)
+                        case .replay:
+                            onAction(.replay)
+                        case .delete: showDeleteConfirmation = true
+                        case .archive:
+                            guard pet.windLevel == .none else {
+                                showWindNotCalmAlert = true
+                                return
+                            }
+                            if pet.isFullyEvolved {
+                                showArchiveConfirmation = true
+                            } else {
+                                showDeleteConfirmation = true
                             }
                         }
-                    } else {
-                        ActivePetActionsCard(
-                            isBlob: pet.isBlob,
-                            isFullyEvolved: pet.isFullyEvolved && !pet.isBlown,
-                            canProgress: canProgress,
-                            canArchiveEarly: canArchiveEarly,
-                            isBlownAway: pet.isBlown
-                        ) { action in
-                            switch action {
-                            case .progress:
-                                guard pet.windLevel == .none else {
-                                    showWindNotCalmAlert = true
-                                    return
-                                }
-                                onAction(.progress)
-                                dismiss()
-                            case .blowAway: onAction(.blowAway)
-                            case .replay:
-                                onAction(.replay)
-                            case .delete: showDeleteConfirmation = true
-                            case .archive:
-                                guard pet.windLevel == .none else {
-                                    showWindNotCalmAlert = true
-                                    return
-                                }
-                                if pet.isFullyEvolved {
-                                    showArchiveConfirmation = true
-                                } else {
-                                    showDeleteConfirmation = true
-                                }
-                            }
+                    }
+
+                    if showHomeShortcut {
+                        Button {
+                            onAction(.showOnHomepage)
+                        } label: {
+                            Label("View on Home", systemImage: "house.fill")
+                                .font(.subheadline.weight(.medium))
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 12)
                         }
+                        .buttonStyle(.plain)
+                        .glassCard()
                     }
                 }
                 .padding()
@@ -158,14 +160,14 @@ struct PetDetailScreen: View {
             .sheet(isPresented: $showLimitedApps) {
                 LimitedAppsSheet(
                     sources: pet.limitedSources,
-                    changeState: showOverviewActions ? nil : pet.limitedSourceChangeState,
+                    changeState: pet.limitedSourceChangeState,
                     activeBreakType: pet.activeBreak?.type,
-                    onEdit: showOverviewActions ? nil : { selection in
+                    onEdit: { selection in
                         let newSources = LimitedSource.from(selection)
                         petManager.updateLimitedSources(newSources, selection: selection)
                         analytics.send(.limitedAppsChanged(appCount: newSources.count))
                     },
-                    onEndFreeBreak: showOverviewActions ? nil : {
+                    onEndFreeBreak: {
                         ShieldManager.shared.turnOff(success: true)
                     }
                 )
@@ -266,13 +268,4 @@ struct PetDetailScreen: View {
         .environment(StoreManager.mock())
 }
 
-#Preview("Overview Actions") {
-    Text("Tap to open")
-        .fullScreenCover(isPresented: .constant(true)) {
-            PetDetailScreen(pet: .mock(name: "Ivy", phase: 3, windPoints: 30), showOverviewActions: true)
-        }
-        .environment(PetManager.mock())
-        .environment(ArchivedPetManager.mock())
-        .environment(StoreManager.mock())
-}
 #endif
