@@ -71,12 +71,6 @@ enum DarwinNotifications {
     static let safetyShieldActivated = "com.janpodmolik.Uuumi.SafetyShieldActivated"
 }
 
-enum Gender: String, CaseIterable {
-    case notSpecified = "not_specified"
-    case male = "male"
-    case female = "female"
-}
-
 /// UserDefaults keys
 enum DefaultsKeys {
     static let lastMonitorUpdate = "lastMonitorUpdate"
@@ -186,8 +180,4 @@ enum DefaultsKeys {
     // MARK: - Notification Re-prompt
 
     static let lastNotificationPromptDate = "lastNotificationPromptDate"
-
-    // MARK: - Demographics
-
-    static let gender = "gender"
 }

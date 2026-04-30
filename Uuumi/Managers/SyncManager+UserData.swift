@@ -105,10 +105,6 @@ extension SyncManager {
 
                 SharedDefaults.limitSettings = payload.limitSettings
 
-                if let gender = payload.gender {
-                    UserDefaults.standard.set(gender, forKey: DefaultsKeys.gender)
-                }
-
                 // Restore hourly history for DailyPatternCard
                 if let history = payload.hourlyHistory, !history.isEmpty {
                     SharedDefaults.hourlyHistory = history

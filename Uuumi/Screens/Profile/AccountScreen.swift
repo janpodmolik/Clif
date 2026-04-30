@@ -5,7 +5,6 @@ struct AccountScreen: View {
     @Environment(AuthManager.self) private var authManager
     @Environment(\.dismiss) private var dismiss
 
-    @AppStorage(DefaultsKeys.gender) private var gender: Gender = .notSpecified
     @State private var displayName: String = ""
     @State private var initialDisplayName: String = ""
     @State private var isSavingName = false
@@ -42,23 +41,6 @@ struct AccountScreen: View {
                     .background(Color(.tertiarySystemGroupedBackground))
                     .clipShape(Capsule())
                     .padding(.horizontal, 24)
-                }
-
-                // Gender
-                VStack(spacing: 6) {
-                    Picker("Gender", selection: $gender) {
-                        Text("Prefer not to say").tag(Gender.notSpecified)
-                        Text("Male").tag(Gender.male)
-                        Text("Female").tag(Gender.female)
-                    }
-                    .pickerStyle(.segmented)
-                    .padding(.horizontal, 24)
-
-                    Text("Helps us decide which pet evolutions and assets to create next.")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal, 24)
                 }
 
                 // Sign out

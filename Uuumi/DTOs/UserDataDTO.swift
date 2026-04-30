@@ -30,7 +30,6 @@ struct UserDataDTO: Codable {
                 coinsBalance: CoinStore.shared.balance,
                 unlockedEssences: essenceCatalogManager.unlockedEssences.map(\.rawValue),
                 limitSettings: SharedDefaults.limitSettings,
-                gender: UserDefaults.standard.string(forKey: DefaultsKeys.gender),
                 hourlyHistory: hourlyHistory
             ),
             schemaVersion: 1,
@@ -44,7 +43,6 @@ struct UserDataPayload: Codable {
     var coinsBalance: Int
     var unlockedEssences: [Int]
     var limitSettings: LimitSettings
-    var gender: String?
     /// Pet-independent daily hourly breakdowns — one entry per day, grows over time.
     var hourlyHistory: [DailyHourlyBreakdown]?
 }
