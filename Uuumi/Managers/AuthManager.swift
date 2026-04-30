@@ -36,6 +36,7 @@ final class AuthManager {
     enum AuthError: LocalizedError {
         case invalidCredential
         case missingNonce
+        case nonceGenerationFailed
         case missingIdentityToken
         case supabase(Error)
 
@@ -45,6 +46,8 @@ final class AuthManager {
                 return String(localized: "Invalid credentials")
             case .missingNonce:
                 return String(localized: "Sign-in error (missing nonce)")
+            case .nonceGenerationFailed:
+                return String(localized: "Couldn't start Apple sign-in. Please try again.")
             case .missingIdentityToken:
                 return String(localized: "Cannot get Apple identity token")
             case .supabase(let error):
@@ -166,10 +169,15 @@ final class AuthManager {
     // MARK: - Apple Sign In
 
     func configureAppleSignIn(request: ASAuthorizationAppleIDRequest) {
-        let nonce = generateNonce()
-        currentNonce = nonce
-        request.requestedScopes = [.email]
-        request.nonce = sha256(nonce)
+        do {
+            let nonce = try generateNonce()
+            currentNonce = nonce
+            request.requestedScopes = [.email]
+            request.nonce = sha256(nonce)
+        } catch {
+            currentNonce = nil
+            self.error = .nonceGenerationFailed
+        }
     }
 
     func handleAppleSignIn(authorization: ASAuthorization) async {
@@ -336,12 +344,12 @@ final class AuthManager {
 
     // MARK: - Nonce Helpers
 
-    private func generateNonce(length: Int = 32) -> String {
+    private func generateNonce(length: Int = 32) throws -> String {
         precondition(length > 0)
         var randomBytes = [UInt8](repeating: 0, count: length)
         let errorCode = SecRandomCopyBytes(kSecRandomDefault, randomBytes.count, &randomBytes)
         if errorCode != errSecSuccess {
-            fatalError("Unable to generate nonce. OSStatus: \(errorCode)")
+            throw AuthError.nonceGenerationFailed
         }
         let charset: [Character] = Array("0123456789ABCDEFGHIJKLMNOPQRSTUVXYZabcdefghijklmnopqrstuvwxyz-._")
         return String(randomBytes.map { charset[Int($0) % charset.count] })

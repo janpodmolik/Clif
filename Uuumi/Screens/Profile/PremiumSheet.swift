@@ -59,6 +59,13 @@ struct PremiumSheet: View {
                     selectedProduct = storeManager.yearlyProduct
                 }
             }
+            .onDisappear {
+                analytics.send(.paywallDismissed(
+                    source: source.rawValue,
+                    type: "premium",
+                    purchased: storeManager.purchaseState == .purchased
+                ))
+            }
             .alert("Error", isPresented: hasError, presenting: storeManager.error) { _ in
                 Button("OK") { storeManager.clearError() }
             } message: { error in

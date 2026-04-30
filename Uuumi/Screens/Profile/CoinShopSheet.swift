@@ -59,6 +59,13 @@ struct CoinShopSheet: View {
                     selectedProduct = storeManager.coinPackProducts.first { $0.id == StoreManager.coinsMediumID }
                 }
             }
+            .onDisappear {
+                analytics.send(.paywallDismissed(
+                    source: source.rawValue,
+                    type: "coins",
+                    purchased: storeManager.purchaseState == .purchased
+                ))
+            }
             .onChange(of: storeManager.purchaseState) { _, newState in
                 if newState == .purchased {
                     Task {

@@ -38,6 +38,7 @@ final class AnalyticsManager {
 
         // Purchase
         case paywallShown(source: String, type: String)
+        case paywallDismissed(source: String, type: String, purchased: Bool)
         case purchaseCompleted(product: String, source: String, revenue: String)
         case purchaseFailed(product: String, source: String, reason: String)
 
@@ -71,6 +72,7 @@ final class AnalyticsManager {
             case .blowAway: "blow_away"
             case .authCompleted: "auth_completed"
             case .paywallShown: "paywall_shown"
+            case .paywallDismissed: "paywall_dismissed"
             case .purchaseCompleted: "purchase_completed"
             case .purchaseFailed: "purchase_failed"
             case .configChanged: "config_changed"
@@ -108,6 +110,8 @@ final class AnalyticsManager {
                 ["method": method]
             case .paywallShown(let source, let type):
                 ["source": source, "type": type]
+            case .paywallDismissed(let source, let type, let purchased):
+                ["source": source, "type": type, "purchased": "\(purchased)"]
             case .purchaseCompleted(let product, let source, let revenue):
                 ["product": product, "source": source, "revenue": revenue]
             case .purchaseFailed(let product, let source, let reason):

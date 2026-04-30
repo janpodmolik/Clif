@@ -633,6 +633,9 @@
     "Couldn't save" : {
 
     },
+    "Couldn't start Apple sign-in. Please try again." : {
+
+    },
     "Count: %lld" : {
 
     },
