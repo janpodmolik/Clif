@@ -341,9 +341,16 @@ final class ScreenTimeManager: ObservableObject {
 /// Helper for building DeviceActivity threshold events.
 enum MonitoringEventBuilder {
 
-    /// Builds threshold events for monitoring: evenly-spaced wind thresholds from
-    /// `intervalSeconds` up to `limitSeconds`, plus one day-start sentinel at 6s.
-    /// iOS automatically ignores thresholds that have already been passed.
+    /// Builds threshold events for monitoring. Layout:
+    /// - `(maxWindThresholds - 2)` evenly-spaced thresholds at multiples of `intervalSeconds`
+    /// - 1 threshold snapped to exactly `limitSeconds` — primary trigger for SafetyShield at 100% wind
+    /// - 1 safety-net threshold past `limitSeconds` — fires if iOS accounting misses the exact-limit event
+    /// - 1 day-start sentinel at 6s
+    ///
+    /// The snap-to-limit is load-bearing: integer division on `limitSeconds / maxWindThresholds` floors,
+    /// so without it the highest threshold lands short of the limit (e.g. 1197s for a 1200s limit with 19
+    /// slots). When a monitoring window starts with `baseline ≈ breakReduction`, wind needs the full
+    /// `limitSeconds` to cross 100%, and a sub-limit highest threshold causes SafetyShield to never fire.
     static func buildEvents(
         limitSeconds: Int,
         appTokens: Set<ApplicationToken>,
@@ -362,9 +369,18 @@ enum MonitoringEventBuilder {
         print("  intervalSeconds: \(intervalSeconds)s")
         #endif
 
-        var currentSeconds = intervalSeconds
+        // Collect threshold values into a Set so duplicates collapse (small-limit edge cases where
+        // evenly-spaced values may overlap with snap/overshoot).
+        var thresholdValues: Set<Int> = []
 
-        while events.count < maxWindThresholds {
+        let evenlySpacedSlots = maxWindThresholds - 2
+        for index in 1...evenlySpacedSlots {
+            thresholdValues.insert(index * intervalSeconds)
+        }
+        thresholdValues.insert(limitSeconds)
+        thresholdValues.insert(limitSeconds + max(intervalSeconds / 2, minInterval))
+
+        for currentSeconds in thresholdValues.sorted() {
             let eventName = DeviceActivityEvent.Name("second_\(currentSeconds)")
             let minutes = currentSeconds / 60
             let seconds = currentSeconds % 60
@@ -375,8 +391,6 @@ enum MonitoringEventBuilder {
                 webDomains: webTokens,
                 threshold: DateComponents(minute: minutes, second: seconds)
             )
-
-            currentSeconds += intervalSeconds
         }
 
         // Sentinel threshold at 6s for immediate Day Start Shield activation
