@@ -38,11 +38,11 @@ class ShieldConfigurationExtension: ShieldConfigurationDataSource {
         let subtitleText: String
         switch breakType {
         case .committed:
-            subtitleText = "Check how much time is left in Uuumi."
+            subtitleText = "Tap Unlock to open Uuumi and manage your break."
         case .safety:
-            subtitleText = "Check if it's safe to unlock in Uuumi."
+            subtitleText = "Tap Unlock to open Uuumi and check if it's safe."
         default:
-            subtitleText = "You can safely end your break in Uuumi."
+            subtitleText = "Tap Unlock to open Uuumi and end your break."
         }
 
         return ShieldConfiguration(
@@ -51,7 +51,7 @@ class ShieldConfigurationExtension: ShieldConfigurationDataSource {
             icon: loadShieldPetImage(happy: false) ?? UIImage.Shields.break,
             title: ShieldConfiguration.Label(text: titleText, color: .black),
             subtitle: ShieldConfiguration.Label(text: subtitleText, color: .darkGray),
-            primaryButtonLabel: ShieldConfiguration.Label(text: "Unlock in Uuumi", color: .white),
+            primaryButtonLabel: ShieldConfiguration.Label(text: "Unlock", color: .white),
             primaryButtonBackgroundColor: .black,
             secondaryButtonLabel: ShieldConfiguration.Label(text: "Close", color: .black)
         )
