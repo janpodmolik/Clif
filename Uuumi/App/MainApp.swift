@@ -179,6 +179,15 @@ struct MainApp: App {
             // Refresh shield state (may have been activated by extension at 100%)
             ShieldState.shared.refresh()
 
+            // Cache notification permission for shield extensions (unlock flow copy)
+            Task { await AppDelegate.cacheNotificationAuthStatus() }
+
+            // Report wind anomalies (suspected iOS accounting bursts) flagged by the extension
+            if SharedDefaults.windAnomalyDetectedAt != nil, !SharedDefaults.windAnomalyReported {
+                SharedDefaults.windAnomalyReported = true
+                analyticsManager.send(.windAnomalyDetected(jumpSeconds: SharedDefaults.windAnomalyJumpSeconds))
+            }
+
             // Resume break monitoring (timer is lost when app is suspended/terminated)
             ShieldManager.shared.resumeBreakMonitoringIfNeeded()
 

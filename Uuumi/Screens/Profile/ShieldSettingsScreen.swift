@@ -3,9 +3,33 @@ import SwiftUI
 struct ShieldSettingsScreen: View {
     @Environment(AnalyticsManager.self) private var analytics
     @State private var limitSettings = SharedDefaults.limitSettings
+    @State private var notificationsAuthorized = SharedDefaults.notificationsAuthorized
+    @Environment(\.scenePhase) private var scenePhase
 
     var body: some View {
         Form {
+            // MARK: - Notifications Warning
+
+            if !notificationsAuthorized {
+                Section {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Label("Notifications are off", systemImage: "bell.slash.fill")
+                            .fontWeight(.bold)
+                            .foregroundStyle(.orange)
+                        Text("Unlocking a shield works through a notification. Without it, tapping Unlock closes the shield but nothing guides you back to Uuumi.")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                        Button("Enable in Settings") {
+                            if let url = URL(string: UIApplication.openNotificationSettingsURLString) {
+                                UIApplication.shared.open(url)
+                            }
+                        }
+                        .font(.subheadline.weight(.semibold))
+                    }
+                    .padding(.vertical, 4)
+                }
+            }
+
             // MARK: - Safety Shield
 
             Section {
@@ -52,6 +76,12 @@ struct ShieldSettingsScreen: View {
         }
         .navigationTitle("Shield")
         .navigationBarTitleDisplayMode(.inline)
+        .task { await refreshNotificationStatus() }
+        .onChange(of: scenePhase) { _, phase in
+            if phase == .active {
+                Task { await refreshNotificationStatus() }
+            }
+        }
         .onChange(of: limitSettings) { oldValue, newValue in
             SharedDefaults.limitSettings = newValue
 
@@ -65,6 +95,11 @@ struct ShieldSettingsScreen: View {
                 analytics.send(.configChanged(key: "auto_lock_after_committed", value: "\(newValue.autoLockAfterCommittedBreak)"))
             }
         }
+    }
+
+    private func refreshNotificationStatus() async {
+        await AppDelegate.cacheNotificationAuthStatus()
+        notificationsAuthorized = SharedDefaults.notificationsAuthorized
     }
 }
 

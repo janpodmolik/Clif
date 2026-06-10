@@ -15,13 +15,17 @@ class ShieldConfigurationExtension: ShieldConfigurationDataSource {
     }
 
     private func getDayStartShieldConfiguration() -> ShieldConfiguration {
+        let subtitleText = SharedDefaults.notificationsAuthorized
+            ? "What kind of day do you want?"
+            : "Notifications are off — open Uuumi from your Home Screen to pick a preset."
+
         return ShieldConfiguration(
             backgroundBlurStyle: .extraLight,
             backgroundColor: nil,
             icon: loadShieldPetImage(happy: true) ?? UIImage.Shields.dailyPreset,
             title: ShieldConfiguration.Label(text: DayStartGreeting.text, color: .black),
             subtitle: ShieldConfiguration.Label(
-                text: "What kind of day do you want?",
+                text: subtitleText,
                 color: .darkGray
             ),
             primaryButtonLabel: ShieldConfiguration.Label(text: "Start your day", color: .white),
@@ -35,14 +39,20 @@ class ShieldConfigurationExtension: ShieldConfigurationDataSource {
         let titleText = petName.map { "Blocked for \($0)" } ?? "Blocked"
         let breakType = SharedDefaults.activeBreakType
 
+        // The Unlock flow works via a local notification — when notifications are
+        // denied, tapping Unlock would silently do nothing, so instruct manual open.
         let subtitleText: String
-        switch breakType {
-        case .committed:
-            subtitleText = "Tap Unlock to open Uuumi and manage your break."
-        case .safety:
-            subtitleText = "Tap Unlock to open Uuumi and check if it's safe."
-        default:
-            subtitleText = "Tap Unlock to open Uuumi and end your break."
+        if !SharedDefaults.notificationsAuthorized {
+            subtitleText = "Notifications are off — open Uuumi from your Home Screen to unlock."
+        } else {
+            switch breakType {
+            case .committed:
+                subtitleText = "Tap Unlock to open Uuumi and manage your break."
+            case .safety:
+                subtitleText = "Tap Unlock to open Uuumi and check if it's safe."
+            default:
+                subtitleText = "Tap Unlock to open Uuumi and end your break."
+            }
         }
 
         return ShieldConfiguration(

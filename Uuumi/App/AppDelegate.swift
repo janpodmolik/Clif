@@ -67,6 +67,7 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
         do {
             let granted = try await UNUserNotificationCenter.current()
                 .requestAuthorization(options: [.alert, .sound, .badge])
+            SharedDefaults.notificationsAuthorized = granted
             #if DEBUG
             print("[AppDelegate] Notification permission \(granted ? "granted" : "denied")")
             #endif
@@ -77,5 +78,15 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
             #endif
             return false
         }
+    }
+
+    /// Caches notification authorization into SharedDefaults so extensions
+    /// (ShieldConfiguration) can adapt the unlock flow copy when notifications
+    /// are denied. Called on every foreground.
+    static func cacheNotificationAuthStatus() async {
+        let settings = await UNUserNotificationCenter.current().notificationSettings()
+        let authorized = settings.authorizationStatus == .authorized
+            || settings.authorizationStatus == .provisional
+        SharedDefaults.notificationsAuthorized = authorized
     }
 }

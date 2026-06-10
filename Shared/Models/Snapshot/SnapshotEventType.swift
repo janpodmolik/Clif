@@ -30,6 +30,11 @@ enum SnapshotEventType: Codable, Equatable {
     /// Daily preset was selected.
     case presetSelected(preset: String)
 
+    /// Wind jump flagged as a suspected iOS Screen Time accounting burst
+    /// (usage delta physically impossible within the wall-clock window).
+    /// Informational only — the jump is still applied to wind.
+    case windAnomaly(jumpSeconds: Int)
+
     /// Unknown event type for forward-compatibility.
     case unknown(String)
 
@@ -43,6 +48,7 @@ enum SnapshotEventType: Codable, Equatable {
         case success
         case blowAwayReason = "blow_away_reason"
         case preset
+        case jumpSeconds = "jump_seconds"
     }
 
     init(from decoder: Decoder) throws {
@@ -82,6 +88,10 @@ enum SnapshotEventType: Codable, Equatable {
         case "presetSelected":
             let preset = try container.decode(String.self, forKey: .preset)
             self = .presetSelected(preset: preset)
+
+        case "windAnomaly":
+            let jumpSeconds = try container.decodeIfPresent(Int.self, forKey: .jumpSeconds) ?? 0
+            self = .windAnomaly(jumpSeconds: jumpSeconds)
 
         default:
             self = .unknown(type)
@@ -124,6 +134,10 @@ enum SnapshotEventType: Codable, Equatable {
         case .presetSelected(let preset):
             try container.encode("presetSelected", forKey: .type)
             try container.encode(preset, forKey: .preset)
+
+        case .windAnomaly(let jumpSeconds):
+            try container.encode("windAnomaly", forKey: .type)
+            try container.encode(jumpSeconds, forKey: .jumpSeconds)
 
         case .unknown(let value):
             try container.encode(value, forKey: .type)

@@ -126,7 +126,7 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
 
             guard shouldProcessThreshold() else { return }
 
-            processThresholdEvent(currentSeconds: currentSeconds)
+            processThresholdEvent(currentSeconds: currentSeconds, previousSeconds: lastProcessed)
         }
     }
 
@@ -156,7 +156,7 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
         return true
     }
 
-    private func processThresholdEvent(currentSeconds: Int) {
+    private func processThresholdEvent(currentSeconds: Int, previousSeconds: Int) {
         let oldWindPoints = SharedDefaults.monitoredWindPoints
         let limitSeconds = SharedDefaults.integer(forKey: DefaultsKeys.monitoringLimitSeconds)
         let breakReduction = SharedDefaults.totalBreakReduction
@@ -164,6 +164,11 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
         let trueCumulative = baseline + currentSeconds
 
         ExtensionLogger.log("THRESHOLD: cumulative=\(trueCumulative)s (baseline=\(baseline)+current=\(currentSeconds)), break=\(breakReduction)s, limit=\(limitSeconds)s")
+
+        let anomaly = detectWindAnomaly(
+            trueCumulative: trueCumulative,
+            previousCumulative: baseline + previousSeconds
+        )
 
         let newWindPoints = SharedDefaults.calculateWind(
             cumulativeSeconds: trueCumulative,
@@ -190,7 +195,62 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
                 eventType: .usageThreshold(cumulativeSeconds: trueCumulative)
             )
             SnapshotStore.shared.append(event)
+
+            if let anomaly, anomaly.isNewAnomaly {
+                let anomalyEvent = SnapshotEvent(
+                    petId: petId,
+                    windPoints: newWindPoints,
+                    eventType: .windAnomaly(jumpSeconds: anomaly.jumpSeconds)
+                )
+                SnapshotStore.shared.append(anomalyEvent)
+            }
         }
+    }
+
+    // MARK: - Wind Anomaly Detection
+
+    /// Flags physically impossible usage jumps (suspected iOS Screen Time accounting bursts,
+    /// see Apple forum thread 811305 / FB21450954). Real usage cannot accrue faster than
+    /// 1 second per wall-clock second, so within one burst group (events separated by less
+    /// than the slack window) the cumulative delta must stay within elapsed time + slack.
+    ///
+    /// Detection only — the event is still processed and wind still jumps. The flag drives
+    /// the anomaly notice in SafetyUnlockSheet, the pardon flow, and analytics. A legit
+    /// deferred flush of real usage can also trip this, which is why it never drops events.
+    private func detectWindAnomaly(
+        trueCumulative: Int,
+        previousCumulative: Int
+    ) -> (jumpSeconds: Int, isNewAnomaly: Bool)? {
+        let now = Date()
+        let slack = AppConstants.windAnomalySlackSeconds
+
+        // A gap longer than the slack window starts a new burst group, anchored
+        // at the cumulative value from before this event.
+        let lastEventAt = SharedDefaults.monitoredLastEventAt
+        if lastEventAt == nil || now.timeIntervalSince(lastEventAt!) > slack {
+            SharedDefaults.windBurstAnchorAt = now
+            SharedDefaults.windBurstAnchorSeconds = previousCumulative
+        }
+        SharedDefaults.monitoredLastEventAt = now
+
+        guard let anchorAt = SharedDefaults.windBurstAnchorAt else { return nil }
+        let elapsed = now.timeIntervalSince(anchorAt)
+        let burstDelta = trueCumulative - SharedDefaults.windBurstAnchorSeconds
+
+        guard Double(burstDelta) > elapsed + slack else { return nil }
+
+        let jumpSeconds = burstDelta - Int(elapsed)
+        let isNewAnomaly = (SharedDefaults.windAnomalyDetectedAt ?? .distantPast) < anchorAt
+
+        SharedDefaults.windAnomalyDetectedAt = now
+        SharedDefaults.windAnomalyJumpSeconds = jumpSeconds
+        if isNewAnomaly {
+            SharedDefaults.windAnomalyReported = false
+        }
+
+        ExtensionLogger.log("[Anomaly] Impossible usage jump: +\(burstDelta)s in \(Int(elapsed))s wall-clock (jump=\(jumpSeconds)s, newAnomaly=\(isNewAnomaly))")
+
+        return (jumpSeconds, isNewAnomaly)
     }
 
     // MARK: - Wind Notifications

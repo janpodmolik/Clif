@@ -247,6 +247,9 @@ final class ShieldManager {
         // Failed committed breaks (violation) don't reduce wind - pet is blown away
         if success {
             applyBreakReduction()
+            // The reduction consumed any flagged wind spike — drop the anomaly record
+            // so a later legitimate safety shield can't offer a stale pardon.
+            SharedDefaults.clearWindAnomaly()
         }
 
         // Log break ended after reduction (uses updated windPoints), before resetting flags (need shieldActivatedAt)
@@ -514,6 +517,10 @@ final class ShieldManager {
 
         applyBreakReduction()
 
+        // The reduction consumed any flagged wind spike — drop the anomaly record
+        // so a later legitimate safety shield can't offer a stale pardon.
+        SharedDefaults.clearWindAnomaly()
+
         // Use monitoredWindPoints (updated by applyBreakReduction) as the source of truth
         let unlockThreshold = Double(SharedDefaults.limitSettings.safetyUnlockThreshold)
         let result: SafetyUnlockResult = SharedDefaults.monitoredWindPoints < unlockThreshold ? .safe : .blownAway
@@ -528,5 +535,54 @@ final class ShieldManager {
         ShieldState.shared.refresh()
 
         return result
+    }
+
+    // MARK: - Anomaly Pardon
+
+    /// Whether the current safety shield can be unlocked without pet loss because the wind
+    /// spike that triggered it was flagged as a suspected iOS accounting burst.
+    /// Rate-limited to one pardon per `AppConstants.anomalyPardonCooldown` to prevent abuse.
+    var isAnomalyPardonAvailable: Bool {
+        guard SharedDefaults.activeBreakType == .safety else { return false }
+        guard let detectedAt = SharedDefaults.windAnomalyDetectedAt,
+              Calendar.current.isDateInToday(detectedAt) else { return false }
+        if let lastPardon = SharedDefaults.lastAnomalyPardonAt,
+           Date().timeIntervalSince(lastPardon) < AppConstants.anomalyPardonCooldown {
+            return false
+        }
+        return true
+    }
+
+    /// Unlocks the safety shield without pet loss and forgives the anomalous usage seconds
+    /// via break reduction, returning wind to roughly its pre-burst level.
+    func processSafetyShieldAnomalyPardon() {
+        guard SharedDefaults.activeBreakType == .safety else {
+            assertionFailure("[ShieldManager] processSafetyShieldAnomalyPardon called with non-safety break type: \(String(describing: SharedDefaults.activeBreakType))")
+            processUnlock()
+            return
+        }
+
+        applyBreakReduction()
+
+        let jumpSeconds = SharedDefaults.windAnomalyJumpSeconds
+        if jumpSeconds > 0 {
+            let cumulative = SharedDefaults.totalCumulativeSeconds
+            SharedDefaults.totalBreakReduction = min(SharedDefaults.totalBreakReduction + jumpSeconds, cumulative)
+            SharedDefaults.monitoredWindPoints = SharedDefaults.calculatedWind
+        }
+
+        SharedDefaults.lastAnomalyPardonAt = Date()
+        SharedDefaults.clearWindAnomaly()
+        analyticsManager?.send(.windAnomalyPardoned(jumpSeconds: jumpSeconds))
+
+        #if DEBUG
+        print("[ShieldManager] Anomaly pardon: forgave \(jumpSeconds)s, wind=\(String(format: "%.1f", SharedDefaults.monitoredWindPoints))%")
+        #endif
+
+        logBreakEnded(success: true)
+        deactivateStore()
+        SharedDefaults.resetShieldFlags()
+        ScreenTimeManager.shared.restartMonitoring()
+        ShieldState.shared.refresh()
     }
 }

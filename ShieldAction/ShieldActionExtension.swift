@@ -50,12 +50,16 @@ class ShieldActionExtension: ShieldActionDelegate {
         content.body = kind.body
         content.userInfo = ["deepLink": kind.deepLink]
         content.sound = nil
+        // User just tapped Unlock and is waiting for this notification — without
+        // .timeSensitive an active Focus mode silences it and the flow dead-ends.
+        content.interruptionLevel = .timeSensitive
+        content.relevanceScore = 1.0
 
-        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 0.1, repeats: false)
+        // nil trigger = deliver immediately
         let request = UNNotificationRequest(
             identifier: kind.identifier,
             content: content,
-            trigger: trigger
+            trigger: nil
         )
 
         UNUserNotificationCenter.current().add(request) { error in

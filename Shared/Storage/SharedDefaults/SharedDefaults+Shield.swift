@@ -110,6 +110,23 @@ extension SharedDefaults {
         }
     }
 
+    // MARK: - Notification Permission Cache
+
+    /// Cached notification authorization, refreshed by the main app on every foreground.
+    /// Read by ShieldConfiguration to adjust shield copy when the notification-based
+    /// unlock flow can't work. Defaults to true so the copy stays normal before first cache.
+    static var notificationsAuthorized: Bool {
+        get {
+            let fresh = UserDefaults(suiteName: AppConstants.appGroupIdentifier)
+            fresh?.synchronize()
+            return fresh?.object(forKey: DefaultsKeys.notificationsAuthorized) as? Bool ?? true
+        }
+        set {
+            defaults?.set(newValue, forKey: DefaultsKeys.notificationsAuthorized)
+            defaults?.synchronize()
+        }
+    }
+
     // MARK: - Break Picker Preferences
 
     /// User's preferred break type for picker (persisted across sessions).

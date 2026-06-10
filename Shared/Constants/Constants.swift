@@ -30,6 +30,16 @@ enum AppConstants {
     /// Thresholds reserved for non-wind events (1 day-start sentinel for early-day shield activation).
     static let reservedThresholds = 1
 
+    /// Slack for wind anomaly detection (seconds). A burst of threshold events whose usage delta
+    /// exceeds wall-clock elapsed time + this slack is physically impossible as real-time usage
+    /// and gets flagged as a suspected iOS Screen Time accounting burst (never dropped, only flagged).
+    /// Also used as the gap that separates two burst groups.
+    static let windAnomalySlackSeconds: TimeInterval = 120
+
+    /// Minimum interval between anomaly pardons (unlocking SafetyShield without pet loss
+    /// after a flagged wind spike). Limits abuse of the pardon flow.
+    static let anomalyPardonCooldown: TimeInterval = 7 * 24 * 60 * 60
+
     // MARK: - UI
 
     /// Maximum apps to display initially in activity report
@@ -180,4 +190,18 @@ enum DefaultsKeys {
     // MARK: - Notification Re-prompt
 
     static let lastNotificationPromptDate = "lastNotificationPromptDate"
+
+    // MARK: - Notification Permission Cache
+
+    static let notificationsAuthorized = "notificationsAuthorized"
+
+    // MARK: - Wind Anomaly Detection (iOS burst bug)
+
+    static let monitoredLastEventAt = "monitoredLastEventAt"
+    static let windBurstAnchorAt = "windBurstAnchorAt"
+    static let windBurstAnchorSeconds = "windBurstAnchorSeconds"
+    static let windAnomalyDetectedAt = "windAnomalyDetectedAt"
+    static let windAnomalyJumpSeconds = "windAnomalyJumpSeconds"
+    static let windAnomalyReported = "windAnomalyReported"
+    static let lastAnomalyPardonAt = "lastAnomalyPardonAt"
 }

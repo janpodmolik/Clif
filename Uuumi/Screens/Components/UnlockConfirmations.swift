@@ -33,6 +33,9 @@ struct UnlockConfirmations: ViewModifier {
                     },
                     onUnlockSafe: {
                         ShieldManager.shared.processSafetyShieldUnlock()
+                    },
+                    onUnlockPardoned: {
+                        ShieldManager.shared.processSafetyShieldAnomalyPardon()
                     }
                 )
             }

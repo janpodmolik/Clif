@@ -48,6 +48,10 @@ final class AnalyticsManager {
         // Permissions
         case notificationPermissionResponded(granted: Bool)
 
+        // Diagnostics
+        case windAnomalyDetected(jumpSeconds: Int)
+        case windAnomalyPardoned(jumpSeconds: Int)
+
         enum PresetContext: String {
             case onboarding
             case creation
@@ -77,6 +81,8 @@ final class AnalyticsManager {
             case .purchaseFailed: "purchase_failed"
             case .configChanged: "config_changed"
             case .notificationPermissionResponded: "notification_permission_responded"
+            case .windAnomalyDetected: "wind_anomaly_detected"
+            case .windAnomalyPardoned: "wind_anomaly_pardoned"
             }
         }
 
@@ -120,6 +126,10 @@ final class AnalyticsManager {
                 ["key": key, "value": value]
             case .notificationPermissionResponded(let granted):
                 ["granted": "\(granted)"]
+            case .windAnomalyDetected(let jumpSeconds):
+                ["jump_seconds": "\(jumpSeconds)"]
+            case .windAnomalyPardoned(let jumpSeconds):
+                ["jump_seconds": "\(jumpSeconds)"]
             }
         }
     }

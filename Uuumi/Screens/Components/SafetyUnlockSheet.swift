@@ -6,6 +6,7 @@ import Combine
 struct SafetyUnlockSheet: View {
     var onUnlockDangerous: () -> Void = {}
     var onUnlockSafe: () -> Void = {}
+    var onUnlockPardoned: () -> Void = {}
 
     @State private var refreshTick = 0
     @Environment(\.dismiss) private var dismiss
@@ -19,10 +20,16 @@ struct SafetyUnlockSheet: View {
         return ShieldManager.shared.isSafetyUnlockSafe
     }
 
+    /// The wind spike that triggered this shield was flagged as a suspected
+    /// iOS Screen Time accounting burst — offer an unlock without pet loss.
+    private var isPardonAvailable: Bool {
+        ShieldManager.shared.isAnomalyPardonAvailable
+    }
+
     var body: some View {
         ConfirmationSheet(
             navigationTitle: isSafe ? "Safe unlock" : "Unlock Safety Shield?",
-            height: 320
+            height: !isSafe && isPardonAvailable ? 420 : 320
         ) {
             ConfirmationHeader(
                 icon: isSafe ? "checkmark.shield.fill" : "exclamationmark.triangle.fill",
@@ -48,6 +55,20 @@ struct SafetyUnlockSheet: View {
                 }
                 .transition(.blurReplace)
             } else {
+                if isPardonAvailable {
+                    ConfirmationAction(
+                        icon: "exclamationmark.arrow.circlepath",
+                        title: "Unlock — wind glitch",
+                        subtitle: "This spike looks like a known iOS bug, not your usage",
+                        foregroundColor: .orange,
+                        background: .tinted(.orange)
+                    ) {
+                        dismiss()
+                        onUnlockPardoned()
+                    }
+                    .transition(.blurReplace)
+                }
+
                 ConfirmationAction(
                     icon: "lock.trianglebadge.exclamationmark.fill",
                     title: "Unlock and lose pet",
