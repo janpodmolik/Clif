@@ -14,13 +14,6 @@ struct DailyPresetSettingsScreen: View {
         WindPreset(rawValue: limitSettings.defaultWindPresetRaw) ?? .balanced
     }
 
-    private var useEveryDayBinding: Binding<Bool> {
-        Binding(
-            get: { !limitSettings.dayStartShieldEnabled },
-            set: { limitSettings.dayStartShieldEnabled = !$0 }
-        )
-    }
-
     var body: some View {
         Form {
             // MARK: - Today
@@ -99,25 +92,7 @@ struct DailyPresetSettingsScreen: View {
             } header: {
                 Text("Default preset")
             } footer: {
-                Text("Pre-selected when the daily picker appears, or used automatically if daily selection is off.")
-            }
-
-            // MARK: - Daily Selection
-
-            Section {
-                Toggle(isOn: useEveryDayBinding) {
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("Skip daily selection")
-                            .font(.body)
-
-                        Text(limitSettings.dayStartShieldEnabled
-                             ? "You'll choose a preset each morning before using your apps."
-                             : "The default preset applies automatically each morning.")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    }
-                }
-                .tint(.blue)
+                Text("Pre-selected when the daily picker appears each morning.")
             }
         }
         .navigationTitle("Daily Preset")
@@ -127,9 +102,6 @@ struct DailyPresetSettingsScreen: View {
 
             if oldValue.defaultWindPresetRaw != newValue.defaultWindPresetRaw {
                 analytics.send(.configChanged(key: "default_preset", value: newValue.defaultWindPresetRaw))
-            }
-            if oldValue.dayStartShieldEnabled != newValue.dayStartShieldEnabled {
-                analytics.send(.configChanged(key: "day_start_shield", value: "\(newValue.dayStartShieldEnabled)"))
             }
         }
     }

@@ -28,9 +28,6 @@ struct LimitSettings: Equatable {
 
     // MARK: - Day Start Shield
 
-    /// Enable Day Start Shield (shield active after day reset until preset selected).
-    var dayStartShieldEnabled: Bool = true
-
     /// Default wind preset raw value pre-selected in DailyPresetPicker.
     /// Use `WindPreset(rawValue:)` in the main app to convert.
     var defaultWindPresetRaw: String = "balanced"
@@ -67,7 +64,6 @@ extension LimitSettings: Codable {
     private enum CodingKeys: String, CodingKey {
         case notifications
         case notificationMode       // legacy — read-only for migration
-        case dayStartShieldEnabled
         case defaultWindPresetRaw = "defaultWindPreset"
         case safetyShieldActivationThreshold
         case safetyUnlockThreshold
@@ -87,7 +83,6 @@ extension LimitSettings: Codable {
             self.notifications = .default
         }
 
-        self.dayStartShieldEnabled = try container.decodeIfPresent(Bool.self, forKey: .dayStartShieldEnabled) ?? true
         self.defaultWindPresetRaw = try container.decodeIfPresent(String.self, forKey: .defaultWindPresetRaw) ?? "balanced"
         self.safetyShieldActivationThreshold = try container.decodeIfPresent(Int.self, forKey: .safetyShieldActivationThreshold) ?? 100
         self.safetyUnlockThreshold = try container.decodeIfPresent(Int.self, forKey: .safetyUnlockThreshold) ?? 50
@@ -98,7 +93,6 @@ extension LimitSettings: Codable {
     func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(notifications, forKey: .notifications)
-        try container.encode(dayStartShieldEnabled, forKey: .dayStartShieldEnabled)
         try container.encode(defaultWindPresetRaw, forKey: .defaultWindPresetRaw)
         try container.encode(safetyShieldActivationThreshold, forKey: .safetyShieldActivationThreshold)
         try container.encode(safetyUnlockThreshold, forKey: .safetyUnlockThreshold)

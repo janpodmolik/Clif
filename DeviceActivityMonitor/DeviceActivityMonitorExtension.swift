@@ -28,18 +28,13 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
             return
         }
 
-        let settings = SharedDefaults.limitSettings
-        if settings.dayStartShieldEnabled {
-            let activated = activateShieldFromTokens()
-            if activated {
-                SharedDefaults.isDayStartShieldActive = true
-                SharedDefaults.synchronize()
-                ExtensionLogger.log("[Extension] New day - preset shield activated")
-            } else {
-                ExtensionLogger.log("[Extension] New day - FAILED to activate shield (no tokens)")
-            }
+        let activated = activateShieldFromTokens()
+        if activated {
+            SharedDefaults.isDayStartShieldActive = true
+            SharedDefaults.synchronize()
+            ExtensionLogger.log("[Extension] New day - preset shield activated")
         } else {
-            ExtensionLogger.log("[Extension] New day - auto-apply mode, skipping shield")
+            ExtensionLogger.log("[Extension] New day - FAILED to activate shield (no tokens)")
         }
     }
 

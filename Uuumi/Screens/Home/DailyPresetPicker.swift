@@ -6,7 +6,6 @@ struct DailyPresetPicker: View {
     @Environment(\.dismiss) private var dismiss
 
     @State private var selectedPreset: WindPreset = .balanced
-    @State private var dontAskAgain = false
 
     private var currentPet: Pet? { petManager.currentPet }
 
@@ -46,20 +45,16 @@ struct DailyPresetPicker: View {
 
                 Spacer()
 
-                VStack(spacing: 12) {
-                    dontAskAgainToggle
-
-                    // Confirm button
-                    Button {
-                        confirmSelection()
-                    } label: {
-                        Text("Start your day")
-                            .font(.headline)
-                            .foregroundStyle(.white)
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                            .background(selectedPreset.themeColor, in: RoundedRectangle(cornerRadius: 16))
-                    }
+                // Confirm button
+                Button {
+                    confirmSelection()
+                } label: {
+                    Text("Start your day")
+                        .font(.headline)
+                        .foregroundStyle(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(selectedPreset.themeColor, in: RoundedRectangle(cornerRadius: 16))
                 }
                 .padding(.horizontal)
                 .padding(.bottom, 24)
@@ -71,40 +66,9 @@ struct DailyPresetPicker: View {
         }
     }
 
-    // MARK: - Don't Ask Again Toggle
-
-    private var dontAskAgainToggle: some View {
-        VStack(spacing: 4) {
-            Toggle(isOn: $dontAskAgain) {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("Skip daily selection")
-                        .font(.subheadline)
-
-                    Text("The default preset applies automatically each morning.")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
-            }
-            .tint(.blue)
-
-            Text("You can change this anytime in Settings → Daily Preset.")
-                .font(.caption2)
-                .foregroundStyle(.tertiary)
-                .frame(maxWidth: .infinity, alignment: .leading)
-        }
-        .padding(.horizontal, 4)
-    }
-
     // MARK: - Actions
 
     private func confirmSelection() {
-        if dontAskAgain {
-            var settings = SharedDefaults.limitSettings
-            settings.dayStartShieldEnabled = false
-            settings.defaultWindPresetRaw = selectedPreset.rawValue
-            SharedDefaults.limitSettings = settings
-        }
-
         if let pet = currentPet {
             ScreenTimeManager.shared.applyPreset(selectedPreset, for: pet)
             petManager.savePet()

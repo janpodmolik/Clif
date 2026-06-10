@@ -284,16 +284,8 @@ struct ContentView: View {
             return
         }
 
-        let settings = SharedDefaults.limitSettings
-        if settings.dayStartShieldEnabled {
-            // Show preset picker — applyPreset will set lastDayResetDate + todaySelectedPreset
-            router.showPresetPicker = true
-        } else if let pet = petManager.currentPet {
-            // Auto-apply default preset
-            let preset = WindPreset(rawValue: settings.defaultWindPresetRaw) ?? .balanced
-            ScreenTimeManager.shared.applyPreset(preset, for: pet)
-            petManager.savePet()
-        }
+        // Show preset picker — applyPreset will set lastDayResetDate + todaySelectedPreset
+        router.showPresetPicker = true
     }
 
     // MARK: - Notification Re-prompt

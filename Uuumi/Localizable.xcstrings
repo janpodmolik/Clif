@@ -1151,7 +1151,7 @@
     "Power up your collection." : {
 
     },
-    "Pre-selected when the daily picker appears, or used automatically if daily selection is off." : {
+    "Pre-selected when the daily picker appears each morning." : {
 
     },
     "Premium" : {
@@ -1401,9 +1401,6 @@
     "Skip" : {
 
     },
-    "Skip daily selection" : {
-
-    },
     "Smooth sky gradient that transitions continuously throughout the day." : {
 
     },
@@ -1477,9 +1474,6 @@
 
     },
     "The chart shows average screen time in blocked apps throughout the day. Data is averaged over %lld days. Tap a bar to see details for a specific hour." : {
-
-    },
-    "The default preset applies automatically each morning." : {
 
     },
     "The island's getting a bit drafty over here." : {
@@ -1728,9 +1722,6 @@
     "Yearly" : {
 
     },
-    "You can change this anytime in Settings → Daily Preset." : {
-
-    },
     "You can change this at the start of each day." : {
 
     },
@@ -1753,9 +1744,6 @@
 
     },
     "You need %lld more coins" : {
-
-    },
-    "You'll choose a preset each morning before using your apps." : {
 
     },
     "You're all set!" : {

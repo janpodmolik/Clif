@@ -2,7 +2,6 @@ import SwiftUI
 
 struct WindPresetStep: View {
     @Environment(CreatePetCoordinator.self) private var coordinator
-    @State private var useEveryDay = !SharedDefaults.limitSettings.dayStartShieldEnabled
 
     var body: some View {
         VStack(spacing: 8) {
@@ -30,40 +29,9 @@ struct WindPresetStep: View {
             .padding(.horizontal)
             .padding(.top, 20)
 
-            dailyShieldToggle
-                .padding(.horizontal)
-                .padding(.top, 8)
-
             Spacer()
         }
         .padding(.top)
-    }
-
-    // MARK: - Daily Shield Toggle
-
-    private var dailyShieldToggle: some View {
-        VStack(spacing: 8) {
-            Toggle(isOn: $useEveryDay) {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("Skip daily selection")
-                        .font(.subheadline.weight(.medium))
-
-                    Text(useEveryDay
-                         ? "The default preset applies automatically each morning."
-                         : "You'll choose a preset each morning before using your apps.")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
-            }
-            .tint(.blue)
-            .padding(12)
-            .glassBackground(cornerRadius: 12)
-            .onChange(of: useEveryDay) { _, newValue in
-                var settings = SharedDefaults.limitSettings
-                settings.dayStartShieldEnabled = !newValue
-                SharedDefaults.limitSettings = settings
-            }
-        }
     }
 }
 
