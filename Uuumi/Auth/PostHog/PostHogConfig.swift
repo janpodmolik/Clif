@@ -59,6 +59,10 @@ enum AppPostHog {
         PostHogSDK.shared.reset()
     }
 
+    static func flush() {
+        PostHogSDK.shared.flush()
+    }
+
     static func setOptedOut(_ optedOut: Bool) {
         PostHogOptOut.isOptedOut = optedOut
         if optedOut {

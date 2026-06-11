@@ -192,6 +192,13 @@ final class AnalyticsManager {
         #endif
     }
 
+    /// Forces immediate network delivery of queued events. Use before moments
+    /// where the user may kill the app (e.g. system permission dialogs).
+    func flush() {
+        guard isStarted else { return }
+        AppPostHog.flush()
+    }
+
     private func flushPendingEvents() {
         let events = pendingEvents
         pendingEvents.removeAll()

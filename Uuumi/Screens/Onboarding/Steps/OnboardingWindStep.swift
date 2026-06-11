@@ -9,6 +9,7 @@ struct OnboardingWindStep: View {
 
     @Environment(AnalyticsManager.self) private var analytics
     @Environment(\.onboardingFontScale) private var fontScale
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     @State private var showSecondLine = false
     @State private var showThirdLine = false
@@ -49,6 +50,7 @@ struct OnboardingWindStep: View {
                 }
             }
             .onAppear {
+                analytics.send(.onboardingScreenViewed(step: "wind"))
                 if skipAnimation {
                     windProgress = OnboardingScreen.wind.initialWindProgress ?? 0.15
                     eyesOverride = "neutral"
@@ -182,6 +184,8 @@ struct OnboardingWindStep: View {
                 .padding(20)
                 .frame(maxWidth: .infinity)
                 .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
+            } else {
+                dialogPreviewCard
             }
 
             Text("Your data stays on your device. Always.")
@@ -204,16 +208,81 @@ struct OnboardingWindStep: View {
         }
     }
 
+    // MARK: - Dialog Preview
+
+    /// Tappable preview of the upcoming iOS Screen Time prompt, mirroring the
+    /// real alert — including Apple's button layout where "Don't Allow" is the
+    /// prominent one and "Continue" is the plain pill on the left. Funnel data
+    /// showed most users abandon at the system dialog, so we show the exact
+    /// wording up front and mark which button moves them forward.
+    private var dialogPreviewCard: some View {
+        VStack(spacing: 12) {
+            Text("Next, iOS will ask for permission \u{2014} tap \u{201C}Continue\u{201D}")
+                .font(AppFont.quicksandOnboarding(.caption, weight: .medium, scale: fontScale))
+                .foregroundStyle(.secondary)
+
+            VStack(spacing: 12) {
+                Text("\u{201C}Uuumi\u{201D} Would Like to Access Screen Time")
+                    .font(.system(.subheadline, weight: .semibold))
+                    .foregroundStyle(.primary)
+                    .multilineTextAlignment(.center)
+
+                Text("Providing \u{201C}Uuumi\u{201D} access to Screen Time may allow it to see your activity data, restrict content, and limit the usage of apps and websites.")
+                    .font(.system(.caption))
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+
+                HStack(spacing: 10) {
+                    HStack(spacing: 6) {
+                        Image(systemName: "hand.tap.fill")
+                            .symbolEffect(
+                                .wiggle,
+                                options: .repeat(.periodic(delay: 2.0)),
+                                isActive: !reduceMotion
+                            )
+                        Text("Continue")
+                    }
+                    .font(.system(.footnote, weight: .semibold))
+                    .foregroundStyle(.primary)
+                    .padding(.vertical, 9)
+                    .frame(maxWidth: .infinity)
+                    .background(.quaternary, in: Capsule())
+                    .overlay(Capsule().strokeBorder(Color.accentColor, lineWidth: 1.5))
+
+                    Text("Don't Allow")
+                        .font(.system(.footnote, weight: .semibold))
+                        .foregroundStyle(.white)
+                        .padding(.vertical, 9)
+                        .frame(maxWidth: .infinity)
+                        .background(Color.blue, in: Capsule())
+                }
+            }
+            .padding(16)
+            .frame(maxWidth: .infinity)
+            .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 22))
+            .contentShape(RoundedRectangle(cornerRadius: 22))
+            .onTapGesture {
+                guard !isRequestingPermission else { return }
+                HapticType.impactMedium.trigger()
+                requestPermission()
+            }
+        }
+    }
+
     // MARK: - Actions
 
     private func requestPermission() {
         isRequestingPermission = true
         showPermissionDenied = false
         analytics.send(.onboardingScreenViewed(step: "family_controls"))
+        // Flush before the system dialog — most users who abandon do it there,
+        // and a killed app would otherwise lose the queued tap event.
+        analytics.flush()
         Task {
             await screenTimeManager.requestAuthorization()
             isRequestingPermission = false
             analytics.send(.familyControlsAuthorized(granted: screenTimeManager.isAuthorized))
+            analytics.flush()
             if screenTimeManager.isAuthorized, !didAdvance {
                 didAdvance = true
                 try? await Task.sleep(for: .seconds(0.5))
