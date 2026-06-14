@@ -99,6 +99,17 @@ Uuumi = screen time blocker s virtuálním mazlíčkem na plovoucím ostrově (i
 - [x] ~~Ověřit, že MCP je autentizované a funkční~~ → hotovo 2026-06-11: projekt "Uuumi" (owodjfgrmtltmfpqvlot, eu-west-3) ACTIVE_HEALTHY. Tabulky: active_pets (6), archived_pets (20), user_data (8), pending_rewards (0), feedback (0), RLS všude zapnuté.
 - [ ] (Pak) zkřížit PostHog funnel s reálnými user záznamy v Supabase.
 
+### 2.3 Datová hygiena — vzorek je malý a znečištěný testováním 🟠 (zjištěno 2026-06-12)
+
+**Nález:** Eventy nesou `environment` (production/staging/development). Po přefiltrování na produkci: z 29 `purchase_completed` zbyly **2** (zbytek = sandbox/dev testování), z 498 květnových `break_started` velká část taktéž. **Onboarding funnel (26→6→4) je naštěstí produkční** — ta čísla platí. Supabase ale `environment` sloupec NEMÁ → 4 "power users" cyklící pety (23× completed evoluce, ~6–8 dní/pet, aktivní duben–červen) nejdou odlišit od kamarádů-testerů.
+
+**Důsledek:** Vzorek (~20 reálných lidí + testeři) NEstačí na posuzování herních mechanik — žádné změny wind/evoluce/streak na základě těchto dat. Co obstojí: onboarding drop (binárně obrovský efekt) a ASO data (nezávislá na našem vzorku).
+
+**Akce (datová hygiena do buildu 11):**
+- [ ] PostHog: nastavit project-level "Filter out internal and test users" na `environment = production` (+ ideálně `$is_testflight = false`), aby všechny insighty byly defaultně čisté.
+- [ ] Supabase: přidat `environment`/`is_tester` značku do `user_data` (zapisovat z appky podle DEBUG/TestFlight detekce), aby šli testeři oddělit i v DB.
+- [ ] `feedback` tabulka má **0 řádků** za celou dobu — ověřit, že feedback UI funguje a je k nalezení. Při malém vzorku je kvalitativní feedback cennější než analytika.
+
 ---
 
 ## 3. APP STORE OPTIMALIZACE (ASO) — reálný dosah ~nulový 🟠
