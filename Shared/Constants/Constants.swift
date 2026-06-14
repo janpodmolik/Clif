@@ -174,6 +174,11 @@ enum DefaultsKeys {
 
     static let hasCompletedOnboarding = "hasCompletedOnboarding"
 
+    // MARK: - Review Prompt
+
+    /// Set once the App Store review prompt has been requested (first pet evolution).
+    static let didRequestReview = "didRequestReview"
+
     // MARK: - Premium Cache
 
     static let isPremiumCached = "isPremiumCached"

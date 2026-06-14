@@ -1,5 +1,6 @@
 import Combine
 import FamilyControls
+import StoreKit
 import SwiftUI
 
 /// Main home screen displaying the floating island scene with pet and status card.
@@ -15,6 +16,7 @@ struct HomeScreen: View {
     @Environment(AnalyticsManager.self) private var analytics
     @Environment(StoreManager.self) private var storeManager
     @Environment(\.fullScreenHeight) private var fullScreenHeight
+    @Environment(\.requestReview) private var requestReview
 
     @State private var windRhythm = WindRhythm()
     @State private var blowAwayAnimator = BlowAwayAnimator()
@@ -676,6 +678,7 @@ struct HomeScreen: View {
             let evolveAction = {
                 analytics.send(.petEvolved(essence: pet.evolutionTypeName, phase: pet.currentPhase + 1))
                 evolutionAnimator.trigger(pet: pet)
+                requestReviewOnFirstEvolution()
             }
             if storeManager.isPremium {
                 evolveAction()
@@ -683,6 +686,17 @@ struct HomeScreen: View {
                 pendingEvolveAction = evolveAction
                 showEvolutionUpsell = true
             }
+        }
+    }
+
+    /// Asks for an App Store review the first time a pet evolves — a real moment
+    /// of delight and our best shot at a 5★. Delayed so the evolution animation
+    /// lands first; `ReviewPromptManager` guarantees it only ever fires once.
+    private func requestReviewOnFirstEvolution() {
+        guard ReviewPromptManager.shouldRequestOnFirstEvolution() else { return }
+        Task { @MainActor in
+            try? await Task.sleep(for: .seconds(2.0))
+            requestReview()
         }
     }
 
