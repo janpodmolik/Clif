@@ -264,6 +264,7 @@ struct HomeScreen: View {
                     },
                     onDelete: {
                         petManager.delete(id: pet.id)
+                        startNextPetFlow()
                     }
                 )
             }
@@ -547,33 +548,39 @@ struct HomeScreen: View {
     private func requestAuthorizationAndCreatePet() async {
         let status = AuthorizationCenter.shared.authorizationStatus
         if status == .approved {
-            withAnimation(.easeInOut(duration: 0.5)) {
-                createPetCoordinator.show { [storeManager] _ in
-                    reactionAnimator.playRandom(withGlow: true)
-                    if !storeManager.isPremium {
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-                            showPremiumSheet = true
-                        }
-                    }
-                }
-            }
+            showCreatePetFlow()
             return
         }
 
         do {
             try await AuthorizationCenter.shared.requestAuthorization(for: .individual)
-            withAnimation(.easeInOut(duration: 0.5)) {
-                createPetCoordinator.show { [storeManager] _ in
-                    reactionAnimator.playRandom(withGlow: true)
-                    if !storeManager.isPremium {
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-                            showPremiumSheet = true
-                        }
+            showCreatePetFlow()
+        } catch {
+            showAuthorizationAlert = true
+        }
+    }
+
+    private func showCreatePetFlow() {
+        withAnimation(.easeInOut(duration: 0.5)) {
+            createPetCoordinator.show { [storeManager] _ in
+                reactionAnimator.playRandom(withGlow: true)
+                if !storeManager.isPremium {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                        showPremiumSheet = true
                     }
                 }
             }
-        } catch {
-            showAuthorizationAlert = true
+        }
+    }
+
+    /// Opens the create-pet flow shortly after the island empties, so losing or
+    /// archiving a pet leads straight into a fresh start instead of a dead end.
+    private func startNextPetFlow() {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
+            guard petManager.currentPet == nil,
+                  !createPetCoordinator.isShowing,
+                  AuthorizationCenter.shared.authorizationStatus == .approved else { return }
+            showCreatePetFlow()
         }
     }
 
@@ -637,6 +644,7 @@ struct HomeScreen: View {
             // Pet is not visually on the island — skip ascension animation
             if pet.isBlownAway {
                 petManager.archive(id: petId, using: archivedPetManager)
+                startNextPetFlow()
                 return
             }
         }
@@ -647,6 +655,7 @@ struct HomeScreen: View {
             // The empty island card slides in via its own transition.
             // Cloud sync (archive + delete active) is handled internally by PetManager.
             petManager.archive(id: petId, using: archivedPetManager)
+            startNextPetFlow()
         }
     }
 
@@ -667,7 +676,7 @@ struct HomeScreen: View {
                     analytics.send(.essenceApplied(essence: essence.name))
                     evolutionAnimator.triggerEssenceApplication(pet: pet, essence: essence)
                 }
-                if storeManager.isPremium {
+                if storeManager.isPremium || !PremiumUpsellThrottle.shouldShow() {
                     evolveAction()
                 } else {
                     pendingEssenceAction = evolveAction
@@ -680,7 +689,7 @@ struct HomeScreen: View {
                 evolutionAnimator.trigger(pet: pet)
                 requestReviewOnFirstEvolution()
             }
-            if storeManager.isPremium {
+            if storeManager.isPremium || !PremiumUpsellThrottle.shouldShow() {
                 evolveAction()
             } else {
                 pendingEvolveAction = evolveAction

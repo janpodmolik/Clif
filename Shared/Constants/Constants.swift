@@ -19,6 +19,10 @@ enum AppConstants {
     /// Cooldown between notification permission re-prompts (7 days)
     static let notificationPromptCooldown: TimeInterval = 7 * 24 * 60 * 60
 
+    /// Minimum interval between evolution/essence premium upsell sheets.
+    /// Evolving is a daily action — the upsell must not fire on every tap.
+    static let premiumUpsellCooldown: TimeInterval = 7 * 24 * 60 * 60
+
     /// Debounce delay for selection saves (in nanoseconds) - 300ms
     static let selectionDebounceNanoseconds: UInt64 = 300_000_000
 
@@ -178,6 +182,11 @@ enum DefaultsKeys {
 
     /// Set once the App Store review prompt has been requested (first pet evolution).
     static let didRequestReview = "didRequestReview"
+
+    // MARK: - Premium Upsell Throttle
+
+    /// Date of the last evolution/essence upsell sheet presentation.
+    static let lastPremiumUpsellDate = "lastPremiumUpsellDate"
 
     // MARK: - Premium Cache
 
