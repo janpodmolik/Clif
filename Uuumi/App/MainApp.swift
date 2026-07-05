@@ -201,6 +201,9 @@ struct MainApp: App {
             petManager.checkBlowAwayState()
             petManager.refreshDailyStats()
 
+            // Back in the app — pending come-back nudges are no longer relevant
+            ReEngagementNotification.cancel()
+
             // Refresh scheduled notifications (daily summary + evolution ready)
             ScheduledNotificationManager.refresh(
                 isEvolutionAvailable: petManager.currentPet?.isEvolutionAvailable ?? false,
@@ -249,6 +252,10 @@ struct MainApp: App {
             periodicSyncTimer = nil
             // Save current state when going to background
             petManager.savePet()
+
+            // Arm come-back nudges — cancelled again if the user returns
+            let livingPet = petManager.currentPet?.isBlownAway == false ? petManager.currentPet : nil
+            ReEngagementNotification.scheduleOnBackground(livingPetName: livingPet?.name)
 
             // Sync to cloud before app is suspended
             // Skip if initial sync hasn't completed or conflict is pending

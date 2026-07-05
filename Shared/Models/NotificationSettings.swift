@@ -37,6 +37,11 @@ struct NotificationSettings: Codable, Equatable {
     var dailySummary: Bool = true
     var evolutionReady: Bool = true
 
+    // MARK: - Re-engagement
+
+    /// Come-back nudges after 2/5 days of absence (1 day when no pet is active).
+    var reEngagement: Bool = true
+
     // MARK: - Schedule Times
 
     var dailySummaryHour: Int = 20
@@ -57,6 +62,7 @@ struct NotificationSettings: Codable, Equatable {
         windReminder = try container.decodeIfPresent(Bool.self, forKey: .windReminder) ?? true
         dailySummary = try container.decodeIfPresent(Bool.self, forKey: .dailySummary) ?? true
         evolutionReady = try container.decodeIfPresent(Bool.self, forKey: .evolutionReady) ?? true
+        reEngagement = try container.decodeIfPresent(Bool.self, forKey: .reEngagement) ?? true
         dailySummaryHour = try container.decodeIfPresent(Int.self, forKey: .dailySummaryHour) ?? 20
         dailySummaryMinute = try container.decodeIfPresent(Int.self, forKey: .dailySummaryMinute) ?? 0
     }
@@ -86,6 +92,10 @@ struct NotificationSettings: Codable, Equatable {
 
     func shouldSendEvolutionReady() -> Bool {
         masterEnabled && evolutionReady
+    }
+
+    func shouldSendReEngagement() -> Bool {
+        masterEnabled && reEngagement
     }
 
     // MARK: - Migration

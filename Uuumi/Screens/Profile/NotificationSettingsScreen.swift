@@ -155,6 +155,15 @@ struct NotificationSettingsScreen: View {
 
             Section {
                 SettingsRow(
+                    title: "Come Back Reminders",
+                    description: "A gentle nudge when you haven't visited for a few days.",
+                    isOn: notifications.reEngagement,
+                    disabled: disabled
+                )
+            }
+
+            Section {
+                SettingsRow(
                     title: "Daily Summary",
                     description: "Overview of screen time and Uuumi's status.",
                     isOn: notifications.dailySummary,
