@@ -222,9 +222,6 @@ struct OnboardingView: View {
                 onContinue: advanceScreen,
                 eyesOverride: $eyesOverride
             )
-
-        default:
-            nonStoryLayout
         }
     }
 
@@ -240,25 +237,6 @@ struct OnboardingView: View {
 
             Spacer()
         }
-    }
-
-    // MARK: - Non-Story Layout (Screens 4+)
-
-    /// Screens that have dedicated step views (not placeholders).
-    private static let implementedScreens: Set<OnboardingScreen> = [
-        .island, .meetPet, .wind, .screenTimeData, .appSelection, .windSlider, .lockDemo, .windPreset, .essence, .evolution, .notifications, .namePet, .login,
-    ]
-
-    private var nonStoryLayout: some View {
-        TabView(selection: $currentScreen) {
-            ForEach(OnboardingScreen.allCases.filter { !Self.implementedScreens.contains($0) }) { screen in
-                OnboardingPlaceholderStep(screen: screen)
-                    .tag(screen)
-            }
-        }
-        .tabViewStyle(.page(indexDisplayMode: .never))
-        .ignoresSafeArea(.container, edges: .bottom)
-        .animation(.easeInOut(duration: 0.3), value: currentScreen)
     }
 
     // MARK: - Navigation

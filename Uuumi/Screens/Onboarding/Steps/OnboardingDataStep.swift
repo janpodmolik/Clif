@@ -43,11 +43,11 @@ struct OnboardingDataStep: View {
                     showContinue = true
                 } else {
                     Task {
-                        try? await Task.sleep(for: .seconds(0.6))
+                        try? await Task.sleep(for: .seconds(0.3))
                         withAnimation(.easeOut(duration: 0.5)) {
                             showReport = true
                         }
-                        try? await Task.sleep(for: .seconds(0.8))
+                        try? await Task.sleep(for: .seconds(0.4))
                         withAnimation(.easeOut(duration: 0.3)) {
                             showContinue = true
                         }

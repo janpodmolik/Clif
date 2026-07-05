@@ -73,7 +73,7 @@ struct OnboardingIslandStep: View {
                         onCompleted: {
                             Task {
                                 if narrativeBeat < 2 {
-                                    try? await Task.sleep(for: .seconds(1.0))
+                                    try? await Task.sleep(for: .seconds(0.4))
                                 }
                                 withAnimation(.easeIn(duration: narrativeBeat >= 2 ? 0.3 : 0.6)) {
                                     showThirdLine = true

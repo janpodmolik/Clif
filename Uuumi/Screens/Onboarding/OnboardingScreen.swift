@@ -1,19 +1,5 @@
 import Foundation
 
-enum OnboardingAct: Int, CaseIterable {
-    case story = 1
-    case demo = 2
-    case setup = 3
-
-    var title: String {
-        switch self {
-        case .story: "The Story"
-        case .demo: "The Demo"
-        case .setup: "Setup"
-        }
-    }
-}
-
 enum OnboardingScreen: Int, CaseIterable, Identifiable {
     // ACT 1: The Story
     case island = 0
@@ -35,50 +21,6 @@ enum OnboardingScreen: Int, CaseIterable, Identifiable {
     case login = 12
 
     var id: Int { rawValue }
-
-    var act: OnboardingAct {
-        switch self {
-        case .island, .meetPet, .wind, .screenTimeData, .appSelection: .story
-        case .windSlider, .lockDemo: .demo
-        case .essence, .evolution, .notifications, .windPreset, .namePet, .login: .setup
-        }
-    }
-
-    var title: String {
-        switch self {
-        case .island: "The Island"
-        case .meetPet: "Meet Uuumi"
-        case .wind: "The Wind"
-        case .screenTimeData: "Screen Time"
-        case .appSelection: "Your Apps"
-        case .windSlider: "Feel The Wind"
-        case .lockDemo: "The Lock"
-        case .essence: "Essence"
-        case .notifications: "Notifications"
-        case .evolution: "Evolution"
-        case .windPreset: "Wind Preset"
-        case .namePet: "Name Your Pet"
-        case .login: "Login"
-        }
-    }
-
-    var description: String {
-        switch self {
-        case .island: "Empty floating island, serene atmosphere"
-        case .meetPet: "Blob appears, user taps to interact"
-        case .wind: "Wind mechanic intro + Screen Time permission"
-        case .screenTimeData: "Screen time data reveal with horizontal app carousel"
-        case .appSelection: "Choose which apps create the wind"
-        case .windSlider: "Interactive slider driving wind intensity"
-        case .lockDemo: "Tap lock to stop the wind"
-        case .essence: "Drag essence onto your pet"
-        case .notifications: "Mock notifications + permission prompt"
-        case .evolution: "Evolution narrative"
-        case .windPreset: "Gentle / Balanced / Intense cards"
-        case .namePet: "Text field for pet name"
-        case .login: "Sign in to save progress"
-        }
-    }
 
     var isLast: Bool { self == .login }
 
