@@ -3,6 +3,8 @@
 > Pracovní TODO z restartu projektu po ~měsíční pauze (2026-06-08).
 > Z tohoto filu vycházíme a postupně odškrtáváme. Sekce řazené zhruba podle priority.
 > Stav kódu při sepsání: na `main`, posledně shippeno jako **build 10** (resubmit po rejection buildu 9).
+>
+> **Update 2026-07-03:** Verze 1.1 (build 11) **rejectnuta** — guideline 5.6.3: review prompt v onboardingu (`OnboardingReviewStep` volal `requestReview()` na konci onboardingu, před tím než uživatel zažil hodnotu). Fix: review step z onboardingu úplně odstraněn (obrazovka i enum case), zůstává jen compliant post-evoluční prompt (`ReviewPromptManager`). Resubmit jako **build 12** (stejná verze 1.1).
 
 ---
 

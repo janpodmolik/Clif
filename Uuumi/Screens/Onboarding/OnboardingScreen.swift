@@ -32,8 +32,7 @@ enum OnboardingScreen: Int, CaseIterable, Identifiable {
     case evolution = 9
     case notifications = 10
     case namePet = 11
-    case review = 12
-    case login = 13
+    case login = 12
 
     var id: Int { rawValue }
 
@@ -41,7 +40,7 @@ enum OnboardingScreen: Int, CaseIterable, Identifiable {
         switch self {
         case .island, .meetPet, .wind, .screenTimeData, .appSelection: .story
         case .windSlider, .lockDemo: .demo
-        case .essence, .evolution, .notifications, .windPreset, .namePet, .review, .login: .setup
+        case .essence, .evolution, .notifications, .windPreset, .namePet, .login: .setup
         }
     }
 
@@ -59,7 +58,6 @@ enum OnboardingScreen: Int, CaseIterable, Identifiable {
         case .evolution: "Evolution"
         case .windPreset: "Wind Preset"
         case .namePet: "Name Your Pet"
-        case .review: "Review"
         case .login: "Login"
         }
     }
@@ -78,7 +76,6 @@ enum OnboardingScreen: Int, CaseIterable, Identifiable {
         case .evolution: "Evolution narrative"
         case .windPreset: "Gentle / Balanced / Intense cards"
         case .namePet: "Text field for pet name"
-        case .review: "Optional App Store review prompt"
         case .login: "Sign in to save progress"
         }
     }
@@ -92,7 +89,7 @@ enum OnboardingScreen: Int, CaseIterable, Identifiable {
         case .wind, .screenTimeData: 0.15
         case .windSlider: 0.1
         case .lockDemo: 1.0
-        case .windPreset, .essence, .evolution, .notifications, .namePet, .review, .login: 0
+        case .windPreset, .essence, .evolution, .notifications, .namePet, .login: 0
         default: nil
         }
     }
