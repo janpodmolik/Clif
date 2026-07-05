@@ -168,6 +168,12 @@ Uuumi = screen time blocker s virtuálním mazlíčkem na plovoucím ostrově (i
 
 ---
 
+## 6. UX & KONVERZNÍ AUDIT (2026-07-03) 🔴
+
+Kompletní průchod appky (onboarding / monetizace / retence) → **[docs/ux-conversion-audit.md](docs/ux-conversion-audit.md)**. TL;DR: (1) premium nemá co prodávat — evoluce projde zdarma, celý katalog essencí odemknutelný coiny; (2) neexistuje jediná re-engagement notifikace a po blow-away se vše zruší — slepá ulička; (3) onboarding 13 obrazovek místo 11, wind učen 3×, blow-away v onboardingu v rozporu se spec. Návrh pro build 12 v dokumentu.
+
+---
+
 ## Reference
 
 - Apple forum (ShieldAction → host app): https://developer.apple.com/forums/thread/719905
